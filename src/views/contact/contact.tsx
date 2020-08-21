@@ -18,7 +18,7 @@ export interface ContactProps {
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      height:'500px',
+      height:'700px',
       overflow:'auto'
     },
     item: {

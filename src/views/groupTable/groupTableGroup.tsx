@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import './groupTableGroup.css';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import _ from 'lodash';
+
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { getGroupTask } from '../../redux/actions/taskActions';
+
+import './groupTableGroup.css';
 import Task from '../../components/task/task';
-import _ from 'lodash';
+import Test from './test'
+
 
 const GroupTableGroup: React.FC = (prop) => {
   const user = useTypedSelector((state) => state.auth.user);
@@ -28,6 +33,7 @@ const GroupTableGroup: React.FC = (prop) => {
       getData(labelArray, taskArray);
     }
   }, [taskArray]);
+
   const getData = (labelArray: any, taskArray: any) => {
     let taskNameArr: any = [];
     let labelExecutorArray: any = [];
@@ -126,62 +132,164 @@ const GroupTableGroup: React.FC = (prop) => {
     // });
     // }
   };
-  const taskTypeLength = (value: any) => {
-    let len = 0;
-    value.forEach((item: any) => {
-      if (item.show) {
-        len++;
-      }
-    });
-    return len;
+  // const taskTypeLength = (value: any) => {
+  //   let len = 0;
+  //   value.forEach((item: any) => {
+  //     if (item.show) {
+  //       len++;
+  //     }
+  //   });
+  //   return len;
+  // };
+  const reorder = (list: any, startIndex: number, endIndex: number) => {
+    const result = Array.from(list);
+    const [removed] = result.splice(startIndex, 1);
+    result.splice(endIndex, 0, removed);
+
+    return result;
+  };
+
+  /**
+   * Moves an item from one list to another list.
+   */
+  const move = (source: any, destination: any, droppableSource: any, droppableDestination: any) => {
+    const sourceClone = Array.from(source);
+    const destClone = Array.from(destination);
+    const [removed] = sourceClone.splice(droppableSource.index, 1);
+
+    destClone.splice(droppableDestination.index, 0, removed);
+
+    const result: any = {};
+    result[droppableSource.droppableId] = sourceClone;
+    result[droppableDestination.droppableId] = destClone;
+    console.log(result)
+    return result;
+  };
+
+  const grid = 8;
+
+  const getItemStyle = (isDragging: any, draggableStyle: any) => ({
+    // some basic styles to make the items look a bit nicer
+    userSelect: 'none',
+    padding: grid * 2,
+    margin: `0 0 ${grid}px 0`,
+
+    // change background colour if dragging
+    background: isDragging
+      ? 'lightgreen'
+      : 'grey',
+
+    // styles we need to apply on draggables
+    ...draggableStyle
+  });
+
+  const getListStyle = (isDraggingOver: any) => ({
+    background: isDraggingOver
+      ? 'lightblue'
+      : 'lightgrey',
+    padding: grid,
+    width: 250
+  });
+
+  const onDragEnd = (result: any) => {
+    const { source, destination } = result;
+    let newTaskInfo: any = []
+    // dropped outside the list
+    if (!destination) {
+      return;
+    }
+    if (source.droppableId === destination.droppableId) {
+      const items = reorder(taskInfo[source.droppableId], source.index, destination.index);
+      console.log(items);
+      taskInfo[parseInt(source.droppableId)] = items;
+    } else {
+      const result = move(taskInfo[parseInt(source.droppableId)], taskInfo[parseInt(destination.droppableId)], source, destination);
+      taskInfo[parseInt(source.droppableId)] = result[source.droppableId];
+      taskInfo[parseInt(destination.droppableId)] = result[destination.droppableId];
+      // this.setState({items: result.droppable, selected: result.droppable2});
+    }
+    newTaskInfo = _.cloneDeep(taskInfo)
+    setTaskInfo(newTaskInfo);
   };
   return (
-    <div className="task">
-      <div className="task-container-profile">
-        <div className="task-tag-container">
-          {taskInfo.map((item: any, index: number) => {
+    <DragDropContext onDragEnd={onDragEnd}>
+      <div className="task">
+        <div className="task-container-profile">
+          {taskInfo.map((taskInfoitem: any, taskInfoindex: any) => {
             return (
-              <div key={'item' + index}>
-                <div className="task-item-container">
-                  <div
-                    className="task-item-title"
-                    // onMouseenter={changeLabelSet(index)}
-                  >
-                    <span style={{ height: '40px', lineHeight: '40px' }}>
-                      {taskNameArr[index]}
-                      {'/'}({taskTypeLength(taskInfo[index])})
-                    </span>
+              <Droppable droppableId={taskInfoindex + ''} key={'taskinfo' + taskInfoindex}>
+                {(provided, snapshot) => (
+                  <div ref={provided.innerRef} className="task-item-info">
+                    {taskInfoitem.map((item: any, index: any) => (
+                      <Draggable key={item._key} draggableId={item._key} index={index} >
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className="task-item-item"
+                          // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
+                          >
+                            <Task taskItem={item} />
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
                   </div>
-                  <div className="task-item-info" v-model="taskInfo[index]">
-                    {taskInfo[index].map((taskItem: any, taskIndex: number) => {
-                      return (
-                        <div
-                          className="task-item-item"
-                          key={'taskItem' + index + '-' + taskIndex}
-                          // style={
-                          //   cardKey == value._key
-                          //     ? { boxShadow: '2px 3px 5px 0 rgba(0, 0, 0, 0.26)' }
-                          //     : null
-                          // }
-                        >
-                          <Task
-                            taskItem={taskItem}
-                            // executorKey={labelExecutorArray[index].executorKey}
-                            // v-on="$listeners"
-                            // v-bind="$attrs"
-                            // :viewState="1"
-                          />
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            );
+                )}
+              </Droppable>
+            )
           })}
         </div>
       </div>
-    </div>
+    </DragDropContext>
+    // <div className="task">
+    //   <div className="task-container-profile">
+    //     <div className="task-tag-container">
+    //       {taskInfo.map((item: any, index: number) => {
+    //         return (
+    //           <div key={'item' + index}>
+    //             <div className="task-item-container">
+    //               <div
+    //                 className="task-item-title"
+    //               // onMouseenter={changeLabelSet(index)}
+    //               >
+    //                 <span style={{ height: '40px', lineHeight: '40px' }}>
+    //                   {taskNameArr[index]}
+    //                   {'/'}({taskTypeLength(taskInfo[index])})
+    //                 </span>
+    //               </div>
+    //               <div className="task-item-info" v-model="taskInfo[index]">
+    //                 {taskInfo[index].map((taskItem: any, taskIndex: number) => {
+    //                   return (
+    //                     <div
+    //                       className="task-item-item"
+    //                       key={'taskItem' + index + '-' + taskIndex}
+    //                     // style={
+    //                     //   cardKey == value._key
+    //                     //     ? { boxShadow: '2px 3px 5px 0 rgba(0, 0, 0, 0.26)' }
+    //                     //     : null
+    //                     // }
+    //                     >
+    //                       <Task
+    //                         taskItem={taskItem}
+    //                       // executorKey={labelExecutorArray[index].executorKey}
+    //                       // v-on="$listeners"
+    //                       // v-bind="$attrs"
+    //                       // :viewState="1"
+    //                       />
+    //                     </div>
+    //                   );
+    //                 })}
+    //               </div>
+    //             </div>
+    //           </div>
+    //         );
+    //       })}
+    //     </div>
+    //   </div>
+    // </div></div>
   );
 };
 export default GroupTableGroup;
