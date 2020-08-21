@@ -1,0 +1,120 @@
+.task {
+  width: 100%;
+  height: 100%;
+}
+
+.task-container-profile,
+.task-container-calendar,
+.task-container-lineChart {
+  width: 100%;
+  height: calc(100% - 5px);
+  padding: 0px 0.5%;
+  overflow: auto;
+  display: flex;
+}
+.task-item-item {
+  /* height:46px; */
+  position: relative;
+}
+
+.taskMark {
+  height: 100%;
+  width: 7px;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+.task-tag-container {
+  width: 100%;
+  height: 100%;
+  overflow-x: scroll;
+  overflow-y: hidden;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  display: flex;
+}
+.task-tag-container::-webkit-scrollbar {
+  width: 3px;
+  height: 8px;
+}
+.task-tag-container::-webkit-scrollbar-thumb {
+  background: #47475b;
+  border-radius: 100px;
+}
+.task-tag-container > div {
+  display: inline-block;
+}
+.task-container-calendar,
+.task-container-lineChart {
+  overflow: auto;
+}
+.task-container-lineChart {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #0e204a;
+}
+.addTask {
+  width: 350px;
+  height: 38px;
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+.task-item-container {
+  width: 350px;
+  height: 100%;
+  margin-right: 5px;
+  white-space: nowrap;
+}
+.task-item-executor {
+  display: flex;
+  align-items: center;
+}
+.task-item-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 15px;
+  object-fit: cover;
+}
+.task-item-person {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 15px;
+}
+.task-container-profile .task-item-title,
+.task-container-profile .task-item-deftitle {
+  height: 40px;
+  font-size: 14px;
+  /* color: #23384b; */
+  text-align: center;
+  position: relative;
+  margin: 3px 0px 1px 0px;
+}
+
+.task-container-profile .task-add-icon,
+.task-container-profile .task-item-title-icon {
+  font-size: 18px;
+  position: absolute;
+  top: 9px;
+  right: 7px;
+}
+.task-container-profile .task-add-icon {
+  right: 35px;
+}
+.task-container-profile .task-item-info {
+  height: calc(100% - 45px);
+  /* min-height: 80px; */
+  width: 350px;
+  overflow: auto;
+}
+.task-container-profile .task-item-info span {
+  /* min-height: 80px; */
+  height: calc(100% - 10px);
+  width: 100%;
+  display: inline-block;
+}

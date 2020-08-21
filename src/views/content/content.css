@@ -1,0 +1,15 @@
+.content {
+  height: 100%;
+  width:calc(100% - 320px);;
+}
+.content-container {
+  width: 100%;
+  height: calc(100% - 80px);
+  display: flex;
+  padding: 20px 10px;
+  box-sizing: border-box;
+}
+.content-title {
+  width: 19%;
+  margin-right: 2%;
+}

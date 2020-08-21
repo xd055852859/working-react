@@ -1,0 +1,9 @@
+.workingTable {
+  height: 100%;
+  width:calc(100% - 320px);;
+}
+.workingTableContent {
+  width: 100%;
+  height: calc(100% - 88px);
+  overflow: auto;
+}

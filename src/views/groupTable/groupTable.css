@@ -1,0 +1,9 @@
+.groupTable {
+  height: 100%;
+  width:calc(100% - 320px);;
+}
+.groupTableContent {
+  width: 100%;
+  height: calc(100% - 88px);
+  overflow: auto;
+}
