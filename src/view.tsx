@@ -6,7 +6,7 @@ import {
   Switch,
   Redirect,
 } from 'react-router-dom';
-import Test from './views/groupTable/test'
+import Message from "./components/common/message";
 
 export default function Pages() {
   const App = Loadable({
@@ -38,11 +38,11 @@ export default function Pages() {
         <Route path="/home" component={Home} />
         <Route path="/content" component={Content} />
         <Route path="/bootpage" component={Bootpage} />
-        <Route path="/test" component={Test} />
 
         {/* <Route path="/404" component={NotFound} />
         <Redirect to="/404" /> */}
       </Switch>
+      <Message />
     </Router>
   );
 }

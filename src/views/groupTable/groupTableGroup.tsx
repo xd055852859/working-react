@@ -5,22 +5,23 @@ import _ from 'lodash';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { getGroupTask } from '../../redux/actions/taskActions';
-
+import { setMessage } from '../../redux/actions/commonActions';
 import './groupTableGroup.css';
+import api from '../../services/api'
 import Task from '../../components/task/task';
-import Test from './test'
-
+import defaultPerson from '../../assets/img/defaultPerson.png';
 
 const GroupTableGroup: React.FC = (prop) => {
   const user = useTypedSelector((state) => state.auth.user);
   const labelArray = useTypedSelector((state) => state.task.labelArray);
   const taskArray = useTypedSelector((state) => state.task.taskArray);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
-
+  const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   // const [memberObj, setMemberObj] = useState<any>({});
   const [taskInfo, setTaskInfo] = useState<any>([]);
   const [taskNameArr, setTaskNameArr] = useState<any>([]);
   const [labelExecutorArray, setLabelExecutorArray] = useState<any>([]);
+  const [labelName, setLabelName] = useState("");
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -132,15 +133,32 @@ const GroupTableGroup: React.FC = (prop) => {
     // });
     // }
   };
-  // const taskTypeLength = (value: any) => {
-  //   let len = 0;
-  //   value.forEach((item: any) => {
-  //     if (item.show) {
-  //       len++;
-  //     }
-  //   });
-  //   return len;
-  // };
+  const taskTypeLength = (value: any) => {
+    let len = 0;
+    value.forEach((item: any) => {
+      if (item.show) {
+        len++;
+      }
+    });
+    return len;
+  };
+  const changeLabelName = (e: any, index: number) => {
+    let taskNewNameArr: any = []
+    setLabelName(e.target.value)
+    taskNewNameArr = _.cloneDeep(taskNameArr)
+    taskNewNameArr[index] = e.target.value
+    setTaskNameArr(taskNewNameArr);
+    // console.log(index);
+  }
+  const saveLabel = async (key: string) => {
+    let labelRes: any = await api.task.changeTaskLabel(key, labelName);
+    if (labelRes) {
+      dispatch(setMessage(true, "保存成功", "success"));
+      dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+    } else {
+      dispatch(setMessage(true, labelRes.msg, "error"));
+    }
+  }
   const reorder = (list: any, startIndex: number, endIndex: number) => {
     const result = Array.from(list);
     const [removed] = result.splice(startIndex, 1);
@@ -215,81 +233,63 @@ const GroupTableGroup: React.FC = (prop) => {
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="task">
         <div className="task-container-profile">
+
           {taskInfo.map((taskInfoitem: any, taskInfoindex: any) => {
             return (
-              <Droppable droppableId={taskInfoindex + ''} key={'taskinfo' + taskInfoindex}>
-                {(provided, snapshot) => (
-                  <div ref={provided.innerRef} className="task-item-info">
-                    {taskInfoitem.map((item: any, index: any) => (
-                      <Draggable key={item._key} draggableId={item._key} index={index} >
-                        {(provided, snapshot) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            {...provided.dragHandleProps}
-                            className="task-item-item"
-                          // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
-                          >
-                            <Task taskItem={item} />
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
+              <React.Fragment key={'taskinfo' + taskInfoindex}>
+                <div style={{ display: 'flex', flexWrap: 'wrap' }}>
+                  <div
+                    className="task-item-title"
+                  >
+                    {/* v-if="groupRole>0&&groupRole<4&&groupType!=2" */}
+                    <div >
+                      <img
+                        src={labelExecutorArray[taskInfoindex] && labelExecutorArray[taskInfoindex].executorAvatar ? labelExecutorArray[taskInfoindex].executorAvatar : defaultPerson}
+                        alt=""
+                        className="task-item-avatar"
+                      />
+                    </div>
+                    {/*   v-if="!taskClickArr[index]||(groupRole>3&&groupType==2)" */}
+                    {/* onClick={groupInfo.role > 0 && groupInfo.role < 4 ? () => { } : null} */}
+                    <span
+                      style={{ height: '40px', lineHeight: '40px' }}
+                    >{taskNameArr[taskInfoindex]} ( {taskTypeLength(taskInfoitem)} )</span>
+                    <input placeholder="请输入标签名"
+                      value={taskNameArr[taskInfoindex]}
+                      onChange={(e) => { changeLabelName(e, taskInfoindex) }}
+                      onBlur={() => { saveLabel(labelArray[taskInfoindex]._key) }}
+                      style={{ width: '50%' }}
+                    />
                   </div>
-                )}
-              </Droppable>
+                  <Droppable droppableId={taskInfoindex + ''} >
+                    {(provided, snapshot) => (
+                      <div ref={provided.innerRef} className="task-item-info">
+                        {taskInfoitem.map((item: any, index: any) => (
+                          <Draggable key={item._key} draggableId={item._key} index={index} >
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                className="task-item-item"
+                              // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
+                              >
+                                <Task taskItem={item} />
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </div>
+              </React.Fragment>
             )
           })}
         </div>
       </div>
-    </DragDropContext>
-    // <div className="task">
-    //   <div className="task-container-profile">
-    //     <div className="task-tag-container">
-    //       {taskInfo.map((item: any, index: number) => {
-    //         return (
-    //           <div key={'item' + index}>
-    //             <div className="task-item-container">
-    //               <div
-    //                 className="task-item-title"
-    //               // onMouseenter={changeLabelSet(index)}
-    //               >
-    //                 <span style={{ height: '40px', lineHeight: '40px' }}>
-    //                   {taskNameArr[index]}
-    //                   {'/'}({taskTypeLength(taskInfo[index])})
-    //                 </span>
-    //               </div>
-    //               <div className="task-item-info" v-model="taskInfo[index]">
-    //                 {taskInfo[index].map((taskItem: any, taskIndex: number) => {
-    //                   return (
-    //                     <div
-    //                       className="task-item-item"
-    //                       key={'taskItem' + index + '-' + taskIndex}
-    //                     // style={
-    //                     //   cardKey == value._key
-    //                     //     ? { boxShadow: '2px 3px 5px 0 rgba(0, 0, 0, 0.26)' }
-    //                     //     : null
-    //                     // }
-    //                     >
-    //                       <Task
-    //                         taskItem={taskItem}
-    //                       // executorKey={labelExecutorArray[index].executorKey}
-    //                       // v-on="$listeners"
-    //                       // v-bind="$attrs"
-    //                       // :viewState="1"
-    //                       />
-    //                     </div>
-    //                   );
-    //                 })}
-    //               </div>
-    //             </div>
-    //           </div>
-    //         );
-    //       })}
-    //     </div>
-    //   </div>
-    // </div></div>
+    </DragDropContext >
   );
 };
 export default GroupTableGroup;

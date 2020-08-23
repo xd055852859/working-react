@@ -3,7 +3,7 @@ export const actionTypes = {
   GET_USERINFO_SUCCESS: 'GET_USERINFO_SUCCESS',
   GET_MAIN_GROUP_KEY: 'GET_MAIN_GROUP_KEY',
   GET_MAIN_GROUP_KEY_SUCCESS: 'GET_MAIN_GROUP_KEY_SUCCESS',
-  SET_HEADERINDEX:'SET_HEADERINDEX'
+ 
 };
 
 export function getUserInfo(token: string) {
@@ -31,10 +31,5 @@ export function getMainGroupKeySuccess(data: any) {
     data,
   };
 }
-export function setHeaderIndex(headerIndex: number) {
-  return {
-    type: actionTypes.SET_HEADERINDEX,
-    headerIndex
-  };
-}
+
 

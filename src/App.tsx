@@ -10,14 +10,14 @@ import Home from './views/home/home';
 import Content from './views/content/content';
 import WorkingTable from './views/workingTable/workingTable';
 import GroupTable from './views/groupTable/groupTable';
+import Alert from './components/common/message';
 const App: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
-  const headerIndex = useTypedSelector((state) => state.auth.headerIndex);
-
-  const [headerDom, setHeaderDom] = useState<any>(null);
+  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const message = useTypedSelector((state) => state.common.message);
   useEffect(() => {
     // 用户已登录
     if (user && user._key) {

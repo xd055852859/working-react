@@ -5,7 +5,8 @@ import {
   getTeamTaskSuccess,
   getSelfTaskSuccess,
   getWorkingTableSuccess,
-  editTaskSuccess
+  editTaskSuccess,
+  addWorkingTableTaskSuccess
 } from '../actions/taskActions';
 import {Failed} from '../actions/commonActions';
 import api from '../../services/api';
@@ -51,7 +52,6 @@ function * getSelfTask(action : any) {
 function * getWorkingTableTask(action : any) {
   try {
     const res = yield call(api.task.getGroupTask, action.type1, action.targetUKey, action.type2, action.finishPercentArray, action.fileDay);
-    console.log('res', res);
     if (res.msg === 'OK') {
       yield put(getWorkingTableSuccess(res.result));
     } else {
@@ -74,12 +74,26 @@ function * editTask(action : any) {
     yield put(Failed(e));
   }
 }
+function * addWorkingTableTask(action : any) {
+  try {
+    const res = yield call(api.task.addTask, action.title, action.groupKey, action.groupRole, action.labelKey, action.cardIndex, action.executorKey);
+    console.log('res', res);
+    if (res.msg === 'OK') {
+      yield put(addWorkingTableTaskSuccess(res.result));
+    } else {
+      yield put(Failed(res));
+    }
+  } catch (e) {
+    yield put(Failed(e));
+  }
+}
 const taskSaga = [
   takeLatest(actionTypes.GET_GROUP_TASK, getGroupTask),
   takeLatest(actionTypes.GET_TEAM_TASK, getTeamTask),
   takeLatest(actionTypes.GET_SELF_TASK, getSelfTask),
   takeLatest(actionTypes.GET_WORKING_TABLE_TASK, getWorkingTableTask),
-  takeLatest(actionTypes.EDIT_TASK, editTask)
+  takeLatest(actionTypes.EDIT_TASK, editTask),
+  takeLatest(actionTypes.ADD_WORKING_TABLE_TASK, addWorkingTableTask)
 ];
 
 export default taskSaga;

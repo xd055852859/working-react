@@ -65,7 +65,6 @@ export const task = (state = defaultState, action : any) => {
         selfTaskArray: action.data.cardArray
       };
     case actionTypes.GET_WORKING_TABLE_TASK_SUCCESS:
-      console.log(action.data);
       let cardIndex = _.findIndex(action.data.groupArray, {
         _key: localStorage.getItem('mainGroupKey')
       });
@@ -95,6 +94,13 @@ export const task = (state = defaultState, action : any) => {
         ...state,
         // taskKey: action.taskKey
       };
+    case actionTypes.ADD_WORKING_TABLE_TASK_SUCCESS:
+      console.log("新建成功")
+      return {
+        ...state,
+        // taskKey: action.taskKey
+      };
+
     default:
       return state;
   }

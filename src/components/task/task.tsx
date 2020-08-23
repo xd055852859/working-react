@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, MouseEvent } from 'react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
+import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
+import { Dialog, Button, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@material-ui/core';
 import moment from 'moment';
 import _ from 'lodash'
 import './task.css';
-
+import api from "../../services/api"
 
 import unfinishPng from '../../assets/img/unfinish.png';
 import finishPng from '../../assets/img/finish.png';
@@ -12,32 +14,43 @@ import defaultPerson from '../../assets/img/defaultPerson.png';
 import important from '../../assets/img/important.png';
 import unimportant from '../../assets/img/unimportant.png';
 import { setTaskKey, editTask } from '../../redux/actions/taskActions';
+import { setMessage } from '../../redux/actions/commonActions';
+
 
 interface TaskProps {
   taskItem: any;
   executorKey?: number | string;
 }
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    paper: {
+      width: '600px',
+      height: '500px',
+    },
+  })
+);
 const Task: React.FC<TaskProps> = (props) => {
   const { taskItem } = props;
   const bottomtype = '';
   const taskKey = useTypedSelector((state) => state.task.taskKey);
   const user = useTypedSelector((state) => state.auth.user);
   const dispatch = useDispatch();
+  const classes = useStyles();
   const [endtime, setEndtime] = useState(0);
   const [taskDayColor, setTaskDayColor] = useState<any>();
   const [editRole, setEditRole] = useState(false);
   const [editState, setEditState] = useState(false);
   const [taskDetail, setTaskDetail] = useState<any>(null);
+  const [taskExecutorShow, setTaskExecutorShow] = useState<any>(false);
+  const [taskMemberArray, setTaskMemberArray] = useState<any>([]);
+  const [taskShow, setTaskShow] = useState(true);
+  const [deleteDialogShow, setDeleteDialogShow] = useState(false);
+  const titleRef: React.RefObject<any> = useRef()
 
   useEffect(() => {
     // 用户已登录
     if (taskItem) {
-      let time = 0;
-      let endTime = 0;
-      let taskDayColor = null;
-      let endState = false;
-      let editRole = false;
-      let taskDetail = {}
+      let [time, endTime, taskDayColor, endState, editRole, taskDetail]: any = [0, 0, null, false, false, {}]
       if (taskItem.taskEndDate) {
         time = Math.floor(
           (moment(taskItem.taskEndDate).endOf('day').valueOf() -
@@ -55,7 +68,9 @@ const Task: React.FC<TaskProps> = (props) => {
         : null;
       editRole = (taskItem.groupRole && taskItem.groupRole > 0 && taskItem.groupRole < 4) || taskItem.creatorKey == user._key ||
         taskItem.executorKey == user._key
-      console.log(editRole);
+
+      // getTaskMemberArray(taskItem.grougKey)
+
       setEndtime(endTime);
       setTaskDayColor(taskDayColor);
       setEditRole(editRole);
@@ -63,18 +78,24 @@ const Task: React.FC<TaskProps> = (props) => {
       setTaskDetail(taskDetail)
     }
   }, [taskItem]);
+  const getTaskMemberArray = async (groupKey: string) => {
+    let taskMemberRes: any = null
+    taskMemberRes = await api.member.getMember(groupKey)
+    if (taskMemberRes.msg == "OK") {
+      setTaskMemberArray(taskMemberRes.result)
+    }
+  }
   const chooseTask = (e: React.MouseEvent) => {
     dispatch(setTaskKey(taskItem._key));
   };
   const cancelTask = (e: React.MouseEvent) => {
-
     if (taskKey != 0) {
-      console.log(taskKey);
-      console.log(taskItem, taskDetail)
-      console.log(editState)
       if (editState) {
+        taskDetail.title = titleRef.current.innerText
+        setNewDetail(taskDetail)
         dispatch(editTask({ key: taskKey, ...taskDetail }));
         setEditState(false)
+        setTaskExecutorShow(false);
       }
       dispatch(setTaskKey(0));
     }
@@ -89,46 +110,77 @@ const Task: React.FC<TaskProps> = (props) => {
     setNewDetail(taskDetail)
   }
   const changeTitle = (e: any) => {
-    // console.log(e.type);
-    // console.log(e.target.value);
-    taskDetail.title = e.target.value
+    setEditState(true)
+  }
+  const changeImportant = (importantStatus: number) => {
+    taskDetail.importantStatus = importantStatus;
     setNewDetail(taskDetail)
+  }
+  const chooseExecutor = (e: React.MouseEvent) => {
+    if (editRole) {
+      setTaskExecutorShow(true);
+      getTaskMemberArray(taskItem.groupKey);
+    }
+  }
+  const changeExecutor = (executorKey: number | string, executorName: string, executorAvatar: string) => {
+    taskDetail.executorKey = executorKey;
+    taskDetail.executorName = executorName;
+    taskDetail.executorAvatar = executorAvatar;
+    setNewDetail(taskDetail)
+  }
+  const taskKeyDown = (e: any) => {
+    if (e.keyCode == 46) {
+      setDeleteDialogShow(true)
+    }
+  }
+  const deleteTask = async (e: any) => {
+    setTaskShow(false);
+    setDeleteDialogShow(false)
+    let deleteRes: any = await api.task.deleteTask(taskDetail._key, taskDetail.groupKey);
+    if (deleteRes.msg == "OK") {
+      dispatch(setMessage(true, "删除成功", "success"));
+    } else {
+      dispatch(setMessage(true, deleteRes.msg, "error"));
+    }
+
   }
   const setNewDetail = (taskDetail: any) => {
     if (editRole) {
+      setEditState(true)
       let newTaskItem = {}
       newTaskItem = _.cloneDeep(taskDetail)
       setTaskDetail(newTaskItem)
-      setEditState(true)
     }
   }
   return (
-    <div className="taskItem" onClick={chooseTask} onMouseLeave={cancelTask}>
-      {taskDetail ?
-        <React.Fragment>
-          {taskDetail.finishPercent != 10 ?
-            <div className="taskItem-finishIcon" onClick={() => { changeFinishPercent(taskDetail.finishPercent) }} >
-              <img src={taskDetail.finishPercent == 0 ? unfinishPng : finishPng} />
-            </div>
-            : null}
-          <div className="taskItem-container">
-            <div className="taskItem-info">
-              <div className="taskItem-day" style={taskDayColor}>
-                <div
-                  className="taskItem-time-day"
-                  style={{ left: endtime < 10 ? '5px' : '0px' }}
-                >
-                  {endtime}
+    <React.Fragment>
+      {taskShow ?
+        <div className="taskItem" onClick={chooseTask} onMouseLeave={cancelTask} tabIndex={taskItem._key} onKeyDown={taskKeyDown}>
+          {taskDetail ?
+            <React.Fragment>
+              {taskDetail.finishPercent != 10 ?
+                <div className="taskItem-finishIcon" onClick={() => { changeFinishPercent(taskDetail.finishPercent) }} >
+                  <img src={taskDetail.finishPercent == 0 ? unfinishPng : finishPng} />
                 </div>
-                <div className="taskItem-time"></div>
-                <div
-                  className="taskItem-time-hour"
-                  style={{ right: taskItem.hour < 1 ? '5px' : '0px' }}
-                >
-                  {taskDetail.hour}
-                </div>
-              </div>
-              {/* <div
+                : null}
+              <div className="taskItem-container">
+                <div className="taskItem-info">
+                  <div className="taskItem-day" style={taskDayColor}>
+                    <div
+                      className="taskItem-time-day"
+                      style={{ left: endtime < 10 ? '5px' : '0px' }}
+                    >
+                      {endtime}
+                    </div>
+                    <div className="taskItem-time"></div>
+                    <div
+                      className="taskItem-time-hour"
+                      style={{ right: taskItem.hour < 1 ? '5px' : '0px' }}
+                    >
+                      {taskDetail.hour}
+                    </div>
+                  </div>
+                  {/* <div
                 className="taskItem-img"
                 // v-if="bottomtype=='grid'"
                 style={{ width: '25px', height: '25px' }}
@@ -142,25 +194,11 @@ const Task: React.FC<TaskProps> = (props) => {
                   style={{ marginTop: '0px' }}
                 />
               </div> */}
-              <div className="taskItem-title">
-                {taskKey == taskDetail._key && editRole ? (
-                  <input
-                    placeholder="请输入标题"
-                    value={taskDetail.title}
-                    style={
-                      taskDetail.finishPercent == 2
-                        ? {
-                          marginTop: '2px',
-                          textDecoration: 'line-through',
-                          minHeight: '22px',
-                        }
-                        : { marginTop: '2px', minHeight: '22px' }
-                    }
-                    onChange={changeTitle}
-                  />
-                ) : (
-                    <div
-                      // v-show="cardRole||cardKey!=taskItem._key"
+                  <div className="taskItem-title">
+                    {taskKey == taskDetail._key && editRole ? (<div
+                      suppressContentEditableWarning
+                      contentEditable
+                      ref={titleRef}
                       style={{
                         width: '100%',
                         minHeight: '28px',
@@ -173,63 +211,129 @@ const Task: React.FC<TaskProps> = (props) => {
                         textDecoration:
                           taskDetail.finishPercent == 2 ? 'line-through' : '',
                       }}
+                      onInput={changeTitle}
+                    // onKeyDown={changeKeyTitle}
                     >
                       {taskDetail.title}
                     </div>
-                  )}
-              </div>
-            </div>
-            <div className="taskItem-footer">
-              <div className="taskItem-footer-left">
-                <div className="taskItem-name">
-                  <span>
-                    {taskDetail.serialNumber ? '#' + taskDetail.serialNumber : ''}
-                  </span>
-                  <span style={{ flexShrink: 0 }} >
-                    {taskDetail.creatorName.length > 3
-                      ? taskDetail.creatorName.substring(0, 3) + '...'
-                      : taskDetail.creatorName}
-                  </span>
-                  <span></span>
-                  <span style={{ flexShrink: 0 }} >
-                    {taskDetail.executorName && taskDetail.executorName.length > 3
-                      ? taskDetail.executorName.substring(0, 3) + '...'
-                      : taskDetail.executorName}
-                  </span>
-                </div>
-                <div className="taskItem-img">
-                  <img
-                    src={
-                      taskDetail.executorAvatar
-                        ? taskDetail.executorAvatar
-                        : defaultPerson
+                    )
+                      : (
+                        <div
+                          style={{
+                            width: '100%',
+                            minHeight: '28px',
+                            backgroundColor: bottomtype
+                              ? 'transparent'
+                              : taskDetail.finishPercent == 0 ||
+                                taskDetail.finishPercent == 10
+                                ? ''
+                                : '#E5E7EA',
+                            textDecoration:
+                              taskDetail.finishPercent == 2 ? 'line-through' : '',
+                          }}
+                        >
+                          {taskDetail.title}
+                        </div>
+                      )
                     }
-                  />
+                  </div>
                 </div>
-              </div>
-              <div style={{ maxWidth: '64px', display: 'flex' }}>
-                <div className="taskItem-check-icon">
-                  {taskDetail.importantStatus ? (
-                    <img
-                      src={important}
-                      alt="重要"
-                    />
-                  ) : (
-                      <img src={unimportant} alt="不重要" />
-                    )}
+                <div className="taskItem-footer">
+                  <div className="taskItem-footer-left">
+                    <div className="taskItem-name">
+                      <span>
+                        {taskDetail.serialNumber ? '#' + taskDetail.serialNumber : ''}
+                      </span>
+                      <span style={{ flexShrink: 0 }} >
+                        {taskDetail.creatorName.length > 3
+                          ? taskDetail.creatorName.substring(0, 3) + '...'
+                          : taskDetail.creatorName}
+                      </span>
+                      <span></span>
+                      <span style={{ flexShrink: 0 }} >
+                        {taskDetail.executorName && taskDetail.executorName.length > 3
+                          ? taskDetail.executorName.substring(0, 3) + '...'
+                          : taskDetail.executorName}
+                      </span>
+                    </div>
+                    <div className="taskItem-img-container">
+                      <div className="taskItem-img" onClick={chooseExecutor}>
+                        <img
+                          src={
+                            taskDetail.executorAvatar
+                              ? taskDetail.executorAvatar
+                              : defaultPerson
+                          }
+                        />
+
+                      </div>
+                      {taskExecutorShow ? <div className="taskItem-img-popup">
+                        <div className="taskItem-img-popup-menuTitle">分配任务</div>
+                        <div className="taskItem-img-popup-info">
+                          {taskMemberArray.map((taskMemberItem: any, taskMemberIndex: number) => {
+                            return (
+                              <div className="taskItem-img-popup-container" key={'taskMember' + taskMemberIndex} style={taskDetail.executorKey == taskMemberItem.userId ? { background: '#F0F0F0' } : {}} onClick={() => { changeExecutor(taskMemberItem.userId, taskMemberItem.nickName, taskMemberItem.avatar) }} >
+                                <div className="taskItem-img-popup-img" >
+                                  <img
+                                    src={taskMemberItem.avatar}
+                                  />
+                                </div>
+                                <div>{taskMemberItem.nickName}</div>
+                              </div>)
+                          })}
+                        </div>
+                      </div> : null}
+                    </div>
+
+                  </div>
+                  <div style={{ maxWidth: '64px', display: 'flex' }}>
+                    <div className="taskItem-check-icon">
+                      {taskDetail.importantStatus ? (
+                        <img
+                          src={important}
+                          alt="重要"
+                          onClick={() => { changeImportant(0) }}
+                        />
+                      ) : (
+                          <img src={unimportant} alt="不重要" onClick={() => { changeImportant(1) }} />
+                        )}
+                    </div>
+                    <div
+                      className="taskItem-check-icon"
+                      style={{ color: '#333' }}
+                    ></div>
+                  </div>
                 </div>
-                <div
-                  className="taskItem-check-icon"
-                  style={{ color: '#333' }}
-                ></div>
-              </div>
-            </div>
-            <div className="taskItem-taskType"></div>
-            {/*  style={cardKey==taskItem._key?{borderTop:'10px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],borderRight:'10px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],  borderLeft: '10px solid transparent',
+                <div className="taskItem-taskType"></div>
+                {/*  style={cardKey==taskItem._key?{borderTop:'10px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],borderRight:'10px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],  borderLeft: '10px solid transparent',
   borderBottom: '10px solid transparent'}:{borderTop:'7px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],borderRight:'7px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],  borderLeft: '7px solid transparent',
   borderBottom: '7px solid transparent'}} */}
-          </div></React.Fragment> : null}
-    </div >
+              </div>
+            </React.Fragment> : null}
+        </div >
+        : null}
+      <Dialog
+        open={deleteDialogShow}
+        onClose={() => { setDeleteDialogShow(false) }}
+      // aria-labelledby="alert-dialog-title"
+      // aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle >删除任务</DialogTitle>
+        <DialogContent>
+          <DialogContentText >
+            是否删除该任务
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={deleteTask} color="primary">
+            确定
+          </Button>
+          <Button onClick={() => { setDeleteDialogShow(false) }} color="primary" autoFocus>
+            取消
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </React.Fragment>
   );
 };
 Task.defaultProps = {

@@ -4,6 +4,7 @@ export const actionTypes = {
   SWITCH_NOTIFICATION: "SWITCH_NOTIFICATION",
   SWITCH_SEARCH: "SWITCH_SEARCH",
   SET_MESSAGE: "SET_MESSAGE",
+  SET_HEADERINDEX:'SET_HEADERINDEX'
 };
 
 export function Failed(error: any) {
@@ -41,4 +42,10 @@ export function setMessage(
   severity: "success" | "info" | "warning" | "error" | undefined
 ) {
   return { type: actionTypes.SET_MESSAGE, visible, text, severity };
+}
+export function setHeaderIndex(headerIndex: number) {
+  return {
+    type: actionTypes.SET_HEADERINDEX,
+    headerIndex
+  };
 }

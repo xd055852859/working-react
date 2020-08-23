@@ -8,6 +8,8 @@ export const actionTypes = {
   GET_SELF_TASK_SUCCESS: 'GET_SELF_TASK_SUCCESS',
   GET_WORKING_TABLE_TASK: 'GET_WORKING_TABLE_TASK',
   GET_WORKING_TABLE_TASK_SUCCESS: 'GET_WORKING_TABLE_TASK_SUCCESS',
+  ADD_WORKING_TABLE_TASK: 'CREATE_WORKING_TABLE_TASK',
+  ADD_WORKING_TABLE_TASK_SUCCESS: 'CREATE_WORKING_TABLE_TASK_SUCCESS',
   SET_TASK_KEY: 'SET_TASK_KEY',
   EDIT_TASK: "EDIT_TASK",
   EDIT_TASK_SUCCESS: 'EDIT_TASK_SUCCESS'
@@ -63,4 +65,18 @@ export function editTask(data : any) {
 }
 export function editTaskSuccess(data : any) {
   return {type: actionTypes.EDIT_TASK_SUCCESS, data};
+}
+export function addWorkingTableTask(title : string, groupKey : number | string, groupRole : number | string, labelKey : number | string, cardIndex : number | string, executorKey?: number | string) {
+  return {
+    type: actionTypes.ADD_WORKING_TABLE_TASK,
+    title: title,
+    groupKey: groupKey,
+    groupRole: groupRole,
+    labelKey: labelKey,
+    cardIndex: cardIndex,
+    executorKey: executorKey
+  };
+}
+export function addWorkingTableTaskSuccess(data : any) {
+  return {type: actionTypes.ADD_WORKING_TABLE_TASK_SUCCESS, data};
 }

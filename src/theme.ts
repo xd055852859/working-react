@@ -17,6 +17,17 @@ const theme = createMuiTheme({
       default: "transparent",
     },
   },
+  overrides: {
+    // 样式表的名字 ⚛️
+    MuiDialog: {
+      // 规则的名字
+      paper: {
+        // 一些 CSS
+        minWidth:'400px',
+        minHeight:'300px'
+      },
+    },
+  },
 });
 
 export default theme;

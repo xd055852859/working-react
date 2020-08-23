@@ -1,0 +1,7 @@
+.dropMenu-info {
+    position: absolute;
+    left: 0px;
+    z-index: 5;
+    background-color: #fff;
+    overflow: auto;
+}

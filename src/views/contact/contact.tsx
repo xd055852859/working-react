@@ -10,16 +10,16 @@ import Avatar from '@material-ui/core/Avatar';
 import VitalityIcon from '../../components/vitalityIcon/vitalityIcon';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { getMember } from '../../redux/actions/memberActions';
-import { getGroup,setGroupKey } from '../../redux/actions/groupActions';
-import { setHeaderIndex } from '../../redux/actions/authActions';
+import { getGroup, setGroupKey,getGroupInfo } from '../../redux/actions/groupActions';
+import { setHeaderIndex } from '../../redux/actions/commonActions';
 export interface ContactProps {
   contactIndex: number;
 }
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      height:'700px',
-      overflow:'auto'
+      height: '700px',
+      overflow: 'auto'
     },
     item: {
       width: '100%',
@@ -43,27 +43,22 @@ const Contact: React.FC<ContactProps> = (props) => {
     if (user && user._key) {
       if (!groupArray) {
         dispatch(getGroup(3));
-      } else {
-        if (contactIndex === 0) {
-          setContactArray(groupArray);
-        }
       }
-    }
-  }, [groupArray, user, contactIndex]);
-  useEffect(() => {
-    if (user && user._key) {
       if (!memberArray) {
-        console.log('memberArray', memberArray);
-        dispatch(getMember('647282223'));
-      } else {
-        if (contactIndex === 1) {
-          setContactArray(memberArray);
-        }
+        dispatch(getMember(localStorage.getItem('mainGroupKey')));
+      }
+
+      if (groupArray && contactIndex === 0) {
+        setContactArray(groupArray);
+
+      } else if (memberArray && contactIndex === 1) {
+        setContactArray(memberArray);
       }
     }
-  }, [memberArray, user, contactIndex]);
-  const toTargetGroup = (groupKey:string,index:number) => {
+  }, [groupArray, memberArray, user, contactIndex]);
+  const toTargetGroup = (groupKey: string, index: number) => {
     dispatch(setGroupKey(groupKey));
+    dispatch(getGroupInfo(groupKey));
     dispatch(setHeaderIndex(3));
     setSelectedIndex(index)
   };
@@ -71,44 +66,44 @@ const Contact: React.FC<ContactProps> = (props) => {
     <List component="nav" className={classes.root} aria-label="contacts">
       {contactArray && contactArray.length > 0
         ? contactArray.map((item: any, index: number) => {
-            let name = contactIndex ? item.nickName : item.groupName;
-            let avatar = contactIndex ? item.avatar : item.groupLogo;
-            let key = contactIndex ? item.userId : item._key;
-            return (
-              <ListItem
-                button
-                className={classes.item}
-                key={key}
-                onClick={()=>{toTargetGroup(key,index)}}
-                selected={selectedIndex == index}
-              >
-                <ListItemAvatar>
-                  <Avatar
-                    alt={name}
-                    src={
-                      avatar +
-                      '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
-                    }
-                  />
-                </ListItemAvatar>
-                <ListItemText
-                  primary={
-                    <React.Fragment>
-                      <span className={classes.title}>{name}</span>
-                    </React.Fragment>
-                  }
-                  secondary={
-                    <React.Fragment>
-                      <VitalityIcon
-                        vitalityDirection={'horizontal'}
-                        vitalityNum={item.energyValueTotal}
-                      />
-                    </React.Fragment>
+          let name = contactIndex ? item.nickName : item.groupName;
+          let avatar = contactIndex ? item.avatar : item.groupLogo;
+          let key = contactIndex ? item.userId : item._key;
+          return (
+            <ListItem
+              button
+              className={classes.item}
+              key={key}
+              onClick={() => { toTargetGroup(key, index) }}
+              selected={selectedIndex == index}
+            >
+              <ListItemAvatar>
+                <Avatar
+                  alt={name}
+                  src={
+                    avatar +
+                    '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
                   }
                 />
-              </ListItem>
-            );
-          })
+              </ListItemAvatar>
+              <ListItemText
+                primary={
+                  <React.Fragment>
+                    <span className={classes.title}>{name}</span>
+                  </React.Fragment>
+                }
+                secondary={
+                  <React.Fragment>
+                    <VitalityIcon
+                      vitalityDirection={'horizontal'}
+                      vitalityNum={item.energyValueTotal}
+                    />
+                  </React.Fragment>
+                }
+              />
+            </ListItem>
+          );
+        })
         : null}
     </List>
   );
