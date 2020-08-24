@@ -2,32 +2,48 @@ import React, { useState, useRef, useEffect } from 'react';
 import './workingTableLabel.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
-import { getWorkingTableTask, addWorkingTableTask } from '../../redux/actions/taskActions';
-import Task from '../../components/task/task';
-import defaultGroupPng from '../../assets/img/defaultGroup.png'
+import {
+  getWorkingTableTask,
+  addWorkingTableTask,
+} from '../../redux/actions/taskActions';
+import { setMessage } from '../../redux/actions/commonActions';
+import Task from '../../components/task/task';import DropMenu from '../../components/common/dropMenu';
 import _ from 'lodash';
+import api from '../../services/api';
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
 
 const WorkingTableGroup: React.FC = (prop) => {
   const user = useTypedSelector((state) => state.auth.user);
-  const memberHeaderIndex = useTypedSelector((state) => state.member.memberHeaderIndex);
+  const memberHeaderIndex = useTypedSelector(
+    (state) => state.member.memberHeaderIndex
+  );
   const workingGroupArray = useTypedSelector(
     (state) => state.task.workingGroupArray
   );
   const workingTaskArray = useTypedSelector(
     (state) => state.task.workingTaskArray
   );
+  const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
+  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   // const [memberObj, setMemberObj] = useState<any>({});
   const [mainGroupArray, setMainGroupArray] = useState<any>([]);
+  const [batchTaskVisible, setBatchTaskVisible] = useState(false);
+  const [batchLabelKey, setBatchLabelKey] = useState<string | null>('');
+  const [batchGroupKey, setBatchGroupKey] = useState<string | null>('');
+  const [batchTaskIndex, setBatchTaskIndex] = useState(0);
   const dispatch = useDispatch();
   const [colWidth, setColWidth] = useState(0);
   const [colNumbers, setColNumbers] = useState(4);
   const [colHeight, setColHeight] = useState<any>([]);
-  const workingTableRef: React.RefObject<any> = useRef()
+  const workingTableRef: React.RefObject<any> = useRef();
   useEffect(() => {
-    if (user && user._key && !workingTaskArray) {
+    if (user && user._key && !workingTaskArray&& headerIndex == 1) {
       dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
     }
-  }, [user, workingTaskArray]);
+    if (targetUserInfo && targetUserInfo._key && headerIndex == 2) {
+      dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
+    }
+  }, [user,targetUserInfo, workingTaskArray]);
   useEffect(() => {
     if (workingTaskArray) {
       let arr: any = [];
@@ -93,7 +109,6 @@ const WorkingTableGroup: React.FC = (prop) => {
           return item;
         });
         groupArray = _.sortBy(groupArray, ['arrlength']).reverse();
-        console.log('groupArray', groupArray);
         setMainGroupArray(groupArray);
         // groupArray.forEach((item, index) => {
         //   this.$nextTick(function () {
@@ -106,30 +121,32 @@ const WorkingTableGroup: React.FC = (prop) => {
     }
   }, [workingTaskArray]);
   useEffect(() => {
-    let clientWidth = workingTableRef.current.clientWidth
+    let clientWidth = workingTableRef.current.clientWidth;
     if (clientWidth < 600) {
-      setColNumbers(1)
+      setColNumbers(1);
     } else if (clientWidth >= 600 && clientWidth <= 900) {
-      setColNumbers(2)
+      setColNumbers(2);
     } else if (clientWidth > 900 && clientWidth <= 1080) {
-      setColNumbers(3)
+      setColNumbers(3);
     } else {
-      setColNumbers(4)
+      setColNumbers(4);
     }
-    setColWidth(Math.floor(clientWidth / colNumbers))
+    setColWidth(Math.floor(clientWidth / colNumbers));
   }, [workingTableRef.current]);
   useEffect(() => {
-    let groupArray = []
-    if (document.getElementById("workingTableGroup0")) {
+    let groupArray = [];
+    if (memberHeaderIndex == 3 && mainGroupArray.length > 0) {
+      console.log('mainGroupArray', mainGroupArray);
       groupArray = mainGroupArray.filter((item: any, index: number) => {
         if (item.arrlength > 0) {
           item.position = render(index);
-          return item
+          return item;
         }
-      })
+      });
+      console.log('groupArray', groupArray);
       setMainGroupArray(groupArray);
     }
-  }, [document.getElementById("workingTableGroup0")]);
+  }, [memberHeaderIndex, mainGroupArray.length]);
   const sortArr = (arr: object[], item: any) => {
     arr.push(item);
     arr = _.sortBy(arr, ['taskEndDate']).reverse();
@@ -141,7 +158,7 @@ const WorkingTableGroup: React.FC = (prop) => {
       left: 0,
       top: 0,
     };
-    let dom: any = document.getElementById("workingTableGroup" + index);
+    let dom: any = document.getElementById('workingTableGroup' + index);
     console.log(dom);
     if (dom) {
       let height = dom.offsetHeight;
@@ -153,6 +170,7 @@ const WorkingTableGroup: React.FC = (prop) => {
       if (index < colNumbers) {
         obj.top = 0;
         colHeight[colIndex] = colWidth / ratio;
+        setColHeight(colHeight);
       } else {
         //获取高度的最小值
         let minHeight: any = Math.min.apply(null, colHeight);
@@ -163,14 +181,23 @@ const WorkingTableGroup: React.FC = (prop) => {
         //     //把高度加上去
         colHeight[minIndex] += colWidth / ratio;
       }
-      return obj
+      console.log(obj);
+      return obj;
     }
-  }
+  };
   const addTask = (groupInfo: any, labelInfo: any) => {
     console.log(groupInfo, labelInfo);
-    dispatch(addWorkingTableTask("", groupInfo._key, groupInfo.groupRole,
-      labelInfo._key, 0, labelInfo.executorKey))
-  }
+    dispatch(
+      addWorkingTableTask(
+        '',
+        groupInfo._key,
+        groupInfo.groupRole,
+        labelInfo._key,
+        0,
+        labelInfo.executorKey
+      )
+    );
+  };
   const getGroupItem = (item: any) => {
     let dom: any = [];
     for (let key in item) {
@@ -187,13 +214,59 @@ const WorkingTableGroup: React.FC = (prop) => {
                       ? groupItem.labelObj.cardLabelName
                       : '无标题'}
                   </div>
-                  {item.groupObj.groupRole > 0 && item.groupObj.groupRole < 4
-                    ? <div
+                  {item.groupObj.groupRole > 0 &&
+                  item.groupObj.groupRole < 4 ? (
+                    <div
                       onClick={() => {
-                        addTask(item.groupObj, groupItem.labelObj)
-                      }}>添加任务
+                        addTask(item.groupObj, groupItem.labelObj);
+                      }}
+                    >
+                      添加任务
+                    </div>
+                  ) : null}
+                  {item.groupObj.groupRole > 0 &&
+                  item.groupObj.groupRole < 4 ? (
+                    <div style={{ position: 'relative' }}>
+                      <div
+                        className="task-item-title-icon"
+                        onClick={() => {
+                          setBatchLabelKey(groupItem.labelObj._key);
+                        }}
+                      >
+                        批量任务
                       </div>
-                    : null}
+                      <DropMenu
+                        visible={groupItem.labelObj._key == batchLabelKey}
+                        dropStyle={{
+                          width: '150px',
+                          height: '100px',
+                          top: '18px',
+                        }}
+                        onClose={() => {
+                          setBatchLabelKey('');
+                        }}
+                      >
+                        <div
+                          onClick={() => {
+                            batchTaskArray(groupItem.arr);
+                          }}
+                        >
+                          归档全部已完成任务
+                        </div>
+                        <div
+                          onClick={() => {
+                            chooseBatchLabel(
+                              groupItem.labelObj._key,
+                              item.groupObj._key,
+                              groupItem.arr.length
+                            );
+                          }}
+                        >
+                          批量导入
+                        </div>
+                      </DropMenu>
+                    </div>
+                  ) : null}
                 </div>
               ) : null}
               <div
@@ -211,6 +284,31 @@ const WorkingTableGroup: React.FC = (prop) => {
     }
     return dom;
   };
+  const batchTaskArray = async (arr: any) => {
+    let cardKeyArray = arr.map((item: any) => {
+      return item._key;
+    });
+    let batchRes: any = await api.task.batchTaskArray(cardKeyArray);
+    if (batchRes.msg == 'OK') {
+      dispatch(setMessage(true, '保存成功', 'success'));
+      if (headerIndex == 1) {
+        dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
+      } else if (headerIndex == 2) {
+        dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
+      }
+    } else {
+      dispatch(setMessage(true, batchRes.msg, 'error'));
+    }
+  };
+  const chooseBatchLabel = (
+    labelKey: string | null,
+    groupKey: string | null,
+    index: number
+  ) => {
+    setBatchGroupKey(groupKey);
+    setBatchTaskVisible(true);
+    setBatchTaskIndex(index - 1);
+  };
   return (
     <div
       className="workingTableLabel-container"
@@ -223,22 +321,30 @@ const WorkingTableGroup: React.FC = (prop) => {
             {/* {item.arrlength > 0 ? ( */}
             <div
               className="workingTableLabel-container-item"
-              style={memberHeaderIndex == 1 ? {
-                width: '350px',
-                height: '100%',
-                flexShrink: 0,
-              } : {
-                  width: colWidth + 'px',
-                  position: 'absolute',
-                  top: item.position.top + 'px',
-                  left: item.position.left + 'px'
-                }}
+              style={
+                memberHeaderIndex == 1
+                  ? {
+                      width: '350px',
+                      height: '100%',
+                      flexShrink: 0,
+                    }
+                  : {
+                      width: colWidth + 'px',
+                      position: 'absolute',
+                      top: item.position.top + 'px',
+                      left: item.position.left + 'px',
+                    }
+              }
               key={'group' + index}
-              id={"workingTableGroup" + index}
+              id={'workingTableGroup' + index}
             >
               <div
                 className="workingTableLabel-info"
-                style={memberHeaderIndex == 1 ? { width: '350px' } : { width: '100%' }}
+                style={
+                  memberHeaderIndex == 1
+                    ? { width: '350px' }
+                    : { width: '100%' }
+                }
               >
                 <div className="workingTableLabel-info-groupName">
                   {/* onClick={toGroup(item.groupObj)} */}

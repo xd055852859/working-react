@@ -25,7 +25,7 @@ const GroupTableGroup: React.FC = (prop) => {
 
   const dispatch = useDispatch();
   useEffect(() => {
-    if (user && user._key && !taskArray && groupKey) {
+    if (user && user._key && groupKey) {
       dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
     }
   }, [user, taskArray, groupKey]);

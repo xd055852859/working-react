@@ -1,12 +1,36 @@
 .mainBoard {
-  width: 25%;
+  width: 28%;
   height: 100%;
   overflow: auto;
   margin-right: 2%;
+  color: #fff;
+}
+.mainBoard-maintitle{
+  width: 100%;
+  height: 45px;
+  padding-bottom: 20px;
+  box-sizing: border-box;
+  border-bottom: 1px solid #d8d8d8;
+  margin-bottom: 5px;
 }
 .mainBoard-title {
   width: 100%;
   height: 35px;
   display: flex;
   align-items: center;
+}
+.mainBoard-item {
+  width: 100%;
+  height: calc(100% - 50px);
+  overflow: auto;
+  padding: 0px 5px;
+  box-sizing: border-box;
+}
+
+.mainBoard-item::-webkit-scrollbar {
+  width: 1.5px;
+}
+.mainBoard-item::-webkit-scrollbar-thumb {
+  background: #dedede;
+  border-radius: 100px;
 }

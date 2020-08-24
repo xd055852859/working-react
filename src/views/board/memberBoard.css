@@ -1,14 +1,29 @@
 .memberBoard {
-  width: 25%;
+  width: 28%;
   height: 100%;
-  overflow: auto;
   margin-right: 2%;
+  color: #fff;
+}
+.memberBoard-maintitle {
+  width: 100%;
+  height: 45px;
+  padding-bottom: 20px;
+  box-sizing: border-box;
+  border-bottom: 1px solid #d8d8d8;
+  margin-bottom: 5px;
 }
 .memberBoard-title {
   width: 100%;
   height: 35px;
   display: flex;
   align-items: center;
+}
+.memberBoard-item {
+  width: 100%;
+  height: calc(100% - 35px);
+  overflow: auto;
+  padding: 0px 5px;
+  box-sizing: border-box;
 }
 .memberBoard-group {
   display: flex;
@@ -17,10 +32,10 @@
   margin: 14px 0px 10px 0px;
 }
 
-.memberBoard::-webkit-scrollbar {
-  width: 3px;
+.memberBoard-item::-webkit-scrollbar {
+  width: 1.5px;
 }
-.memberBoard::-webkit-scrollbar-thumb {
+.memberBoard-item::-webkit-scrollbar-thumb {
   background: #dedede;
   border-radius: 100px;
 }

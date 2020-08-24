@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
+import { useDispatch } from 'react-redux';
+import { setHeaderIndex } from '../../redux/actions/memberActions';
 import './workingTable.css';
 import api from '../../services/api'
+
 import WorkingTableHeader from './workingTableHeader';
 import WorkingTableLabel from './workingTableLabel';
 import WorkingTableGroup from './workingTableGroup';
-
+import WorkingCalendar from './workingCalendar'
 interface WorkingTableProps { }
 
 const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
@@ -14,7 +17,7 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
   const memberHeaderIndex = useTypedSelector((state) => state.member.memberHeaderIndex);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
-
+  const dispatch = useDispatch();
   const [inputVisible,
     setInputVisible] = useState(false);
   const [inputValue,
@@ -22,6 +25,9 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
   const handleInputChange = (e: any) => {
     setInputValue(e.target.value)
   }
+  useEffect(() => {
+    dispatch(setHeaderIndex(0));
+  },[headerIndex])
   const handleInputConfirm = async () => {
     setInputVisible(false)
     if (inputValue != "") {
@@ -37,6 +43,7 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
       <div className="workingTableContent">
         {memberHeaderIndex == 0 || memberHeaderIndex == 2 ? <WorkingTableLabel /> : null}
         {memberHeaderIndex == 1 || memberHeaderIndex == 3 ? <WorkingTableGroup /> : null}
+        {memberHeaderIndex == 4?<WorkingCalendar/>:null}
       </div>
       <div
         className="cooperation-container-item"

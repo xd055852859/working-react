@@ -153,14 +153,17 @@ const MemberBoard: React.FC = () => {
 
   return (
     <div className="memberBoard">
-      {memberGroupArray.map((memberItem: any, memberIndex: number) => {
-        return (
-          <MemberBoardItem
-            memberItem={memberItem}
-            key={'memberGroup' + memberIndex}
-          />
-        );
-      })}
+      <div className="memberBoard-maintitle">协作看板</div>
+      <div className="memberBoard-item">
+        {memberGroupArray.map((memberItem: any, memberIndex: number) => {
+          return (
+            <MemberBoardItem
+              memberItem={memberItem}
+              key={'memberGroup' + memberIndex}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 };

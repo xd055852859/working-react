@@ -1,13 +1,13 @@
 import axios from 'axios';
-import moment from 'moment'
+import moment from 'moment';
 const AUTH_URL = 'https://baokudata.qingtime.cn/sgbh';
 const HOME_URL = 'https://workingdata.qingtime.cn/sgbh';
 // const API_URL = "http://192.168.1.108:8529/_db/timeOS/myOs"; let token:
 // string | null = localStorage.getItem('auth_token');
-let token : string | null = localStorage.getItem('auth_token');
+let auth_token: string | null = null;
 
 const request = {
-  get(path : string, params?: object) {
+  get(path: string, params?: object) {
     return new Promise(async function (resolve, reject) {
       try {
         const response = await axios({
@@ -15,8 +15,8 @@ const request = {
           url: path,
           params: params,
           headers: {
-            token: token
-          }
+            token: auth_token,
+          },
         });
         resolve(response.data);
       } catch (error) {
@@ -24,7 +24,7 @@ const request = {
       }
     });
   },
-  post(path : string, params : object) {
+  post(path: string, params: object) {
     return new Promise(async function (resolve, reject) {
       try {
         const response = await axios({
@@ -32,8 +32,8 @@ const request = {
           url: path,
           data: params,
           headers: {
-            token: token
-          }
+            token: auth_token,
+          },
         });
         resolve(response.data);
       } catch (error) {
@@ -41,7 +41,7 @@ const request = {
       }
     });
   },
-  patch(path : string, params : object) {
+  patch(path: string, params: object) {
     return new Promise(async function (resolve, reject) {
       try {
         const response = await axios({
@@ -49,8 +49,8 @@ const request = {
           url: path,
           data: params,
           headers: {
-            token: token
-          }
+            token: auth_token,
+          },
         });
         resolve(response.data);
       } catch (error) {
@@ -58,7 +58,7 @@ const request = {
       }
     });
   },
-  delete(path : string, params : object) {
+  delete(path: string, params: object) {
     return new Promise(async function (resolve, reject) {
       try {
         const response = await axios({
@@ -66,57 +66,103 @@ const request = {
           url: path,
           data: params,
           headers: {
-            token: token
-          }
+            token: auth_token,
+          },
         });
         resolve(response.data);
       } catch (error) {
         reject(error);
       }
     });
-  }
+  },
 };
 
 const auth = {
-  getUserInfo(token : string) {
-    return request.get(AUTH_URL + '/account/userinfo', {token: token});
+  getUserInfo(token: string) {
+    auth_token = token;
+    return request.get(AUTH_URL + '/account/userinfo', { token: auth_token });
   },
   getMainGroupKey() {
-    return request.patch(HOME_URL + '/group/createMainGroup', {token: token});
-  }
+    return request.patch(HOME_URL + '/group/createMainGroup', {
+      token: auth_token,
+    });
+  },
+  getTargetUserInfo(key: string) {
+    return request.get(HOME_URL + '/account/targetUserInfo', {
+      token: auth_token,
+      key: key,
+    });
+  },
+  dealCareFriendOrGroup(
+    type: number,
+    friendOrGroupKey: string,
+    status: number
+  ) {
+    return request.post(HOME_URL + '/group/dealCareFriendOrGroup', {
+      type: type,
+      friendOrGroupKey: friendOrGroupKey,
+      status: status,
+    });
+  },
 };
 const task = {
-  getGroupTask(type1 : number, targetUKey : string | number, type2 : number, finishPercentArray : number[], fileDay?: number) {
+  getGroupTask(
+    type1: number,
+    targetUKey: string | number,
+    type2: number,
+    finishPercentArray: number[],
+    fileDay?: number
+  ) {
     return request.post(HOME_URL + '/card/allGroupTask', {
-      token: token,
+      token: auth_token,
       type1: type1,
       targetUKey: targetUKey,
       type2: type2,
       finishPercentArray: finishPercentArray,
-      fileDay: fileDay
+      fileDay: fileDay,
     });
   },
-  getTeamTask(finishPercentArray : number[], groupKey?: string, startTime?: number | null, endTime?: number | null) {
+  getTeamTask(
+    finishPercentArray: number[],
+    groupKey?: string,
+    startTime?: number | null,
+    endTime?: number | null
+  ) {
     return request.post(HOME_URL + '/card/getTeamCareTask', {
-      token: token,
+      token: auth_token,
       groupKey: groupKey,
       finishPercentArray: finishPercentArray,
       startTime: startTime,
-      endTime: endTime
+      endTime: endTime,
     });
   },
-  getTaskList(typeBoard1 : number, targetUGKey : string, finishPercentArray : string, fileDay?: number) {
+  getTaskList(
+    typeBoard1: number,
+    targetUGKey: string,
+    finishPercentArray: string,
+    fileDay?: number
+  ) {
     return request.get(HOME_URL + '/card/listBoardTask', {
-      token: token,
+      token: auth_token,
       typeBoard1: typeBoard1,
       targetUGKey: targetUGKey,
       finishPercentArray: finishPercentArray,
-      fileDay: fileDay
+      fileDay: fileDay,
     });
   },
-  editTask(key : number | string, title?: string, finishPercent?: 0, taskEndDate?: number, todayTaskTime?: number, content?: string, taskType?: number, executorKey?: string | number, importantStatus?: number) {
+  editTask(
+    key: number | string,
+    title?: string,
+    finishPercent?: 0,
+    taskEndDate?: number,
+    todayTaskTime?: number,
+    content?: string,
+    taskType?: number,
+    executorKey?: string | number,
+    importantStatus?: number
+  ) {
     return request.patch(HOME_URL + '/card', {
-      token: token,
+      token: auth_token,
       key: key,
       title: title,
       finishPercent: finishPercent,
@@ -125,15 +171,22 @@ const task = {
       content: content,
       taskType: taskType,
       executorKey: executorKey,
-      importantStatus: importantStatus
+      importantStatus: importantStatus,
     });
   },
-  addTask(title : string, groupKey : number | string, groupRole : number | string, labelKey : number | string, cardIndex : number | string, executorKey?: number | string) {
+  addTask(
+    title: string,
+    groupKey: number | string,
+    groupRole: number | string,
+    labelKey: number | string,
+    cardIndex: number | string,
+    executorKey?: number | string
+  ) {
     return request.post(HOME_URL + '/card', {
-      token: token,
+      token: auth_token,
       type: 2,
       title: title,
-      content: "",
+      content: '',
       rootType: 0,
       groupKey: groupKey,
       taskType: 1,
@@ -146,62 +199,62 @@ const task = {
       taskEndDate: moment().valueOf(),
       groupRole: groupRole,
       cardIndex: cardIndex,
-      labelKey: labelKey
-    })
-  },
-  deleteTask(cardKey : number | string, groupKey : number | string) {
-    return request.delete(HOME_URL + '/card', {
-      token: token,
-      cardKey: cardKey,
-      groupKey: groupKey
-    });
-  },
-  addTaskLabel(groupKey : string, cardLabelName : number | string) {
-    return request.post(HOME_URL + '/card/addCardLabel', {
-      token: token,
-      groupKey: groupKey,
-      cardLabelName: cardLabelName
-    });
-  },
-  changeTaskLabel(labelKey : string, newLabelName : string) {
-    return request.patch(HOME_URL + '/card/setLabelProperty', {
-      token: token,
       labelKey: labelKey,
-      newLabelName: newLabelName
     });
-  }
+  },
+  deleteTask(cardKey: number | string, groupKey: number | string) {
+    return request.delete(HOME_URL + '/card', {
+      token: auth_token,
+      cardKey: cardKey,
+      groupKey: groupKey,
+    });
+  },
+  addTaskLabel(groupKey: string, cardLabelName: number | string) {
+    return request.post(HOME_URL + '/card/addCardLabel', {
+      token: auth_token,
+      groupKey: groupKey,
+      cardLabelName: cardLabelName,
+    });
+  },
+  changeTaskLabel(labelKey: string, newLabelName: string) {
+    return request.patch(HOME_URL + '/card/setLabelProperty', {
+      token: auth_token,
+      labelKey: labelKey,
+      newLabelName: newLabelName,
+    });
+  },
+  batchTaskArray(cardKeyArray: string[]) {
+    return request.patch(HOME_URL + '/card/fileCard', {
+      token: auth_token,
+      cardKeyArray: cardKeyArray,
+    });
+  },
 };
 const member = {
-  getMember(groupId : string) {
+  getMember(groupId: string) {
     return request.get(HOME_URL + '/groupmember', {
-      token: token,
-      groupId: groupId
-    });
-  }
-};
-const group = {
-  getGroup(listType : number) {
-    return request.get(HOME_URL + '/group/groupList', {
-      token: token,
-      listType: listType
+      token: auth_token,
+      groupId: groupId,
     });
   },
-  getGroupInfo(key : string) {
-    return request.get(HOME_URL + '/group', {
-      token: token,
-      key: key
+};
+const group = {
+  getGroup(listType: number) {
+    return request.get(HOME_URL + '/group/groupList', {
+      token: auth_token,
+      listType: listType,
     });
-  }
+  },
+  getGroupInfo(key: string) {
+    return request.get(HOME_URL + '/group', {
+      token: auth_token,
+      key: key,
+    });
+  },
 };
 export default {
   auth,
   task,
   member,
   group,
-  setToken : (_token : string) => {
-    window
-      .localStorage
-      .setItem('auth_token', _token);
-    token = _token;
-  }
 };

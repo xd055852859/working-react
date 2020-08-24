@@ -16,13 +16,16 @@ const App: React.FC = () => {
   const history = useHistory();
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
+  const token = useTypedSelector((state) => state.auth.token);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const message = useTypedSelector((state) => state.common.message);
   useEffect(() => {
     // 用户已登录
-    if (user && user._key) {
+    if (user && user._key && token && token == localStorage.getItem('auth_token')) {
       // console.log(user);
-    } else {
+      dispatch(getMainGroupKey());
+    }
+    if (!user) {
       // 用户未登录
       const token =
         getSearchParamValue(location.search, 'token') ||
@@ -31,10 +34,11 @@ const App: React.FC = () => {
         // 获取用户信息
         localStorage.setItem('auth_token', token);
         dispatch(getUserInfo(token));
-        dispatch(getMainGroupKey());
+      } else {
+        history.push('/bootpage');
       }
     }
-  }, [history, dispatch, location.search, user]);
+  }, [history, dispatch, location.search, user, token]);
 
   return (
     <div className="App">
@@ -42,6 +46,7 @@ const App: React.FC = () => {
       {headerIndex == 0 ? <Content /> : null}
       {headerIndex == 1 ? <WorkingTable /> : null}
       {headerIndex == 3 ? <GroupTable /> : null}
+      {headerIndex == 2 ? <WorkingTable /> : null}
     </div>
   );
 };

@@ -62,7 +62,6 @@ const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
 const MainBoard: React.FC = () => {
   const user = useTypedSelector((state) => state.auth.user);
   const selfTaskArray = useTypedSelector((state) => state.task.selfTaskArray);
-  // const [memberObj, setMemberObj] = useState<any>({});
   const [mainArray, setMainArray] = useState<any>([]);
   const dispatch = useDispatch();
   useEffect(() => {
@@ -134,9 +133,12 @@ const MainBoard: React.FC = () => {
   };
   return (
     <div className="mainBoard">
-      {mainArray.map((mainItem: any, mainIndex: number) => {
-        return <MainBoardItem mainItem={mainItem} key={'main' + mainIndex} />;
-      })}
+      <div className="mainBoard-maintitle">我的任务</div>
+      <div className="mainBoard-item">
+        {mainArray.map((mainItem: any, mainIndex: number) => {
+          return <MainBoardItem mainItem={mainItem} key={'main' + mainIndex} />;
+        })}
+      </div>
     </div>
   );
 };

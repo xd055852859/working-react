@@ -107,3 +107,10 @@
   padding: 10px;
   box-sizing: border-box;
 }
+.workingTableLabel-info-item-label-container::-webkit-scrollbar {
+  width: 1.5px;
+}
+.workingTableLabel-info-item-label-container::-webkit-scrollbar-thumb {
+  background: #dedede;
+  border-radius: 100px;
+}

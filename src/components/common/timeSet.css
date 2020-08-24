@@ -1,0 +1,25 @@
+.timeSet,
+.timeSet-date {
+  width: 200px;
+  height: 160px;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 5px 10px;
+  box-sizing: border-box;
+}
+.timeSet{
+  height: 80px;
+}
+.timeSet-time-item,
+.timeSet-date-item {
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
+  color: #fff;
+  font-size: 8px;
+  text-align: center;
+  background-color: #505050;
+  margin-right: 5px;
+  position: relative;
+  overflow: hidden;
+}
