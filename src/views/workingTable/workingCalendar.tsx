@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import moment from 'moment';
 import _ from 'lodash';
 import './workingCalendar.css';
-
+import format from '../../components/common/format';
 import Task from '../../components/task/task';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 interface WorkingCanlendarProps {}
@@ -12,6 +12,7 @@ const WorkingCanlendar: React.FC<WorkingCanlendarProps> = (prop) => {
   const workingTaskArray = useTypedSelector(
     (state) => state.task.workingTaskArray
   );
+  const filterObject = useTypedSelector((state) => state.task.filterObject);
   const [dayCanlendarArray, setDayCanlendarArray] = useState<any>([]);
   const [dateArray, setDateArray] = useState<any>([]);
   const [colNumbers, setColNumbers] = useState(5);
@@ -20,10 +21,9 @@ const WorkingCanlendar: React.FC<WorkingCanlendarProps> = (prop) => {
 
   useEffect(() => {
     if (workingTaskArray) {
-      console.log('workingTaskArray', workingTaskArray);
-      getData(workingTaskArray, null);
+      getData(workingTaskArray, filterObject);
     }
-  }, [workingTaskArray]);
+  }, [workingTaskArray, filterObject]);
 
   useEffect(() => {
     if (canlendarRef.current) {
@@ -45,7 +45,7 @@ const WorkingCanlendar: React.FC<WorkingCanlendarProps> = (prop) => {
       canlendarRef.current.scrollTo(colWidth * size, 0);
     }
   }, [canlendarRef.current]);
-  const getData = (taskArray: any, taskObj: any) => {
+  const getData = (taskArray: any, filterObject: any) => {
     let dateArray: any = [];
     let dayCanlendarArray: any = [];
     let arr1 = [];
@@ -69,9 +69,9 @@ const WorkingCanlendar: React.FC<WorkingCanlendarProps> = (prop) => {
         arr: [],
         date: formatTime(item.start),
       };
-      // taskArray = _.cloneDeep(
-      //   format.formatFilter(_.flatten(taskArray), taskObj)
-      // );
+      taskArray = _.cloneDeep(
+        format.formatFilter(_.flatten(taskArray), filterObject)
+      );
       _.flatten(taskArray).forEach((taskItem: any) => {
         if (
           taskItem.taskEndDate >= item.start &&
@@ -146,7 +146,7 @@ const WorkingCanlendar: React.FC<WorkingCanlendarProps> = (prop) => {
                   className="dayCanlendar-info-item"
                   key={'taskItem' + taskIndex}
                 >
-                  <Task taskItem={taskItem} />
+                  {taskItem.show ? <Task taskItem={taskItem} /> : null}
                 </div>
               );
             })}

@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import _ from 'lodash';
-
+import format from '../../components/common/format';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { getGroupTask } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import './groupTableGroup.css';
-import api from '../../services/api'
+import api from '../../services/api';
 import Task from '../../components/task/task';
+import TaskNav from '../../components/taskNav/taskNav';
+import DropMenu from '../../components/common/dropMenu';
+import ellipsisPng from '../../assets/img/ellipsis.png';
 import defaultPerson from '../../assets/img/defaultPerson.png';
 
 const GroupTableGroup: React.FC = (prop) => {
@@ -17,25 +20,30 @@ const GroupTableGroup: React.FC = (prop) => {
   const taskArray = useTypedSelector((state) => state.task.taskArray);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
+
   // const [memberObj, setMemberObj] = useState<any>({});
   const [taskInfo, setTaskInfo] = useState<any>([]);
   const [taskNameArr, setTaskNameArr] = useState<any>([]);
   const [labelExecutorArray, setLabelExecutorArray] = useState<any>([]);
-  const [labelName, setLabelName] = useState("");
-
+  const [labelName, setLabelName] = useState('');
+  const [batchTaskVisible, setBatchTaskVisible] = useState(false);
+  const [batchLabelKey, setBatchLabelKey] = useState<string | null>('');
+  const [batchGroupKey, setBatchGroupKey] = useState<string | null>('');
+  const [batchTaskIndex, setBatchTaskIndex] = useState(0);
+  const filterObject = useTypedSelector((state) => state.task.filterObject);
   const dispatch = useDispatch();
   useEffect(() => {
     if (user && user._key && groupKey) {
       dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
     }
-  }, [user, taskArray, groupKey]);
+  }, [user, groupKey]);
   useEffect(() => {
     if (taskArray) {
-      getData(labelArray, taskArray);
+      getData(labelArray, taskArray, filterObject);
     }
-  }, [taskArray]);
+  }, [taskArray, filterObject]);
 
-  const getData = (labelArray: any, taskArray: any) => {
+  const getData = (labelArray: any, taskArray: any, filterObject: any) => {
     let taskNameArr: any = [];
     let labelExecutorArray: any = [];
     let taskInfo: any = [];
@@ -107,9 +115,6 @@ const GroupTableGroup: React.FC = (prop) => {
         }
       }
     });
-    console.log(finishPercentArray1);
-    console.log(finishPercentArray2);
-    console.log(finishPercentArray10);
     taskInfo.forEach((item: any, index: number) => {
       if (finishPercentArray1[index]) {
         item.push(...finishPercentArray1[index]);
@@ -121,17 +126,12 @@ const GroupTableGroup: React.FC = (prop) => {
         item.push(...finishPercentArray10[index]);
       }
     });
-
-    console.log('taskInfo', taskInfo);
-    console.log('taskNameArr', taskNameArr);
-    console.log('labelExecutorArray', labelExecutorArray);
+    taskInfo = taskInfo.map((item: any) => {
+      return _.cloneDeep(format.formatFilter(item, filterObject));
+    });
     setTaskInfo(taskInfo);
     setTaskNameArr(taskNameArr);
     setLabelExecutorArray(labelExecutorArray);
-    // taskInfo = taskInfo.map((item) => {
-    //   return _.cloneDeep(format.formatFilter(item, taskObj));
-    // });
-    // }
   };
   const taskTypeLength = (value: any) => {
     let len = 0;
@@ -143,22 +143,22 @@ const GroupTableGroup: React.FC = (prop) => {
     return len;
   };
   const changeLabelName = (e: any, index: number) => {
-    let taskNewNameArr: any = []
-    setLabelName(e.target.value)
-    taskNewNameArr = _.cloneDeep(taskNameArr)
-    taskNewNameArr[index] = e.target.value
+    let taskNewNameArr: any = [];
+    setLabelName(e.target.value);
+    taskNewNameArr = _.cloneDeep(taskNameArr);
+    taskNewNameArr[index] = e.target.value;
     setTaskNameArr(taskNewNameArr);
     // console.log(index);
-  }
+  };
   const saveLabel = async (key: string) => {
-    let labelRes: any = await api.task.changeTaskLabel(key, labelName);
-    if (labelRes) {
-      dispatch(setMessage(true, "保存成功", "success"));
+    let labelRes: any = await api.task.changeTaskLabelName(key, labelName);
+    if (labelRes.msg == 'OK') {
+      dispatch(setMessage(true, '保存成功', 'success'));
       dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
     } else {
-      dispatch(setMessage(true, labelRes.msg, "error"));
+      dispatch(setMessage(true, labelRes.msg, 'error'));
     }
-  }
+  };
   const reorder = (list: any, startIndex: number, endIndex: number) => {
     const result = Array.from(list);
     const [removed] = result.splice(startIndex, 1);
@@ -170,7 +170,12 @@ const GroupTableGroup: React.FC = (prop) => {
   /**
    * Moves an item from one list to another list.
    */
-  const move = (source: any, destination: any, droppableSource: any, droppableDestination: any) => {
+  const move = (
+    source: any,
+    destination: any,
+    droppableSource: any,
+    droppableDestination: any
+  ) => {
     const sourceClone = Array.from(source);
     const destClone = Array.from(destination);
     const [removed] = sourceClone.splice(droppableSource.index, 1);
@@ -180,101 +185,193 @@ const GroupTableGroup: React.FC = (prop) => {
     const result: any = {};
     result[droppableSource.droppableId] = sourceClone;
     result[droppableDestination.droppableId] = destClone;
-    console.log(result)
+    console.log(result);
     return result;
   };
 
   const grid = 8;
 
-  const getItemStyle = (isDragging: any, draggableStyle: any) => ({
-    // some basic styles to make the items look a bit nicer
-    userSelect: 'none',
-    padding: grid * 2,
-    margin: `0 0 ${grid}px 0`,
-
-    // change background colour if dragging
-    background: isDragging
-      ? 'lightgreen'
-      : 'grey',
-
-    // styles we need to apply on draggables
-    ...draggableStyle
-  });
-
-  const getListStyle = (isDraggingOver: any) => ({
-    background: isDraggingOver
-      ? 'lightblue'
-      : 'lightgrey',
-    padding: grid,
-    width: 250
-  });
-
-  const onDragEnd = (result: any) => {
+  const onDragEnd = async (result: any) => {
     const { source, destination } = result;
-    let newTaskInfo: any = []
+    console.log(taskInfo[source.droppableId][source.index].title);
+    let newTaskInfo: any = [];
+    let labelObject: any = {};
     // dropped outside the list
     if (!destination) {
       return;
     }
     if (source.droppableId === destination.droppableId) {
-      const items = reorder(taskInfo[source.droppableId], source.index, destination.index);
-      console.log(items);
+      const items = reorder(
+        taskInfo[source.droppableId],
+        source.index,
+        destination.index
+      );
       taskInfo[parseInt(source.droppableId)] = items;
+      console.log(labelArray[parseInt(source.droppableId)]._key);
+      labelObject = {
+        groupKey: groupKey,
+        labelObject1: {
+          labelKey: labelArray[parseInt(source.droppableId)]._key,
+          cardOrder: items,
+        },
+      };
     } else {
-      const result = move(taskInfo[parseInt(source.droppableId)], taskInfo[parseInt(destination.droppableId)], source, destination);
+      const result = move(
+        taskInfo[parseInt(source.droppableId)],
+        taskInfo[parseInt(destination.droppableId)],
+        source,
+        destination
+      );
       taskInfo[parseInt(source.droppableId)] = result[source.droppableId];
-      taskInfo[parseInt(destination.droppableId)] = result[destination.droppableId];
-      // this.setState({items: result.droppable, selected: result.droppable2});
+      taskInfo[parseInt(destination.droppableId)] =
+        result[destination.droppableId];
+      labelObject = {
+        groupKey: groupKey,
+        labelObject1: {
+          labelKey: labelArray[parseInt(source.droppableId)]._key,
+          cardOrder: result[source.droppableId],
+        },
+        labelObject2: {
+          labelKey: labelArray[parseInt(destination.droppableId)]._key,
+          cardOrder: result[destination.droppableId],
+        },
+      };
     }
-    newTaskInfo = _.cloneDeep(taskInfo)
+    newTaskInfo = _.cloneDeep(taskInfo);
     setTaskInfo(newTaskInfo);
+    // let taskRes: any = await api.task.changeTaskLabel(
+    //   groupKey,
+    //   taskInfo[source.droppableId][source.index]._key,
+    //   labelArray[parseInt(destination.droppableId)]._key
+    // );
+    // if (taskRes.msg == 'OK') {
+    //   console.log('切换频道成功');
+    //   dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+    // } else {
+    //   dispatch(setMessage(true, taskRes.msg, 'error'));
+    // }
+    // let labelRes: any = await api.task.setLabelCardOrder(labelObject);
+    // if (labelRes.msg == 'OK') {
+    //   console.log('拖拽成功');
+    //   dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+    // } else {
+    //   dispatch(setMessage(true, labelRes.msg, 'error'));
+    // }
+    // // if (this.groupType == 3) {
+    // await this.setLabelCardOrder(labelObject);
+  };
+  const batchTaskArray = async (arr: any) => {
+    let cardKeyArray = arr.map((item: any) => {
+      return item._key;
+    });
+    let batchRes: any = await api.task.batchTaskArray(cardKeyArray);
+    if (batchRes.msg == 'OK') {
+      dispatch(setMessage(true, '归档成功', 'success'));
+      dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+    } else {
+      dispatch(setMessage(true, batchRes.msg, 'error'));
+    }
+  };
+  const chooseBatchLabel = (
+    labelKey: string | null,
+    groupKey: string | null,
+    index: number
+  ) => {
+    setBatchGroupKey(groupKey);
+    setBatchTaskVisible(true);
+    setBatchTaskIndex(index - 1);
   };
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="task">
         <div className="task-container-profile">
-
           {taskInfo.map((taskInfoitem: any, taskInfoindex: any) => {
             return (
               <React.Fragment key={'taskinfo' + taskInfoindex}>
-                <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-                  <div
-                    className="task-item-title"
+                <div className="task-container-info">
+                  <TaskNav
+                    avatar={
+                      labelExecutorArray[taskInfoindex] &&
+                      labelExecutorArray[taskInfoindex].executorAvatar
+                        ? labelExecutorArray[taskInfoindex].executorAvatar
+                        : defaultPerson
+                    }
+                    name={taskNameArr[taskInfoindex]}
+                    role={groupInfo.role}
+                    colorIndex={taskInfoindex}
+                    taskNavArray={[groupInfo, labelArray[taskInfoindex]]}
+                    taskNavWidth={'350px'}
                   >
-                    {/* v-if="groupRole>0&&groupRole<4&&groupType!=2" */}
-                    <div >
-                      <img
-                        src={labelExecutorArray[taskInfoindex] && labelExecutorArray[taskInfoindex].executorAvatar ? labelExecutorArray[taskInfoindex].executorAvatar : defaultPerson}
-                        alt=""
-                        className="task-item-avatar"
-                      />
-                    </div>
-                    {/*   v-if="!taskClickArr[index]||(groupRole>3&&groupType==2)" */}
-                    {/* onClick={groupInfo.role > 0 && groupInfo.role < 4 ? () => { } : null} */}
-                    <span
-                      style={{ height: '40px', lineHeight: '40px' }}
-                    >{taskNameArr[taskInfoindex]} ( {taskTypeLength(taskInfoitem)} )</span>
-                    <input placeholder="请输入标签名"
-                      value={taskNameArr[taskInfoindex]}
-                      onChange={(e) => { changeLabelName(e, taskInfoindex) }}
-                      onBlur={() => { saveLabel(labelArray[taskInfoindex]._key) }}
-                      style={{ width: '50%' }}
-                    />
-                  </div>
-                  <Droppable droppableId={taskInfoindex + ''} >
+                    {groupInfo.groupRole > 0 && groupInfo.groupRole < 4 ? (
+                      <div style={{ position: 'relative' }}>
+                        <div
+                          className="task-item-title-icon"
+                          onClick={() => {
+                            setBatchLabelKey(labelArray[taskInfoindex]._key);
+                          }}
+                        >
+                          <img
+                            src={ellipsisPng}
+                            className="taskNav-name-ellipsis"
+                          />
+                        </div>
+                        <DropMenu
+                          visible={
+                            labelArray[taskInfoindex]._key == batchLabelKey
+                          }
+                          dropStyle={{
+                            width: '150px',
+                            height: '150px',
+                            top: '18px',
+                            color: '#333',
+                          }}
+                          onClose={() => {
+                            setBatchLabelKey('');
+                          }}
+                          title={'设置频道'}
+                        >
+                          <div className="taskNav-set">
+                            <div
+                              onClick={() => {
+                                batchTaskArray(taskInfoitem);
+                              }}
+                            >
+                              归档全部已完成任务
+                            </div>
+                            <div
+                              onClick={() => {
+                                chooseBatchLabel(
+                                  labelArray[taskInfoindex]._key,
+                                  groupInfo._key,
+                                  taskInfoitem.length
+                                );
+                              }}
+                            >
+                              批量导入
+                            </div>
+                          </div>
+                        </DropMenu>
+                      </div>
+                    ) : null}
+                  </TaskNav>
+                  <Droppable droppableId={taskInfoindex + ''}>
                     {(provided, snapshot) => (
                       <div ref={provided.innerRef} className="task-item-info">
                         {taskInfoitem.map((item: any, index: any) => (
-                          <Draggable key={item._key} draggableId={item._key} index={index} >
+                          <Draggable
+                            key={item._key}
+                            draggableId={item._key}
+                            index={index}
+                          >
                             {(provided, snapshot) => (
                               <div
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
                                 className="task-item-item"
-                              // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
+                                // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
                               >
-                                <Task taskItem={item} />
+                                {item.show ? <Task taskItem={item} /> : null}
                               </div>
                             )}
                           </Draggable>
@@ -285,11 +382,11 @@ const GroupTableGroup: React.FC = (prop) => {
                   </Droppable>
                 </div>
               </React.Fragment>
-            )
+            );
           })}
         </div>
       </div>
-    </DragDropContext >
+    </DragDropContext>
   );
 };
 export default GroupTableGroup;

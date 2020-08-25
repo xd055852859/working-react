@@ -10,8 +10,9 @@
   height: 45px;
   padding-bottom: 20px;
   box-sizing: border-box;
-  border-bottom: 1px solid #d8d8d8;
+  border-bottom: 1px solid rgba(216, 216, 216, 0.4);
   margin-bottom: 5px;
+  font-size:18px;
 }
 .mainBoard-title {
   width: 100%;

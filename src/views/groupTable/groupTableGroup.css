@@ -1,6 +1,7 @@
 .task {
   width: 100%;
   height: 100%;
+  margin-right: 10px;
 }
 
 .task-container-profile,
@@ -12,7 +13,14 @@
   overflow: auto;
   display: flex;
 }
-
+.task-container-info {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  width: 350px;
+  margin-right: 10px;
+}
 .task-item-item {
   /* height:46px; */
   position: relative;
@@ -36,17 +44,21 @@
   display: flex;
 }
 
-.task-tag-container::-webkit-scrollbar {
+.task-tag-container::-webkit-scrollbar,
+.task-container-profile::-webkit-scrollbar,
+.task-item-info::-webkit-scrollbar {
   width: 3px;
   height: 8px;
 }
 
-.task-tag-container::-webkit-scrollbar-thumb {
+.task-tag-container::-webkit-scrollbar-thumb,
+.task-container-profile::-webkit-scrollbar-thumb,
+.task-item-info::-webkit-scrollbar-thumb {
   background: #47475b;
   border-radius: 100px;
 }
 
-.task-tag-container>div {
+.task-tag-container > div {
   display: inline-block;
 }
 
@@ -124,7 +136,7 @@
 }
 
 .task-container-profile .task-item-info {
-  height: calc(100% - 45px);
+  height: calc(100% - 67px);
   /* min-height: 80px; */
   width: 350px;
   overflow: auto;

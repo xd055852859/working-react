@@ -2,25 +2,25 @@ import React, { useState, useEffect, useRef } from 'react';
 import './workingTableLabel.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
-import {
-  getWorkingTableTask,
-  addWorkingTableTask,
-} from '../../redux/actions/taskActions';
+import { getWorkingTableTask } from '../../redux/actions/taskActions';
+import TaskNav from '../../components/taskNav/taskNav';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
 import { setMessage } from '../../redux/actions/commonActions';
+import format from '../../components/common/format';
 import Task from '../../components/task/task';
 import DropMenu from '../../components/common/dropMenu';
 import _ from 'lodash';
 import api from '../../services/api';
 // import defaultPersonPng from '../../assets/img/defaultPerson.png'
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
-
+import ellipsisPng from '../../assets/img/ellipsis.png';
 const WorkingTableLabel: React.FC = (prop) => {
   const user = useTypedSelector((state) => state.auth.user);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const userKey = useTypedSelector((state) => state.auth.userKey);
   const targetUserKey = useTypedSelector((state) => state.auth.targetUserKey);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const filterObject = useTypedSelector((state) => state.task.filterObject);
   const memberHeaderIndex = useTypedSelector(
     (state) => state.member.memberHeaderIndex
   );
@@ -119,17 +119,21 @@ const WorkingTableLabel: React.FC = (prop) => {
         });
         labelArray = labelArray.map((item: any, index: number) => {
           for (let key in item) {
-            // item[key].arr = format   .formatFilter(item[key].arr, taskObj)
-            // .filter((arrItem, arrIndex) => {     return arrItem.show;   });
+            item[key].arr = format
+              .formatFilter(item[key].arr, filterObject)
+              .filter((arrItem, arrIndex) => {
+                return arrItem.show;
+              });
             item[key].arrlength = item[key].arr.length;
           }
           return Object.values(item);
         });
         labelArray = _.sortBy(_.flatten(labelArray), ['arrlength']).reverse();
+        console.log('labelArray', labelArray);
         setMainLabelArray(labelArray);
       }
     }
-  }, [workingTaskArray]);
+  }, [workingTaskArray, filterObject]);
   useEffect(() => {
     let clientWidth = workingTableRef.current.clientWidth;
     if (clientWidth < 600) {
@@ -192,19 +196,6 @@ const WorkingTableLabel: React.FC = (prop) => {
       }
       return obj;
     }
-  };
-  const addTask = (groupInfo: any, labelInfo: any) => {
-    console.log(groupInfo, labelInfo);
-    dispatch(
-      addWorkingTableTask(
-        '',
-        groupInfo._key,
-        groupInfo.groupRole,
-        labelInfo._key,
-        0,
-        labelInfo.executorKey
-      )
-    );
   };
 
   const batchTaskArray = async (arr: any) => {
@@ -295,34 +286,24 @@ const WorkingTableLabel: React.FC = (prop) => {
               }
             >
               <div className="workingTableLabel-info-labelInfo">
-                <div className="workingTableLabel-info-labelName">
-                  {/*onClick={toGroup(labelItem.groupObj)} */}
-                  <div className="workingTableLabel-info-groupLogo">
-                    <img
-                      src={
-                        labelItem.groupObj & labelItem.groupObj.groupLogo
-                          ? labelItem.groupObj.groupLogo
-                          : defaultGroupPng
-                      }
-                    />
-                  </div>
-                  <div>
-                    {labelItem.groupObj.groupName}/{' '}
-                    {labelItem.labelObj
+                <TaskNav
+                  avatar={
+                    labelItem.groupObj & labelItem.groupObj.groupLogo
+                      ? labelItem.groupObj.groupLogo
+                      : defaultGroupPng
+                  }
+                  name={
+                    labelItem.groupObj.groupName +
+                    ' / ' +
+                    (labelItem.labelObj
                       ? labelItem.labelObj.cardLabelName
-                      : '无标题'}
-                  </div>
-                  {labelItem.groupObj.groupRole > 0 &&
-                  labelItem.groupObj.groupRole < 4 ? (
-                    <div
-                      onClick={() => {
-                        addTask(labelItem.groupObj, labelItem.labelObj);
-                      }}
-                    >
-                      添加任务
-                    </div>
-                  ) : null}
-
+                      : '无标题')
+                  }
+                  role={labelItem.groupObj.groupRole}
+                  colorIndex={labelIndex}
+                  taskNavArray={[labelItem.groupObj, labelItem.labelObj]}
+                  taskNavWidth={memberHeaderIndex == 0 ? '330px' : '100%'}
+                >
                   {labelItem.groupObj.groupRole > 0 &&
                   labelItem.groupObj.groupRole < 4 ? (
                     <div style={{ position: 'relative' }}>
@@ -332,41 +313,56 @@ const WorkingTableLabel: React.FC = (prop) => {
                           setBatchLabelKey(labelItem.labelObj._key);
                         }}
                       >
-                        批量任务
+                        <img
+                          src={ellipsisPng}
+                          className="taskNav-name-ellipsis"
+                        />
                       </div>
                       <DropMenu
                         visible={labelItem.labelObj._key == batchLabelKey}
                         dropStyle={{
                           width: '150px',
-                          height: '100px',
+                          height: '150px',
                           top: '18px',
+                          color: '#333',
                         }}
                         onClose={() => {
                           setBatchLabelKey('');
                         }}
+                        title={'设置频道'}
                       >
-                        <div
-                          onClick={() => {
-                            batchTaskArray(labelItem.arr);
-                          }}
-                        >
-                          归档全部已完成任务
-                        </div>
-                        <div
-                          onClick={() => {
-                            chooseBatchLabel(
-                              labelItem.labelObj._key,
-                              labelItem.groupObj._key,
-                              labelItem.arr.length
-                            );
-                          }}
-                        >
-                          批量导入
+                        <div className="taskNav-set">
+                          <div
+                            onClick={() => {
+                              batchTaskArray(labelItem.arr);
+                            }}
+                          >
+                            归档全部已完成任务
+                          </div>
+                          <div
+                            onClick={() => {
+                              chooseBatchLabel(
+                                labelItem.labelObj._key,
+                                labelItem.groupObj._key,
+                                labelItem.arr.length
+                              );
+                            }}
+                          >
+                            批量导入
+                          </div>
                         </div>
                       </DropMenu>
                     </div>
                   ) : null}
-                  {/* <a-menu slot="overlay">
+                </TaskNav>
+                {/* <div className="workingTableLabel-info-labelName"> */}
+                {/*onClick={toGroup(labelItem.groupObj)} */}
+                {/* <div className="workingTableLabel-info-groupLogo">
+                    <img src={} />
+                  </div>
+                  <div></div> */}
+
+                {/* <a-menu slot="overlay">
                         <a-menu-item>
                           <div @click="batchTaskArray(taskInfo[index])">归档全部已完成任务</div>
                   </a-menu-item>
@@ -382,7 +378,7 @@ const WorkingTableLabel: React.FC = (prop) => {
                   </a-menu-item>
                 </a-menu>
               </div> */}
-                </div>
+                {/* </div> */}
                 <div
                   style={{
                     overflowY: 'auto',
@@ -391,7 +387,9 @@ const WorkingTableLabel: React.FC = (prop) => {
                 >
                   {labelItem.arr.map((taskItem: any, taskIndex: number) => {
                     return (
-                      <Task taskItem={taskItem} key={'task' + taskIndex} />
+                      <React.Fragment key={'task' + taskIndex}>
+                        {taskItem.show ? <Task taskItem={taskItem} /> : null}
+                      </React.Fragment>
                     );
                   })}
                 </div>

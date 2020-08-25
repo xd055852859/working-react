@@ -216,7 +216,7 @@ const task = {
       cardLabelName: cardLabelName,
     });
   },
-  changeTaskLabel(labelKey: string, newLabelName: string) {
+  changeTaskLabelName(labelKey: string, newLabelName: string) {
     return request.patch(HOME_URL + '/card/setLabelProperty', {
       token: auth_token,
       labelKey: labelKey,
@@ -227,6 +227,21 @@ const task = {
     return request.patch(HOME_URL + '/card/fileCard', {
       token: auth_token,
       cardKeyArray: cardKeyArray,
+    });
+  },
+  changeTaskLabel(groupKey: string, cardKey: string, labelKey: string) {
+    return request.patch(HOME_URL + '/card/setCardLabel', {
+      token: auth_token,
+      groupKey: groupKey,
+      cardKey: cardKey,
+      labelKey: labelKey,
+      type: 3,
+    });
+  },
+  setLabelCardOrder(labelObject:object) {
+    return request.patch(HOME_URL + '/card/setLabelCardOrder', {
+      token: auth_token,
+      ...labelObject
     });
   },
 };

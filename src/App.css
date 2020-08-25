@@ -1,7 +1,6 @@
 .App {
   display: flex;
-  background-image: url('https://cdn-icare.qingtime.cn/1596679903471_画板备份6.jpg');
+  background-image: url('https://cdn-icare.qingtime.cn/1596679987203_画板备份10.jpg');
   background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center center;
+  background-attachment: fixed;
 }

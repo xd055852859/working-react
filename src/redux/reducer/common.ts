@@ -1,5 +1,4 @@
 import { actionTypes as commonActionTypes } from '../actions/commonActions';
-
 interface Message {
   visible: boolean;
   text: string;

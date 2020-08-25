@@ -69,10 +69,10 @@
   object-fit: cover;
 }
 .workingTableLabel-info-item-group-container {
-  height: calc(100% - 36px);
+  height: calc(100% - 34px);
 }
 .workingTableLabel-info-item-label-container {
-  height: calc(100% - 10px);
+  height: calc(100% - 34px);
 }
 .workingTableLabel-container::-webkit-scrollbar {
   width: 3px;
@@ -83,7 +83,7 @@
   border-radius: 100px;
 }
 .workingTableLabel-info-labelInfo {
-  height: calc(100% - 28px);
+  height: calc(100% - 30px);
 }
 .workingTableLabel-item-title {
   height: 40px;

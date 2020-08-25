@@ -1,0 +1,53 @@
+.taskNav {
+  width: 330px;
+  height: 60px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0px 5px;
+  box-sizing: border-box;
+}
+.taskNav-name-info {
+  display: flex;
+  align-items: center;
+}
+.taskNav-avatar {
+  width: 30px;
+  height: 30px;
+  overflow: hidden;
+  border-radius: 50%;
+  margin-right: 9px;
+}
+.taskNav-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.taskNav-name {
+  font-size: 16px;
+  font-weight: 500;
+}
+.taskNav-name-plus {
+  width: 15px;
+  height: 15px;
+  margin: 5px;
+  cursor: pointer;
+}
+.taskNav-name-ellipsis {
+  width: 15px;
+  height: 3px;
+  margin: 5px;
+  cursor: pointer;
+}
+.taskNav-set > div {
+  width: 100%;
+  height: 35px;
+  padding: 0px 10px;
+  box-sizing: border-box;
+  line-height:35px;
+  cursor: pointer;
+}
+.taskNav-set > div:hover {
+  background: #f0f0f0;
+}
