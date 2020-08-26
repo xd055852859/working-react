@@ -24,15 +24,15 @@ const defaultState: Common = {
     text: '',
     severity: undefined,
   },
-  headerIndex: 0,
+  headerIndex: 3,
 };
 
 export const common = (state = defaultState, action: any) => {
   switch (action.type) {
     case commonActionTypes.FAILED:
       if (action.error.statusCode == 701) {
-        // const redirect = `${window.location.protocol}//${window.location.host}`;
-        // window.location.href = `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`;
+        const redirect = `${window.location.protocol}//${window.location.host}`;
+        window.location.href = `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`;
       }
       return {
         ...state,

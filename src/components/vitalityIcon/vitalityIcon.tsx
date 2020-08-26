@@ -9,10 +9,11 @@ import { useDispatch } from 'react-redux';
 interface VitalityProps {
   vitalityDirection: string;
   vitalityNum: number;
+  vitalityStyle?: any;
 }
 
 const VitalityIcon: React.FC<VitalityProps> = (props) => {
-  const { vitalityDirection, vitalityNum } = props;
+  const { vitalityDirection, vitalityNum,vitalityStyle } = props;
   const [vitalityArray, setvitalityArray] = useState<number[]>([]);
   useEffect(() => {
     const crown = Math.floor(vitalityNum / 10000);
@@ -30,7 +31,7 @@ const VitalityIcon: React.FC<VitalityProps> = (props) => {
     height: string
   ) => {
     let dom = [];
-    if (vitalityDirection == 'horizontal') {
+    if (vitalityDirection == 'vertical') {
       if (num > 0) {
         dom.push(
           <span
@@ -50,24 +51,24 @@ const VitalityIcon: React.FC<VitalityProps> = (props) => {
             <span className="vitality-title">{num}</span>
           </span>
         );
-      } else {
-        for (var i = 0; i < num; i++) {
-          dom.push(
-            <span
-              className="vitality-img"
-              style={{ width: width, height: height }}
-              key={'horizontal' + i}
-            >
-              <img src={src} />
-            </span>
-          );
-        }
+      }
+    } else {
+      for (var i = 0; i < num; i++) {
+        dom.push(
+          <span
+            className="vitality-img"
+            style={{ width: width, height: height }}
+            key={'horizontal' + i}
+          >
+            <img src={src} />
+          </span>
+        );
       }
     }
     return dom;
   };
   return (
-    <span className="vitality-info">
+    <span className="vitality-info" style={vitalityStyle}>
       {vitalityImg(vitalityArray[0], crownPng, '20px', '17px')}
       {vitalityImg(vitalityArray[1], sunPng, '19px', '19px')}
       {vitalityImg(vitalityArray[2], moonPng, '16px', '16px')}

@@ -2,3 +2,33 @@
   width: 100%;
   height: 88px;
 }
+.groupTableHeader-name {
+  min-width: 80px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  margin-right: 20px;
+}
+.groupTableHeader-logo {
+  width: 34px;
+  height: 34px;
+  overflow: hidden;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+.groupTableHeader-logo img {
+  width: 100%;
+  height: 100%;
+  font-size: 22px;
+  font-weight: 500;
+}
+.groupTableHeader-vitalityNum {
+  padding: 5px 13px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.24);
+  border-radius: 15px;
+  margin-right:20px;
+}

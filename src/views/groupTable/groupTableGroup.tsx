@@ -5,6 +5,8 @@ import format from '../../components/common/format';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { getGroupTask } from '../../redux/actions/taskActions';
+import { getGroupInfo } from '../../redux/actions/groupActions';
+
 import { setMessage } from '../../redux/actions/commonActions';
 import './groupTableGroup.css';
 import api from '../../services/api';
@@ -35,6 +37,7 @@ const GroupTableGroup: React.FC = (prop) => {
   useEffect(() => {
     if (user && user._key && groupKey) {
       dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+      dispatch(getGroupInfo(groupKey));
     }
   }, [user, groupKey]);
   useEffect(() => {
@@ -189,76 +192,84 @@ const GroupTableGroup: React.FC = (prop) => {
     return result;
   };
 
-  const grid = 8;
-
   const onDragEnd = async (result: any) => {
     const { source, destination } = result;
-    console.log(taskInfo[source.droppableId][source.index].title);
+    let cardOrder1: any = [];
+    let cardOrder2: any = [];
     let newTaskInfo: any = [];
     let labelObject: any = {};
+    newTaskInfo = _.cloneDeep(taskInfo);
     // dropped outside the list
     if (!destination) {
       return;
     }
     if (source.droppableId === destination.droppableId) {
       const items = reorder(
-        taskInfo[source.droppableId],
+        newTaskInfo[source.droppableId],
         source.index,
         destination.index
       );
-      taskInfo[parseInt(source.droppableId)] = items;
-      console.log(labelArray[parseInt(source.droppableId)]._key);
+      newTaskInfo[parseInt(source.droppableId)] = items;
+      cardOrder1 = items.map((item: any) => {
+        return item._key;
+      });
+      console.log(items);
       labelObject = {
         groupKey: groupKey,
         labelObject1: {
           labelKey: labelArray[parseInt(source.droppableId)]._key,
-          cardOrder: items,
+          cardOrder: cardOrder1,
         },
       };
     } else {
       const result = move(
-        taskInfo[parseInt(source.droppableId)],
-        taskInfo[parseInt(destination.droppableId)],
+        newTaskInfo[parseInt(source.droppableId)],
+        newTaskInfo[parseInt(destination.droppableId)],
         source,
         destination
       );
-      taskInfo[parseInt(source.droppableId)] = result[source.droppableId];
-      taskInfo[parseInt(destination.droppableId)] =
+      newTaskInfo[parseInt(source.droppableId)] = result[source.droppableId];
+      newTaskInfo[parseInt(destination.droppableId)] =
         result[destination.droppableId];
+      cardOrder1 = result[source.droppableId].map((item: any) => {
+        return item._key;
+      });
+      cardOrder2 = result[destination.droppableId].map((item: any) => {
+        return item._key;
+      });
       labelObject = {
         groupKey: groupKey,
         labelObject1: {
           labelKey: labelArray[parseInt(source.droppableId)]._key,
-          cardOrder: result[source.droppableId],
+          cardOrder: cardOrder1,
         },
         labelObject2: {
           labelKey: labelArray[parseInt(destination.droppableId)]._key,
-          cardOrder: result[destination.droppableId],
+          cardOrder: cardOrder2,
         },
       };
     }
-    newTaskInfo = _.cloneDeep(taskInfo);
+    
+    console.log(labelObject);
     setTaskInfo(newTaskInfo);
-    // let taskRes: any = await api.task.changeTaskLabel(
-    //   groupKey,
-    //   taskInfo[source.droppableId][source.index]._key,
-    //   labelArray[parseInt(destination.droppableId)]._key
-    // );
-    // if (taskRes.msg == 'OK') {
-    //   console.log('切换频道成功');
-    //   dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
-    // } else {
-    //   dispatch(setMessage(true, taskRes.msg, 'error'));
-    // }
-    // let labelRes: any = await api.task.setLabelCardOrder(labelObject);
-    // if (labelRes.msg == 'OK') {
-    //   console.log('拖拽成功');
-    //   dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
-    // } else {
-    //   dispatch(setMessage(true, labelRes.msg, 'error'));
-    // }
-    // // if (this.groupType == 3) {
-    // await this.setLabelCardOrder(labelObject);
+    let taskRes: any = await api.task.changeTaskLabel(
+      groupKey,
+      taskInfo[source.droppableId][source.index]._key,
+      labelArray[parseInt(destination.droppableId)]._key
+    );
+    if (taskRes.msg == 'OK') {
+      console.log('切换频道成功');
+      dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+    } else {
+      dispatch(setMessage(true, taskRes.msg, 'error'));
+    }
+    let labelRes: any = await api.task.setLabelCardOrder(labelObject);
+    if (labelRes.msg == 'OK') {
+      console.log('拖拽成功');
+      dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+    } else {
+      dispatch(setMessage(true, labelRes.msg, 'error'));
+    }
   };
   const batchTaskArray = async (arr: any) => {
     let cardKeyArray = arr.map((item: any) => {
@@ -280,6 +291,15 @@ const GroupTableGroup: React.FC = (prop) => {
     setBatchGroupKey(groupKey);
     setBatchTaskVisible(true);
     setBatchTaskIndex(index - 1);
+  };
+  const changeTask = (
+    taskItem: any,
+    taskIndex: number,
+    taskInfoIndex: number
+  ) => {
+    let newTaskInfo = _.cloneDeep(taskInfo);
+    newTaskInfo[taskInfoIndex][taskIndex] = taskItem;
+    setTaskInfo(newTaskInfo);
   };
   return (
     <DragDropContext onDragEnd={onDragEnd}>
@@ -371,7 +391,14 @@ const GroupTableGroup: React.FC = (prop) => {
                                 className="task-item-item"
                                 // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
                               >
-                                {item.show ? <Task taskItem={item} /> : null}
+                                {item.show ? (
+                                  <Task
+                                    taskItem={item}
+                                    changeTask={changeTask}
+                                    taskIndex={index}
+                                    taskInfoIndex={taskInfoindex}
+                                  />
+                                ) : null}
                               </div>
                             )}
                           </Draggable>

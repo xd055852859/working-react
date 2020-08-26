@@ -13,7 +13,7 @@ const Content: FC<ContentProps> = (props) => {
     <div className="content">
       <ContentHeader />
       <div className="content-container">
-        <div className="content-title"></div>
+        {/* <div className="content-title"></div> */}
         <MemberBoard />
         <MainBoard />
       </div>

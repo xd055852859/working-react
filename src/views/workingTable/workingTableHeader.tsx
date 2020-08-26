@@ -71,8 +71,6 @@ const WorkingTableHeader: React.FC = (prop) => {
     false,
   ]);
 
-  const [checked, setChecked] = React.useState(['过期', '今天', '已完成']);
-  const classes = useStyles();
 
   const chooseMemberHeader = (headIndex: number) => {
     dispatch(setHeaderIndex(headIndex));
@@ -97,6 +95,7 @@ const WorkingTableHeader: React.FC = (prop) => {
         filterType: ['过期', '今天', '已完成'],
       })
     );
+    dispatch(setHeaderIndex(0));
   }, [headerIndex]);
   const changeFilterCheck = (filterTypeText: string) => {
     let filterType = filterObject.filterType;

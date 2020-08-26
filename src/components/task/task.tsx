@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef, MouseEvent } from 'react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
-import { Button } from '@material-ui/core';
+import { setTaskKey, editTask } from '../../redux/actions/taskActions';
+import { setMessage } from '../../redux/actions/commonActions';
 import moment from 'moment';
 import _ from 'lodash';
 import './task.css';
@@ -10,18 +11,20 @@ import api from '../../services/api';
 import Dialog from '../common/dialog';
 import DropMenu from '../common/dropMenu';
 import TimeSet from '../common/timeSet';
-
+import TaskInfo from '../taskInfo/taskInfo';
 import unfinishPng from '../../assets/img/unfinish.png';
 import finishPng from '../../assets/img/finish.png';
 import defaultPerson from '../../assets/img/defaultPerson.png';
-import important from '../../assets/img/important.png';
-import unimportant from '../../assets/img/unimportant.png';
-import { setTaskKey, editTask } from '../../redux/actions/taskActions';
-import { setMessage } from '../../redux/actions/commonActions';
+import importantPng from '../../assets/img/important.png';
+import unimportantPng from '../../assets/img/unimportant.png';
+import ellipsisbPng from '../../assets/img/ellipsisb.png';
 
 interface TaskProps {
   taskItem: any;
   executorKey?: number | string;
+  changeTask?: any;
+  taskIndex?: number;
+  taskInfoIndex?: number;
 }
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -32,7 +35,7 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 const Task: React.FC<TaskProps> = (props) => {
-  const { taskItem } = props;
+  const { taskItem, changeTask, taskIndex, taskInfoIndex } = props;
   const bottomtype = '';
   const taskKey = useTypedSelector((state) => state.task.taskKey);
   const user = useTypedSelector((state) => state.auth.user);
@@ -50,6 +53,7 @@ const Task: React.FC<TaskProps> = (props) => {
   const [timeSetShow, setTimeSetShow] = useState(false);
   const [dayNumber, setDayNumber] = useState<any>(null);
   const [timeNumber, setTimeNumber] = useState<any>(null);
+  const [taskInfoDialogShow, setTaskInfoDialogShow] = useState(true);
   const titleRef: React.RefObject<any> = useRef();
 
   useEffect(() => {
@@ -73,7 +77,7 @@ const Task: React.FC<TaskProps> = (props) => {
         // this.endTimeText = this.$moment(taskEndDate).format('YYYY年MM月DD日');
       }
       endTime = time < 0 ? Math.abs(time) : Math.abs(time) + 1;
-      dayNumber = time > 0 ? time : 0;
+      dayNumber = taskItem.taskEndDate;
       endState = time < 0 ? false : true;
       taskDayColor = !endState
         ? taskItem.finishPercent == 0
@@ -93,7 +97,7 @@ const Task: React.FC<TaskProps> = (props) => {
       setTaskDayColor(taskDayColor);
       setEditRole(editRole);
       setDayNumber(dayNumber);
-      setTimeNumber(taskDetail.hour);
+      setTimeNumber(taskItem.hour);
       taskDetail = _.cloneDeep(taskItem);
       setTaskDetail(taskDetail);
     }
@@ -121,13 +125,15 @@ const Task: React.FC<TaskProps> = (props) => {
     }
   };
   const changeFinishPercent = (finishPercent: number) => {
-    taskDetail.finishPercent = finishPercent != 0 ? 0 : 1;
-    if (taskDetail.finishPercent == 1) {
-      taskDetail.todayTaskTime = moment().valueOf();
-    } else if (taskDetail.finishPercent == 0) {
-      taskDetail.todayTaskTime = 0;
+    let newTaskDetail = _.cloneDeep(taskDetail);
+    // taskDetail.finishPercent = finishPercent != 0 ? 0 : 1;
+    newTaskDetail.finishPercent = finishPercent;
+    if (newTaskDetail.finishPercent == 1) {
+      newTaskDetail.todayTaskTime = moment().valueOf();
+    } else if (newTaskDetail.finishPercent == 0) {
+      newTaskDetail.todayTaskTime = 0;
     }
-    setNewDetail(taskDetail);
+    setNewDetail(newTaskDetail);
   };
   const changeTitle = (e: any) => {
     setEditState(true);
@@ -193,6 +199,9 @@ const Task: React.FC<TaskProps> = (props) => {
       let newTaskItem = {};
       newTaskItem = _.cloneDeep(taskDetail);
       setTaskDetail(newTaskItem);
+      if (changeTask) {
+        changeTask(newTaskItem, taskIndex, taskInfoIndex);
+      }
     }
   };
 
@@ -209,8 +218,8 @@ const Task: React.FC<TaskProps> = (props) => {
             backgroundColor: bottomtype
               ? 'transparent'
               : taskDetail.finishPercent == 0 || taskDetail.finishPercent == 10
-              ? ''
-              : '#E5E7EA',
+              ? 'rgb(255,255,255)'
+              : 'rgba(255,255,255,0.66)',
           }}
         >
           <React.Fragment>
@@ -218,7 +227,7 @@ const Task: React.FC<TaskProps> = (props) => {
               <div
                 className="taskItem-finishIcon"
                 onClick={() => {
-                  changeFinishPercent(taskDetail.finishPercent);
+                  changeFinishPercent(taskDetail.finishPercent != 0 ? 0 : 1);
                 }}
               >
                 <img
@@ -251,10 +260,11 @@ const Task: React.FC<TaskProps> = (props) => {
                 </div>
                 <DropMenu
                   visible={timeSetShow}
+                  title={'预计工时'}
                   dropStyle={{
-                    width: '200px',
-                    height: '300px',
-                    top: '18px',
+                    width: '318px',
+                    height: '230px',
+                    top: '28px',
                   }}
                   onClose={() => {
                     setTimeSetShow(false);
@@ -262,7 +272,8 @@ const Task: React.FC<TaskProps> = (props) => {
                 >
                   <TimeSet
                     timeSetClick={changeTimeSet}
-                    dayNumber={dayNumber}
+                    percentClick={changeFinishPercent}
+                    dayNumber={dayNumber + 1}
                     timeNumber={timeNumber}
                   />
                 </DropMenu>
@@ -289,12 +300,7 @@ const Task: React.FC<TaskProps> = (props) => {
                       style={{
                         width: '100%',
                         minHeight: '28px',
-                        backgroundColor: bottomtype
-                          ? 'transparent'
-                          : taskDetail.finishPercent == 0 ||
-                            taskDetail.finishPercent == 10
-                          ? ''
-                          : '#E5E7EA',
+                        backgroundColor: bottomtype ? 'transparent' : '',
                         textDecoration:
                           taskDetail.finishPercent == 2 ? 'line-through' : '',
                       }}
@@ -308,12 +314,7 @@ const Task: React.FC<TaskProps> = (props) => {
                       style={{
                         width: '100%',
                         minHeight: '28px',
-                        backgroundColor: bottomtype
-                          ? 'transparent'
-                          : taskDetail.finishPercent == 0 ||
-                            taskDetail.finishPercent == 10
-                          ? ''
-                          : '#E5E7EA',
+                        backgroundColor: bottomtype ? 'transparent' : '',
                         textDecoration:
                           taskDetail.finishPercent == 2 ? 'line-through' : '',
                       }}
@@ -402,11 +403,16 @@ const Task: React.FC<TaskProps> = (props) => {
                     </DropMenu>
                   </div>
                 </div>
-                <div style={{ maxWidth: '64px', display: 'flex' }}>
+                <div
+                  style={{
+                    maxWidth: '64px',
+                    display: 'flex',
+                  }}
+                >
                   <div className="taskItem-check-icon">
                     {taskDetail.importantStatus ? (
                       <img
-                        src={important}
+                        src={importantPng}
                         alt="重要"
                         onClick={() => {
                           changeImportant(0);
@@ -414,7 +420,7 @@ const Task: React.FC<TaskProps> = (props) => {
                       />
                     ) : (
                       <img
-                        src={unimportant}
+                        src={unimportantPng}
                         alt="不重要"
                         onClick={() => {
                           changeImportant(1);
@@ -424,8 +430,16 @@ const Task: React.FC<TaskProps> = (props) => {
                   </div>
                   <div
                     className="taskItem-check-icon"
-                    style={{ color: '#333' }}
-                  ></div>
+                    style={taskDetail.content != '' ? { display: 'flex' } : {}}
+                  >
+                    <img
+                      src={ellipsisbPng}
+                      alt="详情"
+                      onClick={() => {
+                        setTaskInfoDialogShow(true);
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
               <div className="taskItem-taskType"></div>
@@ -449,11 +463,22 @@ const Task: React.FC<TaskProps> = (props) => {
       >
         <div>是否删除该任务</div>
       </Dialog>
+      <Dialog
+        visible={taskInfoDialogShow}
+        onClose={() => {
+          setTaskInfoDialogShow(false);
+        }}
+        footer={false}
+        dialogStyle={{ width: '414px', height: '80%' }}
+      >
+        <TaskInfo taskInfo={taskDetail} />
+      </Dialog>
     </React.Fragment>
   );
 };
 Task.defaultProps = {
   taskItem: null,
   executorKey: 0,
+  changeTask: null,
 };
 export default Task;

@@ -1,38 +1,43 @@
 import React, { useEffect } from 'react';
 import { Button } from '@material-ui/core';
+
 import './dialog.css';
 interface dialogProp {
   children: any;
   visible: boolean;
   dialogStyle: any;
-  onOK: any;
+  onOK?: any;
   onClose: any;
-  title: string;
+  title?: string;
+  footer?: boolean;
 }
 
 const Dialog: React.FC<dialogProp> = (prop) => {
-  const { children, visible, dialogStyle, onClose, onOK, title } = prop;
+  const { children, visible, dialogStyle, onClose, onOK, title, footer } = prop;
+
   return (
     <React.Fragment>
       {visible ? (
         <div className="mask">
           <div className="dialog" style={dialogStyle}>
-            <div className="dialog-title">{title}</div>
+            {title ? <div className="dialog-title">{title}</div> : null}
             <div className="dialog-info">
               <div className="dialog-container">{children}</div>
-              <div className="dialog-button">
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={onOK}
-                  style={{ marginRight: '10px' }}
-                >
-                  确认
-                </Button>
-                <Button variant="contained" onClick={onClose}>
-                  取消
-                </Button>
-              </div>
+              {footer ? (
+                <div className="dialog-button">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={onOK}
+                    style={{ marginRight: '10px' }}
+                  >
+                    确认
+                  </Button>
+                  <Button variant="contained" onClick={onClose}>
+                    取消
+                  </Button>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
@@ -47,5 +52,6 @@ Dialog.defaultProps = {
   onClose: null,
   onOK: null,
   title: '',
+  footer: true,
 };
 export default Dialog;

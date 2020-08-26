@@ -1,16 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import './timeSet.css';
 import moment from 'moment';
+import timeSet1Png from '../../assets/img/timeSet1.png';
+import timeSet2Png from '../../assets/img/timeSet2.png';
+import timeSet3Png from '../../assets/img/timeSet3.png';
+import timeSet4Png from '../../assets/img/timeSet4.png';
+import timeSet5Png from '../../assets/img/timeSet5.png';
+import timeSet6Png from '../../assets/img/timeSet6.png';
 interface timeSetProp {
   timeSetClick: any;
   dayNumber: number | null;
   timeNumber: number | null;
+  percentClick?: any;
 }
 
 const TimeSet: React.FC<timeSetProp> = (prop) => {
-  const { dayNumber, timeSetClick, timeNumber } = prop;
+  const { dayNumber, timeSetClick, timeNumber, percentClick } = prop;
+  console.log('timeNumber', timeNumber);
   const [timeDate, setTimeDate] = useState<any>([]);
   const [timeWeek, setTimeWeek] = useState<any>([]);
+  const [timeMonth, setTimeMonth] = useState<any>([]);
+  const [timeDateArray, setTimeDateArray] = useState<any>([]);
+  const [timeDateType, setTimeDateType] = useState(0);
+  const [dateIndex, setdateIndex] = useState(0);
   const timeArray = [
     1,
     2,
@@ -20,6 +32,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
     6,
     7,
     8,
+    9,
     0.1,
     0.2,
     0.3,
@@ -33,11 +46,21 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
   useEffect(() => {
     if (timeDate.length == 0) {
       mouthDate();
+      changeDateIndex(timeDateType);
     }
   }, [timeDate]);
+  // useEffect(() => {
+  //   if (timeDateType) {
+  //     setTimeDateArray(timeMonth);
+  //   } else {
+  //     setTimeDateArray(timeDate);
+  //   }
+  // }, [timeDateType]);
   const mouthDate = () => {
     let timeDate = [];
     let timeWeek = [];
+    let timeMonth = [];
+
     // const weekString = [
     //   "星期一",
     //   "星期二",
@@ -47,73 +70,144 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
     //   "星期六",
     //   "星期日",
     // ];
-    for (let i = 0; i < 30; i += 1) {
-      timeDate.push(moment().add(i, 'days').date());
+    for (let i = 0; i < 28; i += 1) {
+      timeMonth.push(moment().add(i, 'days').date());
       // weeks[i] = weekString[
       //   this.$moment("2020-03-05")
       //     .add(i, "days")
       //     .weekday()
       // ];
       timeWeek.push(moment().add(i, 'days').weekday());
+      timeDate.push(i + 1);
     }
-    console.log(timeDate);
     setTimeDate(timeDate);
     setTimeWeek(timeWeek);
+    setTimeMonth(timeMonth);
+    setTimeDateArray(timeDate);
   };
-  console.log(timeDate);
+  const changeDateIndex = (timeDateType: number) => {
+    let dateTime = 0;
+    let dateIndex = 0;
+    if (timeDateType) {
+      dateIndex = moment(dayNumber).date();
+    } else {
+      dateTime =
+        Math.floor(
+          (moment(dayNumber).endOf('day').valueOf() -
+            moment().endOf('day').valueOf()) /
+            86400000
+        ) + 1;
+      dateIndex = dateTime > 0 ? dateTime : 0;
+    }
+    console.log(timeDateType);
+    console.log(dateIndex);
+    setdateIndex(dateIndex);
+  };
+  const changeTimeDateType = (timeDateType: number) => {
+    if (timeDateType) {
+      setTimeDateArray(timeMonth);
+    } else {
+      setTimeDateArray(timeDate);
+    }
+    changeDateIndex(timeDateType);
+    setTimeDateType(timeDateType);
+  };
   return (
     <React.Fragment>
       <div className="timeSet">
-        {/* <div
-    :iconSvg="clock"
-    fontSize="17px"
-    color="#000"
-    style="{ margin: '0px 9px 0px 0px',display:'flex' }"
-  /> */}
-        {timeArray.map((timeItem: any, timeIndex: number) => {
-          return (
-            <div
-              key={'time' + timeIndex}
-              // className="timeSet-item"
-              onClick={() => {
-                timeSetClick('hour', timeItem);
-              }}
-              className="timeSet-time-item"
-              style={{
-                borderColor:
-                  timeNumber == timeItem
-                    ? '#F28806  transparent transparent transparent'
-                    : '#35a6f8 transparent transparent transparent',
-              }}
-            >
-              {timeItem}
-            </div>
-          );
-        })}
+        <div className="timeSet-time-logo">
+          <img
+            src={timeSet1Png}
+            onClick={() => {
+              percentClick(10);
+            }}
+          />
+          <img
+            src={timeSet2Png}
+            onClick={() => {
+              percentClick(0);
+            }}
+          />
+          <img
+            src={timeSet3Png}
+            onClick={() => {
+              percentClick(1);
+            }}
+          />
+          <img
+            src={timeSet4Png}
+            onClick={() => {
+              percentClick(2);
+            }}
+            style={{ width: '17px', height: '16px' }}
+          />
+        </div>
+        <div className="timeSet-time-info">
+          {timeArray.map((timeItem: any, timeIndex: number) => {
+            return (
+              <div
+                key={'time' + timeIndex}
+                // className="timeSet-item"
+                onClick={() => {
+                  timeSetClick('hour', timeItem);
+                }}
+                className="timeSet-time-item"
+              >
+                {timeItem}
+                <div
+                  className="timeSet-time-choose"
+                  style={{
+                    borderColor:
+                      timeNumber == timeItem
+                        ? '#F28806  transparent transparent transparent'
+                        : '#35a6f8 transparent transparent transparent',
+                  }}
+                ></div>
+              </div>
+            );
+          })}
+        </div>
       </div>
       {/* v-if="dateType" */}
       <div className="timeSet-date">
-        {timeDate.map((dateItem: any, dateIndex: number) => {
-          return (
-            <div
-              key={'date' + dateIndex}
-              className="timeSet-date-item"
-              onClick={() => {
-                timeSetClick('day', dateItem);
-              }}
-              style={{
-                backgroundColor:
-                  dayNumber == dateItem
-                    ? '#F28806'
-                    : timeWeek[dateIndex] > 4
-                    ? '#BABABA'
-                    : '#505050',
-              }}
-            >
-              {dateItem}
-            </div>
-          );
-        })}
+        <div className="timeSet-date-logo">
+          <img
+            src={timeSet5Png}
+            onClick={() => {
+              changeTimeDateType(0);
+            }}
+          />
+          <img
+            src={timeSet6Png}
+            style={{ width: '17px', height: '14px' }}
+            onClick={() => {
+              changeTimeDateType(1);
+            }}
+          />
+        </div>
+        <div className="timeSet-date-info">
+          {timeDateArray.map((dateTimeItem: any, dateTimeIndex: number) => {
+            return (
+              <div
+                key={'date' + dateTimeIndex}
+                className="timeSet-date-item"
+                onClick={() => {
+                  timeSetClick('day', dateTimeItem);
+                }}
+                style={{
+                  backgroundColor:
+                    dateIndex == dateTimeItem
+                      ? '#F28806'
+                      : timeWeek[dateIndex] > 4
+                      ? '#BABABA'
+                      : '#505050',
+                }}
+              >
+                {dateTimeItem}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </React.Fragment>
   );
@@ -122,5 +216,6 @@ TimeSet.defaultProps = {
   timeSetClick: null,
   dayNumber: 0,
   timeNumber: 0,
+  percentClick: null,
 };
 export default TimeSet;

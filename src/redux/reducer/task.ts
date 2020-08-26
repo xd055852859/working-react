@@ -88,7 +88,7 @@ export const task = (state = defaultState, action: any) => {
     case actionTypes.EDIT_TASK_SUCCESS:
       console.log('编辑成功');
       return {
-        ...state,
+        ...state
         // taskKey: action.taskKey
       };
     case actionTypes.ADD_WORKING_TABLE_TASK_SUCCESS:

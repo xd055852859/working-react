@@ -4,7 +4,7 @@
   padding: 6px 0px 4px 6px;
   /* box-sizing: border-box; */
   margin-bottom: 6px;
-  background-color: rgba(255, 255, 255, 0.95);
+  /* background-color: rgba(255, 255, 255, 0.66); */
   display: flex;
   position: relative;
   box-sizing: border-box;
@@ -230,23 +230,25 @@
   bottom: 0px; */
   width: 16px;
   height: 16px;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
-  margin-right: 5px;
+  margin-right: 7px;
   cursor: pointer;
-}
-
-.taskItem-check-icon:nth-child(4) {
-  margin-right: 0px;
 }
 
 .taskItem-check-icon img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
 }
-
+.taskItem-check-icon:nth-child(2) img {
+  width: 12px;
+  height: 3px;
+  margin-right: 0px;
+}
+.taskItem:hover .taskItem-check-icon {
+  display: flex;
+}
 /* .taskItem-title-name {
   min-height: 28px;
   position: absolute;
