@@ -53,9 +53,16 @@ const Task: React.FC<TaskProps> = (props) => {
   const [timeSetShow, setTimeSetShow] = useState(false);
   const [dayNumber, setDayNumber] = useState<any>(null);
   const [timeNumber, setTimeNumber] = useState<any>(null);
-  const [taskInfoDialogShow, setTaskInfoDialogShow] = useState(true);
+  const [taskInfoDialogShow, setTaskInfoDialogShow] = useState(false);
   const titleRef: React.RefObject<any> = useRef();
-
+  const color = [
+    '#6FD29A',
+    '#21ABE4',
+    '#F5A623',
+    '#FB8444',
+    '#FF5D5B',
+    '#9F33FE',
+  ];
   useEffect(() => {
     // 用户已登录
     if (taskItem) {
@@ -223,6 +230,23 @@ const Task: React.FC<TaskProps> = (props) => {
           }}
         >
           <React.Fragment>
+            <div
+              className="taskItem-taskType"
+              style={{
+                borderTop:
+                  '7px solid ' +
+                  color[
+                    taskDetail.taskType == 10 ? 5 : taskDetail.taskType - 1
+                  ],
+                borderRight:
+                  '7px solid ' +
+                  color[
+                    taskDetail.taskType == 10 ? 5 : taskDetail.taskType - 1
+                  ],
+                borderLeft: '7px solid transparent',
+                borderBottom: '7px solid transparent',
+              }}
+            ></div>
             {taskDetail.finishPercent != 10 ? (
               <div
                 className="taskItem-finishIcon"
@@ -265,6 +289,7 @@ const Task: React.FC<TaskProps> = (props) => {
                     width: '318px',
                     height: '230px',
                     top: '28px',
+                    left:'-25px'
                   }}
                   onClose={() => {
                     setTimeSetShow(false);
@@ -366,10 +391,8 @@ const Task: React.FC<TaskProps> = (props) => {
                       onClose={() => {
                         setTaskExecutorShow(false);
                       }}
+                      title={'分配任务'}
                     >
-                      <div className="task-executor-dropMenu-menuTitle">
-                        分配任务
-                      </div>
                       <div className="task-executor-dropMenu-info">
                         {taskMemberArray.map(
                           (taskMemberItem: any, taskMemberIndex: number) => {
@@ -407,6 +430,7 @@ const Task: React.FC<TaskProps> = (props) => {
                   style={{
                     maxWidth: '64px',
                     display: 'flex',
+                    height: '100%',
                   }}
                 >
                   <div className="taskItem-check-icon">
@@ -431,14 +455,11 @@ const Task: React.FC<TaskProps> = (props) => {
                   <div
                     className="taskItem-check-icon"
                     style={taskDetail.content != '' ? { display: 'flex' } : {}}
+                    onClick={() => {
+                      setTaskInfoDialogShow(true);
+                    }}
                   >
-                    <img
-                      src={ellipsisbPng}
-                      alt="详情"
-                      onClick={() => {
-                        setTaskInfoDialogShow(true);
-                      }}
-                    />
+                    <img src={ellipsisbPng} alt="详情" />
                   </div>
                 </div>
               </div>
@@ -465,13 +486,16 @@ const Task: React.FC<TaskProps> = (props) => {
       </Dialog>
       <Dialog
         visible={taskInfoDialogShow}
-        onClose={() => {
-          setTaskInfoDialogShow(false);
-        }}
         footer={false}
         dialogStyle={{ width: '414px', height: '80%' }}
       >
-        <TaskInfo taskInfo={taskDetail} />
+        <TaskInfo
+          taskInfo={taskDetail}
+          setNewDetail={setNewDetail}
+          onClose={() => {
+            setTaskInfoDialogShow(false);
+          }}
+        />
       </Dialog>
     </React.Fragment>
   );

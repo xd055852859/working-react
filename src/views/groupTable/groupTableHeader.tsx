@@ -93,16 +93,16 @@ const GroupTableHeader: React.FC = (prop) => {
       <div className="groupTableHeader-name">
         <div className="groupTableHeader-logo">
           <img
-            src={groupInfo.groupLogo ? groupInfo.groupLogo : defaultGroupPng}
+            src={groupInfo&&groupInfo.groupLogo ? groupInfo.groupLogo : defaultGroupPng}
             alt=""
           />
         </div>
-        {groupInfo.groupName}
+        {groupInfo&&groupInfo.groupName}
       </div>
       <div className="groupTableHeader-vitalityNum">
         <div style={{width:'50px',flexShrink:0}}>活力值</div>
         <VitalityIcon
-          vitalityNum={groupInfo.energyValueTotal}
+          vitalityNum={groupInfo&&groupInfo.energyValueTotal}
           vitalityDirection={'vertical'}
           vitalityStyle={{ marginLeft: '5px' }}
         />

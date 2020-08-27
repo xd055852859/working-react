@@ -19,8 +19,8 @@
 .dropMenu-info {
   width: 100%;
   height:calc(100% - 53px);
-  padding: 12px 0px;
-  box-sizing: border-box;
+  /* padding: 12px 0px; */
+  /* box-sizing: border-box; */
   overflow: auto;
 }
 

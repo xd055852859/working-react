@@ -24,7 +24,7 @@ const defaultState: Common = {
     text: '',
     severity: undefined,
   },
-  headerIndex: 3,
+  headerIndex: 0,
 };
 
 export const common = (state = defaultState, action: any) => {

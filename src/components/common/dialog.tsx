@@ -7,7 +7,7 @@ interface dialogProp {
   visible: boolean;
   dialogStyle: any;
   onOK?: any;
-  onClose: any;
+  onClose?: any;
   title?: string;
   footer?: boolean;
 }
@@ -21,7 +21,7 @@ const Dialog: React.FC<dialogProp> = (prop) => {
         <div className="mask">
           <div className="dialog" style={dialogStyle}>
             {title ? <div className="dialog-title">{title}</div> : null}
-            <div className="dialog-info">
+            <div className="dialog-info" style={!title?{height:'100%'}:{}}>
               <div className="dialog-container">{children}</div>
               {footer ? (
                 <div className="dialog-button">

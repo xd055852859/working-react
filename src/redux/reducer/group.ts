@@ -8,8 +8,8 @@ export interface GroupType {
 
 const defaultState: GroupType = {
   groupArray: null,
-  groupKey: '1239443614',
-  groupInfo: { role: 1, energyValueTotal: 0 },
+  groupKey: '',
+  groupInfo: null,
 };
 
 export const group = (state = defaultState, action: any) => {

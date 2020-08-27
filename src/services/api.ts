@@ -238,10 +238,40 @@ const task = {
       type: 3,
     });
   },
-  setLabelCardOrder(labelObject:object) {
+  setLabelCardOrder(labelObject: object) {
     return request.patch(HOME_URL + '/card/setLabelCardOrder', {
       token: auth_token,
-      ...labelObject
+      ...labelObject,
+    });
+  },
+  getTaskHistory(cardKey: string, curPage: number, perPage: number) {
+    return request.get(HOME_URL + '/cardLog/cardLogList', {
+      token: auth_token,
+      cardKey: cardKey,
+      curPage: curPage,
+      perPage: perPage,
+    });
+  },
+  getTaskComment(cardKey: string, curPage: number, perPage: number) {
+    return request.get(HOME_URL + '/commentCard/list', {
+      token: auth_token,
+      cardKey: cardKey,
+      curPage: curPage,
+      perPage: perPage,
+    });
+  },
+  addComment(cardKey: string, content: string) {
+    return request.post(HOME_URL + '/commentCard', {
+      token: auth_token,
+      cardKey: cardKey,
+      action: 2,
+      content: content,
+    });
+  },
+  deleteComment(cardCommentKey: string) {
+    return request.delete(HOME_URL + '/commentCard', {
+      token: auth_token,
+      cardCommentKey: cardCommentKey,
     });
   },
 };
@@ -250,6 +280,22 @@ const member = {
     return request.get(HOME_URL + '/groupmember', {
       token: auth_token,
       groupId: groupId,
+    });
+  },
+  searchUserNew(searchCondition: string, curPage: number, perPage: number) {
+    return request.post(HOME_URL + '/account/searchUserNew', {
+      token: auth_token,
+      searchCondition: searchCondition,
+      curPage: curPage,
+      perPage: perPage,
+    });
+  },
+  searchGroupNew(searchCondition: string, curPage: number, perPage: number) {
+    return request.post(HOME_URL + '/group/searchGroupNew', {
+      token: auth_token,
+      searchCondition: searchCondition,
+      curPage: curPage,
+      perPage: perPage,
     });
   },
 };
@@ -264,6 +310,13 @@ const group = {
     return request.get(HOME_URL + '/group', {
       token: auth_token,
       key: key,
+    });
+  },
+  addGroupMember(groupKey: string | null, targetUidList: any) {
+    return request.post(HOME_URL + '/groupmember', {
+      token: auth_token,
+      groupKey: groupKey,
+      targetUidList: targetUidList,
     });
   },
 };

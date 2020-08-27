@@ -67,7 +67,7 @@ const Contact: React.FC<ContactProps> = (props) => {
   }, [groupArray, memberArray, user, contactIndex]);
   const toTargetGroup = (groupKey: string, index: number) => {
     dispatch(setGroupKey(groupKey));
-    // dispatch(getGroupInfo(groupKey));
+    dispatch(getGroupInfo(groupKey));
     dispatch(setHeaderIndex(3));
     setSelectedIndex(index);
   };

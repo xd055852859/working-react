@@ -198,7 +198,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                   backgroundColor:
                     dateIndex == dateTimeItem
                       ? '#F28806'
-                      : timeWeek[dateIndex] > 4
+                      : timeWeek[dateTimeIndex] > 4
                       ? '#BABABA'
                       : '#505050',
                 }}
