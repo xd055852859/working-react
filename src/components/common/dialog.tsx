@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Button } from '@material-ui/core';
-
+import closePng from '../../assets/img/close.png';
 import './dialog.css';
 interface dialogProp {
   children: any;
@@ -20,8 +20,20 @@ const Dialog: React.FC<dialogProp> = (prop) => {
       {visible ? (
         <div className="mask">
           <div className="dialog" style={dialogStyle}>
-            {title ? <div className="dialog-title">{title}</div> : null}
-            <div className="dialog-info" style={!title?{height:'100%'}:{}}>
+            {title ? (
+              <div className="dialog-title">
+                {title}
+                <img
+                  src={closePng}
+                  className="dialog-close"
+                  onClick={onClose}
+                />
+              </div>
+            ) : null}
+            <div
+              className="dialog-info"
+              style={!title ? { height: '100%' } : {}}
+            >
               <div className="dialog-container">{children}</div>
               {footer ? (
                 <div className="dialog-button">

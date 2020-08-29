@@ -2,11 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import './bootpage.css';
 import bootpage from '../../assets/img/bootpage.png';
 import boottitle from '../../assets/img/boottitle.png';
+import _ from 'lodash';
 const Bootpage: React.FC = () => {
   const bootpageRef: React.RefObject<any> = useRef();
   const [clientHeight, setClientHeight] = useState(0);
+  const [clientWidth, setClientWidth] = useState(0);
   useEffect(() => {
     if (bootpageRef.current) {
+      setClientWidth(bootpageRef.current.clientWidth);
       let clientHeight = bootpageRef.current.clientHeight;
       setClientHeight(clientHeight);
     }
@@ -18,6 +21,11 @@ const Bootpage: React.FC = () => {
     const redirect = `${window.location.protocol}//${window.location.host}`;
     window.location.href = `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`;
   };
+  window.onresize = _.debounce(function () {
+    setClientWidth(bootpageRef.current.clientWidth);
+    let clientHeight = bootpageRef.current.clientHeight;
+    setClientHeight(clientHeight);
+  }, 500);
   return (
     <div className="bootpage" ref={bootpageRef}>
       <div className="bootpage-logo">
@@ -43,13 +51,18 @@ const Bootpage: React.FC = () => {
       {/* v-show="videoState"  */}
       <div
         className="bootpage-video"
-        style={{ width: '760px', height: clientHeight }}
+        style={{
+          width: clientHeight,
+          height: clientHeight,
+          left: clientWidth - clientHeight / 2,
+        }}
       >
         <video
           src="https://cdn-icare.qingtime.cn/714228E0.mp4"
           autoPlay
           muted
           loop
+          style={{ height: '100%', position: 'absolute', right: '-35%' }}
         >
           您的浏览器不支持 audio 标签。
         </video>

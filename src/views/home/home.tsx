@@ -16,8 +16,35 @@ const Home: React.FC<HomeProps> = (props) => {
   // const history = useHistory();
   const dispatch = useDispatch();
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const moveState = useTypedSelector((state) => state.common.moveState);
+  const theme = useTypedSelector((state) => state.auth.theme);
   return (
-    <div className="home">
+    <div
+      className="home"
+      style={
+        moveState == 'in'
+          ? {
+              animation: 'moveIn 500ms',
+              animationFillMode: 'forwards',
+              width: '0px',
+            }
+          : moveState == 'out'
+          ? {
+              animation: 'moveOut 500ms',
+              animationFillMode: 'forwards',
+              width: '320px',
+            }
+          : {}
+      }
+    >
+      <div
+        className="home-bg"
+        style={
+          theme.backgroundImg
+            ? { backgroundImage: 'url(' + theme.backgroundImg + ')' }
+            : { backgroundColor: theme.backgroundColor }
+        }
+      ></div>
       <div className="home-header">
         <div className="home-header-logo">
           <img src={logoPng} alt="" />

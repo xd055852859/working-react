@@ -302,7 +302,7 @@ const GroupTableGroup: React.FC = (prop) => {
   };
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="task">
+      <div className="task" >
         <div className="task-container-profile">
           {taskInfo.map((taskInfoitem: any, taskInfoindex: any) => {
             return (
@@ -316,12 +316,12 @@ const GroupTableGroup: React.FC = (prop) => {
                         : defaultPerson
                     }
                     name={taskNameArr[taskInfoindex]}
-                    role={groupInfo.role}
+                    role={groupInfo&&groupInfo.role}
                     colorIndex={taskInfoindex}
                     taskNavArray={[groupInfo, labelArray[taskInfoindex]]}
                     taskNavWidth={'350px'}
                   >
-                    {groupInfo.groupRole > 0 && groupInfo.groupRole < 4 ? (
+                    {groupInfo&&groupInfo.groupRole > 0 && groupInfo&&groupInfo.groupRole < 4 ? (
                       <div style={{ position: 'relative' }}>
                         <div
                           className="task-item-title-icon"

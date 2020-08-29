@@ -63,7 +63,7 @@ function * getWorkingTableTask(action : any) {
 }
 function * editTask(action : any) {
   try {
-    const res = yield call(api.task.editTask, action.key, action.title, action.finishPercent, action.taskEndDate, action.todayTaskTime, action.content, action.taskType, action.executorKey, action.importantStatus);
+    const res = yield call(api.task.editTask, action.data);
     console.log('res', res);
     if (res.msg === 'OK') {
       yield put(editTaskSuccess(res.result));

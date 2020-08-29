@@ -5,7 +5,7 @@ import api from '../../services/api';
 
 function * getGroup(action : any) {
   try {
-    const res = yield call(api.group.getGroup, action.listType);
+    const res = yield call(api.group.getGroup, action.listType,action.simple);
     if (res.msg === 'OK') {
       yield put(getGroupSuccess(res.result));
     } else {

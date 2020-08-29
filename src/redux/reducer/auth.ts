@@ -7,6 +7,7 @@ export interface AuthType {
   targetUserKey: string;
   targetUserInfo: any;
   token: string | null;
+  theme: any;
 }
 
 const defaultState: AuthType = {
@@ -16,6 +17,15 @@ const defaultState: AuthType = {
   targetUserKey: '',
   targetUserInfo: null,
   token: null,
+  theme: {
+    backgroundColor: '',
+    backgroundImg: '',
+    mainVisible: true,
+    messageVisible: false,
+    memberVisible: false,
+    groupSortType: 1,
+    personSortType: 1,
+  },
 };
 
 export const auth = (state = defaultState, action: any) => {
@@ -43,6 +53,21 @@ export const auth = (state = defaultState, action: any) => {
       return {
         ...state,
         targetUserInfo: action.data,
+      };
+    case actionTypes.GET_THEME_SUCCESS:
+      if (!action.data.backgroundColor && action.data.backgroundImg) {
+        action.data.backgroundColor = '#46558C';
+      }
+      action.data.mainVisible =
+        action.data.mainVisible === undefined ? true : action.data.mainVisible;
+      return {
+        ...state,
+        theme: action.data,
+      };
+    case actionTypes.SET_THEME_SUCCESS:
+      return {
+        ...state,
+        theme: action.action.configInfo,
       };
     default:
       return state;

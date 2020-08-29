@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import './tabs.css';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
@@ -11,8 +11,10 @@ import Dialog from '../../components/common/dialog';
 import api from '../../services/api';
 import { setMessage } from '../../redux/actions/commonActions';
 import { getMember } from '../../redux/actions/memberActions';
+import { getGroup, getGroupInfo } from '../../redux/actions/groupActions';
 // import { Theme, makeStyles } from '@material-ui/core/styles';
-
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
 interface TabPanelProps {
   children?: React.ReactNode;
   index: any;
@@ -38,6 +40,20 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: '#17B881',
       padding: '6 26px',
     },
+    addInput: {
+      width: '100%',
+      marginRight: '10px',
+
+      '& .MuiInput-formControl': {
+        marginTop: '0px',
+      },
+      '& .MuiOutlinedInput-input': {
+        padding: '10px 14px',
+      },
+      '& .MuiInputLabel-formControl': {
+        marginTop: '-10px',
+      },
+    },
   })
 );
 export interface HomeTabProps {}
@@ -45,42 +61,81 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   // const classes = useStyles();
+  const user = useTypedSelector((state) => state.auth.user);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const [contactIndex, setContactIndex] = React.useState(0);
   const [searchVisible, setSearchVisible] = React.useState(false);
   const [searchList, setSearchList] = React.useState<any>([]);
-  const [searchInput, setSearchInput] = React.useState<any>([]);
+  const [searchInput, setSearchInput] = React.useState('');
+  const [passwordInput, setPasswordInput] = React.useState('');
+  const [joinType, setJoinType] = React.useState(0);
+  const [searchIndex, setSearchIndex] = React.useState(0);
+  const [searchItem, setSearchItem] = React.useState<any>(null);
+  const [isHasPassword, setIsHasPassword] = React.useState(false);
+  const [inviteVisible, setInviteVisible] = React.useState(false);
   const [page, setPage] = React.useState(1);
   const [total, setTotal] = React.useState(0);
-  const limit = 10;
+  const limit = 30;
+  useEffect(() => {
+    if (searchInput == '') {
+      setSearchList([]);
+    }
+  }, [searchInput, contactIndex]);
   const changeInput = (e: any) => {
     setSearchInput(e.target.value);
   };
+  const changePasswordInput = (e: any) => {
+    setPasswordInput(e.target.value);
+  };
   const searchMsg = () => {
     if (searchInput != '') {
-      if (contactIndex == 0) {
-        getSearchPerson(page, limit);
-      } else if (contactIndex == 1) {
-        getSearchGroup(page, limit);
+      if (contactIndex == 1) {
+        getSearchPerson(page);
+      } else if (contactIndex == 0) {
+        getSearchGroup(page);
       }
     }
   };
-  const getSearchPerson = async (page: number, limit: number) => {
-    let newSearchList = _.cloneDeep(searchList);
+  const getSearchPerson = async (page: number) => {
+    let newSearchList: any = [];
+    if (page == 1) {
+      setSearchList([]);
+    } else {
+      newSearchList = _.cloneDeep(searchList);
+    }
+
     let res: any = await api.member.searchUserNew(searchInput, page, limit);
     if (res.msg == 'OK') {
-      newSearchList.push(...res.result);
+      res.result.map((searchItem: any) => {
+        searchItem.avatar = searchItem.avatar
+          ? searchItem.avatar +
+            '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
+          : defaultPersonPng;
+        newSearchList.push(searchItem);
+      });
       setSearchList(newSearchList);
       setTotal(res.totalNumber);
     } else {
       dispatch(setMessage(true, res.msg, 'error'));
     }
   };
-  const getSearchGroup = async (page: number, limit: number) => {
-    let newSearchList = _.cloneDeep(searchList);
+  const getSearchGroup = async (page: number) => {
+    let newSearchList: any = [];
+    if (page == 1) {
+      setSearchList([]);
+    } else {
+      newSearchList = _.cloneDeep(searchList);
+    }
     let res: any = await api.member.searchGroupNew(searchInput, page, limit);
     if (res.msg == 'OK') {
-      newSearchList.push(...res.result);
+      res.result.map((searchItem: any) => {
+        searchItem.avatar = searchItem.logo
+          ? searchItem.groupLogo +
+            '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
+          : defaultGroupPng;
+        searchItem.nickName = searchItem.groupName;
+        newSearchList.push(searchItem);
+      });
       setSearchList(newSearchList);
       setTotal(res.totalNumber);
     } else {
@@ -89,7 +144,6 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   };
   const addMember = async (searchItem: any, searchIndex: number) => {
     let newSearchList = _.cloneDeep(searchList);
-    let newTotal = total;
     let memberRes: any = await api.group.addGroupMember(mainGroupKey, [
       {
         userKey: searchItem.userId,
@@ -101,13 +155,109 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     ]);
     if (memberRes.msg == 'OK') {
       dispatch(setMessage(true, '添加好友成功', 'success'));
-      newSearchList.splice(searchIndex, 1);
+      newSearchList[searchIndex].isMyMainGroupMember = true;
       setSearchList(newSearchList);
-      newTotal = newTotal - 1;
-      setTotal(newTotal);
       dispatch(getMember(mainGroupKey));
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
+    }
+  };
+  const deleteMember = async (searchItem: any, searchIndex: number) => {
+    let newSearchList = _.cloneDeep(searchList);
+    let memberRes: any = await api.group.deleteGroupMember(mainGroupKey, [
+      searchItem.userId,
+    ]);
+    if (memberRes.msg == 'OK') {
+      dispatch(setMessage(true, '删除好友成功', 'success'));
+      newSearchList[searchIndex].isMyMainGroupMember = false;
+      setSearchList(newSearchList);
+      dispatch(getMember(mainGroupKey));
+    } else {
+      dispatch(setMessage(true, memberRes.msg, 'error'));
+    }
+  };
+  const outGroup = async (groupKey: string, searchIndex: number) => {
+    let newSearchList = _.cloneDeep(searchList);
+    let memberRes: any = await api.group.outGroup(groupKey);
+    if (memberRes.msg == 'OK') {
+      dispatch(setMessage(true, '退出群组成功', 'success'));
+      newSearchList[searchIndex].isGroupMember = false;
+      setSearchList(newSearchList);
+      dispatch(getGroup(3, 1));
+    } else {
+      dispatch(setMessage(true, memberRes.msg, 'error'));
+    }
+  };
+  const joinGroup = async (
+    groupKey: string,
+    searchIndex: number,
+    searchItem: any
+  ) => {
+    let newSearchList = _.cloneDeep(searchList);
+    let groupRes: any = await api.group.getGroupInfo(groupKey);
+    if (groupRes.msg == 'OK') {
+      let newGroupInfo = groupRes.result;
+      console.log(groupRes);
+      if (newGroupInfo.joinType) {
+        setJoinType(newGroupInfo.joinType);
+        setIsHasPassword(newGroupInfo.isHasPassword);
+        setSearchIndex(searchIndex);
+        setSearchItem(searchItem);
+        setInviteVisible(true);
+      } else {
+        api.group.addGroupMember(groupKey, [
+          {
+            userKey: user._key,
+            nickName: user.profile.nickName,
+            avatar: user.profile.avatar,
+            gender: user.profile.gender,
+            role: newGroupInfo.defaultPower,
+          },
+        ]);
+        dispatch(setMessage(true, '加入群组成功', 'success'));
+        newSearchList[searchIndex].isGroupMember = true;
+        setSearchList(newSearchList);
+        dispatch(getGroup(3, 1));
+      }
+    } else {
+      dispatch(setMessage(true, groupRes.msg, 'error'));
+    }
+  };
+  const applyJoinGroup = async (groupKey: string) => {
+    let memberRes: any = await api.group.applyJoinGroup(groupKey);
+    if (memberRes.msg == 'OK') {
+      dispatch(setMessage(true, '申请加群成功', 'success'));
+    } else {
+      dispatch(setMessage(true, memberRes.msg, 'error'));
+    }
+  };
+  const passwordJoinGroup = async (groupKey: string) => {
+    let newSearchList = _.cloneDeep(searchList);
+    let memberRes: any = await api.group.passwordJoinGroup(
+      groupKey,
+      passwordInput
+    );
+    if (memberRes.msg == 'OK') {
+      dispatch(setMessage(true, '口令加群成功', 'success'));
+      newSearchList[searchIndex].isGroupMember = true;
+      setSearchList(newSearchList);
+      dispatch(getGroup(3, 1));
+    } else {
+      dispatch(setMessage(true, memberRes.msg, 'error'));
+    }
+  };
+  const scrollSearchLoading = (e: any) => {
+    let newPage = page;
+    //文档内容实际高度（包括超出视窗的溢出部分）
+    let scrollHeight = e.target.scrollHeight;
+    //滚动条滚动距离
+    let scrollTop = e.target.scrollTop;
+    //窗口可视范围高度
+    let clientHeight = e.target.clientHeight;
+    if (clientHeight + scrollTop >= scrollHeight && searchList.length < total) {
+      newPage = newPage + 1;
+      setPage(newPage);
+      contactIndex ? getSearchPerson(newPage) : getSearchGroup(newPage);
     }
   };
   return (
@@ -153,7 +303,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
           setSearchVisible(false);
         }}
         title={'搜索'}
-        dialogStyle={{ width: '600px', height: '500px' }}
+        dialogStyle={{ width: '600px', height: '700px' }}
         footer={false}
       >
         <div className="personMember">
@@ -175,11 +325,25 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                 searchMsg();
               }}
             >
-              发布
+              搜索
             </Button>
           </div>
-          <div>
+          <div
+            className="personMember-container"
+            onScroll={scrollSearchLoading}
+          >
             {searchList.map((searchItem: any, searchIndex: number) => {
+              let name = contactIndex
+                ? searchItem.nickName
+                : searchItem.groupName;
+              let avatar = contactIndex
+                ? searchItem.avatar
+                  ? searchItem.avatar
+                  : defaultPersonPng
+                : searchItem.groupLogo
+                ? searchItem.groupLogo
+                : defaultGroupPng;
+              let key = contactIndex ? searchItem.userId : searchItem._key;
               return (
                 <div key={'search' + searchIndex} className="personMember-item">
                   <div
@@ -187,27 +351,124 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                   >
                     <div className="personMember-item-title">
                       <div className="personMember-item-avatar">
-                        <img src={searchItem.avatar} alt="" />
+                        <img src={avatar} alt="" />
                       </div>
-                      <div>{searchItem.nickName}</div>
+                      <div>{name}</div>
                     </div>
-                    {!searchItem.isMyMainGroupMember ? (
+                    {contactIndex ? (
+                      searchItem.isMyMainGroupMember ? (
+                        <div
+                          className="personMember-item-button"
+                          onClick={
+                            () => {
+                              deleteMember(searchItem, searchIndex);
+                            }
+                            // addMember(item)
+                          }
+                        >
+                          <div>删除好友</div>
+                        </div>
+                      ) : (
+                        <div
+                          className="personMember-item-button"
+                          onClick={
+                            () => {
+                              addMember(searchItem, searchIndex);
+                            }
+                            // addMember(item)
+                          }
+                        >
+                          <div>加为好友</div>
+                        </div>
+                      )
+                    ) : searchItem.isGroupMember ? (
                       <div
                         className="personMember-item-button"
                         onClick={
                           () => {
-                            addMember(searchItem, searchIndex);
+                            outGroup(key, searchIndex);
                           }
                           // addMember(item)
                         }
                       >
-                        <div>加为好友</div>
+                        <div>退出群组</div>
                       </div>
-                    ) : null}
+                    ) : (
+                      <div
+                        className="personMember-item-button"
+                        onClick={
+                          () => {
+                            joinGroup(key, searchIndex, searchItem);
+                          }
+                          // addMember(item)
+                        }
+                      >
+                        <div>加入群组</div>
+                      </div>
+                    )}
                   </div>
                 </div>
               );
             })}
+          </div>
+        </div>
+      </Dialog>
+      <Dialog
+        visible={inviteVisible}
+        onClose={() => {
+          setInviteVisible(false);
+        }}
+        title={'申请加群'}
+        dialogStyle={{
+          width: '400px',
+          height: isHasPassword ? '300px' : '200px',
+        }}
+        footer={false}
+      >
+        <div className="invite-container">
+          {isHasPassword ? (
+            <TextField
+              required
+              id="outlined-basic"
+              variant="outlined"
+              label="口令"
+              className={classes.addInput}
+              onChange={changePasswordInput}
+              value={passwordInput}
+            />
+          ) : null}
+          <div
+            className="invite-button"
+            style={
+              isHasPassword
+                ? { justifyContent: 'space-between' }
+                : { justifyContent: 'center' }
+            }
+          >
+            {isHasPassword ? (
+              <Button
+                variant="contained"
+                color="primary"
+                className={classes.button}
+                onClick={() => {
+                  passwordJoinGroup(searchItem._key);
+                }}
+              >
+                口令加群
+              </Button>
+            ) : null}
+            {joinType == 1 ? (
+              <Button
+                variant="contained"
+                color="primary"
+                className={classes.button}
+                onClick={() => {
+                  applyJoinGroup(searchItem._key);
+                }}
+              >
+                申请加群
+              </Button>
+            ) : null}
           </div>
         </div>
       </Dialog>

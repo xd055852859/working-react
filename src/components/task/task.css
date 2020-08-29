@@ -11,6 +11,7 @@
   border-radius: 5px;
   color: #333;
   position: relative;
+  outline: none;
   /* overflow: hidden; */
   /* align-items: center; */
 }
@@ -46,7 +47,7 @@
   height: 100%;
   width: 100%;
   overflow: auto;
-  padding:10px 0px;
+  padding: 10px 0px;
   box-sizing: border-box;
 }
 .task-executor-dropMenu-info::-webkit-scrollbar {
@@ -144,6 +145,7 @@
   margin-right: 5px;
   font-size: 12px;
   margin-top: 4px;
+  cursor: pointer;
 }
 
 .taskItem-time {
@@ -177,7 +179,7 @@
   color: #fff;
   position: absolute;
   bottom: 0px;
-  z-index: 3;
+  z-index: 2;
 }
 
 .taskItem-title {
@@ -190,6 +192,7 @@
   margin-right: 8px;
   position: relative;
   word-wrap: break-word;
+  /* line-height:19px */
 }
 
 .taskItem-title > div {
@@ -276,8 +279,41 @@
   top: 0px;
   right: 0px;
   /* border-top-right-radius: 5px; */
-  z-index:3
+  z-index: 3;
 }
 input {
   outline: none;
+}
+.taskItem textarea {
+  width: 100%;
+  /* border: 1px solid rgba(216, 216, 216, 0.4); */
+  border: 0px;
+  font-size: 12px;
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  font-weight: 400;
+  line-height: 1.43;
+  letter-spacing: 0.01071em;
+  height: 20px;
+  outline: none;
+  padding: 5px 0px 0px 5px;
+  line-height: 17px;
+}
+.taskItem textarea::-webkit-scrollbar {
+  width: 0px;
+}
+.invite-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+}
+.invite-button {
+  width: 100%;
+  height: 38px;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+  padding-right:10px;
+  box-sizing: border-box;
 }

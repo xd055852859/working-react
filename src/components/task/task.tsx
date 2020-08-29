@@ -54,6 +54,7 @@ const Task: React.FC<TaskProps> = (props) => {
   const [dayNumber, setDayNumber] = useState<any>(null);
   const [timeNumber, setTimeNumber] = useState<any>(null);
   const [taskInfoDialogShow, setTaskInfoDialogShow] = useState(false);
+  const [textHeight, setTextHeight] = useState(20);
   const titleRef: React.RefObject<any> = useRef();
   const color = [
     '#6FD29A',
@@ -109,6 +110,12 @@ const Task: React.FC<TaskProps> = (props) => {
       setTaskDetail(taskDetail);
     }
   }, [taskItem]);
+  useEffect(() => {
+    if (taskDetail && document.getElementById('taskDetail' + taskDetail._key)) {
+      let dom: any = document.getElementById('taskDetail' + taskDetail._key);
+      setTextHeight(dom.clientHeight - 6);
+    }
+  }, [taskDetail]);
   const getTaskMemberArray = async (groupKey: string) => {
     let taskMemberRes: any = null;
     taskMemberRes = await api.member.getMember(groupKey);
@@ -118,17 +125,25 @@ const Task: React.FC<TaskProps> = (props) => {
   };
   const chooseTask = (e: React.MouseEvent) => {
     dispatch(setTaskKey(taskItem._key));
+    // let dom: any = document.getElementById('taskDetailText' + taskItem._key);
+    // dom.focus()
   };
   const cancelTask = (e: React.MouseEvent) => {
+    let newTaskDetail = _.cloneDeep(taskDetail);
     if (taskKey != 0) {
       if (editState) {
-        taskDetail.title = titleRef.current.innerText;
-        setNewDetail(taskDetail);
-        dispatch(editTask({ key: taskKey, ...taskDetail }));
+        // console.log('newTaskDetail', titleRef.current.innerText);
+        // if (titleRef.current.innerText != taskItem.title) {
+        //   newTaskDetail.title = titleRef.current.innerText;
+        // }
+        console.log('newTaskDetail', newTaskDetail);
+        dispatch(editTask({ key: taskKey, ...newTaskDetail }));
         setEditState(false);
         setTaskExecutorShow(false);
       }
       dispatch(setTaskKey(0));
+      setTaskExecutorShow(false);
+      setTimeSetShow(false);
     }
   };
   const changeFinishPercent = (finishPercent: number) => {
@@ -143,7 +158,9 @@ const Task: React.FC<TaskProps> = (props) => {
     setNewDetail(newTaskDetail);
   };
   const changeTitle = (e: any) => {
+    taskDetail.title = e.target.value;
     setEditState(true);
+    setNewDetail(taskDetail);
   };
   const changeImportant = (importantStatus: number) => {
     taskDetail.importantStatus = importantStatus;
@@ -172,15 +189,25 @@ const Task: React.FC<TaskProps> = (props) => {
   };
 
   const changeTimeSet = (type: string, value: number) => {
+    let newTaskDetail = _.cloneDeep(taskDetail);
+    let time = 0;
+    let endTime = 0;
     if (type == 'hour') {
       setTimeNumber(value);
-      taskDetail.hour = value;
+      newTaskDetail.hour = value;
     } else if (type == 'day') {
-      setDayNumber(value);
-      taskDetail.day = value;
-      taskDetail.taskEndDate = new Date().getTime() + 86400000 * (value - 1);
+      newTaskDetail.day = value;
+      newTaskDetail.taskEndDate = new Date().getTime() + 86400000 * (value - 1);
+      setDayNumber(newTaskDetail.taskEndDate);
+      time = Math.floor(
+        (moment(newTaskDetail.taskEndDate).endOf('day').valueOf() -
+          moment().endOf('day').valueOf()) /
+          86400000
+      );
+      endTime = time < 0 ? Math.abs(time) : Math.abs(time) + 1;
+      setEndtime(endTime);
     }
-    setNewDetail(taskDetail);
+    setNewDetail(newTaskDetail);
   };
   const taskKeyDown = (e: any) => {
     if (e.keyCode == 46) {
@@ -289,7 +316,7 @@ const Task: React.FC<TaskProps> = (props) => {
                     width: '318px',
                     height: '230px',
                     top: '28px',
-                    left:'-25px'
+                    left: '-25px',
                   }}
                   onClose={() => {
                     setTimeSetShow(false);
@@ -318,22 +345,29 @@ const Task: React.FC<TaskProps> = (props) => {
               </div> */}
                 <div className="taskItem-title">
                   {taskKey == taskDetail._key && editRole ? (
-                    <div
-                      suppressContentEditableWarning
-                      contentEditable
-                      ref={titleRef}
-                      style={{
-                        width: '100%',
-                        minHeight: '28px',
-                        backgroundColor: bottomtype ? 'transparent' : '',
-                        textDecoration:
-                          taskDetail.finishPercent == 2 ? 'line-through' : '',
-                      }}
-                      onInput={changeTitle}
-                      // onKeyDown={changeKeyTitle}
-                    >
-                      {taskDetail.title}
-                    </div>
+                    // <div
+                    //   suppressContentEditableWarning
+                    //   contentEditable
+                    //   ref={titleRef}
+                    //   style={{
+                    //     width: '100%',
+                    //     minHeight: '28px',
+                    //     backgroundColor: bottomtype ? 'transparent' : '',
+                    //     textDecoration:
+                    //       taskDetail.finishPercent == 2 ? 'line-through' : '',
+                    //   }}
+                    //   onInput={changeTitle}
+                    //   // onKeyDown={changeKeyTitle}
+                    // >
+                    //   {taskDetail.title}
+                    // </div>
+                    <textarea
+                      value={taskDetail.title}
+                      onChange={changeTitle}
+                      style={{ height: textHeight + 'px' }}
+                      id={'taskDetailText' + taskDetail._key}
+                      // autoFocus
+                    />
                   ) : (
                     <div
                       style={{
@@ -343,6 +377,7 @@ const Task: React.FC<TaskProps> = (props) => {
                         textDecoration:
                           taskDetail.finishPercent == 2 ? 'line-through' : '',
                       }}
+                      id={'taskDetail' + taskDetail._key}
                     >
                       {taskDetail.title}
                     </div>

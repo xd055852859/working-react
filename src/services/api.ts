@@ -2,6 +2,7 @@ import axios from 'axios';
 import moment from 'moment';
 const AUTH_URL = 'https://baokudata.qingtime.cn/sgbh';
 const HOME_URL = 'https://workingdata.qingtime.cn/sgbh';
+const ROCKET_CHAT_URL = 'https://chat.qingtime.cn';
 // const API_URL = "http://192.168.1.108:8529/_db/timeOS/myOs"; let token:
 // string | null = localStorage.getItem('auth_token');
 let auth_token: string | null = null;
@@ -99,9 +100,28 @@ const auth = {
     status: number
   ) {
     return request.post(HOME_URL + '/group/dealCareFriendOrGroup', {
+      token: auth_token,
       type: type,
       friendOrGroupKey: friendOrGroupKey,
       status: status,
+    });
+  },
+  getMessageList(curPage: number, perPage: number) {
+    return request.post(HOME_URL + '/card/getNoticeList', {
+      token: auth_token,
+      curPage: curPage,
+      perPage: perPage,
+    });
+  },
+  getWorkingConfigInfo() {
+    return request.post(HOME_URL + '/account/getWorkingConfigInfo', {
+      token: auth_token,
+    });
+  },
+  setWorkingConfigInfo(configInfo: any) {
+    return request.post(HOME_URL + '/account/setWorkingConfigInfo', {
+      token: auth_token,
+      configInfo: configInfo,
     });
   },
 };
@@ -150,28 +170,10 @@ const task = {
       fileDay: fileDay,
     });
   },
-  editTask(
-    key: number | string,
-    title?: string,
-    finishPercent?: 0,
-    taskEndDate?: number,
-    todayTaskTime?: number,
-    content?: string,
-    taskType?: number,
-    executorKey?: string | number,
-    importantStatus?: number
-  ) {
+  editTask(params: any) {
     return request.patch(HOME_URL + '/card', {
       token: auth_token,
-      key: key,
-      title: title,
-      finishPercent: finishPercent,
-      taskEndDate: taskEndDate,
-      todayTaskTime: todayTaskTime,
-      content: content,
-      taskType: taskType,
-      executorKey: executorKey,
-      importantStatus: importantStatus,
+      ...params,
     });
   },
   addTask(
@@ -300,10 +302,11 @@ const member = {
   },
 };
 const group = {
-  getGroup(listType: number) {
+  getGroup(listType: number, simple?: number) {
     return request.get(HOME_URL + '/group/groupList', {
       token: auth_token,
       listType: listType,
+      simple: simple,
     });
   },
   getGroupInfo(key: string) {
@@ -319,10 +322,37 @@ const group = {
       targetUidList: targetUidList,
     });
   },
+  deleteGroupMember(groupKey: string | null, targetUKeyList: any) {
+    return request.delete(HOME_URL + '/groupmember/remove', {
+      token: auth_token,
+      groupKey: groupKey,
+      targetUKeyList: targetUKeyList,
+    });
+  },
+  outGroup(groupKey: string | null) {
+    return request.delete(HOME_URL + '/groupmember', {
+      token: auth_token,
+      groupKey: groupKey,
+    });
+  },
+  applyJoinGroup(groupKey: string | null) {
+    return request.post(HOME_URL + '/group/applyJoinGroup', {
+      token: auth_token,
+      groupKey: groupKey,
+    });
+  },
+  passwordJoinGroup(groupKey: string | null, password: string) {
+    return request.post(HOME_URL + '/groupmember/passwordJoinGroup', {
+      token: auth_token,
+      groupKey: groupKey,
+      password: password,
+    });
+  },
 };
 export default {
   auth,
   task,
   member,
   group,
+  ROCKET_CHAT_URL,
 };

@@ -4,7 +4,8 @@ export const actionTypes = {
   SWITCH_NOTIFICATION: "SWITCH_NOTIFICATION",
   SWITCH_SEARCH: "SWITCH_SEARCH",
   SET_MESSAGE: "SET_MESSAGE",
-  SET_HEADERINDEX:'SET_HEADERINDEX'
+  SET_HEADERINDEX:'SET_HEADERINDEX',
+  SET_MOVESTATE:'SET_MOVESTATE'
 };
 
 export function Failed(error: any) {
@@ -47,5 +48,11 @@ export function setHeaderIndex(headerIndex: number) {
   return {
     type: actionTypes.SET_HEADERINDEX,
     headerIndex
+  };
+}
+export function setMoveState(moveState: string) {
+  return {
+    type: actionTypes.SET_MOVESTATE,
+    moveState
   };
 }

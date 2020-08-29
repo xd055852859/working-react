@@ -55,6 +55,7 @@ const WorkingTableHeader: React.FC = (prop) => {
     '过期',
     '今天',
     '已完成',
+    '未来',
     '计划',
     '未计划',
     '一般卡片',

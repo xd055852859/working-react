@@ -1,6 +1,58 @@
 .App {
   display: flex;
-  background-image: url('https://cdn-icare.qingtime.cn/1596679987203_画板备份10.jpg');
   background-size: cover;
   background-attachment: fixed;
+  position: relative;
+}
+.home-chat {
+  height: 100%;
+  width: calc(100% - 320px);
+  position: absolute;
+  left: 320px;
+  top: 0px;
+}
+*::-webkit-scrollbar {
+  width: 3px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #dedede;
+  border-radius: 100px;
+}
+@keyframes moveIn {
+  from {
+    width: 320px;
+  }
+
+  to {
+    width: 0px;
+  }
+}
+
+@keyframes moveOut {
+  from {
+    width: 0px;
+  }
+
+  to {
+    width: 320px;
+  }
+}
+
+@keyframes contentmoveIn {
+  from {
+    width: calc(100% - 320px);
+  }
+
+  to {
+    width: 100%;
+  }
+}
+@keyframes contentmoveOut {
+  from {
+    width: 100%;
+  }
+
+  to {
+    width: calc(100% - 320px);
+  }
 }

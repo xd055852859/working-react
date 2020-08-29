@@ -9,7 +9,10 @@ import {
   setGroupKey,
   getGroupInfo,
 } from '../../redux/actions/groupActions';
-import { setHeaderIndex } from '../../redux/actions/commonActions';
+import {
+  setHeaderIndex,
+  setMoveState,
+} from '../../redux/actions/commonActions';
 import {
   setTargetUserKey,
   getTargetUserInfo,
@@ -21,6 +24,7 @@ import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import carePng from '../../assets/img/care.png';
 import uncarePng from '../../assets/img/uncare.png';
 import api from '../../services/api';
+import _ from 'lodash';
 export interface ContactProps {
   contactIndex: number;
 }
@@ -52,7 +56,10 @@ const Contact: React.FC<ContactProps> = (props) => {
   useEffect(() => {
     if (user && user._key) {
       if (!groupArray) {
-        dispatch(getGroup(3));
+        dispatch(getGroup(3, 1));
+        setTimeout(() => {
+          dispatch(getGroup(3));
+        }, 2000);
       }
       if (!memberArray) {
         dispatch(getMember(mainGroupKey));
@@ -70,6 +77,7 @@ const Contact: React.FC<ContactProps> = (props) => {
     dispatch(getGroupInfo(groupKey));
     dispatch(setHeaderIndex(3));
     setSelectedIndex(index);
+    dispatch(setMoveState('in'));
   };
   const toTargetUser = (targetUserKey: string, index: number) => {
     console.log(targetUserKey);
@@ -78,9 +86,20 @@ const Contact: React.FC<ContactProps> = (props) => {
     dispatch(getTargetUserInfo(targetUserKey));
     dispatch(setHeaderIndex(2));
     setSelectedIndex(index);
+    dispatch(setMoveState('in'));
   };
-  const changeCare = (type: number, key: string, status: number) => {
+  const changeCare = (
+    e: any,
+    type: number,
+    key: string,
+    status: number,
+    index: number
+  ) => {
+    e.stopPropagation();
+    let newContactArray: any = _.cloneDeep(contactArray);
     api.auth.dealCareFriendOrGroup(type, key, status);
+    newContactArray[index].isCare = status == 1 ? true : false;
+    setContactArray(newContactArray);
   };
   return (
     <div className="contact">
@@ -121,8 +140,8 @@ const Contact: React.FC<ContactProps> = (props) => {
                     src={carePng}
                     alt=""
                     className="contact-care-img"
-                    onClick={() => {
-                      changeCare(1, key, 0);
+                    onClick={(e) => {
+                      changeCare(e, contactIndex == 0 ? 2 : 1, key, 2, index);
                     }}
                   />
                 ) : (
@@ -130,8 +149,8 @@ const Contact: React.FC<ContactProps> = (props) => {
                     src={uncarePng}
                     alt=""
                     className="contact-uncare-img"
-                    onClick={() => {
-                      changeCare(1, key, 1);
+                    onClick={(e) => {
+                      changeCare(e, contactIndex == 0 ? 2 : 1, key, 1, index);
                     }}
                   />
                 )}

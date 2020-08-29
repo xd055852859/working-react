@@ -56,6 +56,7 @@ const WorkingTableLabel: React.FC = (prop) => {
   }, [userKey, targetUserKey]);
   useEffect(() => {
     if (workingTaskArray) {
+      setMainLabelArray([]);
       let labelArray: any = [];
       let labelArr: any = [];
       if (workingGroupArray.length > 0 && workingTaskArray.length > 0) {
@@ -223,6 +224,15 @@ const WorkingTableLabel: React.FC = (prop) => {
     setBatchTaskVisible(true);
     setBatchTaskIndex(index - 1);
   };
+  const changeTask = (
+    taskItem: any,
+    taskIndex: number,
+    taskInfoIndex: number
+  ) => {
+    let newMainLabelArray = _.cloneDeep(mainLabelArray);
+    newMainLabelArray[taskInfoIndex].arr[taskIndex] = taskItem;
+    setMainLabelArray(newMainLabelArray);
+  };
   // const batchTaskCard=  async ()=> {
   //   let obj = {
   //     type: 2,
@@ -388,7 +398,15 @@ const WorkingTableLabel: React.FC = (prop) => {
                   {labelItem.arr.map((taskItem: any, taskIndex: number) => {
                     return (
                       <React.Fragment key={'task' + taskIndex}>
-                        {taskItem.show ? <Task taskItem={taskItem} /> : null}
+                        {taskItem.show ? (
+                          <React.Fragment>
+                            <Task
+                              taskItem={taskItem}
+                              taskIndex={taskIndex}
+                              taskInfoIndex={labelIndex}
+                            />
+                          </React.Fragment>
+                        ) : null}
                       </React.Fragment>
                     );
                   })}

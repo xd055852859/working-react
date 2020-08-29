@@ -4,9 +4,11 @@
   background: rgba(0, 0, 0, 0.24);
   color: #fff;
   position: relative;
-  z-index:3
+  z-index: 3;
+  flex-shrink: 0;
+  overflow: hidden;
 }
-.home::after {
+.home-bg {
   content: '';
   position: absolute;
   top: 0;
@@ -17,7 +19,7 @@
   filter: blur(8px);
   z-index: -1;
   /* background-color: hsla(0, 0%, 100%, 0.9); */
-  background-image: url('https://cdn-icare.qingtime.cn/1596679987203_画板备份10.jpg');
+  /* background-image: url('https://cdn-icare.qingtime.cn/1596679987203_画板备份10.jpg'); */
   background-size: cover;
   background-attachment: fixed;
 }

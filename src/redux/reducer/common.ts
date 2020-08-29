@@ -12,6 +12,7 @@ export interface Common {
   showSearch: boolean;
   message: Message;
   headerIndex: number;
+  moveState: string;
 }
 
 const defaultState: Common = {
@@ -25,6 +26,7 @@ const defaultState: Common = {
     severity: undefined,
   },
   headerIndex: 0,
+  moveState: '',
 };
 
 export const common = (state = defaultState, action: any) => {
@@ -77,6 +79,13 @@ export const common = (state = defaultState, action: any) => {
         ...state,
         headerIndex: action.headerIndex,
       };
+    case commonActionTypes.SET_MOVESTATE:
+      console.log(action.moveState);
+      return {
+        ...state,
+        moveState: action.moveState,
+      };
+
     default:
       return state;
   }

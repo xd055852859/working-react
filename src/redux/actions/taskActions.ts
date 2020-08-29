@@ -92,15 +92,7 @@ export function setTaskKey(taskKey: string | number) {
 export function editTask(data: any) {
   return {
     type: actionTypes.EDIT_TASK,
-    key: data.key,
-    title: data.title,
-    finishPercent: data.finishPercent,
-    taskEndDate: data.taskEndDate,
-    todayTaskTime: data.todayTaskTime,
-    content: data.content,
-    taskType: data.taskType,
-    executorKey: data.executorKey,
-    importantStatus: data.importantStatus,
+    data,
   };
 }
 export function editTaskSuccess(data: any) {

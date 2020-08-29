@@ -16,7 +16,7 @@ interface timeSetProp {
 
 const TimeSet: React.FC<timeSetProp> = (prop) => {
   const { dayNumber, timeSetClick, timeNumber, percentClick } = prop;
-  console.log('timeNumber', timeNumber);
+  console.log('dayNumber', dayNumber);
   const [timeDate, setTimeDate] = useState<any>([]);
   const [timeWeek, setTimeWeek] = useState<any>([]);
   const [timeMonth, setTimeMonth] = useState<any>([]);
@@ -49,13 +49,9 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
       changeDateIndex(timeDateType);
     }
   }, [timeDate]);
-  // useEffect(() => {
-  //   if (timeDateType) {
-  //     setTimeDateArray(timeMonth);
-  //   } else {
-  //     setTimeDateArray(timeDate);
-  //   }
-  // }, [timeDateType]);
+  useEffect(() => {
+    changeDateIndex(timeDateType);
+  }, [dayNumber]);
   const mouthDate = () => {
     let timeDate = [];
     let timeWeek = [];
@@ -91,6 +87,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
     if (timeDateType) {
       dateIndex = moment(dayNumber).date();
     } else {
+      console.log(dayNumber);
       dateTime =
         Math.floor(
           (moment(dayNumber).endOf('day').valueOf() -

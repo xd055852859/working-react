@@ -3,12 +3,11 @@
   height: 88px;
 }
 .groupTableHeader-name {
-  min-width: 80px;
   height: 100%;
   display: flex;
   align-items: center;
-  overflow: hidden;
   margin-right: 20px;
+  flex-shrink: 0;
 }
 .groupTableHeader-logo {
   width: 34px;
@@ -16,6 +15,17 @@
   overflow: hidden;
   border-radius: 50%;
   margin-right: 10px;
+  flex-shrink: 0;
+}
+.groupTableHeader-name-title {
+  min-width: 80px;
+  flex-shrink: 0;
+  position: relative;
+}
+.groupTableHeader-name-title-logo {
+  width: 12px;
+  height: 7px;
+  margin-left: 10px;
 }
 .groupTableHeader-logo img {
   width: 100%;
@@ -30,5 +40,5 @@
   align-items: center;
   background: rgba(255, 255, 255, 0.24);
   border-radius: 15px;
-  margin-right:20px;
+  margin-right: 20px;
 }
