@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Button } from '@material-ui/core';
 import closePng from '../../assets/img/close.png';
 import './dialog.css';
+import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 interface dialogProp {
   children: any;
   visible: boolean;
@@ -12,8 +13,18 @@ interface dialogProp {
   footer?: boolean;
 }
 
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    button: {
+      backgroundColor: '#17B881',
+      padding: '6 26px',
+      color: '#fff',
+    },
+  })
+);
 const Dialog: React.FC<dialogProp> = (prop) => {
   const { children, visible, dialogStyle, onClose, onOK, title, footer } = prop;
+  const classes = useStyles();
 
   return (
     <React.Fragment>
@@ -42,6 +53,7 @@ const Dialog: React.FC<dialogProp> = (prop) => {
                     color="primary"
                     onClick={onOK}
                     style={{ marginRight: '10px' }}
+                    className={classes.button}
                   >
                     确认
                   </Button>

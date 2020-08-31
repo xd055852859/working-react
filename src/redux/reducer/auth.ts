@@ -7,6 +7,7 @@ export interface AuthType {
   targetUserKey: string;
   targetUserInfo: any;
   token: string | null;
+  uploadToken: string | null;
   theme: any;
 }
 
@@ -17,6 +18,7 @@ const defaultState: AuthType = {
   targetUserKey: '',
   targetUserInfo: null,
   token: null,
+  uploadToken: null,
   theme: {
     backgroundColor: '',
     backgroundImg: '',
@@ -68,6 +70,12 @@ export const auth = (state = defaultState, action: any) => {
       return {
         ...state,
         theme: action.action.configInfo,
+      };
+    case actionTypes.GET_UPLOAD_TOKEN_SUCCESS:
+      localStorage.setItem('uptoken', action.data);
+      return {
+        ...state,
+        uploadToken: action.data,
       };
     default:
       return state;

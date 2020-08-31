@@ -4,12 +4,14 @@ export interface GroupType {
   groupArray: any;
   groupKey: string;
   groupInfo: any;
+  groupRole: any;
 }
 
 const defaultState: GroupType = {
   groupArray: null,
   groupKey: '',
   groupInfo: null,
+  groupRole: null,
 };
 
 export const group = (state = defaultState, action: any) => {
@@ -33,6 +35,7 @@ export const group = (state = defaultState, action: any) => {
       return {
         ...state,
         groupInfo: action.data,
+        groupRole: action.data.role,
       };
     default:
       return state;

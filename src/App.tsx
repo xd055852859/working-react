@@ -3,7 +3,7 @@ import './App.css';
 import { useLocation } from 'react-router-dom';
 import { getSearchParamValue } from './services/util';
 import { useDispatch } from 'react-redux';
-import { getUserInfo, getMainGroupKey } from './redux/actions/authActions';
+import { getUserInfo, getMainGroupKey,getUploadToken } from './redux/actions/authActions';
 import { useHistory } from 'react-router-dom';
 import { useTypedSelector } from './redux/reducer/RootState';
 import Home from './views/home/home';
@@ -40,6 +40,7 @@ const App: React.FC = () => {
         // 获取用户信息
         localStorage.setItem('auth_token', token);
         dispatch(getUserInfo(token));
+        dispatch(getUploadToken());
       } else {
         history.push('/bootpage');
       }

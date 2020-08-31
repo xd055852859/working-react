@@ -18,6 +18,15 @@
   background: #dedede;
   border-radius: 100px;
 }
+.upload-img {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  z-index: 3;
+  opacity: 0;
+}
 @keyframes moveIn {
   from {
     width: 320px;

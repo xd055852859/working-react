@@ -6,12 +6,24 @@ import { Button, TextField } from '@material-ui/core';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import _ from 'lodash';
 import searchPng from '../../assets/img/search.png';
+import sortPng from '../../assets/img/contact-sort.png';
+import addPng from '../../assets/img/contact-add.png';
 import Contact from '../contact/contact';
 import Dialog from '../../components/common/dialog';
+import GroupSet from './groupSet';
 import api from '../../services/api';
-import { setMessage } from '../../redux/actions/commonActions';
+import {
+  setMessage,
+  setHeaderIndex,
+  setMoveState,
+} from '../../redux/actions/commonActions';
 import { getMember } from '../../redux/actions/memberActions';
-import { getGroup, getGroupInfo } from '../../redux/actions/groupActions';
+import {
+  getGroup,
+  getGroupInfo,
+  setGroupKey,
+} from '../../redux/actions/groupActions';
+
 // import { Theme, makeStyles } from '@material-ui/core/styles';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
@@ -65,6 +77,8 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const [contactIndex, setContactIndex] = React.useState(0);
   const [searchVisible, setSearchVisible] = React.useState(false);
+  const [sortVisible, setSortVisible] = React.useState(false);
+  const [addVisible, setAddVisible] = React.useState(false);
   const [searchList, setSearchList] = React.useState<any>([]);
   const [searchInput, setSearchInput] = React.useState('');
   const [passwordInput, setPasswordInput] = React.useState('');
@@ -75,6 +89,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   const [inviteVisible, setInviteVisible] = React.useState(false);
   const [page, setPage] = React.useState(1);
   const [total, setTotal] = React.useState(0);
+  const [groupObj, setGroupObj] = React.useState<any>(null);
   const limit = 30;
   useEffect(() => {
     if (searchInput == '') {
@@ -260,6 +275,23 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       contactIndex ? getSearchPerson(newPage) : getSearchGroup(newPage);
     }
   };
+
+  const saveGroupSet = (obj: any) => {
+    setGroupObj(obj);
+  };
+  const addGroup = async () => {
+    let groupRes: any = await api.group.addGroup(groupObj);
+    if (groupRes.msg == 'OK') {
+      dispatch(setMessage(true, '创建群成功', 'success'));
+      dispatch(setGroupKey(groupRes.result._key));
+      dispatch(getGroupInfo(groupRes.result._key));
+      dispatch(setHeaderIndex(3));
+      dispatch(setMoveState('in'));
+      dispatch(getGroup(3, 1));
+    } else {
+      dispatch(setMessage(true, groupRes.msg, 'error'));
+    }
+  };
   return (
     <div className="tabs">
       <div className="tabs-tab-nav">
@@ -293,6 +325,23 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
           onClick={() => {
             setSearchVisible(true);
             setSearchList([]);
+          }}
+        />
+        <img
+          src={sortPng}
+          alt=""
+          className="sort-icon"
+          onClick={() => {
+            setSearchVisible(true);
+            setSearchList([]);
+          }}
+        />
+        <img
+          src={addPng}
+          alt=""
+          className="add-icon"
+          onClick={() => {
+            setAddVisible(true);
           }}
         />
       </div>
@@ -471,6 +520,19 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             ) : null}
           </div>
         </div>
+      </Dialog>
+      <Dialog
+        visible={addVisible}
+        onClose={() => {
+          setAddVisible(false);
+        }}
+        onOK={() => {
+          addGroup();
+        }}
+        title={'添加群'}
+        dialogStyle={{ width: '750px', height: '700px' }}
+      >
+        <GroupSet saveGroupSet={saveGroupSet} type={'创建'} />
       </Dialog>
     </div>
   );

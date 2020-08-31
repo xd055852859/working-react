@@ -7,6 +7,8 @@ import { setFilterObject } from '../../redux/actions/taskActions';
 import { setMoveState } from '../../redux/actions/commonActions';
 import '../workingTable/workingTableHeader.css';
 import DropMenu from '../../components/common/dropMenu';
+import Dialog from '../../components/common/dialog';
+import GroupSet from '../tabs/groupSet';
 import HeaderFilter from '../../components/headerFilter/headerFilter';
 import VitalityIcon from '../../components/vitalityIcon/vitalityIcon';
 import Contact from '../../views/contact/contact';
@@ -47,7 +49,8 @@ const GroupTableHeader: React.FC = (prop) => {
   const [viewVisible, setViewVisible] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
   const [groupVisible, setGroupVisible] = useState(false);
-
+  const [infoVisible, setInfoVisible] = useState(false);
+  const [groupSetVisible, setGroupSetVisible] = useState(false);
   const [filterCheckedArray, setFilterCheckedArray] = useState<any>([
     false,
     false,
@@ -91,6 +94,8 @@ const GroupTableHeader: React.FC = (prop) => {
     }
     dispatch(setFilterObject({ filterType: filterType }));
   };
+  const saveGroupSet = () => {};
+  const setGroup = () => {};
   return (
     <div className="workingTableHeader">
       <div
@@ -130,7 +135,7 @@ const GroupTableHeader: React.FC = (prop) => {
             visible={groupVisible}
             dropStyle={{
               width: '350px',
-              height:'500px',
+              height: '500px',
               top: '40px',
               left: '-40px',
               color: '#333',
@@ -152,11 +157,45 @@ const GroupTableHeader: React.FC = (prop) => {
           vitalityStyle={{ marginLeft: '5px' }}
         />
       </div>
-      <img
-        src={infoPng}
-        alt=""
-        style={{ width: '30px', height: '30px', marginRight: '30px' }}
-      />
+      <div className="groupTableHeader-info">
+        <img
+          src={infoPng}
+          alt=""
+          style={{ width: '30px', height: '30px', marginRight: '30px' }}
+          onClick={() => {
+            setInfoVisible(true);
+          }}
+        />
+        <DropMenu
+          visible={infoVisible}
+          dropStyle={{
+            width: '264px',
+            height: '194px',
+            top: '65px',
+            left: '-15px',
+            color: '#333',
+          }}
+          onClose={() => {
+            setInfoVisible(false);
+          }}
+          // title={'视图切换'}
+        >
+          <div className="groupTableHeader-info-container">
+            <div
+              className="groupTableHeader-info-item"
+              onClick={() => {
+                setGroupSetVisible(true);
+              }}
+            >
+              <img />
+              项目属性
+            </div>
+            <div className="groupTableHeader-info-item">
+              <img /> 群成员
+            </div>
+          </div>
+        </DropMenu>
+      </div>
       <img
         src={chatPng}
         alt=""
@@ -251,6 +290,19 @@ const GroupTableHeader: React.FC = (prop) => {
       <div>
         <div></div>
       </div>
+      <Dialog
+        visible={groupSetVisible}
+        onClose={() => {
+          setGroupSetVisible(false);
+        }}
+        onOK={() => {
+          setGroup();
+        }}
+        title={'设置群属性'}
+        dialogStyle={{ width: '750px', height: '700px' }}
+      >
+        <GroupSet saveGroupSet={saveGroupSet} type={'设置'} />
+      </Dialog>
     </div>
   );
 };

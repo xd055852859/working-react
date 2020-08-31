@@ -124,6 +124,17 @@ const auth = {
       configInfo: configInfo,
     });
   },
+  getPrompt() {
+    return request.post(HOME_URL + '/card/getPrompt', {
+      token: auth_token,
+    });
+  },
+  getUptoken() {
+    return request.get(HOME_URL + '/upTokenQiniu/getQiNiuUpToken', {
+      token: auth_token,
+      type: 2,
+    });
+  },
 };
 const task = {
   getGroupTask(
@@ -346,6 +357,12 @@ const group = {
       token: auth_token,
       groupKey: groupKey,
       password: password,
+    });
+  },
+  addGroup(params: any) {
+    return request.post(HOME_URL + '/group', {
+      token: auth_token,
+      ...params,
     });
   },
 };

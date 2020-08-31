@@ -6,7 +6,7 @@ import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { getGroupTask } from '../../redux/actions/taskActions';
 import { getGroupInfo } from '../../redux/actions/groupActions';
-
+import { getTheme } from '../../redux/actions/authActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import './groupTableGroup.css';
 import api from '../../services/api';
@@ -37,6 +37,8 @@ const GroupTableGroup: React.FC = (prop) => {
   useEffect(() => {
     if (user && user._key && groupKey) {
       dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+      dispatch(getGroupInfo(groupKey));
+      dispatch(getTheme());
     }
   }, [user, groupKey]);
   useEffect(() => {
@@ -248,7 +250,7 @@ const GroupTableGroup: React.FC = (prop) => {
         },
       };
     }
-    
+
     console.log(labelObject);
     setTaskInfo(newTaskInfo);
     let taskRes: any = await api.task.changeTaskLabel(
@@ -302,7 +304,7 @@ const GroupTableGroup: React.FC = (prop) => {
   };
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="task" >
+      <div className="task">
         <div className="task-container-profile">
           {taskInfo.map((taskInfoitem: any, taskInfoindex: any) => {
             return (
@@ -316,12 +318,15 @@ const GroupTableGroup: React.FC = (prop) => {
                         : defaultPerson
                     }
                     name={taskNameArr[taskInfoindex]}
-                    role={groupInfo&&groupInfo.role}
+                    role={groupInfo && groupInfo.role}
                     colorIndex={taskInfoindex}
                     taskNavArray={[groupInfo, labelArray[taskInfoindex]]}
                     taskNavWidth={'350px'}
                   >
-                    {groupInfo&&groupInfo.groupRole > 0 && groupInfo&&groupInfo.groupRole < 4 ? (
+                    {groupInfo &&
+                    groupInfo.groupRole > 0 &&
+                    groupInfo &&
+                    groupInfo.groupRole < 4 ? (
                       <div style={{ position: 'relative' }}>
                         <div
                           className="task-item-title-icon"

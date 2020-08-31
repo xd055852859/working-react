@@ -96,24 +96,26 @@ const ContentHeader: React.FC<ContentHeaderProps> = (prop) => {
     >
       <img src={boardPng} alt="" className="contentHeader-logo" />
       <div className="contentHeader-set">
-        <div className="contentHeader-avatar-info">
+        <div
+          className="contentHeader-avatar-info"
+          onClick={() => {
+            setContentSetVisilble(true);
+            setAvatarShow(true);
+          }}
+        >
           <div
             className="contentHeader-avatar"
-            onClick={() => {
-              setContentSetVisilble(true);
-              setAvatarShow(true);
-            }}
             style={
               avatarShow
                 ? {
                     animation: 'avatarSmall 500ms',
-                    animationFillMode: 'forwards',
+                    // animationFillMode: 'forwards',
                     width: '30px',
                     height: '30px',
                   }
                 : {
                     animation: 'avatarBig 500ms',
-                    animationFillMode: 'forwards',
+                    // animationFillMode: 'forwards',
                     width: '40px',
                     height: '40px',
                   }

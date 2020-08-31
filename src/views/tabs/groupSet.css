@@ -1,0 +1,75 @@
+.contact-dialog-info {
+  width: 100%;
+  /* height: 100px; */
+  display: flex;
+  justify-content: space-between;
+  margin: 17px 0px;
+  padding-right: 25px;
+  box-sizing: border-box;
+}
+.contact-dialog-logo {
+  width: 100px;
+  height: 100px;
+  border: 1px solid #d9d9d9;
+  overflow: hidden;
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  top: 0px;
+  right: 0px;
+}
+.contact-dialog-groupLogo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+.contact-dialog-icon {
+  width: 25px;
+  height: 25px;
+}
+.contact-dialog-container {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  position: relative;
+}
+.contact-name-content {
+  width: 100%;
+  min-height: 43px;
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-bottom:12px
+}
+.contact-dialog-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: space-between;
+}
+.contact-name-title {
+  width: 100px;
+  margin-right: 15px;
+}
+.contact-role {
+  padding: 10px 10px;
+}
+.contact-role-item {
+  width: 100%;
+  height: 28px;
+  text-align: center;
+  cursor: pointer;
+  line-height: 28px;
+}
+.contact-role-item:hover {
+  background: #f0f0f0;
+}
+/* .contact-name-radio {
+  display: flex;
+  flex-wrap: wrap;
+} */

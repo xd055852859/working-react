@@ -10,6 +10,8 @@ export const actionTypes = {
   GET_THEME_SUCCESS: 'GET_THEME_SUCCESS',
   SET_THEME: 'SET_THEME',
   SET_THEME_SUCCESS: 'SET_THEME_SUCCESS',
+  GET_UPLOAD_TOKEN: 'GET_UPLOAD_TOKEN',
+  GET_UPLOAD_TOKEN_SUCCESS: 'GET_UPLOAD_TOKEN_SUCCESS',
 };
 
 export function getUserInfo(token: string) {
@@ -88,5 +90,17 @@ export function setThemeSuccess(data: any, action: any) {
     type: actionTypes.SET_THEME_SUCCESS,
     data,
     action,
+  };
+}
+export function getUploadToken() {
+  return {
+    type: actionTypes.GET_UPLOAD_TOKEN,
+  };
+}
+
+export function getUploadTokenSuccess(data: any) {
+  return {
+    type: actionTypes.GET_UPLOAD_TOKEN_SUCCESS,
+    data,
   };
 }

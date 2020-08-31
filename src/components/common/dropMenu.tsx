@@ -15,7 +15,12 @@ const DropMenu: React.FC<dropMenuProp> = (prop) => {
       {visible ? (
         <div className="dropMenu" style={dropStyle} onMouseLeave={onClose}>
           {title ? <div className="dropMenu-title">{title}</div> : null}
-          <div className="dropMenu-info">{children}</div>
+          <div
+            className="dropMenu-info"
+            style={{ height: title ? 'calc(100% - 53px)' : '100%' }}
+          >
+            {children}
+          </div>
         </div>
       ) : null}
     </React.Fragment>

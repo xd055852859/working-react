@@ -6,6 +6,7 @@ import {
   getTargetUserInfoSuccess,
   getThemeSuccess,
   setThemeSuccess,
+  getUploadTokenSuccess
 } from '../actions/authActions';
 import { Failed } from '../actions/commonActions';
 import api from '../../services/api';
@@ -71,12 +72,24 @@ function* setTheme(action: any) {
     yield put(Failed(e));
   }
 }
-
+function* getUploadToken(action: any) {
+  try {
+    const res = yield call(api.auth.getUptoken);
+    if (res.msg === 'OK') {
+      yield put(getUploadTokenSuccess(res.result));
+    } else {
+      yield put(Failed(res));
+    }
+  } catch (e) {
+    yield put(Failed(e));
+  }
+}
 const authSaga = [
   takeLatest(actionTypes.GET_USERINFO, getUser),
   takeLatest(actionTypes.GET_MAIN_GROUP_KEY, getMainGroupKey),
   takeLatest(actionTypes.GET_TARGET_USERINFO, getTargetUserInfo),
   takeLatest(actionTypes.GET_THEME, getTheme),
   takeLatest(actionTypes.SET_THEME, setTheme),
+  takeLatest(actionTypes.GET_UPLOAD_TOKEN, getUploadToken),
 ];
 export default authSaga;
