@@ -6,7 +6,7 @@ import tablePng from '../../assets/img/table.png';
 import chatPng from '../../assets/img/chat.png';
 import Tabs from '../tabs/tabs';
 import { useDispatch } from 'react-redux';
-import { setHeaderIndex } from '../../redux/actions/commonActions';
+import { setCommonHeaderIndex } from '../../redux/actions/commonActions';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 
 export interface HomeProps {}
@@ -25,16 +25,16 @@ const Home: React.FC<HomeProps> = (props) => {
         moveState == 'in'
           ? {
               animation: 'moveIn 500ms',
-              animationFillMode: 'forwards',
+              // animationFillMode: 'forwards',
               width: '0px',
             }
           : moveState == 'out'
           ? {
               animation: 'moveOut 500ms',
-              animationFillMode: 'forwards',
+              // animationFillMode: 'forwards',
               width: '320px',
             }
-          : {}
+          : { width: '320px' }
       }
     >
       <div
@@ -54,7 +54,7 @@ const Home: React.FC<HomeProps> = (props) => {
           style={
             headerIndex == 0 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
           }
-          onClick={() => dispatch(setHeaderIndex(0))}
+          onClick={() => dispatch(setCommonHeaderIndex(0))}
         >
           <img src={boardPng} alt="" className="home-header-item-logo" />
           首页
@@ -64,7 +64,7 @@ const Home: React.FC<HomeProps> = (props) => {
             headerIndex == 1 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
           }
           className="home-header-item"
-          onClick={() => dispatch(setHeaderIndex(1))}
+          onClick={() => dispatch(setCommonHeaderIndex(1))}
         >
           <img src={tablePng} alt="" className="home-header-item-logo" />
           我的工作台
@@ -74,7 +74,7 @@ const Home: React.FC<HomeProps> = (props) => {
             headerIndex == 4 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
           }
           className="home-header-item"
-          onClick={() => dispatch(setHeaderIndex(4))}
+          onClick={() => dispatch(setCommonHeaderIndex(4))}
         >
           <img src={chatPng} alt="" className="home-header-item-logo" />
           聊天

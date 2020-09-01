@@ -289,10 +289,11 @@ const task = {
   },
 };
 const member = {
-  getMember(groupId: string) {
+  getMember(groupId: string,sortType?:number) {
     return request.get(HOME_URL + '/groupmember', {
       token: auth_token,
       groupId: groupId,
+      sortType:sortType
     });
   },
   searchUserNew(searchCondition: string, curPage: number, perPage: number) {
@@ -313,11 +314,12 @@ const member = {
   },
 };
 const group = {
-  getGroup(listType: number, simple?: number) {
+  getGroup(listType: number, simple?: number|null,sortType?:number) {
     return request.get(HOME_URL + '/group/groupList', {
       token: auth_token,
       listType: listType,
       simple: simple,
+      sortType:sortType
     });
   },
   getGroupInfo(key: string) {
@@ -331,6 +333,13 @@ const group = {
       token: auth_token,
       groupKey: groupKey,
       targetUidList: targetUidList,
+    });
+  },
+  addAllGroupMember(groupKey: string | null, newGroupMemberKeyArray: any) {
+    return request.post(HOME_URL + '/groupmember/addAndDeleteGroupMember', {
+      token: auth_token,
+      groupKey: groupKey,
+      newGroupMemberKeyArray: newGroupMemberKeyArray,
     });
   },
   deleteGroupMember(groupKey: string | null, targetUKeyList: any) {

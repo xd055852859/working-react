@@ -11,12 +11,14 @@ import addPng from '../../assets/img/contact-add.png';
 import Contact from '../contact/contact';
 import Dialog from '../../components/common/dialog';
 import GroupSet from './groupSet';
+import DropMenu from '../../components/common/dropMenu';
 import api from '../../services/api';
 import {
   setMessage,
-  setHeaderIndex,
+  setCommonHeaderIndex,
   setMoveState,
 } from '../../redux/actions/commonActions';
+import { setTheme } from '../../redux/actions/authActions';
 import { getMember } from '../../redux/actions/memberActions';
 import {
   getGroup,
@@ -75,9 +77,11 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   // const classes = useStyles();
   const user = useTypedSelector((state) => state.auth.user);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
+  const theme = useTypedSelector((state) => state.auth.theme);
   const [contactIndex, setContactIndex] = React.useState(0);
   const [searchVisible, setSearchVisible] = React.useState(false);
-  const [sortVisible, setSortVisible] = React.useState(false);
+  const [memberSortVisible, setMemberSortVisible] = React.useState(false);
+  const [groupSortVisible, setGroupSortVisible] = React.useState(false);
   const [addVisible, setAddVisible] = React.useState(false);
   const [searchList, setSearchList] = React.useState<any>([]);
   const [searchInput, setSearchInput] = React.useState('');
@@ -121,7 +125,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
 
     let res: any = await api.member.searchUserNew(searchInput, page, limit);
     if (res.msg == 'OK') {
-      res.result.map((searchItem: any) => {
+      res.result.forEach((searchItem: any) => {
         searchItem.avatar = searchItem.avatar
           ? searchItem.avatar +
             '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
@@ -172,7 +176,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       dispatch(setMessage(true, '添加好友成功', 'success'));
       newSearchList[searchIndex].isMyMainGroupMember = true;
       setSearchList(newSearchList);
-      dispatch(getMember(mainGroupKey));
+      dispatch(getMember(mainGroupKey,theme.personSortType));
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }
@@ -186,7 +190,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       dispatch(setMessage(true, '删除好友成功', 'success'));
       newSearchList[searchIndex].isMyMainGroupMember = false;
       setSearchList(newSearchList);
-      dispatch(getMember(mainGroupKey));
+      dispatch(getMember(mainGroupKey,theme.personSortType));
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }
@@ -198,7 +202,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       dispatch(setMessage(true, '退出群组成功', 'success'));
       newSearchList[searchIndex].isGroupMember = false;
       setSearchList(newSearchList);
-      dispatch(getGroup(3, 1));
+      dispatch(getGroup(3,null, theme.groupSortType));
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }
@@ -232,7 +236,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
         dispatch(setMessage(true, '加入群组成功', 'success'));
         newSearchList[searchIndex].isGroupMember = true;
         setSearchList(newSearchList);
-        dispatch(getGroup(3, 1));
+        dispatch(getGroup(3,null, theme.groupSortType));
       }
     } else {
       dispatch(setMessage(true, groupRes.msg, 'error'));
@@ -256,7 +260,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       dispatch(setMessage(true, '口令加群成功', 'success'));
       newSearchList[searchIndex].isGroupMember = true;
       setSearchList(newSearchList);
-      dispatch(getGroup(3, 1));
+      dispatch(getGroup(3,null, theme.groupSortType));
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }
@@ -285,11 +289,23 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       dispatch(setMessage(true, '创建群成功', 'success'));
       dispatch(setGroupKey(groupRes.result._key));
       dispatch(getGroupInfo(groupRes.result._key));
-      dispatch(setHeaderIndex(3));
+      dispatch(setCommonHeaderIndex(3));
       dispatch(setMoveState('in'));
-      dispatch(getGroup(3, 1));
+      dispatch(getGroup(3,null, theme.groupSortType));
     } else {
       dispatch(setMessage(true, groupRes.msg, 'error'));
+    }
+  };
+  const contactSort = (sortType: number) => {
+    let newTheme = _.cloneDeep(theme);
+    if (contactIndex == 0) {
+      dispatch(getGroup(3, null, sortType));
+      newTheme.groupSortType = sortType;
+      dispatch(setTheme(newTheme));
+    } else if (contactIndex == 1) {
+      dispatch(getMember(mainGroupKey,sortType));
+      newTheme.personSortType = sortType;
+      dispatch(setTheme(newTheme));
     }
   };
   return (
@@ -332,8 +348,9 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
           alt=""
           className="sort-icon"
           onClick={() => {
-            setSearchVisible(true);
-            setSearchList([]);
+            contactIndex == 1
+              ? setMemberSortVisible(true)
+              : setGroupSortVisible(true);
           }}
         />
         <img
@@ -344,6 +361,48 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             setAddVisible(true);
           }}
         />
+        <DropMenu
+          visible={memberSortVisible || groupSortVisible}
+          dropStyle={{
+            width: '80px',
+            height: '90px',
+            top: '30px',
+            left: '230px',
+            color: '#333',
+          }}
+          onClose={() => {
+            contactIndex == 1
+              ? setMemberSortVisible(false)
+              : setGroupSortVisible(false);
+          }}
+        >
+          <div className="tabs-sort-container">
+            <div
+              className="tabs-sort-item"
+              onClick={() => {
+                contactSort(1);
+              }}
+            >
+              访问排序
+            </div>
+            <div
+              className="tabs-sort-item"
+              onClick={() => {
+                contactSort(2);
+              }}
+            >
+              关注排序
+            </div>
+            <div
+              className="tabs-sort-item"
+              onClick={() => {
+                contactSort(3);
+              }}
+            >
+              活力值排序
+            </div>
+          </div>
+        </DropMenu>
       </div>
       <Contact contactIndex={contactIndex} />
       <Dialog

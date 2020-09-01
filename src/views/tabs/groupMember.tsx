@@ -1,0 +1,417 @@
+import React, { useState, useEffect } from 'react';
+import './groupMember.css';
+import { Checkbox, TextField, Button } from '@material-ui/core';
+import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
+import { useDispatch } from 'react-redux';
+import { setMessage } from '../../redux/actions/commonActions';
+import { useTypedSelector } from '../../redux/reducer/RootState';
+import _ from 'lodash';
+import api from '../../services/api';
+import DropMenu from '../../components/common/dropMenu';
+import closePng from '../../assets/img/taskClose.png';
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
+export interface GroupMemberProps {
+  setMember: any;
+}
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    button: {
+      backgroundColor: '#17B881',
+      padding: '6 16px',
+      color: '#fff',
+    },
+    input: {
+      width: 'calc(100% - 115px)',
+      marginRight: '10px',
+      minWidth: '200px',
+      '& .MuiInput-formControl': {
+        marginTop: '0px',
+      },
+      '& .MuiOutlinedInput-input': {
+        padding: '10px 14px',
+      },
+      '& .MuiInputLabel-formControl': {
+        marginTop: '-10px',
+      },
+    },
+  })
+);
+const GroupMember: React.FC<GroupMemberProps> = (props) => {
+  // const location = useLocation();
+  // const history = useHistory();
+  const { setMember } = props;
+  const classes = useStyles();
+  const dispatch = useDispatch();
+  const user = useTypedSelector((state) => state.auth.user);
+  const groupInfo = useTypedSelector((state) => state.group.groupInfo);
+  const memberArray = useTypedSelector((state) => state.member.memberArray);
+  const groupMemberArray = useTypedSelector(
+    (state) => state.member.groupMemberArray
+  );
+  const groupRole = useTypedSelector((state) => state.group.groupRole);
+  const [mainMemberList, setMainMemberList] = useState<any>([]);
+  const [searchMemberList, setSearchMemberList] = useState<any>([]);
+  const [groupMemberList, setGroupMemberList] = useState<any>([]);
+  const [memberList, setMemberList] = useState<any>([]);
+  const [searchInput, setSearchInput] = useState('');
+  const [roleVisible, setRoleVisible] = useState(false);
+  const [roleIndex, setRoleIndex] = useState<any>(null);
+  const [pos, setPos] = useState<any>([]);
+  const [page, setPage] = React.useState(1);
+  const [total, setTotal] = React.useState(0);
+  const roleTypeArr = ['群主', '管理员', '编辑', '作者', '群成员'];
+  const limit = 15;
+  useEffect(() => {
+    if (
+      user &&
+      user._key &&
+      memberArray &&
+      groupMemberArray &&
+      searchInput == ''
+    ) {
+      let newMemberList: any = [];
+      if (memberList.length == 0) {
+        newMemberList = _.cloneDeep(groupMemberArray);
+      } else {
+        newMemberList = _.cloneDeep(memberList);
+      }
+      let newMemberArray = _.cloneDeep(memberArray);
+      newMemberArray = newMemberArray.map((memberItem: any) => {
+        let newMemberIndex = _.findIndex(newMemberList, {
+          userId: memberItem.userId,
+        });
+        if (newMemberIndex == -1) {
+          memberItem.checked = false;
+        } else {
+          memberItem.checked = true;
+        }
+        return memberItem;
+      });
+      setMainMemberList(_.sortBy(newMemberArray, ['checked']).reverse());
+      setGroupMemberList(_.sortBy(newMemberArray, ['checked']).reverse());
+      setMemberList(_.sortBy(newMemberList, ['role']));
+    }
+  }, [user, memberArray, groupMemberArray, searchInput]);
+  const changeMember = (index: number) => {
+    let newMainMemberList = _.cloneDeep(mainMemberList);
+    let newMemberList = _.cloneDeep(memberList);
+    let newSearchMemberList = _.cloneDeep(searchMemberList);
+    if (searchInput != '') {
+      if (newSearchMemberList[index].checked) {
+        newSearchMemberList[index].checked = false;
+        let newSearchIndex = _.findIndex(newSearchMemberList, {
+          userId: newSearchMemberList[index].userId,
+        });
+        if (newSearchIndex != -1) {
+          newMemberList.splice(newSearchIndex, 1);
+        }
+      } else {
+        newSearchMemberList[index].checked = true;
+        newSearchMemberList[index].role = groupInfo.defaultPower;
+        newMemberList.push(newSearchMemberList[index]);
+      }
+      setGroupMemberList(newSearchMemberList);
+    } else {
+      if (newMainMemberList[index].checked) {
+        newMainMemberList[index].checked = false;
+        let newSearchIndex = _.findIndex(newMainMemberList, {
+          userId: newMainMemberList[index].userId,
+        });
+        if (newSearchIndex != -1) {
+          newMemberList.splice(newSearchIndex, 1);
+        }
+      } else {
+        newMainMemberList[index].checked = true;
+        newMainMemberList[index].role = groupInfo.defaultPower;
+        newMemberList.push(newMainMemberList[index]);
+      }
+      setGroupMemberList(newMainMemberList);
+    }
+    setSearchMemberList(newSearchMemberList);
+    setMainMemberList(newMainMemberList);
+    setMemberList(newMemberList);
+    setMember(newMemberList);
+  };
+  const searchMember = () => {
+    if (searchInput != '') {
+      // this.getSearchList({ param: { name: this.searchInput }, type: 1 })
+      getSearchPerson(page);
+    }
+  };
+  const getSearchPerson = async (page: number) => {
+    let newMemberList = _.cloneDeep(memberList);
+    let newSearchMemberList: any = [];
+    if (page == 1) {
+      setSearchMemberList([]);
+    } else {
+      newSearchMemberList = _.cloneDeep(searchMemberList);
+    }
+    let res: any = await api.member.searchUserNew(searchInput, page, limit);
+    if (res.msg == 'OK') {
+      res.result.forEach((searchItem: any) => {
+        searchItem.avatar = searchItem.avatar
+          ? searchItem.avatar +
+            '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
+          : defaultPersonPng;
+        let searchMemberIndex = _.findIndex(newMemberList, {
+          userId: searchItem.userId,
+        });
+        if (searchMemberIndex == -1) {
+          searchItem.checked = false;
+        } else {
+          searchItem.checked = true;
+        }
+        newSearchMemberList.push(searchItem);
+      });
+      setSearchMemberList(newSearchMemberList);
+      setGroupMemberList(newSearchMemberList);
+      setTotal(res.totalNumber);
+    } else {
+      dispatch(setMessage(true, res.msg, 'error'));
+    }
+  };
+  const scrollSearchLoading = (e: any) => {
+    let newPage = page;
+    //文档内容实际高度（包括超出视窗的溢出部分）
+    let scrollHeight = e.target.scrollHeight;
+    //滚动条滚动距离
+    let scrollTop = e.target.scrollTop;
+    //窗口可视范围高度
+    let clientHeight = e.target.clientHeight;
+    if (
+      clientHeight + scrollTop >= scrollHeight &&
+      searchMemberList.length < total
+    ) {
+      newPage = newPage + 1;
+      setPage(newPage);
+      getSearchPerson(newPage);
+    }
+  };
+  const deleteMember = (userId: number) => {
+    let newMainMemberList = _.cloneDeep(mainMemberList);
+    let newMemberList = _.cloneDeep(memberList);
+    let newSearchMemberList = _.cloneDeep(searchMemberList);
+    if (searchInput != '') {
+      let newSearchIndex = _.findIndex(newSearchMemberList, {
+        userId: userId,
+      });
+      let newGroupIndex = _.findIndex(newMemberList, {
+        userId: userId,
+      });
+      newMemberList.splice(newGroupIndex, 1);
+      if (newSearchIndex != -1) {
+        newSearchMemberList[newSearchIndex].checked = false;
+      }
+      setGroupMemberList(newSearchMemberList);
+      setSearchMemberList(newSearchMemberList);
+    } else {
+      let newMainIndex = _.findIndex(newMainMemberList, {
+        userId: userId,
+      });
+      let newGroupIndex = _.findIndex(newMemberList, {
+        userId: userId,
+      });
+      newMemberList.splice(newGroupIndex, 1);
+      if (newMainIndex != -1) {
+        newMainMemberList[newMainIndex].checked = false;
+      }
+      setGroupMemberList(newMainMemberList);
+      setMainMemberList(newMainMemberList);
+    }
+    setMemberList(newMemberList);
+    setMember(newMemberList);
+  };
+  const changeRoleVisible = (event: any, index: number) => {
+    let posX: number = 0,
+      posY: number = 0;
+    let e: any = event || window.event;
+    if (e.pageX || e.pageY) {
+      posX = e.pageX;
+      posY = e.pageY;
+    } else if (e.clientX || e.clientY) {
+      posX =
+        e.clientX +
+        document.documentElement.scrollLeft +
+        document.body.scrollLeft;
+      posY =
+        e.clientY +
+        document.documentElement.scrollTop +
+        document.body.scrollTop;
+    }
+    setPos([posX, posY]);
+    setRoleVisible(true);
+    setRoleIndex(index);
+  };
+  const changeRole = (roleIndex: number, index: number) => {
+    let newMemberRoleList: any = _.cloneDeep(memberList);
+    newMemberRoleList[index].role = roleIndex + 1;
+    setMemberList(newMemberRoleList);
+    setMember(newMemberRoleList);
+    // this.$set(this.targetMemberList, index, this.targetMemberList[index]);
+    // this.setRole({
+    //   groupKey: this.groupKey,
+    //   targetUKey: this.newMemberList[index].userId,
+    //   role: roleIndex + 1,
+    // });
+  };
+  return (
+    <div className="group-member">
+      <div className="group-member-person">
+        <div className="group-member-choose">
+          <div className="group-member-title">
+            联系人({mainMemberList.length})
+          </div>
+          <div className="group-member-search">
+            <TextField
+              // required
+              id="outlined-basic"
+              variant="outlined"
+              label="搜索"
+              className={classes.input}
+              style={{ width: '70%' }}
+              value={searchInput}
+              onChange={(e) => {
+                setSearchInput(e.target.value);
+              }}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                searchMember();
+              }}
+              style={{ marginLeft: '10px' }}
+              className={classes.button}
+            >
+              搜索
+            </Button>
+          </div>
+          <div
+            className="group-member-container"
+            onScroll={(e) => {
+              if (searchInput != '') {
+                scrollSearchLoading(e);
+              }
+            }}
+          >
+            {groupMemberList.map((mainItem: any, mainIndex: number) => {
+              return (
+                <div className="group-member-item" key={'main' + mainIndex}>
+                  <div className="group-member-item-container">
+                    <div className="group-member-img">
+                      <img src={mainItem.avatar} alt="" />
+                    </div>
+                    <div className="group-member-name">{mainItem.nickName}</div>
+                  </div>
+                  <Checkbox
+                    onChange={() => {
+                      changeMember(mainIndex);
+                    }}
+                    checked={mainItem.checked}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+      <div className="group-member-team">
+        <div className="group-member-title">群权限设置</div>
+        <div className="group-member-container contact-team-container">
+          {memberList.map((newItem: any, newIndex: number) => {
+            return (
+              <div className="group-member-item" key={'new' + newIndex}>
+                <div className="group-member-item-container">
+                  <div className="group-member-img">
+                    <img src={newItem.avatar} alt="" />
+                  </div>
+                  <div className="group-member-name">{newItem.nickName}</div>
+                </div>
+                <div className="group-time-set">
+                  <div
+                    className="group-time"
+                    onClick={(e) => {
+                      if (
+                        newItem.userId != user._key &&
+                        groupRole < newItem.role
+                      ) {
+                        changeRoleVisible(e, newIndex);
+                      }
+                    }}
+                  >
+                    {roleTypeArr[newItem.role - 1]}
+                  </div>
+                  <img
+                    src={closePng}
+                    className="group-time-close"
+                    onClick={() => {
+                      deleteMember(newItem.userId);
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <DropMenu
+        visible={roleVisible}
+        dropStyle={{
+          position: 'fixed',
+          top: pos[1] + 10 + 'px',
+          left: pos[0] - 20 + 'px',
+          width: '80px',
+          zIndex: '5',
+          color: '#333',
+        }}
+        onClose={() => {
+          setRoleVisible(false);
+        }}
+      >
+        <div className="group-role">
+          {groupRole == 1 ? (
+            <div
+              onClick={() => {
+                changeRole(1, roleIndex);
+              }}
+              className="group-role-item"
+            >
+              {roleTypeArr[1]}
+            </div>
+          ) : null}
+          {groupRole == 1 || groupRole == 2 ? (
+            <div
+              onClick={() => {
+                changeRole(2, roleIndex);
+              }}
+              className="group-role-item"
+            >
+              {roleTypeArr[2]}
+            </div>
+          ) : null}
+          {groupRole < 3 ? (
+            <div
+              onClick={() => {
+                changeRole(3, roleIndex);
+              }}
+              className="group-role-item"
+            >
+              {roleTypeArr[3]}
+            </div>
+          ) : null}
+          {groupRole < 4 ? (
+            <div
+              onClick={() => {
+                changeRole(4, roleIndex);
+              }}
+              className="group-role-item"
+            >
+              {roleTypeArr[4]}
+            </div>
+          ) : null}
+        </div>
+      </DropMenu>
+    </div>
+  );
+};
+export default GroupMember;

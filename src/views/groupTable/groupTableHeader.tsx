@@ -3,12 +3,20 @@ import { Checkbox } from '@material-ui/core';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
+import {
+  setCommonHeaderIndex,
+  setMessage,
+} from '../../redux/actions/commonActions';
 import { setFilterObject } from '../../redux/actions/taskActions';
 import { setMoveState } from '../../redux/actions/commonActions';
+import { getGroupMember } from '../../redux/actions/memberActions';
+
 import '../workingTable/workingTableHeader.css';
 import DropMenu from '../../components/common/dropMenu';
 import Dialog from '../../components/common/dialog';
 import GroupSet from '../tabs/groupSet';
+import GroupMember from '../tabs/groupMember';
+import api from '../../services/api';
 import HeaderFilter from '../../components/headerFilter/headerFilter';
 import VitalityIcon from '../../components/vitalityIcon/vitalityIcon';
 import Contact from '../../views/contact/contact';
@@ -32,6 +40,8 @@ const GroupTableHeader: React.FC = (prop) => {
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const groupArray = useTypedSelector((state) => state.group.groupArray);
+  const groupKey = useTypedSelector((state) => state.group.groupKey);
+
   const dispatch = useDispatch();
   const viewArray: string[] = ['项目', '日历'];
   const viewImg: string[] = [labelPng, calendarPng];
@@ -51,6 +61,8 @@ const GroupTableHeader: React.FC = (prop) => {
   const [groupVisible, setGroupVisible] = useState(false);
   const [infoVisible, setInfoVisible] = useState(false);
   const [groupSetVisible, setGroupSetVisible] = useState(false);
+  const [groupMemberVisible, setGroupMemberVisible] = useState(true);
+  const [groupMember, setGroupMember] = useState<any>([]);
   const [filterCheckedArray, setFilterCheckedArray] = useState<any>([
     false,
     false,
@@ -96,6 +108,19 @@ const GroupTableHeader: React.FC = (prop) => {
   };
   const saveGroupSet = () => {};
   const setGroup = () => {};
+  const setMember = (groupMember: any) => {
+    console.log('groupMember', groupMember);
+    setGroupMember(groupMember);
+  };
+  const saveGroupMember = () => {
+    let newGroupMember = groupMember.map((groupMemberItem: any) => {
+      return groupMemberItem.userId;
+    });
+    api.group.addAllGroupMember(groupKey, newGroupMember);
+    dispatch(setMessage(true, '修改群成员成功', 'success'));
+    dispatch(getGroupMember(groupKey));
+    setGroupMemberVisible(false);
+  };
   return (
     <div className="workingTableHeader">
       <div
@@ -103,6 +128,7 @@ const GroupTableHeader: React.FC = (prop) => {
         style={{ width: '56px' }}
         onClick={() => {
           dispatch(setMoveState('out'));
+          dispatch(setCommonHeaderIndex(0));
         }}
       >
         <img src={boardPng} alt="" />
@@ -190,7 +216,12 @@ const GroupTableHeader: React.FC = (prop) => {
               <img />
               项目属性
             </div>
-            <div className="groupTableHeader-info-item">
+            <div
+              className="groupTableHeader-info-item"
+              onClick={() => {
+                setGroupMemberVisible(true);
+              }}
+            >
               <img /> 群成员
             </div>
           </div>
@@ -302,6 +333,20 @@ const GroupTableHeader: React.FC = (prop) => {
         dialogStyle={{ width: '750px', height: '700px' }}
       >
         <GroupSet saveGroupSet={saveGroupSet} type={'设置'} />
+      </Dialog>
+      <Dialog
+        visible={groupMemberVisible}
+        onClose={() => {
+          setGroupMemberVisible(false);
+        }}
+        onOK={() => {
+          saveGroupMember();
+        }}
+        title={'设置群成员'}
+        dialogStyle={{ width: '850px', height: '700px' }}
+      >
+        {/* saveGroupSet={saveGroupSet} type={'设置'}  */}
+        <GroupMember setMember={setMember} />
       </Dialog>
     </div>
   );

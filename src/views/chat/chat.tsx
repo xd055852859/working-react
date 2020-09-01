@@ -6,6 +6,7 @@ interface ChatProps {}
 
 const Chat: React.FC<ChatProps> = (prop) => {
   const user = useTypedSelector((state) => state.auth.user);
+  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const [url, setUrl] = useState('');
   useEffect(() => {
     if (user) {
@@ -16,7 +17,14 @@ const Chat: React.FC<ChatProps> = (prop) => {
   }, [user]);
 
   return (
-    <div className="chat-iframe">
+    <div
+      className="chat-iframe"
+      style={
+        headerIndex == 4
+          ? { width: '100%', height: '100%' }
+          : { width: '0px', height: '0px' }
+      }
+    >
       <iframe src={url} style={{ height: '100%', width: '100%' }}></iframe>
     </div>
   );

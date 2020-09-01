@@ -149,13 +149,23 @@ const ContentHeader: React.FC<ContentHeaderProps> = (prop) => {
               setBgVisible(true);
             }}
           >
-            <div className="contentHeader-set-item-title">
-              <img
-                src={bgImg}
-                alt=""
-                style={{ width: '15px', height: '17px', marginRight: '10px' }}
-              />
-              <div>壁纸设置</div>
+            <div className="contentHeader-set-item-title contentHeader-set-item-bg">
+              <div className="contentHeader-set-item-bg-info">
+                <img
+                  src={bgImg}
+                  alt=""
+                  style={{ width: '15px', height: '17px', marginRight: '10px' }}
+                />
+                <div>壁纸设置</div>
+              </div>
+              <div
+                className="bg-item"
+                style={
+                  theme.backgroundImg
+                    ? { backgroundImage: 'url(' + theme.backgroundImg + ')' }
+                    : { backgroundColor: theme.backgroundColor }
+                }
+              ></div>
             </div>
           </div>
           <div className="contentHeader-set-item">

@@ -44,7 +44,7 @@ export function setMessage(
 ) {
   return { type: actionTypes.SET_MESSAGE, visible, text, severity };
 }
-export function setHeaderIndex(headerIndex: number) {
+export function setCommonHeaderIndex(headerIndex: number) {
   return {
     type: actionTypes.SET_HEADERINDEX,
     headerIndex

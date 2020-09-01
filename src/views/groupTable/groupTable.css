@@ -1,6 +1,8 @@
 .groupTable {
   height: 100%;
   width:calc(100% - 320px);
+  position: relative;
+  z-index:3
 }
 .groupTableContent {
   width: 100%;

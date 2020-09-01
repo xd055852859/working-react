@@ -6,8 +6,13 @@ export const actionTypes = {
   GET_GROUP_INFO_SUCCESS: 'GET_GROUP_INFO_SUCCESS',
 };
 
-export function getGroup(listType: number, simple?: number) {
-  return { type: actionTypes.GET_GROUP, listType: listType, simple: simple };
+export function getGroup(listType: number, simple?: number|null, sortType?: number) {
+  return {
+    type: actionTypes.GET_GROUP,
+    listType: listType,
+    simple: simple,
+    sortType: sortType,
+  };
 }
 export function getGroupSuccess(data: any) {
   return { type: actionTypes.GET_GROUP_SUCCESS, data };

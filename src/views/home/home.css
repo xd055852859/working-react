@@ -1,5 +1,4 @@
 .home {
-  width: 320px;
   height: 100%;
   background: rgba(0, 0, 0, 0.24);
   color: #fff;
@@ -15,10 +14,10 @@
   bottom: 0;
   left: 0;
   right: 0;
-  -webkit-filter: blur(8px);
-  filter: blur(8px);
+  -webkit-filter: grayscale(20%) blur(8px);
+  filter: grayscale(20%) blur(8px);
   z-index: -1;
-  /* background-color: hsla(0, 0%, 100%, 0.9); */
+  /* background-color: rgba(0, 0, 0); */
   /* background-image: url('https://cdn-icare.qingtime.cn/1596679987203_画板备份10.jpg'); */
   background-size: cover;
   background-attachment: fixed;

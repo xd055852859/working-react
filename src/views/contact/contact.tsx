@@ -10,7 +10,7 @@ import {
   getGroupInfo,
 } from '../../redux/actions/groupActions';
 import {
-  setHeaderIndex,
+  setCommonHeaderIndex,
   setMoveState,
 } from '../../redux/actions/commonActions';
 import {
@@ -53,16 +53,17 @@ const Contact: React.FC<ContactProps> = (props) => {
   const memberArray = useTypedSelector((state) => state.member.memberArray);
   const groupArray = useTypedSelector((state) => state.group.groupArray);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
+  const theme = useTypedSelector((state) => state.auth.theme);
   useEffect(() => {
-    if (user && user._key) {
+    if (user && user._key && (theme.backgroundColor || theme.backgroundImg)) {
       if (!groupArray) {
-        dispatch(getGroup(3, 1));
+        dispatch(getGroup(3, 1, theme.groupSortType));
         setTimeout(() => {
-          dispatch(getGroup(3));
+          dispatch(getGroup(3, null, theme.groupSortType));
         }, 2000);
       }
       if (!memberArray) {
-        dispatch(getMember(mainGroupKey));
+        dispatch(getMember(mainGroupKey, theme.personSortType));
       }
 
       if (groupArray && contactIndex === 0) {
@@ -71,11 +72,11 @@ const Contact: React.FC<ContactProps> = (props) => {
         setContactArray(memberArray);
       }
     }
-  }, [groupArray, memberArray, user, contactIndex]);
+  }, [groupArray, memberArray, user, contactIndex, theme]);
   const toTargetGroup = (groupKey: string, index: number) => {
     dispatch(setGroupKey(groupKey));
     dispatch(getGroupInfo(groupKey));
-    dispatch(setHeaderIndex(3));
+    dispatch(setCommonHeaderIndex(3));
     setSelectedIndex(index);
     dispatch(setMoveState('in'));
   };
@@ -84,7 +85,7 @@ const Contact: React.FC<ContactProps> = (props) => {
     dispatch(setTargetUserKey(targetUserKey));
     // dispatch(userKeyToGroupKey(targetUserKey));
     dispatch(getTargetUserInfo(targetUserKey));
-    dispatch(setHeaderIndex(2));
+    dispatch(setCommonHeaderIndex(2));
     setSelectedIndex(index);
     dispatch(setMoveState('in'));
   };

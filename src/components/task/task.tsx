@@ -422,6 +422,7 @@ const Task: React.FC<TaskProps> = (props) => {
                         width: '180px',
                         height: '290px',
                         top: '18px',
+                        left:'-30px'
                       }}
                       onClose={() => {
                         setTaskExecutorShow(false);

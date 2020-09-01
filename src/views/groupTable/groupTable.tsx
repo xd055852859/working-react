@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import './groupTable.css';
+import { getGroupMember } from '../../redux/actions/memberActions';
 import api from '../../services/api';
 import GroupTableHeader from './groupTableHeader';
 import GroupTableGroup from './groupTableGroup';
@@ -8,12 +10,18 @@ import GroupTableGroup from './groupTableGroup';
 interface GroupTableProps {}
 
 const GroupTable: React.FC<GroupTableProps> = (prop) => {
+  const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const moveState = useTypedSelector((state) => state.common.moveState);
   const [inputVisible, setInputVisible] = useState(false);
   const [inputValue, setInputValue] = useState('');
+  useEffect(() => {
+    if (user && user._key && groupKey) {
+      dispatch(getGroupMember(groupKey));
+    }
+  }, [user, groupKey]);
   const handleInputChange = (e: any) => {
     setInputValue(e.target.value);
   };
@@ -30,9 +38,9 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
       className="groupTable"
       style={
         moveState == 'in'
-          ? { animation: 'contentmoveIn 500ms', animationFillMode: 'forwards',width:"100%" }
+          ? { animation: 'contentmoveIn 500ms', width: '100%' }
           : moveState == 'out'
-          ? { animation: 'contentmoveOut 500ms', animationFillMode: 'forwards',width:"calc(100% - 320px)" }
+          ? { animation: 'contentmoveOut 500ms', width: 'calc(100% - 320px)' }
           : {}
       }
     >
