@@ -117,7 +117,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           dropStyle={{
             width: '400px',
             maxHeight: '600px',
-            top: '60px',
+            top: '65px',
             left: '-320px',
           }}
           onClose={() => {
@@ -161,8 +161,8 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           dropStyle={{
             width: '260px',
             height: '370px',
-            top: '40px',
-            left: '-220px',
+            top: '65px',
+            left: '-150px',
           }}
           onClose={() => {
             setContentSetVisilble(false);
