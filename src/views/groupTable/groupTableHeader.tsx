@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Checkbox } from '@material-ui/core';
+import { Checkbox, Chip, Avatar } from '@material-ui/core';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
 import {
   setCommonHeaderIndex,
   setMessage,
+  setMoveState,
 } from '../../redux/actions/commonActions';
 import { setFilterObject } from '../../redux/actions/taskActions';
-import { setMoveState } from '../../redux/actions/commonActions';
+import { changeGroupInfo, getGroup } from '../../redux/actions/groupActions';
 import { getGroupMember } from '../../redux/actions/memberActions';
-
+import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
+import _ from 'lodash';
 import '../workingTable/workingTableHeader.css';
 import DropMenu from '../../components/common/dropMenu';
 import Dialog from '../../components/common/dialog';
@@ -32,7 +34,17 @@ import filePng from '../../assets/img/file.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import downArrowPng from '../../assets/img/downArrow.png';
 import './groupTableHeader.css';
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    chip: {
+      backgroundColor: 'rgba(255,255,255,0.24)',
+      color: '#fff',
+      marginRight: '10px',
+    },
+  })
+);
 const GroupTableHeader: React.FC = (prop) => {
+  const classes = useStyles();
   const memberHeaderIndex = useTypedSelector(
     (state) => state.member.memberHeaderIndex
   );
@@ -41,7 +53,7 @@ const GroupTableHeader: React.FC = (prop) => {
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const groupArray = useTypedSelector((state) => state.group.groupArray);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
-
+  const theme = useTypedSelector((state) => state.auth.theme);
   const dispatch = useDispatch();
   const viewArray: string[] = ['项目', '日历'];
   const viewImg: string[] = [labelPng, calendarPng];
@@ -61,8 +73,9 @@ const GroupTableHeader: React.FC = (prop) => {
   const [groupVisible, setGroupVisible] = useState(false);
   const [infoVisible, setInfoVisible] = useState(false);
   const [groupSetVisible, setGroupSetVisible] = useState(false);
-  const [groupMemberVisible, setGroupMemberVisible] = useState(true);
+  const [groupMemberVisible, setGroupMemberVisible] = useState(false);
   const [groupMember, setGroupMember] = useState<any>([]);
+  const [groupObj, setGroupObj] = React.useState<any>(null);
   const [filterCheckedArray, setFilterCheckedArray] = useState<any>([
     false,
     false,
@@ -89,8 +102,14 @@ const GroupTableHeader: React.FC = (prop) => {
     dispatch(
       setFilterObject({
         groupKey: null,
+        groupName: '',
+        groupLogo: '',
         creatorKey: null,
+        creatorAvatar: '',
+        creatorName: '',
         executorKey: null,
+        executorAvatar: '',
+        executorName: '',
         filterType: ['过期', '今天', '已完成'],
       })
     );
@@ -106,8 +125,15 @@ const GroupTableHeader: React.FC = (prop) => {
     }
     dispatch(setFilterObject({ filterType: filterType }));
   };
-  const saveGroupSet = () => {};
-  const setGroup = () => {};
+  const saveGroupSet = (obj: any) => {
+    setGroupObj(obj);
+    console.log(obj);
+  };
+  const setGroup = () => {
+    dispatch(changeGroupInfo(groupKey, groupObj));
+    setGroupSetVisible(false);
+    dispatch(getGroup(3, null, theme.groupSortType));
+  };
   const setMember = (groupMember: any) => {
     console.log('groupMember', groupMember);
     setGroupMember(groupMember);
@@ -120,6 +146,26 @@ const GroupTableHeader: React.FC = (prop) => {
     dispatch(setMessage(true, '修改群成员成功', 'success'));
     dispatch(getGroupMember(groupKey));
     setGroupMemberVisible(false);
+  };
+  const deleteFilter = (filterTypeText: string) => {
+    let newFilterObject: any = _.cloneDeep(filterObject);
+    switch (filterTypeText) {
+      case 'groupKey':
+        newFilterObject.groupKey = null;
+        newFilterObject.groupLogo = '';
+        newFilterObject.groupName = '';
+        break;
+      case 'creatorKey':
+        newFilterObject.creatorKey = null;
+        newFilterObject.creatorAvatar = '';
+        newFilterObject.creatorName = '';
+        break;
+      case 'executorKey':
+        newFilterObject.executorKey = null;
+        newFilterObject.executorAvatar = '';
+        newFilterObject.executorName = '';
+    }
+    dispatch(setFilterObject(newFilterObject));
   };
   return (
     <div className="workingTableHeader">
@@ -169,7 +215,7 @@ const GroupTableHeader: React.FC = (prop) => {
             onClose={() => {
               setGroupVisible(false);
             }}
-            title={'视图切换'}
+            title={'群列表'}
           >
             <Contact contactIndex={0} />
           </DropMenu>
@@ -248,7 +294,6 @@ const GroupTableHeader: React.FC = (prop) => {
           <img src={viewImg[memberHeaderIndex]} alt=""></img>
           {viewArray[memberHeaderIndex]}
         </div>
-
         <DropMenu
           visible={viewVisible}
           dropStyle={{
@@ -281,9 +326,68 @@ const GroupTableHeader: React.FC = (prop) => {
           onClick={() => {
             setFilterVisible(true);
           }}
+          style={{ width: '40px' }}
         >
           <img src={filterPng} alt="" />
         </div>
+        {filterObject.groupKey ? (
+          <Chip
+            size="small"
+            avatar={
+              <Avatar
+                alt=""
+                src={
+                  filterObject.groupLogo +
+                  '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
+                }
+              />
+            }
+            label={filterObject.groupName}
+            onDelete={() => deleteFilter('groupKey')}
+            className={classes.chip}
+          />
+        ) : null}
+        {filterObject.creatorKey ? (
+          <Chip
+            size="small"
+            avatar={
+              <Avatar
+                alt=""
+                src={
+                  filterObject.creatorAvatar +
+                  '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
+                }
+              />
+            }
+            label={'创建人: ' + filterObject.creatorName}
+            onDelete={() => deleteFilter('creatorKey')}
+            className={classes.chip}
+          />
+        ) : null}
+        {filterObject.executorKey ? (
+          <Chip
+            size="small"
+            avatar={
+              <Avatar
+                alt=""
+                src={
+                  filterObject.executorAvatar +
+                  '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
+                }
+              />
+            }
+            label={'执行人: ' + filterObject.executorName}
+            onDelete={() => deleteFilter('executorKey')}
+            className={classes.chip}
+          />
+        ) : null}
+        {filterObject.filterType.length > 0 ? (
+          <Chip
+            size="small"
+            label={filterObject.filterType.join(' / ')}
+            className={classes.chip}
+          />
+        ) : null}
         <DropMenu
           visible={filterVisible}
           dropStyle={{

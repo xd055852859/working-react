@@ -78,7 +78,7 @@ const Filter: React.FC<FilterProps> = (prop) => {
                 className="filter-menu-info"
                 key={title + index}
                 onClick={() => {
-                  onClick(filterType, item[filterItem[2]], index);
+                  onClick(filterType, item, index);
                 }}
               >
                 <Avatar

@@ -4,6 +4,7 @@ export interface TaskType {
   labelArray: any;
   taskArray: any;
   teamTaskArray: any;
+  projectTaskArray: any;
   selfTaskArray: any;
   workingGroupArray: any;
   workingTaskArray: any;
@@ -15,14 +16,21 @@ const defaultState: TaskType = {
   labelArray: null,
   taskArray: null,
   teamTaskArray: null,
+  projectTaskArray: null,
   selfTaskArray: null,
   workingGroupArray: null,
   workingTaskArray: null,
   taskKey: 0,
   filterObject: {
     groupKey: null,
+    groupName: '',
+    groupLogo: '',
     creatorKey: null,
+    creatorAvatar: '',
+    creatorName: '',
     executorKey: null,
+    executorAvatar: '',
+    executorName: '',
     filterType: ['过期', '今天', '已完成'],
   },
 };
@@ -58,6 +66,11 @@ export const task = (state = defaultState, action: any) => {
         ...state,
         teamTaskArray: action.data,
       };
+    case actionTypes.GET_PROJECT_TASK_SUCCESS:
+      return {
+        ...state,
+        projectTaskArray: action.data,
+      };
     case actionTypes.GET_SELF_TASK_SUCCESS:
       return {
         ...state,
@@ -88,7 +101,7 @@ export const task = (state = defaultState, action: any) => {
     case actionTypes.EDIT_TASK_SUCCESS:
       console.log('编辑成功');
       return {
-        ...state
+        ...state,
         // taskKey: action.taskKey
       };
     case actionTypes.ADD_WORKING_TABLE_TASK_SUCCESS:

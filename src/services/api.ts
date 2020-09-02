@@ -135,6 +135,26 @@ const auth = {
       type: 2,
     });
   },
+  getNote(targetUKey: string, startTime: number) {
+    return request.post(HOME_URL + '/card/getNote', {
+      token: auth_token,
+      targetUKey: targetUKey,
+      startTime: startTime,
+      type: 2,
+    });
+  },
+  setNote(params: any) {
+    return request.post(HOME_URL + '/card/setNote', {
+      token: auth_token,
+      ...params,
+    });
+  },
+  clockIn(params: any) {
+    return request.post(HOME_URL + '/card/clockIn', {
+      token: auth_token,
+      ...params,
+    });
+  },
 };
 const task = {
   getGroupTask(
@@ -165,6 +185,12 @@ const task = {
       finishPercentArray: finishPercentArray,
       startTime: startTime,
       endTime: endTime,
+    });
+  },
+  getProjectTask(finishPercentArray: number[]) {
+    return request.post(HOME_URL + '/card/getProjectCareTask', {
+      token: auth_token,
+      finishPercentArray: finishPercentArray,
     });
   },
   getTaskList(
@@ -289,11 +315,11 @@ const task = {
   },
 };
 const member = {
-  getMember(groupId: string,sortType?:number) {
+  getMember(groupId: string, sortType?: number) {
     return request.get(HOME_URL + '/groupmember', {
       token: auth_token,
       groupId: groupId,
-      sortType:sortType
+      sortType: sortType,
     });
   },
   searchUserNew(searchCondition: string, curPage: number, perPage: number) {
@@ -314,18 +340,25 @@ const member = {
   },
 };
 const group = {
-  getGroup(listType: number, simple?: number|null,sortType?:number) {
+  getGroup(listType: number, simple?: number | null, sortType?: number) {
     return request.get(HOME_URL + '/group/groupList', {
       token: auth_token,
       listType: listType,
       simple: simple,
-      sortType:sortType
+      sortType: sortType,
     });
   },
   getGroupInfo(key: string) {
     return request.get(HOME_URL + '/group', {
       token: auth_token,
       key: key,
+    });
+  },
+  changeGroupInfo(key: string, patchData: any) {
+    return request.patch(HOME_URL + '/group', {
+      token: auth_token,
+      key: key,
+      patchData: patchData,
     });
   },
   addGroupMember(groupKey: string | null, targetUidList: any) {

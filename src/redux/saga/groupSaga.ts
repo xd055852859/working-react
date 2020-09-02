@@ -1,5 +1,5 @@
 import {call, put, takeLatest} from 'redux-saga/effects';
-import {actionTypes, getGroupSuccess, getGroupInfoSuccess} from '../actions/groupActions';
+import {actionTypes, getGroupSuccess, getGroupInfoSuccess,changeGroupInfoSuccess} from '../actions/groupActions';
 import {Failed} from '../actions/commonActions';
 import api from '../../services/api';
 
@@ -27,10 +27,22 @@ function * getGroupInfo(action : any) {
     yield put(Failed(e));
   }
 }
-
+function * changeGroupInfo(action : any) {
+  try {
+    const res = yield call(api.group.changeGroupInfo, action.key,action.patchData);
+    if (res.msg === 'OK') {
+      yield put(changeGroupInfoSuccess(res.result));
+    } else {
+      yield put(Failed(res));
+    }
+  } catch (e) {
+    yield put(Failed(e));
+  }
+}
 const groupSaga = [
   takeLatest(actionTypes.GET_GROUP, getGroup),
-  takeLatest(actionTypes.GET_GROUP_INFO, getGroupInfo)
+  takeLatest(actionTypes.GET_GROUP_INFO, getGroupInfo),
+  takeLatest(actionTypes.CHANGE_GROUP_INFO, changeGroupInfo)
 ];
 
 export default groupSaga;

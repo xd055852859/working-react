@@ -12,7 +12,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
     (state) => state.task.workingTaskArray
   );
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
-
+  const filterObject = useTypedSelector((state) => state.task.filterObject);
   const [groupFilterVisible, setGroupFilterVisible] = useState(false);
   const [executorfilterVisible, setExecutorFilterVisible] = useState(false);
   const [creatorFilterVisible, setCreatorFilterVisible] = useState(false);
@@ -61,7 +61,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
         groupFilterArray.push({
           key: item.groupKey,
           name: item.groupName,
-          logo: item.groupLogo,
+          avatar: item.groupLogo,
         });
       }
       let creatorIndex = _.findIndex(creatorFilterArray, {
@@ -91,8 +91,8 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
     // this.$set(this.filterObj, "type", this.stateStr);
     // this.$emit("update:taskObj", this.filterObj);
   };
-  const changeFilter = (type: string, key: string, index: number) => {
-    let filterObject: any = {};
+  const changeFilter = (type: string, filterItem: any, index: number) => {
+    let newFilterObject: any = _.cloneDeep(filterObject);
     let creatorFilterArray: any = [
       {
         name: '全部',
@@ -114,20 +114,29 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
     switch (type) {
       case 'groupKey':
         setGroupIndex(index);
-        setGroupFilterVisible(false)
+        setGroupFilterVisible(false);
+        newFilterObject.groupKey = filterItem.key;
+        newFilterObject.groupLogo = filterItem.avatar;
+        newFilterObject.groupName = filterItem.name;
         break;
       case 'creatorKey':
         setCreatorIndex(index);
-        setCreatorFilterVisible(false)
+        setCreatorFilterVisible(false);
+        newFilterObject.creatorKey = filterItem.key;
+        newFilterObject.creatorAvatar = filterItem.avatar;
+        newFilterObject.creatorName = filterItem.name;
         break;
       case 'executorKey':
         setExecutorIndex(index);
-        setExecutorFilterVisible(false)
+        setExecutorFilterVisible(false);
+        newFilterObject.executorKey = filterItem.key;
+        newFilterObject.executorAvatar = filterItem.avatar;
+        newFilterObject.executorName = filterItem.name;
     }
     if (type == 'groupKey') {
-      if (key) {
+      if (filterItem.key) {
         arr.forEach((item: any) => {
-          if (item.groupKey == key) {
+          if (item.groupKey == filterItem.key) {
             let creatorIndex = _.findIndex(creatorFilterArray, {
               key: item.creatorKey,
             });
@@ -172,17 +181,16 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
         });
         setExecutorFilterArray(executorfilterArray);
         setCreatorFilterArray(creatorFilterArray);
-      } 
-    //   else {
-    //     getData(arr);
-    //   }
+      }
+      //   else {
+      //     getData(arr);
+      //   }
     }
-    filterObject[type] = key;
-    dispatch(setFilterObject(filterObject));
+    dispatch(setFilterObject(newFilterObject));
   };
   return (
     <React.Fragment>
-      {headerIndex == 3 ? (
+      {headerIndex != 3 ? (
         <Filter
           title={'群组'}
           visible={groupFilterVisible}
@@ -202,7 +210,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
             setGroupFilterVisible(false);
           }}
           onClick={changeFilter}
-          filterItem={['name', 'avatar','key']}
+          filterItem={['name', 'avatar', 'key']}
           defaultPngType={1}
         />
       ) : null}
@@ -225,7 +233,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
           setExecutorFilterVisible(false);
         }}
         onClick={changeFilter}
-        filterItem={['name', 'avatar','key']}
+        filterItem={['name', 'avatar', 'key']}
         defaultPngType={0}
       />
       <Filter

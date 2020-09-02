@@ -82,8 +82,8 @@ const MainBoard: React.FC = () => {
           item.todayTaskTime < endTime;
         if (
           item.executorKey == user._key &&
-          item.taskEndDate < endTime &&
-          (finishState || item.finishPercent == 0) &&
+          ((item.finishPercent == 0 && item.taskEndDate < endTime) ||
+            finishState) &&
           item.title != '' &&
           item.taskEndDate
         ) {

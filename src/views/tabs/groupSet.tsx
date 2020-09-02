@@ -111,22 +111,22 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
       return;
     }
     setGroupName(newGroupName);
-    setGroupSet();
+    setGroupSet('groupName', newGroupName);
   };
   const changeEnterprise = (e: any) => {
     let newEnterprise = e.target.checked;
     setEnterprise(newEnterprise);
-    setGroupSet();
+    setGroupSet('enterprise', newEnterprise);
   };
   const changeStatisticsSonGroupEnergy = (e: any) => {
     let newStatisticsSonGroupEnergy = e.target.checked;
     setStatisticsSonGroupEnergy(newStatisticsSonGroupEnergy);
-    setGroupSet();
+    setGroupSet('statisticsSonGroupEnergy', newStatisticsSonGroupEnergy);
   };
   const changeGroupDesc = (e: any) => {
     let newGroupDesc = e.target.value;
     setGroupDesc(newGroupDesc);
-    setGroupSet();
+    setGroupSet('groupDesc', newGroupDesc);
   };
   const changeOpen = (e: any) => {
     let newIsOpen = e.target.checked;
@@ -136,33 +136,33 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
       setJoinType('0');
     }
     setIsOpen(newIsOpen);
-    setGroupSet();
+    setGroupSet('isOpen', newIsOpen);
   };
   const changeJoinType = (e: any) => {
     let newJoinType = e.target.value;
     setJoinType(newJoinType);
-    setGroupSet();
+    setGroupSet('joinType', newJoinType);
   };
   const changeIsPassword = (e: any) => {
     let newIsHasPassword = e.target.checked;
     setIsHasPassword(newIsHasPassword);
-    setGroupSet();
+    setGroupSet('isHasPassword', newIsHasPassword);
   };
   const changePassword = (e: any) => {
     let newPassword = e.target.value;
     setPassword(newPassword);
-    setGroupSet();
+    setGroupSet('password', newPassword);
   };
   const changeJoin = (e: any) => {
     let newIsLinkJoin = e.target.checked;
     setIsLinkJoin(newIsLinkJoin);
-    setGroupSet();
+    setGroupSet('isLinkJoin', newIsLinkJoin);
   };
   const changeRole = (value: any, index: number) => {
     let newDefaultPower = value;
     setDefaultPower(newDefaultPower);
     setDefaultPowerIndex(index);
-    setGroupSet();
+    setGroupSet('defaultPower', newDefaultPower);
   };
   const uploadImg = (e: any) => {
     let mimeType = ['image/png', 'image/jpeg'];
@@ -176,13 +176,13 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
       image.onload = function () {
         uploadFile.uploadImg(file, uploadToken, mimeType, function (url: any) {
           setGroupLogo(url);
-          setGroupSet();
+          setGroupSet('groupLogo', url);
         });
       };
     };
   };
-  const setGroupSet = () => {
-    saveGroupSet({
+  const setGroupSet = (type: string, value: any) => {
+    let obj: any = {
       groupName: groupName,
       groupDesc: groupDesc,
       groupLogo: groupLogo,
@@ -194,7 +194,9 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
       defaultPower: defaultPower,
       enterprise: enterprise ? 2 : 1,
       statisticsSonGroupEnergy: statisticsSonGroupEnergy,
-    });
+    };
+    obj[type] = value;
+    saveGroupSet(obj);
   };
   return (
     <div className="contact-dialog-content">

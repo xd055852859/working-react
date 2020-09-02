@@ -4,6 +4,8 @@ export const actionTypes = {
   GET_GROUP_TASK_SUCCESS: 'GET_GROUP_TASK_SUCCESS',
   GET_TEAM_TASK: 'GET_TEAM_TASK',
   GET_TEAM_TASK_SUCCESS: 'GET_TEAM_TASK_SUCCESS',
+  GET_PROJECT_TASK:"GET_PROJECT_TASK",
+  GET_PROJECT_TASK_SUCCESS: 'GET_PROJECT_TASK_SUCCESS',
   GET_SELF_TASK: 'GET_SELF_TASK',
   GET_SELF_TASK_SUCCESS: 'GET_SELF_TASK_SUCCESS',
   GET_WORKING_TABLE_TASK: 'GET_WORKING_TABLE_TASK',
@@ -50,6 +52,24 @@ export function getTeamTask(
 export function getTeamTaskSuccess(data: any) {
   return { type: actionTypes.GET_TEAM_TASK_SUCCESS, data };
 }
+export function getProjectTask(
+  finishPercentArray: number[],
+  groupKey?: string,
+  startTime?: number | null,
+  endTime?: number | null
+) {
+  return {
+    type: actionTypes.GET_PROJECT_TASK,
+    groupKey: groupKey,
+    finishPercentArray: finishPercentArray,
+    startTime: startTime,
+    endTime: endTime,
+  };
+}
+export function getProjectTaskSuccess(data: any) {
+  return { type: actionTypes.GET_PROJECT_TASK_SUCCESS, data };
+}
+
 export function getSelfTask(
   typeBoard1: number,
   targetUGKey: string,

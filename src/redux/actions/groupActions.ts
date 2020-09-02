@@ -4,9 +4,15 @@ export const actionTypes = {
   SET_GROUP_KEY: 'SET_GROUP_KEY',
   GET_GROUP_INFO: 'GET_GROUP_INFO',
   GET_GROUP_INFO_SUCCESS: 'GET_GROUP_INFO_SUCCESS',
+  CHANGE_GROUP_INFO: 'CHANGE_GROUP_INFO',
+  CHANGE_GROUP_INFO_SUCCESS: 'CHANGE_GROUP_INFO_SUCCESS',
 };
 
-export function getGroup(listType: number, simple?: number|null, sortType?: number) {
+export function getGroup(
+  listType: number,
+  simple?: number | null,
+  sortType?: number
+) {
   return {
     type: actionTypes.GET_GROUP,
     listType: listType,
@@ -25,4 +31,10 @@ export function getGroupInfo(key: string | number) {
 }
 export function getGroupInfoSuccess(data: any) {
   return { type: actionTypes.GET_GROUP_INFO_SUCCESS, data };
+}
+export function changeGroupInfo(key: string | number, patchData: any) {
+  return { type: actionTypes.CHANGE_GROUP_INFO, key, patchData };
+}
+export function changeGroupInfoSuccess(data: any) {
+  return { type: actionTypes.CHANGE_GROUP_INFO_SUCCESS, data };
 }

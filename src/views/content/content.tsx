@@ -24,11 +24,11 @@ const Content: React.FC<ContentProps> = (props) => {
       getPrompt();
       setInterval(formatTime, 60000);
     }
+    return clearInterval();
   }, [user]);
   const formatTime = () => {
     let hour = moment().hour();
     let minute = moment().minute();
-    console.log(hour, minute);
     let nowTime: any = [];
     if (hour < 9) {
       nowTime[0] = '早上';
@@ -48,7 +48,6 @@ const Content: React.FC<ContentProps> = (props) => {
   const getPrompt = async () => {
     let promptRes: any = await api.auth.getPrompt();
     if (promptRes.msg == 'OK') {
-      console.log(promptRes.result.content)
       setPrompt(promptRes.result.content);
       // dispatch(setMessage(true, '申请加群成功', 'success'));
     } else {

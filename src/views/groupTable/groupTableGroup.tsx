@@ -79,7 +79,6 @@ const GroupTableGroup: React.FC = (prop) => {
         }
       }
     });
-
     taskInfo = taskInfo.map((item: any) => {
       let arr = [];
       if (item) {
@@ -96,29 +95,27 @@ const GroupTableGroup: React.FC = (prop) => {
         let findIndex = _.findIndex(taskInfo[i], ['_key', item._key]);
         if (item.labelKey == labelArray[i]._key && findIndex == -1) {
           if (item.finishPercent == 1) {
-            if (finishPercentArray1[i]) {
-              finishPercentArray1[i].push(item);
-            } else {
+            if (!finishPercentArray1[i]) {
               finishPercentArray1[i] = [];
             }
+            finishPercentArray1[i].push(item);
           }
           if (item.finishPercent == 2) {
-            if (finishPercentArray2[i]) {
-              finishPercentArray2[i].push(item);
-            } else {
+            if (!finishPercentArray2[i]) {
               finishPercentArray2[i] = [];
             }
+            finishPercentArray2[i].push(item);
           }
           if (item.finishPercent == 10) {
-            if (finishPercentArray10[i]) {
-              finishPercentArray10[i].push(item);
-            } else {
+            if (!finishPercentArray10[i]) {
               finishPercentArray10[i] = [];
             }
+            finishPercentArray10[i].push(item);
           }
         }
       }
     });
+    console.log(finishPercentArray1);
     taskInfo.forEach((item: any, index: number) => {
       if (finishPercentArray1[index]) {
         item.push(...finishPercentArray1[index]);
@@ -133,6 +130,7 @@ const GroupTableGroup: React.FC = (prop) => {
     taskInfo = taskInfo.map((item: any) => {
       return _.cloneDeep(format.formatFilter(item, filterObject));
     });
+    console.log(taskInfo);
     setTaskInfo(taskInfo);
     setTaskNameArr(taskNameArr);
     setLabelExecutorArray(labelExecutorArray);

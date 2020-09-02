@@ -31,11 +31,15 @@ export const group = (state = defaultState, action: any) => {
         groupKey: action.groupKey,
       };
     case actionTypes.GET_GROUP_INFO_SUCCESS:
-      console.log(action);
       return {
         ...state,
         groupInfo: action.data,
         groupRole: action.data.role,
+      };
+    case actionTypes.CHANGE_GROUP_INFO_SUCCESS:
+      return {
+        ...state,
+        groupInfo: action.data,
       };
     default:
       return state;

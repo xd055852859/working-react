@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Checkbox } from '@material-ui/core';
+import { Checkbox, Chip, Avatar } from '@material-ui/core';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
 import { setFilterObject } from '../../redux/actions/taskActions';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
+import _ from 'lodash';
 import tablePng from '../../assets/img/table.png';
 import './workingTableHeader.css';
 import DropMenu from '../../components/common/dropMenu';
@@ -26,9 +27,15 @@ const useStyles = makeStyles((theme: Theme) =>
     root: {
       width: '600px',
     },
+    chip: {
+      backgroundColor: 'rgba(255,255,255,0.24)',
+      color: '#fff',
+      marginRight: '10px',
+    },
   })
 );
 const WorkingTableHeader: React.FC = (prop) => {
+  const classes = useStyles();
   const memberHeaderIndex = useTypedSelector(
     (state) => state.member.memberHeaderIndex
   );
@@ -72,7 +79,6 @@ const WorkingTableHeader: React.FC = (prop) => {
     false,
   ]);
 
-
   const chooseMemberHeader = (headIndex: number) => {
     dispatch(setHeaderIndex(headIndex));
     setViewVisible(false);
@@ -91,8 +97,14 @@ const WorkingTableHeader: React.FC = (prop) => {
     dispatch(
       setFilterObject({
         groupKey: null,
+        groupName: '',
+        groupLogo: '',
         creatorKey: null,
+        creatorAvatar: '',
+        creatorName: '',
         executorKey: null,
+        executorAvatar: '',
+        executorName: '',
         filterType: ['过期', '今天', '已完成'],
       })
     );
@@ -107,6 +119,26 @@ const WorkingTableHeader: React.FC = (prop) => {
       filterType.splice(fikterIndex, 1);
     }
     dispatch(setFilterObject({ filterType: filterType }));
+  };
+  const deleteFilter = (filterTypeText: string) => {
+    let newFilterObject: any = _.cloneDeep(filterObject);
+    switch (filterTypeText) {
+      case 'groupKey':
+        newFilterObject.groupKey = null;
+        newFilterObject.groupLogo = '';
+        newFilterObject.groupName = '';
+        break;
+      case 'creatorKey':
+        newFilterObject.creatorKey = null;
+        newFilterObject.creatorAvatar = '';
+        newFilterObject.creatorName = '';
+        break;
+      case 'executorKey':
+        newFilterObject.executorKey = null;
+        newFilterObject.executorAvatar = '';
+        newFilterObject.executorName = '';
+    }
+    dispatch(setFilterObject(newFilterObject));
   };
   return (
     <div className="workingTableHeader">
@@ -158,9 +190,68 @@ const WorkingTableHeader: React.FC = (prop) => {
           onClick={() => {
             setFilterVisible(true);
           }}
+          style={{ width: '40px' }}
         >
           <img src={filterPng} alt="" />
         </div>
+        {filterObject.groupKey ? (
+          <Chip
+            size="small"
+            avatar={
+              <Avatar
+                alt=""
+                src={
+                  filterObject.groupLogo +
+                  '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
+                }
+              />
+            }
+            label={filterObject.groupName}
+            onDelete={() => deleteFilter('groupKey')}
+            className={classes.chip}
+          />
+        ) : null}
+        {filterObject.creatorKey ? (
+          <Chip
+            size="small"
+            avatar={
+              <Avatar
+                alt=""
+                src={
+                  filterObject.creatorAvatar +
+                  '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
+                }
+              />
+            }
+            label={'创建人: ' + filterObject.creatorName}
+            onDelete={() => deleteFilter('creatorKey')}
+            className={classes.chip}
+          />
+        ) : null}
+        {filterObject.executorKey ? (
+          <Chip
+            size="small"
+            avatar={
+              <Avatar
+                alt=""
+                src={
+                  filterObject.executorAvatar +
+                  '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
+                }
+              />
+            }
+            label={'执行人: ' + filterObject.executorName}
+            onDelete={() => deleteFilter('executorKey')}
+            className={classes.chip}
+          />
+        ) : null}
+        {filterObject.filterType.length > 0 ? (
+          <Chip
+            size="small"
+            label={filterObject.filterType.join(' / ')}
+            className={classes.chip}
+          />
+        ) : null}
         <DropMenu
           visible={filterVisible}
           dropStyle={{
