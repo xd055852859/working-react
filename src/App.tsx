@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import { useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
+import { useTypedSelector } from './redux/reducer/RootState';
 import { getSearchParamValue } from './services/util';
 import { useDispatch } from 'react-redux';
 import { getUserInfo, getMainGroupKey,getUploadToken } from './redux/actions/authActions';
-import { useHistory } from 'react-router-dom';
-import { useTypedSelector } from './redux/reducer/RootState';
+import { getTheme } from './redux/actions/authActions';
 import Home from './views/home/home';
 import Content from './views/content/content';
 import WorkingTable from './views/workingTable/workingTable';
@@ -30,6 +31,7 @@ const App: React.FC = () => {
     ) {
       // console.log(user);
       dispatch(getMainGroupKey());
+      dispatch(getTheme());
     }
     if (!user) {
       // 用户未登录

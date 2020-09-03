@@ -40,7 +40,7 @@ const WorkingTableLabel: React.FC = (prop) => {
   const [batchLabelKey, setBatchLabelKey] = useState<string | null>('');
   const [batchGroupKey, setBatchGroupKey] = useState<string | null>('');
   const [batchTaskIndex, setBatchTaskIndex] = useState(0);
-
+  const [chooseLabelKey, setChooseLabelKey] = useState('');
   const workingTableRef: React.RefObject<any> = useRef();
   const dispatch = useDispatch();
   useEffect(() => {
@@ -164,6 +164,7 @@ const WorkingTableLabel: React.FC = (prop) => {
   const sortArr = (arr: object[], item: any) => {
     arr.push(item);
     arr = _.sortBy(arr, ['taskEndDate']).reverse();
+    // arr = _.sortBy(arr, ['createTime']).reverse();
     arr = _.sortBy(arr, ['finishPercent']);
     return arr;
   };
@@ -205,7 +206,7 @@ const WorkingTableLabel: React.FC = (prop) => {
     });
     let batchRes: any = await api.task.batchTaskArray(cardKeyArray);
     if (batchRes.msg == 'OK') {
-      dispatch(setMessage(true, '保存成功', 'success'));
+      dispatch(setMessage(true, '归档成功', 'success'));
       if (headerIndex == 1) {
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
       } else if (headerIndex == 2) {
@@ -263,6 +264,7 @@ const WorkingTableLabel: React.FC = (prop) => {
       ref={workingTableRef}
     >
       {mainLabelArray.map((labelItem: any, labelIndex: number) => {
+        console.log('labelItem', labelItem);
         return (
           <div
             key={'label' + labelIndex}
@@ -298,7 +300,7 @@ const WorkingTableLabel: React.FC = (prop) => {
               <div className="workingTableLabel-info-labelInfo">
                 <TaskNav
                   avatar={
-                    labelItem.groupObj & labelItem.groupObj.groupLogo
+                    labelItem.groupObj && labelItem.groupObj.groupLogo
                       ? labelItem.groupObj.groupLogo
                       : defaultGroupPng
                   }
@@ -312,59 +314,13 @@ const WorkingTableLabel: React.FC = (prop) => {
                   role={labelItem.groupObj.groupRole}
                   colorIndex={labelIndex}
                   taskNavArray={[labelItem.groupObj, labelItem.labelObj]}
-                  taskNavWidth={memberHeaderIndex == 0 ? '330px' : '100%'}
-                >
-                  {labelItem.groupObj.groupRole > 0 &&
-                  labelItem.groupObj.groupRole < 4 ? (
-                    <div style={{ position: 'relative' }}>
-                      <div
-                        className="task-item-title-icon"
-                        onClick={() => {
-                          setBatchLabelKey(labelItem.labelObj._key);
-                        }}
-                      >
-                        <img
-                          src={ellipsisPng}
-                          className="taskNav-name-ellipsis"
-                        />
-                      </div>
-                      <DropMenu
-                        visible={labelItem.labelObj._key == batchLabelKey}
-                        dropStyle={{
-                          width: '150px',
-                          height: '150px',
-                          top: '18px',
-                          color: '#333',
-                        }}
-                        onClose={() => {
-                          setBatchLabelKey('');
-                        }}
-                        title={'设置频道'}
-                      >
-                        <div className="taskNav-set">
-                          <div
-                            onClick={() => {
-                              batchTaskArray(labelItem.arr);
-                            }}
-                          >
-                            归档全部已完成任务
-                          </div>
-                          <div
-                            onClick={() => {
-                              chooseBatchLabel(
-                                labelItem.labelObj._key,
-                                labelItem.groupObj._key,
-                                labelItem.arr.length
-                              );
-                            }}
-                          >
-                            批量导入
-                          </div>
-                        </div>
-                      </DropMenu>
-                    </div>
-                  ) : null}
-                </TaskNav>
+                  taskNavWidth={memberHeaderIndex == 0 ? '350px' : '100%'}
+                  chooseLabelKey={chooseLabelKey}
+                  setChooseLabelKey={setChooseLabelKey}
+                  batchTaskArray={() => {
+                    batchTaskArray(labelItem.arr);
+                  }}
+                />
                 {/* <div className="workingTableLabel-info-labelName"> */}
                 {/*onClick={toGroup(labelItem.groupObj)} */}
                 {/* <div className="workingTableLabel-info-groupLogo">

@@ -229,7 +229,7 @@ const MemberBoard: React.FC = () => {
     if (item.taskEndDate) {
       time = Math.floor(
         (moment(item.taskEndDate).endOf('day').valueOf() -
-          moment(new Date().getTime()).endOf('day').valueOf()) /
+          moment().endOf('day').valueOf()) /
           86400000
       );
     }

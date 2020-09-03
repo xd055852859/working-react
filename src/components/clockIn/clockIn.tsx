@@ -62,10 +62,11 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
         let finishState =
           item.finishPercent == 1 &&
           item.todayTaskTime >= startTime &&
-          item.todayTaskTime < endTime;
+          item.todayTaskTime <= endTime;
         if (
           item.executorKey == user._key &&
-          finishState &&
+          ((item.finishPercent == 0 && item.taskEndDate <= endTime) ||
+            finishState) &&
           item.title != '' &&
           item.taskEndDate
         ) {
@@ -80,7 +81,9 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
             newGroupObj[item.groupKey].taskNumber =
               newGroupObj[item.groupKey].taskNumber + 1;
           }
-          newTaskNumber = newTaskNumber + 1;
+          if (item.finishPercent == 1) {
+            newTaskNumber = newTaskNumber + 1;
+          }
         }
       });
       newGroupList = _.sortBy(Object.values(newGroupObj), [

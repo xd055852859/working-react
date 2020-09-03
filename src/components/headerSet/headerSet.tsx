@@ -1,29 +1,64 @@
 import React, { useState, useEffect } from 'react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
+import { TextField, Button } from '@material-ui/core';
+import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux';
+import _ from 'lodash';
 import Switch from '@material-ui/core/Switch';
 import Dialog from '../common/dialog';
 import DropMenu from '../common/dropMenu';
 import ClockIn from '../clockIn/clockIn';
+import Task from '../task/task';
 import { setTheme } from '../../redux/actions/authActions';
+import { setMessage } from '../../redux/actions/commonActions';
 import './headerSet.css';
 import set1Png from '../../assets/img/set1.png';
 import set2Png from '../../assets/img/set2.png';
 import set3Png from '../../assets/img/set3.png';
 import bgImg from '../../assets/img/bgImg.png';
 import clockInPng from '../../assets/img/clockIn.png';
-import _ from 'lodash';
+import searchPng from '../../assets/img/headerSearch.png';
+import api from '../../services/api';
 interface HeaderSetProps {}
-
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    button: {
+      backgroundColor: '#17B881',
+      padding: '6 16px',
+      color: '#fff',
+    },
+    input: {
+      width: 'calc(100% - 115px)',
+      marginRight: '10px',
+      minWidth: '200px',
+      '& .MuiInput-formControl': {
+        marginTop: '0px',
+      },
+      '& .MuiOutlinedInput-input': {
+        padding: '10px 14px',
+      },
+      '& .MuiInputLabel-formControl': {
+        marginTop: '-10px',
+      },
+    },
+  })
+);
 const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const dispatch = useDispatch();
+  const classes = useStyles();
   const user = useTypedSelector((state) => state.auth.user);
   const theme = useTypedSelector((state) => state.auth.theme);
   const [avatar, setAvatar] = useState<any>(null);
   const [contentSetVisilble, setContentSetVisilble] = useState(false);
   const [bgVisible, setBgVisible] = useState(false);
   const [clockInVisible, setClockInVisible] = useState(false);
+  const [searchVisible, setSearchVisible] = useState(false);
   const [avatarShow, setAvatarShow] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
+  const [page, setPage] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [searchTaskList, setSearchTaskList] = useState([]);
+
   const color1 = [
     '#46558C',
     '#9C5D9E',
@@ -67,6 +102,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     'https://cdn-icare.qingtime.cn/1596679772476_画板备份.jpg',
     // imgBig26
   ];
+  const limit = 10;
   useEffect(() => {
     if (user) {
       setAvatar(user.profile.avatar);
@@ -88,7 +124,45 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     }
     dispatch(setTheme(newTheme));
   };
-
+  const searchTask = () => {
+    if (searchInput != '') {
+      // this.getSearchList({ param: { name: this.searchInput }, type: 1 })
+      getTaskSearch(page);
+    }
+  };
+  const getTaskSearch = async (page: number) => {
+    let newSearchTaskList: any = [];
+    if (page == 1) {
+      setSearchTaskList([]);
+    } else {
+      newSearchTaskList = _.cloneDeep(searchTaskList);
+    }
+    let res: any = await api.task.getCardSearch(page, limit, searchInput);
+    if (res.msg == 'OK') {
+      newSearchTaskList.push(...res.result);
+      setSearchTaskList(newSearchTaskList);
+      setTotal(res.totalNumber);
+    } else {
+      dispatch(setMessage(true, res.msg, 'error'));
+    }
+  };
+  const scrollSearchLoading = (e: any) => {
+    let newPage = page;
+    //文档内容实际高度（包括超出视窗的溢出部分）
+    let scrollHeight = e.target.scrollHeight;
+    //滚动条滚动距离
+    let scrollTop = e.target.scrollTop;
+    //窗口可视范围高度
+    let clientHeight = e.target.clientHeight;
+    if (
+      clientHeight + scrollTop >= scrollHeight &&
+      searchTaskList.length < total
+    ) {
+      newPage = newPage + 1;
+      setPage(newPage);
+      getTaskSearch(newPage);
+    }
+  };
   return (
     <React.Fragment>
       <div
@@ -100,12 +174,25 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
         }}
       >
         <img
+          src={searchPng}
+          alt=""
+          style={{
+            width: '40px',
+            height: '40px',
+            marginRight: '15px',
+            cursor: 'pointer',
+          }}
+          onClick={() => {
+            setSearchVisible(true);
+          }}
+        />
+        <img
           src={clockInPng}
           alt=""
           style={{
             width: '40px',
             height: '40px',
-            marginRight: '20px',
+            marginRight: '15px',
             cursor: 'pointer',
           }}
           onClick={() => {
@@ -261,7 +348,46 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           </div>
         </DropMenu>
       </div>
-
+      <Dialog
+        visible={searchVisible}
+        onClose={() => {
+          setSearchVisible(false);
+        }}
+        footer={false}
+        title={'搜索中心'}
+        dialogStyle={{ width: '370px', height: '500px' }}
+      >
+        <div className="headerSet-search-title">
+          <TextField
+            // required
+            id="outlined-basic"
+            variant="outlined"
+            label="搜索"
+            className={classes.input}
+            style={{ width: '70%' }}
+            value={searchInput}
+            onChange={(e) => {
+              setSearchInput(e.target.value);
+            }}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              searchTask();
+            }}
+            style={{ marginLeft: '10px' }}
+            className={classes.button}
+          >
+            搜索
+          </Button>
+        </div>
+        <div className="headerSet-search-info" onScroll={scrollSearchLoading}>
+          {searchTaskList.map((taskItem: any, taskIndex: number) => {
+            return <Task taskItem={taskItem} showGroupName={true} />;
+          })}
+        </div>
+      </Dialog>
       <Dialog
         visible={bgVisible}
         onClose={() => {

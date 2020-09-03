@@ -5,6 +5,10 @@ import { useDispatch } from 'react-redux';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
 import { setFilterObject } from '../../redux/actions/taskActions';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
+import {
+  setCommonHeaderIndex,
+  setMoveState,
+} from '../../redux/actions/commonActions';
 import _ from 'lodash';
 import tablePng from '../../assets/img/table.png';
 import './workingTableHeader.css';
@@ -142,7 +146,13 @@ const WorkingTableHeader: React.FC = (prop) => {
   };
   return (
     <div className="workingTableHeader">
-      <div className="workingTableHeader-logo">
+      <div
+        className="workingTableHeader-logo"
+        onClick={() => {
+          dispatch(setMoveState('out'));
+          dispatch(setCommonHeaderIndex(0));
+        }}
+      >
         <img src={tablePng} alt="" />
         工作台
       </div>

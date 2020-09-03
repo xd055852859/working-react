@@ -22,6 +22,7 @@ import api from '../../services/api';
 import { setMessage } from '../../redux/actions/commonActions';
 import { editTask } from '../../redux/actions/taskActions';
 import DropMenu from '../common/dropMenu';
+import Editor from '../common/Editor';
 interface TaskInfoProps {
   taskInfo: any;
   setNewDetail: any;
@@ -196,6 +197,9 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   };
   const changeInput = (e: any) => {
     setCommentInput(e.target.value);
+  };
+  const changeTaskContent = (value: string) => {
+    changeTaskItem('content', value);
   };
   const saveCommentMsg = async () => {
     let newCommentArray = _.cloneDeep(taskCommentArray);
@@ -398,7 +402,12 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
               <div className="taskInfo-item-title">关注</div>
               <div className="taskInfo-item-follow"></div>
             </div>
-            <div></div>
+            <Editor
+              // editorHeight={'300px'}
+              data={taskItem.content}
+              onChange={changeTaskContent}
+              editable={true}
+            />
             <div className="taskInfo-comment">
               <div className="taskInfo-comment-tabs">
                 <div

@@ -16,7 +16,7 @@ const format = {
               item.taskEndDate <= endTime &&
               item.finishPercent == 0) ||
               (item.taskEndDate <= endTime &&
-                item.taskEndDate > startTime &&
+                item.taskEndDate >= startTime &&
                 item.finishPercent < 2)) &&
             (item.creatorKey != userKey ||
               (item.creatorKey == userKey && item.executorKey == userKey))

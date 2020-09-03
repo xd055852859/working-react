@@ -25,6 +25,7 @@ interface TaskProps {
   changeTask?: any;
   taskIndex?: number;
   taskInfoIndex?: number;
+  showGroupName?: boolean;
 }
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -35,7 +36,7 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 const Task: React.FC<TaskProps> = (props) => {
-  const { taskItem, changeTask, taskIndex, taskInfoIndex } = props;
+  const { taskItem, changeTask, taskIndex, taskInfoIndex,showGroupName } = props;
   const bottomtype = '';
   const taskKey = useTypedSelector((state) => state.task.taskKey);
   const user = useTypedSelector((state) => state.auth.user);
@@ -387,11 +388,17 @@ const Task: React.FC<TaskProps> = (props) => {
               <div className="taskItem-footer">
                 <div className="taskItem-footer-left">
                   <div className="taskItem-name">
-                    <span>
-                      {taskDetail.serialNumber
-                        ? '#' + taskDetail.serialNumber
-                        : ''}
-                    </span>
+                    {!showGroupName ? (
+                      <span>
+                        {taskDetail.serialNumber
+                          ? '#' + taskDetail.serialNumber
+                          : ''}
+                      </span>
+                    ) : (
+                      <span style={{ flexShrink: 0 }}>
+                        {taskDetail.groupName}
+                      </span>
+                    )}
                     <span style={{ flexShrink: 0 }}>
                       {taskDetail.creatorName.length > 3
                         ? taskDetail.creatorName.substring(0, 3) + '...'
@@ -422,7 +429,7 @@ const Task: React.FC<TaskProps> = (props) => {
                         width: '180px',
                         height: '290px',
                         top: '18px',
-                        left:'-30px'
+                        left: '-30px',
                       }}
                       onClose={() => {
                         setTaskExecutorShow(false);
@@ -540,5 +547,6 @@ Task.defaultProps = {
   taskItem: null,
   executorKey: 0,
   changeTask: null,
+  showGroupName:false
 };
 export default Task;

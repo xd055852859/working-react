@@ -1,0 +1,37 @@
+.fr-box.fr-basic .fr-wrapper {
+  border: unset !important;
+}
+
+.fr-toolbar,
+.second-toolbar {
+  border-radius: unset !important;
+  border: unset !important;
+}
+.editor-preview {
+  max-width: 960px;
+  margin: auto;
+  padding: 15px;
+  overflow: hidden;
+  background-color: #fff;
+}
+/* 隐藏版权信息 */
+.fr-wrapper > div:first-child,
+#logo,
+.fr-view > p[data-f-id='pbf'] {
+  position: absolute;
+  top: -10000px;
+  opacity: 0;
+  left: 0;
+}
+
+/* 文档模式下划线样式 */
+@media (min-width: 992px) {
+  .fr-box.fr-document .fr-wrapper .fr-element hr {
+    margin-left: unset !important;
+    margin-right: unset !important;
+    background: #efefef;
+    height: unset !important;
+    outline: unset !important;
+    border: 1px inset !important;
+  }
+}

@@ -13,7 +13,7 @@ import api from '../../services/api';
 import Task from '../../components/task/task';
 import TaskNav from '../../components/taskNav/taskNav';
 import DropMenu from '../../components/common/dropMenu';
-import ellipsisPng from '../../assets/img/ellipsis.png';
+
 import defaultPerson from '../../assets/img/defaultPerson.png';
 
 const GroupTableGroup: React.FC = (prop) => {
@@ -22,7 +22,7 @@ const GroupTableGroup: React.FC = (prop) => {
   const taskArray = useTypedSelector((state) => state.task.taskArray);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
-
+ 
   // const [memberObj, setMemberObj] = useState<any>({});
   const [taskInfo, setTaskInfo] = useState<any>([]);
   const [taskNameArr, setTaskNameArr] = useState<any>([]);
@@ -31,7 +31,7 @@ const GroupTableGroup: React.FC = (prop) => {
   const [batchTaskVisible, setBatchTaskVisible] = useState(false);
   const [batchLabelKey, setBatchLabelKey] = useState<string | null>('');
   const [batchGroupKey, setBatchGroupKey] = useState<string | null>('');
-  const [batchTaskIndex, setBatchTaskIndex] = useState(0);
+  const [chooseLabelKey, setChooseLabelKey] = useState('');
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const dispatch = useDispatch();
   useEffect(() => {
@@ -59,14 +59,11 @@ const GroupTableGroup: React.FC = (prop) => {
       // this.taskClickArr[index] = false;
       // this.taskMoveArr[index] = false;
       taskNameArr.push(item.cardLabelName);
-      if (item._key) {
-        labelExecutorArray.push({
-          executorKey: item.executorKey,
-          executorAvatar: item.executorAvatar,
-          executorNickName: item.executorNickName,
-        });
-        let newItem = item;
-      }
+      labelExecutorArray.push({
+        executorKey: item.executorKey,
+        executorAvatar: item.executorAvatar,
+        executorNickName: item.executorNickName,
+      });
     });
 
     taskArray.forEach((item: any) => {
@@ -249,7 +246,6 @@ const GroupTableGroup: React.FC = (prop) => {
       };
     }
 
-    console.log(labelObject);
     setTaskInfo(newTaskInfo);
     let taskRes: any = await api.task.changeTaskLabel(
       groupKey,
@@ -282,15 +278,15 @@ const GroupTableGroup: React.FC = (prop) => {
       dispatch(setMessage(true, batchRes.msg, 'error'));
     }
   };
-  const chooseBatchLabel = (
-    labelKey: string | null,
-    groupKey: string | null,
-    index: number
-  ) => {
-    setBatchGroupKey(groupKey);
-    setBatchTaskVisible(true);
-    setBatchTaskIndex(index - 1);
-  };
+  // const chooseBatchLabel = (
+  //   labelKey: string | null,
+  //   groupKey: string | null,
+  //   index: number
+  // ) => {
+  //   setBatchGroupKey(groupKey);
+  //   setBatchTaskVisible(true);
+  //   setBatchTaskIndex(index - 1);
+  // };
   const changeTask = (
     taskItem: any,
     taskIndex: number,
@@ -300,6 +296,7 @@ const GroupTableGroup: React.FC = (prop) => {
     newTaskInfo[taskInfoIndex][taskIndex] = taskItem;
     setTaskInfo(newTaskInfo);
   };
+
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="task">
@@ -320,62 +317,10 @@ const GroupTableGroup: React.FC = (prop) => {
                     colorIndex={taskInfoindex}
                     taskNavArray={[groupInfo, labelArray[taskInfoindex]]}
                     taskNavWidth={'350px'}
-                  >
-                    {groupInfo &&
-                    groupInfo.groupRole > 0 &&
-                    groupInfo &&
-                    groupInfo.groupRole < 4 ? (
-                      <div style={{ position: 'relative' }}>
-                        <div
-                          className="task-item-title-icon"
-                          onClick={() => {
-                            setBatchLabelKey(labelArray[taskInfoindex]._key);
-                          }}
-                        >
-                          <img
-                            src={ellipsisPng}
-                            className="taskNav-name-ellipsis"
-                          />
-                        </div>
-                        <DropMenu
-                          visible={
-                            labelArray[taskInfoindex]._key == batchLabelKey
-                          }
-                          dropStyle={{
-                            width: '150px',
-                            height: '150px',
-                            top: '18px',
-                            color: '#333',
-                          }}
-                          onClose={() => {
-                            setBatchLabelKey('');
-                          }}
-                          title={'设置频道'}
-                        >
-                          <div className="taskNav-set">
-                            <div
-                              onClick={() => {
-                                batchTaskArray(taskInfoitem);
-                              }}
-                            >
-                              归档全部已完成任务
-                            </div>
-                            <div
-                              onClick={() => {
-                                chooseBatchLabel(
-                                  labelArray[taskInfoindex]._key,
-                                  groupInfo._key,
-                                  taskInfoitem.length
-                                );
-                              }}
-                            >
-                              批量导入
-                            </div>
-                          </div>
-                        </DropMenu>
-                      </div>
-                    ) : null}
-                  </TaskNav>
+                    chooseLabelKey={chooseLabelKey}
+                    setChooseLabelKey={setChooseLabelKey}
+                    batchTaskArray={()=>{batchTaskArray(taskInfoitem)}}
+                  />                 
                   <Droppable droppableId={taskInfoindex + ''}>
                     {(provided, snapshot) => (
                       <div ref={provided.innerRef} className="task-item-info">

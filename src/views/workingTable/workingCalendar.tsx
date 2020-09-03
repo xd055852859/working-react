@@ -75,7 +75,7 @@ const WorkingCanlendar: React.FC<WorkingCanlendarProps> = (prop) => {
       _.flatten(taskArray).forEach((taskItem: any) => {
         if (
           taskItem.taskEndDate >= item.start &&
-          taskItem.taskEndDate < item.end
+          taskItem.taskEndDate <= item.end
         ) {
           dateArray[index].arr.push(taskItem);
         }

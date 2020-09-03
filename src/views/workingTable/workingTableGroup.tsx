@@ -34,6 +34,7 @@ const WorkingTableGroup: React.FC = (prop) => {
   const [batchLabelKey, setBatchLabelKey] = useState<string | null>('');
   const [batchGroupKey, setBatchGroupKey] = useState<string | null>('');
   const [batchTaskIndex, setBatchTaskIndex] = useState(0);
+  const [chooseLabelKey, setChooseLabelKey] = useState('');
   const dispatch = useDispatch();
   const [colWidth, setColWidth] = useState(0);
   const [colNumbers, setColNumbers] = useState(4);
@@ -147,6 +148,7 @@ const WorkingTableGroup: React.FC = (prop) => {
   const sortArr = (arr: object[], item: any) => {
     arr.push(item);
     arr = _.sortBy(arr, ['taskEndDate']).reverse();
+    // arr = _.sortBy(arr, ['createTime']).reverse();
     arr = _.sortBy(arr, ['finishPercent']);
     return arr;
   };
@@ -202,59 +204,13 @@ const WorkingTableGroup: React.FC = (prop) => {
                     role={item.groupObj.groupRole}
                     colorIndex={index}
                     taskNavArray={[item.groupObj, groupItem.labelObj]}
-                    taskNavWidth={memberHeaderIndex == 1 ? '330px' : '100%'}
-                  >
-                    {item.groupObj.groupRole > 0 &&
-                    item.groupObj.groupRole < 4 ? (
-                      <div style={{ position: 'relative' }}>
-                        <div
-                          className="task-item-title-icon"
-                          onClick={() => {
-                            setBatchLabelKey(groupItem.labelObj._key);
-                          }}
-                        >
-                          <img
-                            src={ellipsisPng}
-                            className="taskNav-name-ellipsis"
-                          />
-                        </div>
-                        <DropMenu
-                          visible={groupItem.labelObj._key == batchLabelKey}
-                          dropStyle={{
-                            width: '150px',
-                            height: '150px',
-                            top: '18px',
-                            color: '#333',
-                          }}
-                          onClose={() => {
-                            setBatchLabelKey('');
-                          }}
-                          title={'设置频道'}
-                        >
-                          <div className="taskNav-set">
-                            <div
-                              onClick={() => {
-                                batchTaskArray(groupItem.arr);
-                              }}
-                            >
-                              归档全部已完成任务
-                            </div>
-                            <div
-                              onClick={() => {
-                                chooseBatchLabel(
-                                  groupItem.labelObj._key,
-                                  item.groupObj._key,
-                                  groupItem.arr.length
-                                );
-                              }}
-                            >
-                              批量导入
-                            </div>
-                          </div>
-                        </DropMenu>
-                      </div>
-                    ) : null}
-                  </TaskNav>
+                    taskNavWidth={memberHeaderIndex == 1 ? '350px' : '100%'}
+                    chooseLabelKey={chooseLabelKey}
+                    setChooseLabelKey={setChooseLabelKey}
+                    batchTaskArray={() => {
+                      batchTaskArray(groupItem.arr);
+                    }}
+                  />
 
                   <div
                     v-for="(taskItem,taskIndex) in groupItem.arr"
@@ -283,7 +239,7 @@ const WorkingTableGroup: React.FC = (prop) => {
     });
     let batchRes: any = await api.task.batchTaskArray(cardKeyArray);
     if (batchRes.msg == 'OK') {
-      dispatch(setMessage(true, '保存成功', 'success'));
+      dispatch(setMessage(true, '归档成功', 'success'));
       if (headerIndex == 1) {
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
       } else if (headerIndex == 2) {
@@ -343,9 +299,15 @@ const WorkingTableGroup: React.FC = (prop) => {
                   {/* onClick={toGroup(item.groupObj)} */}
 
                   <div className="workingTableLabel-info-groupLogo">
-                    <img src={item.groupObj.groupLogo} />
+                    <img
+                      src={
+                        item.groupObj.groupLogo
+                          ? item.groupObj.groupLogo
+                          : defaultGroupPng
+                      }
+                    />
                   </div>
-                  <div>{item.groupObj.groupName}</div>
+                  <div style={{ color: '#fff' }}>{item.groupObj.groupName}</div>
                 </div>
                 <div
                   style={{ overflowY: 'auto' }}

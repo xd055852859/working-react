@@ -7,14 +7,15 @@
   position: relative;
 }
 .workingTableLabel-container-item {
+  margin-right: 10px;
 }
 .workingTableLabel-info {
   height: 100%;
   /* // background: rgba(0, 0, 0, 0.18); */
   border-radius: 4px;
   /* // break-inside: avoid; */
-  padding: 10px 10px 0px 10px;
-  box-sizing: border-box;
+  /* padding: 10px 10px 0px 10px; */
+  /* box-sizing: border-box; */
 }
 .workingTableLabel-info-groupName {
   width: 100%;

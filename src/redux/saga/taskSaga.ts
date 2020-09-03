@@ -117,11 +117,9 @@ function* addWorkingTableTask(action: any) {
   try {
     const res = yield call(
       api.task.addTask,
-      action.title,
       action.groupKey,
       action.groupRole,
       action.labelKey,
-      action.cardIndex,
       action.executorKey
     );
     console.log('res', res);

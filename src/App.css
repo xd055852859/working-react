@@ -27,23 +27,33 @@
   z-index: 3;
   opacity: 0;
 }
+.icon-container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
 @keyframes moveIn {
   from {
     width: 320px;
+    opacity: 1;
   }
 
   to {
     width: 0px;
+    opacity: 0;
   }
 }
 
 @keyframes moveOut {
   from {
     width: 0px;
+    opacity: 0;
   }
 
   to {
     width: 320px;
+    opacity: 1;
   }
 }
 

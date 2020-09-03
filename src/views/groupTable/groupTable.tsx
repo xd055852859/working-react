@@ -38,9 +38,9 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
       className="groupTable"
       style={
         moveState == 'in'
-          ? { animation: 'contentmoveIn 500ms', width: '100%' }
+          ? { animation: 'contentmoveIn 50ms', width: '100%' }
           : moveState == 'out'
-          ? { animation: 'contentmoveOut 500ms', width: 'calc(100% - 320px)' }
+          ? { animation: 'contentmoveOut 50ms', width: 'calc(100% - 320px)' }
           : {}
       }
     >

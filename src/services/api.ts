@@ -214,17 +214,15 @@ const task = {
     });
   },
   addTask(
-    title: string,
     groupKey: number | string,
     groupRole: number | string,
     labelKey: number | string,
-    cardIndex: number | string,
     executorKey?: number | string
   ) {
     return request.post(HOME_URL + '/card', {
       token: auth_token,
       type: 2,
-      title: title,
+      title: '',
       content: '',
       rootType: 0,
       groupKey: groupKey,
@@ -235,9 +233,9 @@ const task = {
       hour: 1,
       day: 1,
       date: moment().date(),
-      taskEndDate: moment().valueOf(),
+      taskEndDate: moment().endOf('day').valueOf(),
       groupRole: groupRole,
-      cardIndex: cardIndex,
+      cardIndex: 0,
       labelKey: labelKey,
     });
   },
@@ -246,6 +244,15 @@ const task = {
       token: auth_token,
       cardKey: cardKey,
       groupKey: groupKey,
+    });
+  },
+  getCardSearch(curPage: number, perPage: number, searchCondition: string) {
+    return request.get(HOME_URL + '/card/searchCard', {
+      token: auth_token,
+      searchType: 1,
+      curPage: curPage,
+      perPage: perPage,
+      searchCondition: searchCondition,
     });
   },
   addTaskLabel(groupKey: string, cardLabelName: number | string) {
@@ -262,10 +269,26 @@ const task = {
       newLabelName: newLabelName,
     });
   },
+  //批量归档
   batchTaskArray(cardKeyArray: string[]) {
     return request.patch(HOME_URL + '/card/fileCard', {
       token: auth_token,
       cardKeyArray: cardKeyArray,
+    });
+  },
+  //批量导入任务
+  batchCard(batchTitle: string, groupKey: string, labelKey: string) {
+    return request.post(HOME_URL + '/card/batchQuickCreateCard', {
+      token: auth_token,
+      type: 2,
+      batchTitle: batchTitle,
+      groupKey: groupKey,
+      labelKey: labelKey,
+      date: moment().date(),
+      cardIndex: -1,
+      taskEndDate: moment().endOf('day').valueOf(),
+      day: 1,
+      hour: 1,
     });
   },
   changeTaskLabel(groupKey: string, cardKey: string, labelKey: string) {
@@ -405,6 +428,27 @@ const group = {
     return request.post(HOME_URL + '/group', {
       token: auth_token,
       ...params,
+    });
+  },
+  //设置默认执行者
+  setLabelOrGroupExecutorKey(
+    labelOrGroupKey: string | number,
+    executorKey: string | number,
+    type: number
+  ) {
+    return request.post(HOME_URL + '/card/setLabelOrGroupExecutorKey', {
+      token: auth_token,
+      labelOrGroupKey: labelOrGroupKey,
+      executorKey: executorKey,
+      type: type,
+    });
+  },
+  //修改标签名
+  setCardLabel(labelKey: string, newLabelName: string) {
+    return request.patch(HOME_URL + '/card/setLabelProperty', {
+      token: auth_token,
+      labelKey: labelKey,
+      newLabelName: newLabelName,
     });
   },
 };

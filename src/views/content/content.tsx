@@ -6,7 +6,6 @@ import MemberBoard from '../board/memberBoard';
 import MainBoard from '../board/mainBoard';
 import MessageBoard from '../board/messageBoard';
 import ContentHeader from './contentHeader';
-import { getTheme } from '../../redux/actions/authActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import api from '../../services/api';
 import moment from 'moment';
@@ -19,7 +18,6 @@ const Content: React.FC<ContentProps> = (props) => {
   const [prompt, setPrompt] = useState();
   useEffect(() => {
     if (user) {
-      dispatch(getTheme());
       formatTime();
       getPrompt();
       setInterval(formatTime, 60000);
