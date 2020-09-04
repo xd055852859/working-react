@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
+
 import './workingTable.css';
 import api from '../../services/api';
 
@@ -17,6 +18,7 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
   const memberHeaderIndex = useTypedSelector(
     (state) => state.member.memberHeaderIndex
   );
+
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const moveState = useTypedSelector((state) => state.common.moveState);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
@@ -38,6 +40,7 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
       await api.task.getGroupTask(1, user._key, 1, [0, 1, 2]);
     }
   };
+
   return (
     <div
       className="workingTable"

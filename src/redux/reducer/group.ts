@@ -9,6 +9,7 @@ export interface GroupType {
 
 const defaultState: GroupType = {
   groupArray: null,
+  // groupKey: '1239443614',
   groupKey: '',
   groupInfo: null,
   groupRole: null,

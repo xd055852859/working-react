@@ -1,8 +1,14 @@
 import React, { useState, useEffect, useRef, MouseEvent } from 'react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
+import { TextField, Button } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
-import { setTaskKey, editTask } from '../../redux/actions/taskActions';
+import {} from '../../redux/actions/taskActions';
+import {
+  setTaskKey,
+  editTask,
+  getGroupTask,
+} from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import moment from 'moment';
 import _ from 'lodash';
@@ -18,7 +24,7 @@ import defaultPerson from '../../assets/img/defaultPerson.png';
 import importantPng from '../../assets/img/important.png';
 import unimportantPng from '../../assets/img/unimportant.png';
 import ellipsisbPng from '../../assets/img/ellipsisb.png';
-
+import taskAddPng from '../../assets/img/contact-add.png';
 interface TaskProps {
   taskItem: any;
   executorKey?: number | string;
@@ -33,13 +39,49 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '600px',
       height: '500px',
     },
+    button: {
+      backgroundColor: '#17B881',
+      padding: '6 16px',
+      color: '#fff',
+    },
+    input: {
+      width: '100%',
+      marginRight: '10px',
+      minWidth: '200px',
+      '& .MuiInputBase-root': {
+        border: '1px solid #fff',
+        borderRadius: '5px',
+      },
+      '& .MuiInput-formControl': {
+        marginTop: '0px',
+      },
+      '& .MuiOutlinedInput-input': {
+        padding: '10px 14px',
+        border: '1px solid #fff',
+        borderRadius: '5px',
+        color: '#fff',
+      },
+      '& .MuiInputLabel-formControl': {
+        marginTop: '-10px',
+        color: '#fff',
+      },
+    },
   })
 );
 const Task: React.FC<TaskProps> = (props) => {
-  const { taskItem, changeTask, taskIndex, taskInfoIndex,showGroupName } = props;
+  const {
+    taskItem,
+    changeTask,
+    taskIndex,
+    taskInfoIndex,
+    showGroupName,
+  } = props;
   const bottomtype = '';
   const taskKey = useTypedSelector((state) => state.task.taskKey);
   const user = useTypedSelector((state) => state.auth.user);
+  const groupInfo = useTypedSelector((state) => state.group.groupInfo);
+  const groupKey = useTypedSelector((state) => state.group.groupKey);
+  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const dispatch = useDispatch();
   const classes = useStyles();
   const [endtime, setEndtime] = useState(0);
@@ -55,6 +97,8 @@ const Task: React.FC<TaskProps> = (props) => {
   const [dayNumber, setDayNumber] = useState<any>(null);
   const [timeNumber, setTimeNumber] = useState<any>(null);
   const [taskInfoDialogShow, setTaskInfoDialogShow] = useState(false);
+  const [addTaskVisible, setAddTaskVisible] = useState(false);
+  const [addInput, setAddInput] = useState('');
   const [textHeight, setTextHeight] = useState(20);
   const titleRef: React.RefObject<any> = useRef();
   const color = [
@@ -145,6 +189,8 @@ const Task: React.FC<TaskProps> = (props) => {
       dispatch(setTaskKey(0));
       setTaskExecutorShow(false);
       setTimeSetShow(false);
+      setAddTaskVisible(false);
+      setAddInput('');
     }
   };
   const changeFinishPercent = (finishPercent: number) => {
@@ -239,98 +285,118 @@ const Task: React.FC<TaskProps> = (props) => {
       }
     }
   };
-
+  const plusTask = async () => {
+    let addTaskRes: any = await api.task.addTask(
+      groupInfo._key,
+      groupInfo.groupRole,
+      taskDetail.labelKey,
+      taskDetail.executorKey,
+      addInput,
+      taskIndex ? taskIndex + 1 : 1
+    );
+    if (addTaskRes.msg == 'OK') {
+      setAddTaskVisible(false);
+      setAddInput('');
+      dispatch(setMessage(true, '新增成功', 'success'));
+      dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+    } else {
+      dispatch(setMessage(true, addTaskRes.msg, 'error'));
+    }
+  };
   return (
     <React.Fragment>
       {taskShow && taskDetail ? (
-        <div
-          className="taskItem"
-          onClick={chooseTask}
-          onMouseLeave={cancelTask}
-          tabIndex={taskItem._key}
-          onKeyDown={taskKeyDown}
-          style={{
-            backgroundColor: bottomtype
-              ? 'transparent'
-              : taskDetail.finishPercent == 0 || taskDetail.finishPercent == 10
-              ? 'rgb(255,255,255)'
-              : 'rgba(255,255,255,0.66)',
-          }}
-        >
-          <React.Fragment>
-            <div
-              className="taskItem-taskType"
-              style={{
-                borderTop:
-                  '7px solid ' +
-                  color[
-                    taskDetail.taskType == 10 ? 5 : taskDetail.taskType - 1
-                  ],
-                borderRight:
-                  '7px solid ' +
-                  color[
-                    taskDetail.taskType == 10 ? 5 : taskDetail.taskType - 1
-                  ],
-                borderLeft: '7px solid transparent',
-                borderBottom: '7px solid transparent',
-              }}
-            ></div>
-            {taskDetail.finishPercent != 10 ? (
+        <div className="task-container" onMouseLeave={cancelTask}>
+          <div
+            className="taskItem"
+            onClick={chooseTask}
+            tabIndex={taskItem._key}
+            onKeyDown={taskKeyDown}
+            style={{
+              backgroundColor: bottomtype
+                ? 'transparent'
+                : taskDetail.finishPercent == 0 ||
+                  taskDetail.finishPercent == 10
+                ? 'rgb(255,255,255)'
+                : 'rgba(255,255,255,0.66)',
+            }}
+          >
+            <React.Fragment>
               <div
-                className="taskItem-finishIcon"
-                onClick={() => {
-                  changeFinishPercent(taskDetail.finishPercent != 0 ? 0 : 1);
+                className="taskItem-taskType"
+                style={{
+                  borderTop:
+                    '7px solid ' +
+                    color[
+                      taskDetail.taskType == 10 ? 5 : taskDetail.taskType - 1
+                    ],
+                  borderRight:
+                    '7px solid ' +
+                    color[
+                      taskDetail.taskType == 10 ? 5 : taskDetail.taskType - 1
+                    ],
+                  borderLeft: '7px solid transparent',
+                  borderBottom: '7px solid transparent',
                 }}
-              >
-                <img
-                  src={taskDetail.finishPercent == 0 ? unfinishPng : finishPng}
-                />
-              </div>
-            ) : null}
-            <div className="taskItem-container">
-              <div className="taskItem-info">
+              ></div>
+              {taskDetail.finishPercent != 10 ? (
                 <div
-                  className="taskItem-day"
-                  style={taskDayColor}
+                  className="taskItem-finishIcon"
                   onClick={() => {
-                    changeTime();
+                    changeFinishPercent(taskDetail.finishPercent != 0 ? 0 : 1);
                   }}
                 >
-                  <div
-                    className="taskItem-time-day"
-                    style={{ left: endtime < 10 ? '5px' : '0px' }}
-                  >
-                    {endtime}
-                  </div>
-                  <div className="taskItem-time"></div>
-                  <div
-                    className="taskItem-time-hour"
-                    style={{ right: taskItem.hour < 1 ? '5px' : '0px' }}
-                  >
-                    {taskDetail.hour}
-                  </div>
-                </div>
-                <DropMenu
-                  visible={timeSetShow}
-                  title={'预计工时'}
-                  dropStyle={{
-                    width: '318px',
-                    height: '230px',
-                    top: '28px',
-                    left: '-25px',
-                  }}
-                  onClose={() => {
-                    setTimeSetShow(false);
-                  }}
-                >
-                  <TimeSet
-                    timeSetClick={changeTimeSet}
-                    percentClick={changeFinishPercent}
-                    dayNumber={dayNumber + 1}
-                    timeNumber={timeNumber}
+                  <img
+                    src={
+                      taskDetail.finishPercent == 0 ? unfinishPng : finishPng
+                    }
                   />
-                </DropMenu>
-                {/* <div
+                </div>
+              ) : null}
+              <div className="taskItem-container">
+                <div className="taskItem-info">
+                  <div
+                    className="taskItem-day"
+                    style={taskDayColor}
+                    onClick={() => {
+                      changeTime();
+                    }}
+                  >
+                    <div
+                      className="taskItem-time-day"
+                      style={{ left: endtime < 10 ? '5px' : '0px' }}
+                    >
+                      {endtime}
+                    </div>
+                    <div className="taskItem-time"></div>
+                    <div
+                      className="taskItem-time-hour"
+                      style={{ right: taskItem.hour < 1 ? '5px' : '0px' }}
+                    >
+                      {taskDetail.hour}
+                    </div>
+                  </div>
+                  <DropMenu
+                    visible={timeSetShow}
+                    title={'预计工时'}
+                    dropStyle={{
+                      width: '318px',
+                      height: '230px',
+                      top: '28px',
+                      left: '-25px',
+                    }}
+                    onClose={() => {
+                      setTimeSetShow(false);
+                    }}
+                  >
+                    <TimeSet
+                      timeSetClick={changeTimeSet}
+                      percentClick={changeFinishPercent}
+                      dayNumber={dayNumber + 1}
+                      timeNumber={timeNumber}
+                    />
+                  </DropMenu>
+                  {/* <div
                 className="taskItem-img"
                 // v-if="bottomtype=='grid'"
                 style={{ width: '25px', height: '25px' }}
@@ -344,174 +410,229 @@ const Task: React.FC<TaskProps> = (props) => {
                   style={{ marginTop: '0px' }}
                 />
               </div> */}
-                <div className="taskItem-title">
-                  {taskKey == taskDetail._key && editRole ? (
-                    // <div
-                    //   suppressContentEditableWarning
-                    //   contentEditable
-                    //   ref={titleRef}
-                    //   style={{
-                    //     width: '100%',
-                    //     minHeight: '28px',
-                    //     backgroundColor: bottomtype ? 'transparent' : '',
-                    //     textDecoration:
-                    //       taskDetail.finishPercent == 2 ? 'line-through' : '',
-                    //   }}
-                    //   onInput={changeTitle}
-                    //   // onKeyDown={changeKeyTitle}
-                    // >
-                    //   {taskDetail.title}
-                    // </div>
-                    <textarea
-                      value={taskDetail.title}
-                      onChange={changeTitle}
-                      style={{ height: textHeight + 'px' }}
-                      id={'taskDetailText' + taskDetail._key}
-                      // autoFocus
-                    />
-                  ) : (
-                    <div
-                      style={{
-                        width: '100%',
-                        minHeight: '28px',
-                        backgroundColor: bottomtype ? 'transparent' : '',
-                        textDecoration:
-                          taskDetail.finishPercent == 2 ? 'line-through' : '',
-                      }}
-                      id={'taskDetail' + taskDetail._key}
-                    >
-                      {taskDetail.title}
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="taskItem-footer">
-                <div className="taskItem-footer-left">
-                  <div className="taskItem-name">
-                    {!showGroupName ? (
-                      <span>
-                        {taskDetail.serialNumber
-                          ? '#' + taskDetail.serialNumber
-                          : ''}
-                      </span>
-                    ) : (
-                      <span style={{ flexShrink: 0 }}>
-                        {taskDetail.groupName}
-                      </span>
-                    )}
-                    <span style={{ flexShrink: 0 }}>
-                      {taskDetail.creatorName.length > 3
-                        ? taskDetail.creatorName.substring(0, 3) + '...'
-                        : taskDetail.creatorName}
-                    </span>
-                    <span></span>
-                    <span style={{ flexShrink: 0 }}>
-                      {taskDetail.executorName &&
-                      taskDetail.executorName.length > 3
-                        ? taskDetail.executorName.substring(0, 3) + '...'
-                        : taskDetail.executorName}
-                    </span>
-                  </div>
-                  <div className="taskItem-img-container">
-                    <div className="taskItem-img" onClick={chooseExecutor}>
-                      <img
-                        src={
-                          taskDetail.executorAvatar
-                            ? taskDetail.executorAvatar
-                            : defaultPerson
-                        }
+                  <div className="taskItem-title">
+                    {taskKey == taskDetail._key && editRole ? (
+                      // <div
+                      //   suppressContentEditableWarning
+                      //   contentEditable
+                      //   ref={titleRef}
+                      //   style={{
+                      //     width: '100%',
+                      //     minHeight: '28px',
+                      //     backgroundColor: bottomtype ? 'transparent' : '',
+                      //     textDecoration:
+                      //       taskDetail.finishPercent == 2 ? 'line-through' : '',
+                      //   }}
+                      //   onInput={changeTitle}
+                      //   // onKeyDown={changeKeyTitle}
+                      // >
+                      //   {taskDetail.title}
+                      // </div>
+                      <textarea
+                        value={taskDetail.title}
+                        onChange={changeTitle}
+                        style={{ height: textHeight + 'px' }}
+                        id={'taskDetailText' + taskDetail._key}
+                        // autoFocus
                       />
-                    </div>
-
-                    <DropMenu
-                      visible={taskExecutorShow}
-                      dropStyle={{
-                        width: '180px',
-                        height: '290px',
-                        top: '18px',
-                        left: '-30px',
-                      }}
-                      onClose={() => {
-                        setTaskExecutorShow(false);
-                      }}
-                      title={'分配任务'}
-                    >
-                      <div className="task-executor-dropMenu-info">
-                        {taskMemberArray.map(
-                          (taskMemberItem: any, taskMemberIndex: number) => {
-                            return (
-                              <div
-                                className="task-executor-dropMenu-container"
-                                key={'taskMember' + taskMemberIndex}
-                                style={
-                                  taskDetail.executorKey ==
-                                  taskMemberItem.userId
-                                    ? { background: '#F0F0F0' }
-                                    : {}
-                                }
-                                onClick={() => {
-                                  changeExecutor(
-                                    taskMemberItem.userId,
-                                    taskMemberItem.nickName,
-                                    taskMemberItem.avatar
-                                  );
-                                }}
-                              >
-                                <div className="task-executor-dropMenu-img">
-                                  <img src={taskMemberItem.avatar} />
-                                </div>
-                                <div>{taskMemberItem.nickName}</div>
-                              </div>
-                            );
-                          }
-                        )}
+                    ) : (
+                      <div
+                        style={{
+                          width: '100%',
+                          minHeight: '28px',
+                          backgroundColor: bottomtype ? 'transparent' : '',
+                          textDecoration:
+                            taskDetail.finishPercent == 2 ? 'line-through' : '',
+                        }}
+                        id={'taskDetail' + taskDetail._key}
+                      >
+                        {taskDetail.title}
                       </div>
-                    </DropMenu>
+                    )}
                   </div>
                 </div>
-                <div
-                  style={{
-                    maxWidth: '64px',
-                    display: 'flex',
-                    height: '100%',
-                  }}
-                >
-                  <div className="taskItem-check-icon">
-                    {taskDetail.importantStatus ? (
-                      <img
-                        src={importantPng}
-                        alt="重要"
-                        onClick={() => {
-                          changeImportant(0);
+                <div className="taskItem-footer">
+                  <div className="taskItem-footer-left">
+                    <div className="taskItem-name">
+                      {!showGroupName ? (
+                        <span>
+                          {taskDetail.serialNumber
+                            ? '#' + taskDetail.serialNumber
+                            : ''}
+                        </span>
+                      ) : (
+                        <span style={{ flexShrink: 0 }}>
+                          {taskDetail.groupName}
+                        </span>
+                      )}
+                      <span style={{ flexShrink: 0 }}>
+                        {taskDetail.creatorName.length > 3
+                          ? taskDetail.creatorName.substring(0, 3) + '...'
+                          : taskDetail.creatorName}
+                      </span>
+                      <span></span>
+                      <span style={{ flexShrink: 0 }}>
+                        {taskDetail.executorName &&
+                        taskDetail.executorName.length > 3
+                          ? taskDetail.executorName.substring(0, 3) + '...'
+                          : taskDetail.executorName}
+                      </span>
+                    </div>
+                    <div className="taskItem-img-container">
+                      <div className="taskItem-img" onClick={chooseExecutor}>
+                        <img
+                          src={
+                            taskDetail.executorAvatar
+                              ? taskDetail.executorAvatar
+                              : defaultPerson
+                          }
+                        />
+                      </div>
+
+                      <DropMenu
+                        visible={taskExecutorShow}
+                        dropStyle={{
+                          width: '180px',
+                          height: '290px',
+                          top: '18px',
+                          left: '-30px',
                         }}
-                      />
-                    ) : (
-                      <img
-                        src={unimportantPng}
-                        alt="不重要"
-                        onClick={() => {
-                          changeImportant(1);
+                        onClose={() => {
+                          setTaskExecutorShow(false);
                         }}
-                      />
-                    )}
+                        title={'分配任务'}
+                      >
+                        <div className="task-executor-dropMenu-info">
+                          {taskMemberArray.map(
+                            (taskMemberItem: any, taskMemberIndex: number) => {
+                              return (
+                                <div
+                                  className="task-executor-dropMenu-container"
+                                  key={'taskMember' + taskMemberIndex}
+                                  style={
+                                    taskDetail.executorKey ==
+                                    taskMemberItem.userId
+                                      ? { background: '#F0F0F0' }
+                                      : {}
+                                  }
+                                  onClick={() => {
+                                    changeExecutor(
+                                      taskMemberItem.userId,
+                                      taskMemberItem.nickName,
+                                      taskMemberItem.avatar
+                                    );
+                                  }}
+                                >
+                                  <div className="task-executor-dropMenu-img">
+                                    <img src={taskMemberItem.avatar} />
+                                  </div>
+                                  <div>{taskMemberItem.nickName}</div>
+                                </div>
+                              );
+                            }
+                          )}
+                        </div>
+                      </DropMenu>
+                    </div>
                   </div>
                   <div
-                    className="taskItem-check-icon"
-                    style={taskDetail.content != '' ? { display: 'flex' } : {}}
-                    onClick={() => {
-                      setTaskInfoDialogShow(true);
+                    style={{
+                      maxWidth: '64px',
+                      display: 'flex',
+                      height: '100%',
                     }}
                   >
-                    <img src={ellipsisbPng} alt="详情" />
+                    <div className="taskItem-check-icon">
+                      {taskDetail.importantStatus ? (
+                        <img
+                          src={importantPng}
+                          alt="重要"
+                          onClick={() => {
+                            changeImportant(0);
+                          }}
+                        />
+                      ) : (
+                        <img
+                          src={unimportantPng}
+                          alt="不重要"
+                          onClick={() => {
+                            changeImportant(1);
+                          }}
+                        />
+                      )}
+                    </div>
+                    <div
+                      className="taskItem-check-icon"
+                      style={
+                        taskDetail.content != '' ? { display: 'flex' } : {}
+                      }
+                      onClick={() => {
+                        setTaskInfoDialogShow(true);
+                      }}
+                    >
+                      <img src={ellipsisbPng} alt="详情" />
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="taskItem-taskType"></div>
-              {/*  style={cardKey==taskItem._key?{borderTop:'10px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],borderRight:'10px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],  borderLeft: '10px solid transparent',
+                <div className="taskItem-taskType"></div>
+                {/*  style={cardKey==taskItem._key?{borderTop:'10px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],borderRight:'10px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],  borderLeft: '10px solid transparent',
   borderBottom: '10px solid transparent'}:{borderTop:'7px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],borderRight:'7px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],  borderLeft: '7px solid transparent',
   borderBottom: '7px solid transparent'}} */}
-            </div>
-          </React.Fragment>
+              </div>
+            </React.Fragment>
+          </div>
+          {taskKey == taskDetail._key && editRole && headerIndex == 3 ? (
+            !addTaskVisible ? (
+              <div
+                className="taskItem-plus"
+                onClick={() => {
+                  setAddTaskVisible(true);
+                }}
+              >
+                <img src={taskAddPng} alt="" />
+              </div>
+            ) : (
+              <div className="taskItem-plus-title">
+                <div className="taskItem-plus-input">
+                  <TextField
+                    // required
+                    id="outlined-basic"
+                    variant="outlined"
+                    label="任务标题"
+                    className={classes.input}
+                    value={addInput}
+                    autoComplete="off"
+                    onChange={(e) => {
+                      setAddInput(e.target.value);
+                    }}
+                  />
+                </div>
+                <div className="taskItem-plus-button">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {
+                      plusTask();
+                    }}
+                    style={{ marginRight: '10px' }}
+                    className={classes.button}
+                  >
+                    确定
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {
+                      setAddTaskVisible(false);
+                    }}
+                    className={classes.button}
+                  >
+                    取消
+                  </Button>
+                </div>
+              </div>
+            )
+          ) : null}
         </div>
       ) : null}
       <Dialog
@@ -547,6 +668,7 @@ Task.defaultProps = {
   taskItem: null,
   executorKey: 0,
   changeTask: null,
-  showGroupName:false
+  showGroupName: false,
+  taskIndex: 0,
 };
 export default Task;

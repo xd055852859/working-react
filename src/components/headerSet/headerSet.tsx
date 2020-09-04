@@ -11,6 +11,7 @@ import ClockIn from '../clockIn/clockIn';
 import Task from '../task/task';
 import { setTheme } from '../../redux/actions/authActions';
 import { setMessage } from '../../redux/actions/commonActions';
+import { getGroupTask } from '../../redux/actions/taskActions';
 import './headerSet.css';
 import set1Png from '../../assets/img/set1.png';
 import set2Png from '../../assets/img/set2.png';
@@ -18,6 +19,10 @@ import set3Png from '../../assets/img/set3.png';
 import bgImg from '../../assets/img/bgImg.png';
 import clockInPng from '../../assets/img/clockIn.png';
 import searchPng from '../../assets/img/headerSearch.png';
+import addPng from '../../assets/img/taskAdd.png';
+import downArrowbPng from '../../assets/img/downArrowb.png';
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
+
 import api from '../../services/api';
 interface HeaderSetProps {}
 const useStyles = makeStyles((theme: Theme) =>
@@ -48,17 +53,26 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const classes = useStyles();
   const user = useTypedSelector((state) => state.auth.user);
   const theme = useTypedSelector((state) => state.auth.theme);
+  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const groupArray = useTypedSelector((state) => state.group.groupArray);
+  const groupKey = useTypedSelector((state) => state.group.groupKey);
   const [avatar, setAvatar] = useState<any>(null);
   const [contentSetVisilble, setContentSetVisilble] = useState(false);
   const [bgVisible, setBgVisible] = useState(false);
   const [clockInVisible, setClockInVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
+  const [addVisible, setAddVisible] = useState(false);
   const [avatarShow, setAvatarShow] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
   const [searchTaskList, setSearchTaskList] = useState([]);
-
+  const [groupIndex, setGroupIndex] = useState(0);
+  const [groupVisible, setGroupVisible] = useState(false);
+  const [labelIndex, setLabelIndex] = useState(0);
+  const [labelVisible, setLabelVisible] = useState(false);
+  const [labelArray, setLabelArray] = useState<any>([]);
+  const [addInput, setAddInput] = useState('');
   const color1 = [
     '#46558C',
     '#9C5D9E',
@@ -108,6 +122,11 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       setAvatar(user.profile.avatar);
     }
   }, [user]);
+  useEffect(() => {
+    if (groupArray && groupArray.length > 0) {
+      getLabelArray(groupArray[0]._key);
+    }
+  }, [groupArray]);
   const changeBoard = (type: string) => {
     let newTheme = _.cloneDeep(theme);
     newTheme[type] = newTheme[type] ? false : true;
@@ -163,6 +182,37 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       getTaskSearch(newPage);
     }
   };
+  const getLabelArray = async (groupKey: string) => {
+    let newLabelArray = [
+      { _key: null, cardLabelName: 'ToDo', executorKey: user._key },
+    ];
+    let labelRes: any = await api.group.getLabelInfo(groupKey);
+    if (labelRes.msg == 'OK') {
+      newLabelArray.push(...labelRes.result);
+      setLabelArray(newLabelArray);
+    } else {
+      dispatch(setMessage(true, labelRes.msg, 'error'));
+    }
+  };
+  const addLabelTask = async () => {
+    let addTaskRes: any = await api.task.addTask(
+      groupArray[groupIndex]._key,
+      groupArray[groupIndex].role,
+      labelArray[labelIndex]._key,
+      labelArray[labelIndex].executorKey,
+      addInput
+    );
+    if (addTaskRes.msg == 'OK') {
+      setAddVisible(false);
+      setAddInput('');
+      dispatch(setMessage(true, '新增成功', 'success'));
+      if (headerIndex == 3) {
+        dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+      }
+    } else {
+      dispatch(setMessage(true, addTaskRes.msg, 'error'));
+    }
+  };
   return (
     <React.Fragment>
       <div
@@ -173,6 +223,19 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           setClockInVisible(false);
         }}
       >
+        <img
+          src={addPng}
+          alt=""
+          style={{
+            width: '40px',
+            height: '40px',
+            marginRight: '15px',
+            cursor: 'pointer',
+          }}
+          onClick={() => {
+            setAddVisible(true);
+          }}
+        />
         <img
           src={searchPng}
           alt=""
@@ -348,6 +411,133 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           </div>
         </DropMenu>
       </div>
+      <Dialog
+        visible={addVisible}
+        onClose={() => {
+          setSearchVisible(false);
+        }}
+        onOK={() => {
+          addLabelTask();
+        }}
+        title={'跨群添加'}
+        dialogStyle={{ width: '400px', height: '300px', overflow: 'visible' }}
+      >
+        <div className="headerSet-search-title">
+          <TextField
+            // required
+            id="outlined-basic"
+            variant="outlined"
+            label="添加任务"
+            className={classes.input}
+            style={{ width: '100%' }}
+            value={addInput}
+            onChange={(e) => {
+              setAddInput(e.target.value);
+            }}
+          />
+        </div>
+        {labelArray && labelArray.length > 0 ? (
+          <div className="addTask-container">
+            <div
+              className="addTask-item"
+              onClick={() => {
+                setGroupVisible(true);
+              }}
+            >
+              <div className="addTask-avatar">
+                <img
+                  src={
+                    groupArray[groupIndex].groupLogo
+                      ? groupArray[groupIndex].groupLogo
+                      : defaultGroupPng
+                  }
+                  alt=""
+                />
+              </div>
+              <div>{groupArray[groupIndex].groupName}</div>
+              <img src={downArrowbPng} alt="" className="addTask-logo" />
+              <DropMenu
+                visible={groupVisible}
+                dropStyle={{
+                  width: '300px',
+                  height: '250px',
+                  top: '50px',
+                  overflow: 'auto',
+                }}
+                onClose={() => {
+                  setGroupVisible(false);
+                }}
+                title={'选择项目'}
+              >
+                <React.Fragment>
+                  {groupArray.map((item: any, index: number) => {
+                    return (
+                      <div
+                        className="chooseItem"
+                        onClick={() => {
+                          setGroupIndex(index);
+                          getLabelArray(item._key);
+                        }}
+                        key={'group' + index}
+                      >
+                        <div className="addTask-avatar">
+                          <img
+                            src={
+                              item.groupLogo ? item.groupLogo : defaultGroupPng
+                            }
+                            alt=""
+                          />
+                        </div>
+                        <div>{item.groupName}</div>
+                      </div>
+                    );
+                  })}
+                </React.Fragment>
+              </DropMenu>
+            </div>
+            <div
+              className="addTask-item"
+              onClick={() => {
+                setLabelVisible(true);
+              }}
+            >
+              <div>{labelArray[labelIndex].cardLabelName}</div>
+              <img src={downArrowbPng} alt="" className="addTask-logo" />
+              <DropMenu
+                visible={labelVisible}
+                dropStyle={{
+                  width: '100%',
+                  height: '250px',
+                  top: '50px',
+                  overflow: 'auto',
+                }}
+                onClose={() => {
+                  setLabelVisible(false);
+                }}
+                title={'选择频道'}
+              >
+                <React.Fragment>
+                  {labelArray.map((item: any, index: number) => {
+                    return (
+                      <div
+                        className="chooseItem"
+                        onClick={() => {
+                          setLabelIndex(index);
+                        }}
+                        key={'label' + index}
+                      >
+                        <div style={{ textAlign: 'center', width: '100%' }}>
+                          {item.cardLabelName}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </React.Fragment>
+              </DropMenu>
+            </div>
+          </div>
+        ) : null}
+      </Dialog>
       <Dialog
         visible={searchVisible}
         onClose={() => {

@@ -217,12 +217,14 @@ const task = {
     groupKey: number | string,
     groupRole: number | string,
     labelKey: number | string,
-    executorKey?: number | string
+    executorKey?: number | string,
+    title?: string,
+    cardIndex?: number
   ) {
     return request.post(HOME_URL + '/card', {
       token: auth_token,
       type: 2,
-      title: '',
+      title: title ? title : '',
       content: '',
       rootType: 0,
       groupKey: groupKey,
@@ -235,7 +237,7 @@ const task = {
       date: moment().date(),
       taskEndDate: moment().endOf('day').valueOf(),
       groupRole: groupRole,
-      cardIndex: 0,
+      cardIndex: cardIndex ? cardIndex : 0,
       labelKey: labelKey,
     });
   },
@@ -361,6 +363,13 @@ const member = {
       perPage: perPage,
     });
   },
+  setConfig(groupMemberKey: string, config: any) {
+    return request.post(HOME_URL + '/groupmember/setConfig', {
+      token: auth_token,
+      groupMemberKey: groupMemberKey,
+      config: config,
+    });
+  },
 };
 const group = {
   getGroup(listType: number, simple?: number | null, sortType?: number) {
@@ -449,6 +458,13 @@ const group = {
       token: auth_token,
       labelKey: labelKey,
       newLabelName: newLabelName,
+    });
+  },
+  //获取群标签
+  getLabelInfo(groupKey: string) {
+    return request.post(HOME_URL + '/group/getLabelInfo ', {
+      token: auth_token,
+      groupKey: groupKey,
     });
   },
 };

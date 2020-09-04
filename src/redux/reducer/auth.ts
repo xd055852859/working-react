@@ -1,5 +1,5 @@
 import { actionTypes } from '../actions/authActions';
-import moment from 'moment'
+import moment from 'moment';
 export interface AuthType {
   user: any;
   userKey: string;
@@ -9,7 +9,7 @@ export interface AuthType {
   token: string | null;
   uploadToken: string | null;
   theme: any;
-  nowTime:number
+  nowTime: number;
 }
 
 const defaultState: AuthType = {
@@ -28,8 +28,20 @@ const defaultState: AuthType = {
     memberVisible: false,
     groupSortType: 1,
     personSortType: 1,
+    filterObject: {
+      groupKey: null,
+      groupName: '',
+      groupLogo: '',
+      creatorKey: null,
+      creatorAvatar: '',
+      creatorName: '',
+      executorKey: null,
+      executorAvatar: '',
+      executorName: '',
+      filterType: ['过期', '今天', '已完成'],
+    },
   },
-  nowTime:0
+  nowTime: 0,
 };
 
 export const auth = (state = defaultState, action: any) => {
@@ -41,7 +53,7 @@ export const auth = (state = defaultState, action: any) => {
         user: action.data,
         userKey: action.data._key,
         token: action.data.token,
-        nowTime:moment().hour() < 12 ? 0 : 1
+        nowTime: moment().hour() < 12 ? 0 : 1,
       };
     case actionTypes.GET_MAIN_GROUP_KEY_SUCCESS:
       localStorage.setItem('mainGroupKey', action.data.mainGroupKey);
@@ -65,6 +77,20 @@ export const auth = (state = defaultState, action: any) => {
       }
       action.data.mainVisible =
         action.data.mainVisible === undefined ? true : action.data.mainVisible;
+      action.data.filterObject = action.data.filterObject
+        ? action.data.filterObject
+        : {
+            groupKey: null,
+            groupName: '',
+            groupLogo: '',
+            creatorKey: null,
+            creatorAvatar: '',
+            creatorName: '',
+            executorKey: null,
+            executorAvatar: '',
+            executorName: '',
+            filterType: ['过期', '今天', '已完成'],
+          };
       return {
         ...state,
         theme: action.data,

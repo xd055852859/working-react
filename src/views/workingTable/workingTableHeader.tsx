@@ -4,6 +4,7 @@ import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
 import { setFilterObject } from '../../redux/actions/taskActions';
+import { setTheme } from '../../redux/actions/authActions';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import {
   setCommonHeaderIndex,
@@ -45,7 +46,7 @@ const WorkingTableHeader: React.FC = (prop) => {
   );
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const filterObject = useTypedSelector((state) => state.task.filterObject);
-
+  const theme = useTypedSelector((state) => state.auth.theme);
   const dispatch = useDispatch();
   const viewArray: string[] = ['项目', '频道', '项目卡', '频道卡', '日历'];
   const viewImg: string[] = [
@@ -142,6 +143,9 @@ const WorkingTableHeader: React.FC = (prop) => {
         newFilterObject.executorAvatar = '';
         newFilterObject.executorName = '';
     }
+    let newTheme = _.cloneDeep(theme);
+    newTheme.filterObject = newFilterObject;
+    dispatch(setTheme(newTheme));
     dispatch(setFilterObject(newFilterObject));
   };
   return (

@@ -25,6 +25,7 @@ const defaultState: Common = {
     text: '',
     severity: undefined,
   },
+  // headerIndex: 3,
   headerIndex: 0,
   moveState: '',
 };

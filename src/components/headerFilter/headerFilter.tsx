@@ -3,7 +3,10 @@ import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import Filter from '../common/filter';
 import { setFilterObject } from '../../redux/actions/taskActions';
+import { setMessage } from '../../redux/actions/commonActions';
+import { setTheme } from '../../redux/actions/authActions';
 import _ from 'lodash';
+import api from '../../services/api';
 interface HeaderFilterProps {}
 
 const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
@@ -12,7 +15,12 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
     (state) => state.task.workingTaskArray
   );
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const groupKey = useTypedSelector((state) => state.group.groupKey);
   const filterObject = useTypedSelector((state) => state.task.filterObject);
+  const groupMemberItem = useTypedSelector(
+    (state) => state.member.groupMemberItem
+  );
+  const theme = useTypedSelector((state) => state.auth.theme);
   const [groupFilterVisible, setGroupFilterVisible] = useState(false);
   const [executorfilterVisible, setExecutorFilterVisible] = useState(false);
   const [creatorFilterVisible, setCreatorFilterVisible] = useState(false);
@@ -27,16 +35,17 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
   useEffect(() => {
     // 用户已登录
     if (headerIndex != 3 && workingTaskArray) {
-      getData(workingTaskArray);
+      dispatch(setFilterObject(theme.filterObject));
+      getData(workingTaskArray, theme.filterObject);
     }
   }, [workingTaskArray, headerIndex]);
   useEffect(() => {
     // 用户已登录
     if (headerIndex == 3 && taskArray) {
-      getData(taskArray);
+      getData(taskArray, filterObject);
     }
-  }, [taskArray, headerIndex]);
-  const getData = (cardArray: any) => {
+  }, [taskArray, headerIndex, groupKey]);
+  const getData = (cardArray: any, filterObject: any) => {
     let groupFilterArray: any = [
       {
         name: '全部',
@@ -86,12 +95,36 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
       }
     });
     setGroupFilterArray(groupFilterArray);
+    if (filterObject.groupKey) {
+      let newGroupIndex = _.findIndex(groupFilterArray, {
+        key: filterObject.groupKey,
+      });
+      if (newGroupIndex != -1) {
+        setGroupIndex(newGroupIndex);
+      }
+    }
     setExecutorFilterArray(executorfilterArray);
+    if (filterObject.executorKey) {
+      let newExecutorIndex = _.findIndex(groupFilterArray, {
+        key: filterObject.executorKey,
+      });
+      if (newExecutorIndex != -1) {
+        setExecutorIndex(newExecutorIndex);
+      }
+    }
     setCreatorFilterArray(creatorFilterArray);
+    if (filterObject.creatorKey) {
+      let newCreatorIndex = _.findIndex(groupFilterArray, {
+        key: filterObject.creatorKey,
+      });
+      if (newCreatorIndex != -1) {
+        setCreatorIndex(newCreatorIndex);
+      }
+    }
     // this.$set(this.filterObj, "type", this.stateStr);
     // this.$emit("update:taskObj", this.filterObj);
   };
-  const changeFilter = (type: string, filterItem: any, index: number) => {
+  const changeFilter = async (type: string, filterItem: any, index: number) => {
     let newFilterObject: any = _.cloneDeep(filterObject);
     let creatorFilterArray: any = [
       {
@@ -185,6 +218,21 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
       //   else {
       //     getData(arr);
       //   }
+    }
+    if (headerIndex == 3) {
+      let res: any = await api.member.setConfig(
+        groupMemberItem._key,
+        newFilterObject
+      );
+      if (res.msg == 'OK') {
+        console.log('设置成功');
+      } else {
+        dispatch(setMessage(true, res.msg, 'error'));
+      }
+    } else {
+      let newTheme = _.cloneDeep(theme);
+      newTheme.filterObject = newFilterObject;
+      dispatch(setTheme(newTheme));
     }
     dispatch(setFilterObject(newFilterObject));
   };

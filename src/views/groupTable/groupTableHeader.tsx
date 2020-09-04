@@ -52,6 +52,9 @@ const GroupTableHeader: React.FC = (prop) => {
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const groupArray = useTypedSelector((state) => state.group.groupArray);
+  const groupMemberItem = useTypedSelector(
+    (state) => state.member.groupMemberItem
+  );
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const theme = useTypedSelector((state) => state.auth.theme);
   const dispatch = useDispatch();
@@ -89,15 +92,18 @@ const GroupTableHeader: React.FC = (prop) => {
     setViewVisible(false);
   };
   useEffect(() => {
-    let filterCheckedArray: any = [];
-    if (filterObject.filterType.length > 0) {
-      filterCheckedArray = checkedTitle.map((item: any) => {
-        return filterObject.filterType.indexOf(item) != -1;
-      });
+    if (groupMemberItem) {
+      dispatch(setFilterObject(groupMemberItem.config));
+      let newFilterObject = _.cloneDeep(groupMemberItem.config);
+      let filterCheckedArray: any = [];
+      if (newFilterObject.filterType.length > 0) {
+        filterCheckedArray = checkedTitle.map((item: any) => {
+          return newFilterObject.filterType.indexOf(item) != -1;
+        });
+      }
+      setFilterCheckedArray(filterCheckedArray);
     }
-    console.log('filterCheckedArray', filterCheckedArray);
-    setFilterCheckedArray(filterCheckedArray);
-  }, [filterObject]);
+  }, [groupMemberItem]);
   useEffect(() => {
     dispatch(
       setFilterObject({
@@ -147,7 +153,7 @@ const GroupTableHeader: React.FC = (prop) => {
     dispatch(getGroupMember(groupKey));
     setGroupMemberVisible(false);
   };
-  const deleteFilter = (filterTypeText: string) => {
+  const deleteFilter = async (filterTypeText: string) => {
     let newFilterObject: any = _.cloneDeep(filterObject);
     switch (filterTypeText) {
       case 'groupKey':
@@ -164,6 +170,15 @@ const GroupTableHeader: React.FC = (prop) => {
         newFilterObject.executorKey = null;
         newFilterObject.executorAvatar = '';
         newFilterObject.executorName = '';
+    }
+    let res: any = await api.member.setConfig(
+      groupMemberItem._key,
+      newFilterObject
+    );
+    if (res.msg == 'OK') {
+      console.log('设置成功');
+    } else {
+      dispatch(setMessage(true, res.msg, 'error'));
     }
     dispatch(setFilterObject(newFilterObject));
   };
