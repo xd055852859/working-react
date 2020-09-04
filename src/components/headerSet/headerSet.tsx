@@ -414,13 +414,13 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       <Dialog
         visible={addVisible}
         onClose={() => {
-          setSearchVisible(false);
+          setAddVisible(false);
         }}
         onOK={() => {
           addLabelTask();
         }}
         title={'跨群添加'}
-        dialogStyle={{ width: '400px', height: '300px', overflow: 'visible' }}
+        dialogStyle={{ width: '400px', height: '250px', overflow: 'visible' }}
       >
         <div className="headerSet-search-title">
           <TextField
