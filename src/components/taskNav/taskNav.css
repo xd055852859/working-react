@@ -5,12 +5,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0px 5px;
+  padding: 0px 15px 0px 5px;
   box-sizing: border-box;
   position: relative;
 }
 .taskNav-name-info {
-  height: 100%;
   display: flex;
   align-items: center;
 }
@@ -28,7 +27,7 @@
   object-fit: cover;
 }
 .taskNav-name {
-  width: 250px;
+  width: 220px;
   font-size: 16px;
   font-weight: 500;
 }

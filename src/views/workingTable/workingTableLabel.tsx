@@ -44,10 +44,10 @@ const WorkingTableLabel: React.FC = (prop) => {
   const workingTableRef: React.RefObject<any> = useRef();
   const dispatch = useDispatch();
   useEffect(() => {
-    if (user && user._key && headerIndex == 1) {
+    if (user && user._key && headerIndex === 1) {
       dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
     }
-    if (targetUserInfo && targetUserInfo._key && headerIndex == 2) {
+    if (targetUserInfo && targetUserInfo._key && headerIndex === 2) {
       dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
     }
   }, [user, targetUserInfo, headerIndex]);
@@ -70,7 +70,7 @@ const WorkingTableLabel: React.FC = (prop) => {
           workingTaskArray[index].forEach(
             (taskItem: any, taskIndex: number) => {
               if (taskItem.taskEndDate) {
-                if (labelArr[index].indexOf(taskItem.labelKey) != -1) {
+                if (labelArr[index].indexOf(taskItem.labelKey) !== -1) {
                   if (!labelArray[index][taskItem.labelKey]) {
                     labelArray[index][taskItem.labelKey] = {
                       arr: [],
@@ -109,7 +109,7 @@ const WorkingTableLabel: React.FC = (prop) => {
         });
         let arr = [];
         workingGroupArray[0].labelArray.forEach((item: any, index: number) => {
-          if (Object.keys(labelArray[0]).indexOf(item._key) == -1) {
+          if (Object.keys(labelArray[0]).indexOf(item._key) === -1) {
             labelArray[0][item._key] = {
               arr: [],
               groupObj: workingGroupArray[0],
@@ -151,7 +151,7 @@ const WorkingTableLabel: React.FC = (prop) => {
   useEffect(() => {
     let labelArray = [];
     console.log(memberHeaderIndex);
-    if (memberHeaderIndex == 2 && mainLabelArray.length > 0) {
+    if (memberHeaderIndex === 2 && mainLabelArray.length > 0) {
       labelArray = mainLabelArray.filter((item: any, index: number) => {
         if (item.arrlength > 0) {
           item.position = render(index);
@@ -205,11 +205,11 @@ const WorkingTableLabel: React.FC = (prop) => {
       return item._key;
     });
     let batchRes: any = await api.task.batchTaskArray(cardKeyArray);
-    if (batchRes.msg == 'OK') {
+    if (batchRes.msg === 'OK') {
       dispatch(setMessage(true, '归档成功', 'success'));
-      if (headerIndex == 1) {
+      if (headerIndex === 1) {
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
-      } else if (headerIndex == 2) {
+      } else if (headerIndex === 2) {
         dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
       }
     } else {
@@ -242,11 +242,11 @@ const WorkingTableLabel: React.FC = (prop) => {
   //     labelKey: this.batchLabelKey
   //   };
   //   await this.batchCard(obj);
-  //   if (batchRes.msg == 'OK') {
+  //   if (batchRes.msg === 'OK') {
   //     dispatch(setMessage(true, '保存成功', 'success'));
-  //     if (headerIndex == 1) {
+  //     if (headerIndex === 1) {
   //       dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
-  //     } else if (headerIndex == 2) {
+  //     } else if (headerIndex === 2) {
   //       dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
   //     }
   //   } else {
@@ -270,7 +270,7 @@ const WorkingTableLabel: React.FC = (prop) => {
             key={'label' + labelIndex}
             className="workingTableLabel-container-item"
             style={
-              memberHeaderIndex == 0
+              memberHeaderIndex === 0
                 ? {
                     width: '350px',
                     height: '100%',
@@ -288,7 +288,7 @@ const WorkingTableLabel: React.FC = (prop) => {
             <div
               className="workingTableLabel-info"
               style={
-                memberHeaderIndex == 0
+                memberHeaderIndex === 0
                   ? {
                       width: '350px',
                     }
@@ -314,7 +314,7 @@ const WorkingTableLabel: React.FC = (prop) => {
                   role={labelItem.groupObj.groupRole}
                   colorIndex={labelIndex}
                   taskNavArray={[labelItem.groupObj, labelItem.labelObj]}
-                  taskNavWidth={memberHeaderIndex == 0 ? '350px' : '100%'}
+                  taskNavWidth={memberHeaderIndex === 0 ? '350px' : '100%'}
                   chooseLabelKey={chooseLabelKey}
                   setChooseLabelKey={setChooseLabelKey}
                   batchTaskArray={() => {
@@ -338,7 +338,7 @@ const WorkingTableLabel: React.FC = (prop) => {
                     >批量导入</div>
                   </a-menu-item>
                     <a-menu-item
-                      v-if="!eyeState&&taskInfo[index].length==0&&labelArray[index]._key!=null"
+                      v-if="!eyeState&&taskInfo[index].length===0&&labelArray[index]._key!==null"
                     >
                       <div @click="deleteLabel(index,labelArray[index]._key)">删除栏目</div>
                   </a-menu-item>

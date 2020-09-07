@@ -41,10 +41,10 @@ const WorkingTableGroup: React.FC = (prop) => {
   const [colHeight, setColHeight] = useState<any>([]);
   const workingTableRef: React.RefObject<any> = useRef();
   useEffect(() => {
-    if (user && user._key && !workingTaskArray && headerIndex == 1) {
+    if (user && user._key && !workingTaskArray && headerIndex === 1) {
       dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
     }
-    if (targetUserInfo && targetUserInfo._key && headerIndex == 2) {
+    if (targetUserInfo && targetUserInfo._key && headerIndex === 2) {
       dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
     }
   }, [user, targetUserInfo]);
@@ -90,7 +90,7 @@ const WorkingTableGroup: React.FC = (prop) => {
           });
         });
         workingGroupArray[0].labelArray.forEach((item: any) => {
-          if (Object.keys(arr[0]).indexOf(item._key) == -1) {
+          if (Object.keys(arr[0]).indexOf(item._key) === -1) {
             arr[0][item._key] = {
               arr: [],
               labelObj: item,
@@ -101,7 +101,7 @@ const WorkingTableGroup: React.FC = (prop) => {
         groupArray = groupArray.map((item: any) => {
           item.arrlength = 0;
           for (let key in item) {
-            if (key != 'groupObj' && key != 'position' && key != 'arrlength') {
+            if (key !== 'groupObj' && key !== 'position' && key !== 'arrlength') {
               item[key].arr = format
                 .formatFilter(item[key].arr, filterObject)
                 .filter((arrItem, arrIndex) => {
@@ -133,7 +133,7 @@ const WorkingTableGroup: React.FC = (prop) => {
   }, [workingTableRef.current]);
   useEffect(() => {
     let groupArray = [];
-    if (memberHeaderIndex == 3 && mainGroupArray.length > 0) {
+    if (memberHeaderIndex === 3 && mainGroupArray.length > 0) {
       console.log('mainGroupArray', mainGroupArray);
       groupArray = mainGroupArray.filter((item: any, index: number) => {
         if (item.arrlength > 0) {
@@ -193,7 +193,7 @@ const WorkingTableGroup: React.FC = (prop) => {
         <div style={{ marginBottom: '2px' }} key={'groupItem' + groupIndex}>
           {groupItem.labelObj ? (
             <React.Fragment>
-              {groupIndex != 'groupObj' && groupIndex != 'position' ? (
+              {groupIndex !== 'groupObj' && groupIndex !== 'position' ? (
                 <React.Fragment>
                   <TaskNav
                     name={
@@ -204,7 +204,7 @@ const WorkingTableGroup: React.FC = (prop) => {
                     role={item.groupObj.groupRole}
                     colorIndex={index}
                     taskNavArray={[item.groupObj, groupItem.labelObj]}
-                    taskNavWidth={memberHeaderIndex == 1 ? '350px' : '100%'}
+                    taskNavWidth={memberHeaderIndex === 1 ? '350px' : '100%'}
                     chooseLabelKey={chooseLabelKey}
                     setChooseLabelKey={setChooseLabelKey}
                     batchTaskArray={() => {
@@ -238,11 +238,11 @@ const WorkingTableGroup: React.FC = (prop) => {
       return item._key;
     });
     let batchRes: any = await api.task.batchTaskArray(cardKeyArray);
-    if (batchRes.msg == 'OK') {
+    if (batchRes.msg === 'OK') {
       dispatch(setMessage(true, '归档成功', 'success'));
-      if (headerIndex == 1) {
+      if (headerIndex === 1) {
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
-      } else if (headerIndex == 2) {
+      } else if (headerIndex === 2) {
         dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
       }
     } else {
@@ -271,7 +271,7 @@ const WorkingTableGroup: React.FC = (prop) => {
             <div
               className="workingTableLabel-container-item"
               style={
-                memberHeaderIndex == 1
+                memberHeaderIndex === 1
                   ? {
                       width: '350px',
                       height: '100%',
@@ -290,7 +290,7 @@ const WorkingTableGroup: React.FC = (prop) => {
               <div
                 className="workingTableLabel-info"
                 style={
-                  memberHeaderIndex == 1
+                  memberHeaderIndex === 1
                     ? { width: '350px' }
                     : { width: '100%' }
                 }

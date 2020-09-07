@@ -18,6 +18,7 @@
   box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.5);
   border-radius: 12px;
   overflow: auto;
+  position: relative;
 }
 .dialog-title {
   width: 100%;
@@ -25,7 +26,6 @@
   padding: 0px 17px;
   border-bottom: 1px solid #f0f0f0;
   line-height: 54px;
-  position: relative;
 }
 .dialog-info {
   width: 100%;
@@ -55,10 +55,11 @@
   border-radius: 100px;
 }
 .dialog-close {
-  width:30px;
-  height:30px;
+  width: 30px;
+  height: 30px;
   position: absolute;
-  top:8px;
+  top: 8px;
   right: 17px;
   cursor: pointer;
+  z-index: 3;
 }

@@ -128,7 +128,7 @@ const WorkingCanlendar: React.FC<WorkingCanlendarProps> = (prop) => {
   const canlendarItem = (item: any) => {
     let dom: any = [];
     let newDom: any = null;
-    if (item != JSON.stringify('{}')) {
+    if (item !== JSON.stringify('{}')) {
       for (let key in item) {
         dom.push(
           <React.Fragment key={'canlendarItem' + key}>

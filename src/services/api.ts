@@ -3,6 +3,8 @@ import moment from 'moment';
 const AUTH_URL = 'https://baokudata.qingtime.cn/sgbh';
 const HOME_URL = 'https://workingdata.qingtime.cn/sgbh';
 const ROCKET_CHAT_URL = 'https://chat.qingtime.cn';
+const SOCKET_URL = 'http://192.168.1.249:9033';
+
 // const API_URL = "http://192.168.1.108:8529/_db/timeOS/myOs"; let token:
 // string | null = localStorage.getItem('auth_token');
 let auth_token: string | null = null;
@@ -153,6 +155,60 @@ const auth = {
     return request.post(HOME_URL + '/card/clockIn', {
       token: auth_token,
       ...params,
+    });
+  },
+  monthEnergy(params: any) {
+    return request.post(HOME_URL + '/card/monthEnergy', {
+      token: auth_token,
+      ...params,
+    });
+  },
+  getGroupLog(
+    groupKey: string,
+    startTime: number,
+    endTime: number,
+    curPage: number,
+    perPage: number
+  ) {
+    return request.post(HOME_URL + '/cardLog/getGroupLog', {
+      token: auth_token,
+      isFilter: 1,
+      groupKey: groupKey,
+      startTime: startTime,
+      endTime: endTime,
+      curPage: curPage,
+      perPage: perPage,
+    });
+  },
+  getUserLog(
+    targetUKey: string,
+    startTime: number,
+    endTime: number,
+    curPage: number,
+    perPage: number
+  ) {
+    return request.post(HOME_URL + '/cardLog/getUserLog', {
+      token: auth_token,
+      isFilter: 1,
+      targetUKey: targetUKey,
+      startTime: startTime,
+      endTime: endTime,
+      curPage: curPage,
+      perPage: perPage,
+    });
+  },
+  monthEnergyWeb(
+    startTime: number,
+    endTime: number,
+    type: number,
+    targetUGKey: string
+  ) {
+    return request.post(HOME_URL + '/card/monthEnergyWeb', {
+      token: auth_token,
+      startTime: startTime,
+      endTime: endTime,
+      type: type,
+      targetUGKey: targetUGKey,
     });
   },
 };
@@ -467,6 +523,13 @@ const group = {
       groupKey: groupKey,
     });
   },
+  setLabelOrder(groupKey: string, labelOrder: any) {
+    return request.post(HOME_URL + '/group/setLabelOrder ', {
+      token: auth_token,
+      groupKey: groupKey,
+      labelOrder: labelOrder,
+    });
+  },
 };
 export default {
   auth,
@@ -474,4 +537,5 @@ export default {
   member,
   group,
   ROCKET_CHAT_URL,
+  SOCKET_URL,
 };

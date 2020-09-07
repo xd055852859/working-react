@@ -133,7 +133,7 @@ const Task: React.FC<TaskProps> = (props) => {
       dayNumber = taskItem.taskEndDate;
       endState = time < 0 ? false : true;
       taskDayColor = !endState
-        ? taskItem.finishPercent == 0
+        ? taskItem.finishPercent === 0
           ? { backgroundColor: 'red' }
           : { backgroundColor: '#417505' }
         : null;
@@ -141,8 +141,8 @@ const Task: React.FC<TaskProps> = (props) => {
         (taskItem.groupRole &&
           taskItem.groupRole > 0 &&
           taskItem.groupRole < 4) ||
-        taskItem.creatorKey == user._key ||
-        taskItem.executorKey == user._key;
+        taskItem.creatorKey === user._key ||
+        taskItem.executorKey === user._key;
 
       // getTaskMemberArray(taskItem.grougKey)
 
@@ -164,7 +164,7 @@ const Task: React.FC<TaskProps> = (props) => {
   const getTaskMemberArray = async (groupKey: string) => {
     let taskMemberRes: any = null;
     taskMemberRes = await api.member.getMember(groupKey);
-    if (taskMemberRes.msg == 'OK') {
+    if (taskMemberRes.msg === 'OK') {
       setTaskMemberArray(taskMemberRes.result);
     }
   };
@@ -175,10 +175,10 @@ const Task: React.FC<TaskProps> = (props) => {
   };
   const cancelTask = (e: React.MouseEvent) => {
     let newTaskDetail = _.cloneDeep(taskDetail);
-    if (taskKey != 0) {
+    if (taskKey !== 0) {
       if (editState) {
         // console.log('newTaskDetail', titleRef.current.innerText);
-        // if (titleRef.current.innerText != taskItem.title) {
+        // if (titleRef.current.innerText !== taskItem.title) {
         //   newTaskDetail.title = titleRef.current.innerText;
         // }
         console.log('newTaskDetail', newTaskDetail);
@@ -195,11 +195,11 @@ const Task: React.FC<TaskProps> = (props) => {
   };
   const changeFinishPercent = (finishPercent: number) => {
     let newTaskDetail = _.cloneDeep(taskDetail);
-    // taskDetail.finishPercent = finishPercent != 0 ? 0 : 1;
+    // taskDetail.finishPercent = finishPercent !== 0 ? 0 : 1;
     newTaskDetail.finishPercent = finishPercent;
-    if (newTaskDetail.finishPercent == 1) {
+    if (newTaskDetail.finishPercent === 1) {
       newTaskDetail.todayTaskTime = moment().valueOf();
-    } else if (newTaskDetail.finishPercent == 0) {
+    } else if (newTaskDetail.finishPercent === 0) {
       newTaskDetail.todayTaskTime = 0;
     }
     setNewDetail(newTaskDetail);
@@ -239,10 +239,10 @@ const Task: React.FC<TaskProps> = (props) => {
     let newTaskDetail = _.cloneDeep(taskDetail);
     let time = 0;
     let endTime = 0;
-    if (type == 'hour') {
+    if (type === 'hour') {
       setTimeNumber(value);
       newTaskDetail.hour = value;
-    } else if (type == 'day') {
+    } else if (type === 'day') {
       newTaskDetail.day = value;
       newTaskDetail.taskEndDate = new Date().getTime() + 86400000 * (value - 1);
       setDayNumber(newTaskDetail.taskEndDate);
@@ -257,7 +257,7 @@ const Task: React.FC<TaskProps> = (props) => {
     setNewDetail(newTaskDetail);
   };
   const taskKeyDown = (e: any) => {
-    if (e.keyCode == 46) {
+    if (e.keyCode === 46) {
       setDeleteDialogShow(true);
     }
   };
@@ -268,7 +268,7 @@ const Task: React.FC<TaskProps> = (props) => {
       taskDetail._key,
       taskDetail.groupKey
     );
-    if (deleteRes.msg == 'OK') {
+    if (deleteRes.msg === 'OK') {
       dispatch(setMessage(true, '删除成功', 'success'));
     } else {
       dispatch(setMessage(true, deleteRes.msg, 'error'));
@@ -294,7 +294,7 @@ const Task: React.FC<TaskProps> = (props) => {
       addInput,
       taskIndex ? taskIndex + 1 : 1
     );
-    if (addTaskRes.msg == 'OK') {
+    if (addTaskRes.msg === 'OK') {
       setAddTaskVisible(false);
       setAddInput('');
       dispatch(setMessage(true, '新增成功', 'success'));
@@ -315,8 +315,8 @@ const Task: React.FC<TaskProps> = (props) => {
             style={{
               backgroundColor: bottomtype
                 ? 'transparent'
-                : taskDetail.finishPercent == 0 ||
-                  taskDetail.finishPercent == 10
+                : taskDetail.finishPercent === 0 ||
+                  taskDetail.finishPercent === 10
                 ? 'rgb(255,255,255)'
                 : 'rgba(255,255,255,0.66)',
             }}
@@ -328,27 +328,27 @@ const Task: React.FC<TaskProps> = (props) => {
                   borderTop:
                     '7px solid ' +
                     color[
-                      taskDetail.taskType == 10 ? 5 : taskDetail.taskType - 1
+                      taskDetail.taskType === 10 ? 5 : taskDetail.taskType - 1
                     ],
                   borderRight:
                     '7px solid ' +
                     color[
-                      taskDetail.taskType == 10 ? 5 : taskDetail.taskType - 1
+                      taskDetail.taskType === 10 ? 5 : taskDetail.taskType - 1
                     ],
                   borderLeft: '7px solid transparent',
                   borderBottom: '7px solid transparent',
                 }}
               ></div>
-              {taskDetail.finishPercent != 10 ? (
+              {taskDetail.finishPercent !== 10 ? (
                 <div
                   className="taskItem-finishIcon"
                   onClick={() => {
-                    changeFinishPercent(taskDetail.finishPercent != 0 ? 0 : 1);
+                    changeFinishPercent(taskDetail.finishPercent !== 0 ? 0 : 1);
                   }}
                 >
                   <img
                     src={
-                      taskDetail.finishPercent == 0 ? unfinishPng : finishPng
+                      taskDetail.finishPercent === 0 ? unfinishPng : finishPng
                     }
                   />
                 </div>
@@ -398,7 +398,7 @@ const Task: React.FC<TaskProps> = (props) => {
                   </DropMenu>
                   {/* <div
                 className="taskItem-img"
-                // v-if="bottomtype=='grid'"
+                // v-if="bottomtype==='grid'"
                 style={{ width: '25px', height: '25px' }}
               >
                 <img
@@ -411,7 +411,7 @@ const Task: React.FC<TaskProps> = (props) => {
                 />
               </div> */}
                   <div className="taskItem-title">
-                    {taskKey == taskDetail._key && editRole ? (
+                    {taskKey === taskDetail._key && editRole ? (
                       // <div
                       //   suppressContentEditableWarning
                       //   contentEditable
@@ -421,7 +421,7 @@ const Task: React.FC<TaskProps> = (props) => {
                       //     minHeight: '28px',
                       //     backgroundColor: bottomtype ? 'transparent' : '',
                       //     textDecoration:
-                      //       taskDetail.finishPercent == 2 ? 'line-through' : '',
+                      //       taskDetail.finishPercent === 2 ? 'line-through' : '',
                       //   }}
                       //   onInput={changeTitle}
                       //   // onKeyDown={changeKeyTitle}
@@ -442,7 +442,7 @@ const Task: React.FC<TaskProps> = (props) => {
                           minHeight: '28px',
                           backgroundColor: bottomtype ? 'transparent' : '',
                           textDecoration:
-                            taskDetail.finishPercent == 2 ? 'line-through' : '',
+                            taskDetail.finishPercent === 2 ? 'line-through' : '',
                         }}
                         id={'taskDetail' + taskDetail._key}
                       >
@@ -510,7 +510,7 @@ const Task: React.FC<TaskProps> = (props) => {
                                   className="task-executor-dropMenu-container"
                                   key={'taskMember' + taskMemberIndex}
                                   style={
-                                    taskDetail.executorKey ==
+                                    taskDetail.executorKey ===
                                     taskMemberItem.userId
                                       ? { background: '#F0F0F0' }
                                       : {}
@@ -564,7 +564,7 @@ const Task: React.FC<TaskProps> = (props) => {
                     <div
                       className="taskItem-check-icon"
                       style={
-                        taskDetail.content != '' ? { display: 'flex' } : {}
+                        taskDetail.content !== '' ? { display: 'flex' } : {}
                       }
                       onClick={() => {
                         setTaskInfoDialogShow(true);
@@ -575,13 +575,13 @@ const Task: React.FC<TaskProps> = (props) => {
                   </div>
                 </div>
                 <div className="taskItem-taskType"></div>
-                {/*  style={cardKey==taskItem._key?{borderTop:'10px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],borderRight:'10px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],  borderLeft: '10px solid transparent',
-  borderBottom: '10px solid transparent'}:{borderTop:'7px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],borderRight:'7px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],  borderLeft: '7px solid transparent',
+                {/*  style={cardKey===taskItem._key?{borderTop:'10px solid '+color[taskItem.taskType===10?5:taskItem.taskType-1],borderRight:'10px solid '+color[taskItem.taskType===10?5:taskItem.taskType-1],  borderLeft: '10px solid transparent',
+  borderBottom: '10px solid transparent'}:{borderTop:'7px solid '+color[taskItem.taskType===10?5:taskItem.taskType-1],borderRight:'7px solid '+color[taskItem.taskType===10?5:taskItem.taskType-1],  borderLeft: '7px solid transparent',
   borderBottom: '7px solid transparent'}} */}
               </div>
             </React.Fragment>
           </div>
-          {taskKey == taskDetail._key && editRole && headerIndex == 3 ? (
+          {taskKey === taskDetail._key && editRole && headerIndex === 3 ? (
             !addTaskVisible ? (
               <div
                 className="taskItem-plus"

@@ -60,14 +60,14 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
       const endTime = moment().endOf('day').valueOf();
       selfTaskArray.forEach((item: any, index: number) => {
         let finishState =
-          item.finishPercent == 1 &&
+          item.finishPercent === 1 &&
           item.todayTaskTime >= startTime &&
           item.todayTaskTime <= endTime;
         if (
-          item.executorKey == user._key &&
-          ((item.finishPercent == 0 && item.taskEndDate <= endTime) ||
+          item.executorKey === user._key &&
+          ((item.finishPercent === 0 && item.taskEndDate <= endTime) ||
             finishState) &&
-          item.title != '' &&
+          item.title !== '' &&
           item.taskEndDate
         ) {
           if (!newGroupObj[item.groupKey]) {
@@ -81,7 +81,7 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
             newGroupObj[item.groupKey].taskNumber =
               newGroupObj[item.groupKey].taskNumber + 1;
           }
-          if (item.finishPercent == 1) {
+          if (item.finishPercent === 1) {
             newTaskNumber = newTaskNumber + 1;
           }
         }
@@ -98,12 +98,12 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
       user._key,
       moment().startOf('day').valueOf()
     );
-    if (noteRes.msg == 'OK') {
+    if (noteRes.msg === 'OK') {
       setPositive(noteRes.result.positive);
       setNegative(noteRes.result.negative);
       setNote(noteRes.result.note);
     } else {
-      if (noteRes.msg == '无该成就/风险/随记') {
+      if (noteRes.msg === '无该成就/风险/随记') {
         await api.auth.setNote({
           startTime: moment().startOf('day').valueOf(),
           type: 2,
@@ -127,7 +127,7 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
       negative: negative,
       note: note,
     });
-    if (noteRes.msg == 'OK') {
+    if (noteRes.msg === 'OK') {
       dispatch(setMessage(true, '随记保存成功', 'success'));
     } else {
       dispatch(setMessage(true, noteRes.msg, 'error'));
@@ -153,7 +153,7 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
       // obj.noteClose = this.noteClose;
     }
     let res: any = await api.auth.clockIn(obj);
-    if (res.msg == 'OK') {
+    if (res.msg === 'OK') {
       dispatch(setMessage(true, '打卡成功', 'success'));
       if (nowTime) {
         let url =

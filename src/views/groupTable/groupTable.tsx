@@ -25,21 +25,21 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
   const handleInputChange = (e: any) => {
     setInputValue(e.target.value);
   };
-  const handleInputConfirm = async () => {
-    setInputVisible(false);
-    if (inputValue != '') {
-      await api.task.addTaskLabel(groupKey, inputValue);
-      setInputValue('');
-      await api.task.getTaskList(3, groupKey, '[0,1,2]');
-    }
-  };
+  // const handleInputConfirm = async () => {
+  //   setInputVisible(false);
+  //   if (inputValue !== '') {
+  //     await api.task.addTaskLabel(groupKey, inputValue);
+  //     setInputValue('');
+  //     await api.task.getTaskList(3, groupKey, '[0,1,2]');
+  //   }
+  // };
   return (
     <div
       className="groupTable"
       style={
-        moveState == 'in'
+        moveState === 'in'
           ? { animation: 'contentmoveIn 50ms', width: '100%' }
-          : moveState == 'out'
+          : moveState === 'out'
           ? { animation: 'contentmoveOut 50ms', width: 'calc(100% - 320px)' }
           : {}
       }
@@ -49,7 +49,7 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
         {/* <WorkingTableLabel /> */}
         <GroupTableGroup />
       </div>
-      <div
+      {/* <div
         className="cooperation-container-item"
         style={{
           width: '350px',
@@ -81,7 +81,7 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
             </div>
           )}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

@@ -126,7 +126,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       page,
       taskLimit
     );
-    if (commentRes.msg == 'OK') {
+    if (commentRes.msg === 'OK') {
       newCommentArray.push(...commentRes.result);
       setTaskCommentArray(newCommentArray);
       setTaskCommentTotal(commentRes.totalNumber);
@@ -141,7 +141,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       page,
       taskLimit
     );
-    if (historyRes.msg == 'OK') {
+    if (historyRes.msg === 'OK') {
       console.log(historyRes);
       newHistoryArray.push(...historyRes.result);
       setTaskHistoryArray(newHistoryArray);
@@ -151,7 +151,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     }
   };
   const handleDateChange = (date: any, type: string) => {
-    if (type == 'start') {
+    if (type === 'start') {
       setStartDate(date);
       changeTaskItem('taskStartDate', date.valueOf());
     } else if ((type = 'end')) {
@@ -203,10 +203,10 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   };
   const saveCommentMsg = async () => {
     let newCommentArray = _.cloneDeep(taskCommentArray);
-    if (commentInput != '') {
+    if (commentInput !== '') {
       //保存
       let saveRes: any = await api.task.addComment(taskItem._key, commentInput);
-      if (saveRes.msg == 'OK') {
+      if (saveRes.msg === 'OK') {
         dispatch(setMessage(true, '评论成功', 'success'));
         newCommentArray.push(saveRes.result);
         setTaskCommentArray(newCommentArray);
@@ -220,7 +220,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     let newCommentArray = _.cloneDeep(taskCommentArray);
     let newCommentTotal = taskCommentTotal;
     let deleteRes: any = await api.task.deleteComment(commentkey);
-    if (deleteRes.msg == 'OK') {
+    if (deleteRes.msg === 'OK') {
       dispatch(setMessage(true, '删除评论成功', 'success'));
       newCommentArray.splice(commentIndex, 1);
       newCommentTotal = newCommentTotal - 1;
@@ -242,7 +242,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
         <React.Fragment>
           <div className="taskInfo-mainTitle">
             <div className="taskInfo-mainTitle-left">
-              {taskItem.finishPercent == 0 ? (
+              {taskItem.finishPercent === 0 ? (
                 <img
                   src={taskUnfinishPng}
                   alt=""
@@ -251,7 +251,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     changeTaskItem('finishPercent', 1);
                   }}
                 />
-              ) : taskItem.finishPercent == 1 ? (
+              ) : taskItem.finishPercent === 1 ? (
                 <img
                   src={taskFinishPng}
                   alt=""
@@ -416,7 +416,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     setCommentIndex(0);
                   }}
                   style={
-                    commentIndex == 0
+                    commentIndex === 0
                       ? { borderBottom: '1px solid #17B881', color: '#17B881' }
                       : {}
                   }
@@ -429,7 +429,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     setCommentIndex(1);
                   }}
                   style={
-                    commentIndex == 1
+                    commentIndex === 1
                       ? { borderBottom: '1px solid #17B881', color: '#17B881' }
                       : {}
                   }
@@ -437,7 +437,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                   历史({taskHistoryTotal})
                 </div>
               </div>
-              {commentIndex == 0 ? (
+              {commentIndex === 0 ? (
                 <div
                   className="taskInfo-comment-tab"
                   onScroll={scrollCommentLoading}

@@ -96,7 +96,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   const [groupObj, setGroupObj] = React.useState<any>(null);
   const limit = 30;
   useEffect(() => {
-    if (searchInput == '') {
+    if (searchInput === '') {
       setSearchList([]);
     }
   }, [searchInput, contactIndex]);
@@ -107,24 +107,24 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     setPasswordInput(e.target.value);
   };
   const searchMsg = () => {
-    if (searchInput != '') {
-      if (contactIndex == 1) {
+    if (searchInput !== '') {
+      if (contactIndex === 1) {
         getSearchPerson(page);
-      } else if (contactIndex == 0) {
+      } else if (contactIndex === 0) {
         getSearchGroup(page);
       }
     }
   };
   const getSearchPerson = async (page: number) => {
     let newSearchList: any = [];
-    if (page == 1) {
+    if (page === 1) {
       setSearchList([]);
     } else {
       newSearchList = _.cloneDeep(searchList);
     }
 
     let res: any = await api.member.searchUserNew(searchInput, page, limit);
-    if (res.msg == 'OK') {
+    if (res.msg === 'OK') {
       res.result.forEach((searchItem: any) => {
         searchItem.avatar = searchItem.avatar
           ? searchItem.avatar +
@@ -140,13 +140,13 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   };
   const getSearchGroup = async (page: number) => {
     let newSearchList: any = [];
-    if (page == 1) {
+    if (page === 1) {
       setSearchList([]);
     } else {
       newSearchList = _.cloneDeep(searchList);
     }
     let res: any = await api.member.searchGroupNew(searchInput, page, limit);
-    if (res.msg == 'OK') {
+    if (res.msg === 'OK') {
       res.result.map((searchItem: any) => {
         searchItem.avatar = searchItem.logo
           ? searchItem.groupLogo +
@@ -172,7 +172,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
         role: 5,
       },
     ]);
-    if (memberRes.msg == 'OK') {
+    if (memberRes.msg === 'OK') {
       dispatch(setMessage(true, '添加好友成功', 'success'));
       newSearchList[searchIndex].isMyMainGroupMember = true;
       setSearchList(newSearchList);
@@ -186,7 +186,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     let memberRes: any = await api.group.deleteGroupMember(mainGroupKey, [
       searchItem.userId,
     ]);
-    if (memberRes.msg == 'OK') {
+    if (memberRes.msg === 'OK') {
       dispatch(setMessage(true, '删除好友成功', 'success'));
       newSearchList[searchIndex].isMyMainGroupMember = false;
       setSearchList(newSearchList);
@@ -198,7 +198,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   const outGroup = async (groupKey: string, searchIndex: number) => {
     let newSearchList = _.cloneDeep(searchList);
     let memberRes: any = await api.group.outGroup(groupKey);
-    if (memberRes.msg == 'OK') {
+    if (memberRes.msg === 'OK') {
       dispatch(setMessage(true, '退出群组成功', 'success'));
       newSearchList[searchIndex].isGroupMember = false;
       setSearchList(newSearchList);
@@ -214,7 +214,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   ) => {
     let newSearchList = _.cloneDeep(searchList);
     let groupRes: any = await api.group.getGroupInfo(groupKey);
-    if (groupRes.msg == 'OK') {
+    if (groupRes.msg === 'OK') {
       let newGroupInfo = groupRes.result;
       console.log(groupRes);
       if (newGroupInfo.joinType) {
@@ -244,7 +244,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   };
   const applyJoinGroup = async (groupKey: string) => {
     let memberRes: any = await api.group.applyJoinGroup(groupKey);
-    if (memberRes.msg == 'OK') {
+    if (memberRes.msg === 'OK') {
       dispatch(setMessage(true, '申请加群成功', 'success'));
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
@@ -256,7 +256,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       groupKey,
       passwordInput
     );
-    if (memberRes.msg == 'OK') {
+    if (memberRes.msg === 'OK') {
       dispatch(setMessage(true, '口令加群成功', 'success'));
       newSearchList[searchIndex].isGroupMember = true;
       setSearchList(newSearchList);
@@ -285,7 +285,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   };
   const addGroup = async () => {
     let groupRes: any = await api.group.addGroup(groupObj);
-    if (groupRes.msg == 'OK') {
+    if (groupRes.msg === 'OK') {
       dispatch(setMessage(true, '创建群成功', 'success'));
       dispatch(setGroupKey(groupRes.result._key));
       dispatch(getGroupInfo(groupRes.result._key));
@@ -298,11 +298,11 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   };
   const contactSort = (sortType: number) => {
     let newTheme = _.cloneDeep(theme);
-    if (contactIndex == 0) {
+    if (contactIndex === 0) {
       dispatch(getGroup(3, null, sortType));
       newTheme.groupSortType = sortType;
       dispatch(setTheme(newTheme));
-    } else if (contactIndex == 1) {
+    } else if (contactIndex === 1) {
       dispatch(getMember(mainGroupKey,sortType));
       newTheme.personSortType = sortType;
       dispatch(setTheme(newTheme));
@@ -317,7 +317,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             setSearchList([]);
           }}
           style={
-            contactIndex == 0 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
+            contactIndex === 0 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
           }
           className="tabs-tab-nav-item"
         >
@@ -328,7 +328,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             setContactIndex(1);
           }}
           style={
-            contactIndex == 1 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
+            contactIndex === 1 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
           }
           className="tabs-tab-nav-item"
         >
@@ -348,7 +348,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
           alt=""
           className="sort-icon"
           onClick={() => {
-            contactIndex == 1
+            contactIndex === 1
               ? setMemberSortVisible(true)
               : setGroupSortVisible(true);
           }}
@@ -371,7 +371,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             color: '#333',
           }}
           onClose={() => {
-            contactIndex == 1
+            contactIndex === 1
               ? setMemberSortVisible(false)
               : setGroupSortVisible(false);
           }}
@@ -565,7 +565,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                 口令加群
               </Button>
             ) : null}
-            {joinType == 1 ? (
+            {joinType === 1 ? (
               <Button
                 variant="contained"
                 color="primary"

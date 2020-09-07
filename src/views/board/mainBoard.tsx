@@ -44,7 +44,7 @@ const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
         </div>
       </div>
       <div
-        // style={{backgroundColor: countType=='index'?'rgba(0, 0, 0, 0.05)':'rgba(0, 0, 0, 0.12)'}}
+        // style={{backgroundColor: countType==='index'?'rgba(0, 0, 0, 0.05)':'rgba(0, 0, 0, 0.12)'}}
         className="countdown-right-info"
       >
         {mainItem.map((taskItem: any, taskIndex: number) => {
@@ -77,14 +77,14 @@ const MainBoard: React.FC = () => {
       const endTime = moment().endOf('day').valueOf();
       selfTaskArray.forEach((item: any, index: number) => {
         let finishState =
-          item.finishPercent == 1 &&
+          item.finishPercent === 1 &&
           item.todayTaskTime >= startTime &&
           item.todayTaskTime < endTime;
         if (
-          item.executorKey == user._key &&
-          ((item.finishPercent == 0 && item.taskEndDate <= endTime) ||
+          item.executorKey === user._key &&
+          ((item.finishPercent === 0 && item.taskEndDate <= endTime) ||
             finishState) &&
-          item.title != '' &&
+          item.title !== '' &&
           item.taskEndDate
         ) {
           if (!groupObj[item.groupKey]) {

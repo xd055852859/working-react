@@ -77,7 +77,7 @@ const ProjectBoardItem: React.FC<ProjectBoardItemProps> = (props) => {
   const getProjectBoardTask = () => {
     let dom = [];
     for (let key in projectItem) {
-      if (key != 'groupObj' && key != 'position') {
+      if (key !== 'groupObj' && key !== 'position') {
         dom.push(
           <React.Fragment key={projectItem.groupObj.groupName + key}>
             <div
@@ -125,7 +125,7 @@ const MemberBoard: React.FC = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     if (mainGroupKey) {
-      if (boardIndex == 0) {
+      if (boardIndex === 0) {
         dispatch(getTeamTask([0, 1]));
       } else {
         dispatch(getProjectTask([0]));
@@ -140,10 +140,10 @@ const MemberBoard: React.FC = () => {
       let personGroupArray: any = [];
       teamTaskArray.forEach((item: any, index: number) => {
         if (
-          item.executorKey != user._key &&
+          item.executorKey !== user._key &&
           item.groupName &&
-          item.groupName.indexOf('主群') == -1 &&
-          item.title != ''
+          item.groupName.indexOf('主群') === -1 &&
+          item.title !== ''
         ) {
           if (!personObj[item.executorKey]) {
             personObj[item.executorKey] = [];
@@ -179,7 +179,7 @@ const MemberBoard: React.FC = () => {
       taskArray.forEach((item: any, index: number) => {
         arr[index] = { groupObj: groupArray[index] };
         item.forEach((groupItem: any, groupIndex: number) => {
-          if (groupItem.finishPercent == 0 && item.title != '') {
+          if (groupItem.finishPercent === 0 && item.title !== '') {
             if (groupItem.labelKey) {
               if (!arr[index][groupItem.labelKey]) {
                 let labelIndex = _.findIndex(groupArray[index].labelArray, {
@@ -291,7 +291,7 @@ const MemberBoard: React.FC = () => {
           </div>
         </DropMenu>
       </div>
-      {boardIndex == 0 ? (
+      {boardIndex === 0 ? (
         <div className="memberBoard-item">
           {memberGroupArray.map((memberItem: any, memberIndex: number) => {
             return (
@@ -303,7 +303,7 @@ const MemberBoard: React.FC = () => {
           })}
         </div>
       ) : null}
-      {boardIndex == 1 ? (
+      {boardIndex === 1 ? (
         <div className="memberBoard-item">
           {projectGroupArray.map((projectItem: any, projectIndex: number) => {
             return (

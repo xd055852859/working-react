@@ -18,6 +18,7 @@ import DropMenu from '../../components/common/dropMenu';
 import Dialog from '../../components/common/dialog';
 import GroupSet from '../tabs/groupSet';
 import GroupMember from '../tabs/groupMember';
+import Vitality from '../../components/vitality/vitality';
 import api from '../../services/api';
 import HeaderFilter from '../../components/headerFilter/headerFilter';
 import VitalityIcon from '../../components/vitalityIcon/vitalityIcon';
@@ -76,6 +77,7 @@ const GroupTableHeader: React.FC = (prop) => {
   const [groupVisible, setGroupVisible] = useState(false);
   const [infoVisible, setInfoVisible] = useState(false);
   const [groupSetVisible, setGroupSetVisible] = useState(false);
+  const [vitalityVisible, setVitalityVisible] = useState(false);
   const [groupMemberVisible, setGroupMemberVisible] = useState(false);
   const [groupMember, setGroupMember] = useState<any>([]);
   const [groupObj, setGroupObj] = React.useState<any>(null);
@@ -98,7 +100,7 @@ const GroupTableHeader: React.FC = (prop) => {
       let filterCheckedArray: any = [];
       if (newFilterObject.filterType.length > 0) {
         filterCheckedArray = checkedTitle.map((item: any) => {
-          return newFilterObject.filterType.indexOf(item) != -1;
+          return newFilterObject.filterType.indexOf(item) !== -1;
         });
       }
       setFilterCheckedArray(filterCheckedArray);
@@ -124,7 +126,7 @@ const GroupTableHeader: React.FC = (prop) => {
   const changeFilterCheck = (filterTypeText: string) => {
     let filterType = filterObject.filterType;
     let fikterIndex = filterType.indexOf(filterTypeText);
-    if (fikterIndex == -1) {
+    if (fikterIndex === -1) {
       filterType.push(filterTypeText);
     } else {
       filterType.splice(fikterIndex, 1);
@@ -175,7 +177,7 @@ const GroupTableHeader: React.FC = (prop) => {
       groupMemberItem._key,
       newFilterObject
     );
-    if (res.msg == 'OK') {
+    if (res.msg === 'OK') {
       console.log('设置成功');
     } else {
       dispatch(setMessage(true, res.msg, 'error'));
@@ -236,12 +238,12 @@ const GroupTableHeader: React.FC = (prop) => {
           </DropMenu>
         </div>
       </div>
-      <div className="groupTableHeader-vitalityNum">
+      <div className="groupTableHeader-vitalityNum" onClick={()=>{setVitalityVisible(true)}}>
         <div style={{ width: '50px', flexShrink: 0 }}>活力值</div>
         <VitalityIcon
           vitalityNum={groupInfo && groupInfo.energyValueTotal}
           vitalityDirection={'vertical'}
-          vitalityStyle={{ marginLeft: '5px' }}
+          vitalityStyle={{ marginLeft: '5px',color:'#fff' }}
         />
       </div>
       <div className="groupTableHeader-info">
@@ -466,6 +468,20 @@ const GroupTableHeader: React.FC = (prop) => {
       >
         {/* saveGroupSet={saveGroupSet} type={'设置'}  */}
         <GroupMember setMember={setMember} />
+      </Dialog>
+      <Dialog
+        visible={vitalityVisible}
+        onClose={() => {
+          setVitalityVisible(false);
+        }}
+        footer={false}
+        // title={'搜索中心'}
+        dialogStyle={{ width: '850px', height: '700px' }}
+      >
+        <Vitality
+          vitalityType={3}
+          vitalityKey={groupKey}
+        />
       </Dialog>
     </div>
   );

@@ -134,7 +134,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   };
   const changeBg = (type: string, value: string) => {
     let newTheme = _.cloneDeep(theme);
-    if (type == 'backgroundImg') {
+    if (type === 'backgroundImg') {
       newTheme.backgroundImg = value;
       newTheme.backgroundColor = '';
     } else {
@@ -144,20 +144,20 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     dispatch(setTheme(newTheme));
   };
   const searchTask = () => {
-    if (searchInput != '') {
+    if (searchInput !== '') {
       // this.getSearchList({ param: { name: this.searchInput }, type: 1 })
       getTaskSearch(page);
     }
   };
   const getTaskSearch = async (page: number) => {
     let newSearchTaskList: any = [];
-    if (page == 1) {
+    if (page === 1) {
       setSearchTaskList([]);
     } else {
       newSearchTaskList = _.cloneDeep(searchTaskList);
     }
     let res: any = await api.task.getCardSearch(page, limit, searchInput);
-    if (res.msg == 'OK') {
+    if (res.msg === 'OK') {
       newSearchTaskList.push(...res.result);
       setSearchTaskList(newSearchTaskList);
       setTotal(res.totalNumber);
@@ -187,7 +187,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       { _key: null, cardLabelName: 'ToDo', executorKey: user._key },
     ];
     let labelRes: any = await api.group.getLabelInfo(groupKey);
-    if (labelRes.msg == 'OK') {
+    if (labelRes.msg === 'OK') {
       newLabelArray.push(...labelRes.result);
       setLabelArray(newLabelArray);
     } else {
@@ -202,11 +202,11 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       labelArray[labelIndex].executorKey,
       addInput
     );
-    if (addTaskRes.msg == 'OK') {
+    if (addTaskRes.msg === 'OK') {
       setAddVisible(false);
       setAddInput('');
       dispatch(setMessage(true, '新增成功', 'success'));
-      if (headerIndex == 3) {
+      if (headerIndex === 3) {
         dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
       }
     } else {
@@ -312,7 +312,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             width: '260px',
             height: '370px',
             top: '65px',
-            left: '-150px',
+            left: '-35px',
           }}
           onClose={() => {
             setContentSetVisilble(false);

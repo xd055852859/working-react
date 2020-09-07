@@ -8,6 +8,7 @@ import MessageBoard from '../board/messageBoard';
 import ContentHeader from './contentHeader';
 import { setMessage } from '../../redux/actions/commonActions';
 import api from '../../services/api';
+import io from 'socket.io-client';
 import moment from 'moment';
 export interface ContentProps {}
 const Content: React.FC<ContentProps> = (props) => {
@@ -16,14 +17,24 @@ const Content: React.FC<ContentProps> = (props) => {
   const theme = useTypedSelector((state) => state.auth.theme);
   const [nowTime, setNowTime] = useState<any>([]);
   const [prompt, setPrompt] = useState();
+  const [socket, setSocket] = useState<any>(null);
   useEffect(() => {
+    let interval: any = null;
     if (user) {
       formatTime();
       getPrompt();
-      setInterval(formatTime, 60000);
+      interval = setInterval(formatTime, 60000);
+      // getSocket();
     }
-    return clearInterval();
+    return clearInterval(interval);
   }, [user]);
+  const getSocket = () => {
+    const socket = io.connect(api.SOCKET_URL);
+    console.log(socket);
+    socket.on('connect', () => {
+      console.log('已连接...', socket.id);
+    });
+  };
   const formatTime = () => {
     let hour = moment().hour();
     let minute = moment().minute();
@@ -45,7 +56,7 @@ const Content: React.FC<ContentProps> = (props) => {
   };
   const getPrompt = async () => {
     let promptRes: any = await api.auth.getPrompt();
-    if (promptRes.msg == 'OK') {
+    if (promptRes.msg === 'OK') {
       setPrompt(promptRes.result.content);
       // dispatch(setMessage(true, '申请加群成功', 'success'));
     } else {

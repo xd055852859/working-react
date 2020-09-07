@@ -4,16 +4,21 @@ import crownPng from '../../assets/img/crown.png';
 import sunPng from '../../assets/img/sun.png';
 import moonPng from '../../assets/img/moon.png';
 import starPng from '../../assets/img/star.png';
+import crowngPng from '../../assets/img/crowng.png';
+import sungPng from '../../assets/img/sung.png';
+import moongPng from '../../assets/img/moong.png';
+import stargPng from '../../assets/img/starg.png';
 import { useDispatch } from 'react-redux';
 
 interface VitalityProps {
   vitalityDirection: string;
   vitalityNum: number;
   vitalityStyle?: any;
+  vitalityIconType?:number
 }
 
 const VitalityIcon: React.FC<VitalityProps> = (props) => {
-  const { vitalityDirection, vitalityNum,vitalityStyle } = props;
+  const { vitalityDirection, vitalityNum,vitalityStyle,vitalityIconType } = props;
   const [vitalityArray, setvitalityArray] = useState<number[]>([]);
   useEffect(() => {
     const crown = Math.floor(vitalityNum / 10000);
@@ -31,7 +36,7 @@ const VitalityIcon: React.FC<VitalityProps> = (props) => {
     height: string
   ) => {
     let dom = [];
-    if (vitalityDirection == 'vertical') {
+    if (vitalityDirection === 'vertical') {
       if (num > 0) {
         dom.push(
           <span
@@ -43,12 +48,12 @@ const VitalityIcon: React.FC<VitalityProps> = (props) => {
             key={'vertical' + num}
           >
             <span
-              className="vitality-img"
+              className="vitalityIcon-img"
               style={{ width: width, height: height }}
             >
               <img src={src} />
             </span>
-            <span className="vitality-title">{num}</span>
+            <span className="vitalityIcon-title">{num}</span>
           </span>
         );
       }
@@ -56,7 +61,7 @@ const VitalityIcon: React.FC<VitalityProps> = (props) => {
       for (var i = 0; i < num; i++) {
         dom.push(
           <span
-            className="vitality-img"
+            className="vitalityIcon-img"
             style={{ width: width, height: height }}
             key={'horizontal' + i}
           >
@@ -68,11 +73,11 @@ const VitalityIcon: React.FC<VitalityProps> = (props) => {
     return dom;
   };
   return (
-    <span className="vitality-info" style={vitalityStyle}>
-      {vitalityImg(vitalityArray[0], crownPng, '20px', '17px')}
-      {vitalityImg(vitalityArray[1], sunPng, '19px', '19px')}
-      {vitalityImg(vitalityArray[2], moonPng, '16px', '16px')}
-      {vitalityImg(vitalityArray[3], starPng, '16px', '16px')}
+    <span className="vitalityIcon-info" style={vitalityStyle}>
+      {vitalityImg(vitalityArray[0], vitalityIconType?crowngPng:crownPng, '20px', '17px')}
+      {vitalityImg(vitalityArray[1], vitalityIconType?sungPng:sunPng, '19px', '19px')}
+      {vitalityImg(vitalityArray[2], vitalityIconType?moongPng:moonPng, '16px', '16px')}
+      {vitalityImg(vitalityArray[3], vitalityIconType?stargPng:starPng, '16px', '16px')}
     </span>
   );
 };

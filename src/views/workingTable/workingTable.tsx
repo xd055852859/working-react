@@ -33,7 +33,7 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
   }, [headerIndex]);
   const handleInputConfirm = async () => {
     setInputVisible(false);
-    if (inputValue != '') {
+    if (inputValue !== '') {
       console.log(mainGroupKey);
       await api.task.addTaskLabel(mainGroupKey, inputValue);
       setInputValue('');
@@ -45,22 +45,22 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
     <div
       className="workingTable"
       style={
-        moveState == 'in'
+        moveState === 'in'
           ? { animation: 'contentmoveIn 50ms', width: '100%' }
-          : moveState == 'out'
+          : moveState === 'out'
           ? { animation: 'contentmoveOut 50ms', width: 'calc(100% - 320px)' }
           : {}
       }
     >
       <WorkingTableHeader />
       <div className="workingTableContent">
-        {memberHeaderIndex == 0 || memberHeaderIndex == 2 ? (
+        {memberHeaderIndex === 0 || memberHeaderIndex === 2 ? (
           <WorkingTableLabel />
         ) : null}
-        {memberHeaderIndex == 1 || memberHeaderIndex == 3 ? (
+        {memberHeaderIndex === 1 || memberHeaderIndex === 3 ? (
           <WorkingTableGroup />
         ) : null}
-        {memberHeaderIndex == 4 ? <WorkingCalendar /> : null}
+        {memberHeaderIndex === 4 ? <WorkingCalendar /> : null}
       </div>
       <div
         className="cooperation-container-item"

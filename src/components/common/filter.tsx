@@ -58,7 +58,7 @@ const Filter: React.FC<FilterProps> = (prop) => {
                 '?imageMogr2/auto-orient/thumbnail/30x30/format/jpg'
                   ? filterArray[filterIndex][filterItem[1]] +
                     '?imageMogr2/auto-orient/thumbnail/30x30/format/jpg'
-                  : defaultPngType == 0
+                  : defaultPngType === 0
                   ? defaultPersonPng
                   : defaultGroupPng
               }
@@ -88,7 +88,7 @@ const Filter: React.FC<FilterProps> = (prop) => {
                     '?imageMogr2/auto-orient/thumbnail/30x30/format/jpg'
                       ? item[filterItem[1]] +
                         '?imageMogr2/auto-orient/thumbnail/30x30/format/jpg'
-                      : defaultPngType == 0
+                      : defaultPngType === 0
                       ? defaultPersonPng
                       : defaultGroupPng
                   }

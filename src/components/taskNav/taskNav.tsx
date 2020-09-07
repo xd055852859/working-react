@@ -24,6 +24,7 @@ interface TaskNavProps {
   setChooseLabelKey?: any;
   chooseLabelKey?: string;
   batchTaskArray?: any;
+  changeLabelAvatar?: any;
 }
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -56,6 +57,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
     setChooseLabelKey,
     chooseLabelKey,
     batchTaskArray,
+    changeLabelAvatar,
   } = prop;
   const classes = useStyles();
   const groupKey = useTypedSelector((state) => state.group.groupKey);
@@ -95,13 +97,13 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       labelInfo._key,
       labelInfo.executorKey
     );
-    if (addTaskRes.msg == 'OK') {
+    if (addTaskRes.msg === 'OK') {
       dispatch(setMessage(true, '新增成功', 'success'));
-      if (headerIndex == 1) {
+      if (headerIndex === 1) {
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
-      } else if (headerIndex == 2) {
+      } else if (headerIndex === 2) {
         dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
-      } else if (headerIndex == 3) {
+      } else if (headerIndex === 3) {
         dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
       }
     } else {
@@ -109,7 +111,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
     }
   };
   const changeLabelName = (labelInfo: any) => {
-    if (labelName != name) {
+    if (labelName !== name) {
       api.group.setCardLabel(labelInfo._key, labelName);
     }
     setLabelNameVisible(false);
@@ -123,6 +125,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       type
     );
     setLabelAvatar(executorItem.avatar);
+    changeLabelAvatar(executorItem,colorIndex);
   };
   const batchAddTask = async () => {
     let batchTaskRes: any = await api.task.batchCard(
@@ -130,13 +133,13 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       taskNavArray[0]._key,
       taskNavArray[1]._key
     );
-    if (batchTaskRes.msg == 'OK') {
+    if (batchTaskRes.msg === 'OK') {
       dispatch(setMessage(true, '新增成功', 'success'));
-      if (headerIndex == 1) {
+      if (headerIndex === 1) {
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
-      } else if (headerIndex == 2) {
+      } else if (headerIndex === 2) {
         dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
-      } else if (headerIndex == 3) {
+      } else if (headerIndex === 3) {
         dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
       }
       setBatchAddVisible(false);
@@ -152,6 +155,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
           style={{
             backgroundColor: BgColorArray[taskNavBgColor],
             width: taskNavWidth,
+            marginRight: headerIndex === 3 ? '15px' : '0px',
           }}
           onMouseLeave={() => {
             setBatchVisible(false);
@@ -163,7 +167,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
               <div
                 className="taskNav-avatar"
                 onClick={() => {
-                  if (role > 0 && role < 4 && headerIndex == 3) {
+                  if (role > 0 && role < 4 && headerIndex === 3) {
                     setChooseLabelKey(taskNavArray[1]._key);
                     setAvatarVisible(true);
                   }
@@ -172,7 +176,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                 <img src={labelAvatar} alt="" />
                 <DropMenu
                   visible={
-                    taskNavArray[1]._key == chooseLabelKey && avatarVisible
+                    taskNavArray[1]._key === chooseLabelKey && avatarVisible
                   }
                   dropStyle={{
                     width: '150px',
@@ -218,7 +222,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
               <div
                 className="taskNav-name"
                 onClick={() => {
-                  if (role > 0 && role < 4 && headerIndex == 3) {
+                  if (role > 0 && role < 4 && headerIndex === 3) {
                     setLabelNameVisible(true);
                   }
                 }}
@@ -263,7 +267,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                 <img src={ellipsisPng} className="taskNav-name-ellipsis" />
               </div>
               <DropMenu
-                visible={taskNavArray[1]._key == chooseLabelKey && batchVisible}
+                visible={taskNavArray[1]._key === chooseLabelKey && batchVisible}
                 dropStyle={{
                   width: '150px',
                   height: '150px',

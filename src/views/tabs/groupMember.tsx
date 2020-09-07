@@ -67,10 +67,10 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       user._key &&
       memberArray &&
       groupMemberArray &&
-      searchInput == ''
+      searchInput === ''
     ) {
       let newMemberList: any = [];
-      if (memberList.length == 0) {
+      if (memberList.length === 0) {
         newMemberList = _.cloneDeep(groupMemberArray);
       } else {
         newMemberList = _.cloneDeep(memberList);
@@ -80,7 +80,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
         let newMemberIndex = _.findIndex(newMemberList, {
           userId: memberItem.userId,
         });
-        if (newMemberIndex == -1) {
+        if (newMemberIndex === -1) {
           memberItem.checked = false;
         } else {
           memberItem.checked = true;
@@ -96,13 +96,13 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
     let newMainMemberList = _.cloneDeep(mainMemberList);
     let newMemberList = _.cloneDeep(memberList);
     let newSearchMemberList = _.cloneDeep(searchMemberList);
-    if (searchInput != '') {
+    if (searchInput !== '') {
       if (newSearchMemberList[index].checked) {
         newSearchMemberList[index].checked = false;
         let newSearchIndex = _.findIndex(newSearchMemberList, {
           userId: newSearchMemberList[index].userId,
         });
-        if (newSearchIndex != -1) {
+        if (newSearchIndex !== -1) {
           newMemberList.splice(newSearchIndex, 1);
         }
       } else {
@@ -117,7 +117,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
         let newSearchIndex = _.findIndex(newMainMemberList, {
           userId: newMainMemberList[index].userId,
         });
-        if (newSearchIndex != -1) {
+        if (newSearchIndex !== -1) {
           newMemberList.splice(newSearchIndex, 1);
         }
       } else {
@@ -133,7 +133,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
     setMember(newMemberList);
   };
   const searchMember = () => {
-    if (searchInput != '') {
+    if (searchInput !== '') {
       // this.getSearchList({ param: { name: this.searchInput }, type: 1 })
       getSearchPerson(page);
     }
@@ -141,13 +141,13 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
   const getSearchPerson = async (page: number) => {
     let newMemberList = _.cloneDeep(memberList);
     let newSearchMemberList: any = [];
-    if (page == 1) {
+    if (page === 1) {
       setSearchMemberList([]);
     } else {
       newSearchMemberList = _.cloneDeep(searchMemberList);
     }
     let res: any = await api.member.searchUserNew(searchInput, page, limit);
-    if (res.msg == 'OK') {
+    if (res.msg === 'OK') {
       res.result.forEach((searchItem: any) => {
         searchItem.avatar = searchItem.avatar
           ? searchItem.avatar +
@@ -156,7 +156,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
         let searchMemberIndex = _.findIndex(newMemberList, {
           userId: searchItem.userId,
         });
-        if (searchMemberIndex == -1) {
+        if (searchMemberIndex === -1) {
           searchItem.checked = false;
         } else {
           searchItem.checked = true;
@@ -191,7 +191,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
     let newMainMemberList = _.cloneDeep(mainMemberList);
     let newMemberList = _.cloneDeep(memberList);
     let newSearchMemberList = _.cloneDeep(searchMemberList);
-    if (searchInput != '') {
+    if (searchInput !== '') {
       let newSearchIndex = _.findIndex(newSearchMemberList, {
         userId: userId,
       });
@@ -199,7 +199,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
         userId: userId,
       });
       newMemberList.splice(newGroupIndex, 1);
-      if (newSearchIndex != -1) {
+      if (newSearchIndex !== -1) {
         newSearchMemberList[newSearchIndex].checked = false;
       }
       setGroupMemberList(newSearchMemberList);
@@ -212,7 +212,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
         userId: userId,
       });
       newMemberList.splice(newGroupIndex, 1);
-      if (newMainIndex != -1) {
+      if (newMainIndex !== -1) {
         newMainMemberList[newMainIndex].checked = false;
       }
       setGroupMemberList(newMainMemberList);
@@ -289,7 +289,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
           <div
             className="group-member-container"
             onScroll={(e) => {
-              if (searchInput != '') {
+              if (searchInput !== '') {
                 scrollSearchLoading(e);
               }
             }}
@@ -332,7 +332,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                     className="group-time"
                     onClick={(e) => {
                       if (
-                        newItem.userId != user._key &&
+                        newItem.userId !== user._key &&
                         groupRole < newItem.role
                       ) {
                         changeRoleVisible(e, newIndex);
@@ -369,7 +369,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
         }}
       >
         <div className="group-role">
-          {groupRole == 1 ? (
+          {groupRole === 1 ? (
             <div
               onClick={() => {
                 changeRole(1, roleIndex);
@@ -379,7 +379,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
               {roleTypeArr[1]}
             </div>
           ) : null}
-          {groupRole == 1 || groupRole == 2 ? (
+          {groupRole === 1 || groupRole === 2 ? (
             <div
               onClick={() => {
                 changeRole(2, roleIndex);

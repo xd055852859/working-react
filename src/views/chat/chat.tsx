@@ -20,7 +20,7 @@ const Chat: React.FC<ChatProps> = (prop) => {
     <div
       className="chat-iframe"
       style={
-        headerIndex == 4
+        headerIndex === 4
           ? { width: '100%', height: '100%' }
           : { width: '0px', height: '0px' }
       }

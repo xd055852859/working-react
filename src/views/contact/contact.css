@@ -2,7 +2,7 @@
   width: 100%;
   height: calc(100% - 35px);
   overflow: auto;
-  padding: 5px 20px;
+  padding: 5px 10px;
   box-sizing: border-box;
 }
 .contact-item {

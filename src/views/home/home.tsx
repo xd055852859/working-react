@@ -22,13 +22,13 @@ const Home: React.FC<HomeProps> = (props) => {
     <div
       className="home"
       style={
-        moveState == 'in'
+        moveState === 'in'
           ? {
               animation: 'moveIn 500ms',
               // animationFillMode: 'forwards',
               width: '0px',
             }
-          : moveState == 'out'
+          : moveState === 'out'
           ? {
               animation: 'moveOut 500ms',
               // animationFillMode: 'forwards',
@@ -52,7 +52,7 @@ const Home: React.FC<HomeProps> = (props) => {
         <div
           className="home-header-item"
           style={
-            headerIndex == 0 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
+            headerIndex === 0 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
           }
           onClick={() => dispatch(setCommonHeaderIndex(0))}
         >
@@ -61,7 +61,7 @@ const Home: React.FC<HomeProps> = (props) => {
         </div>
         <div
           style={
-            headerIndex == 1 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
+            headerIndex === 1 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
           }
           className="home-header-item"
           onClick={() => dispatch(setCommonHeaderIndex(1))}
@@ -71,7 +71,7 @@ const Home: React.FC<HomeProps> = (props) => {
         </div>
         <div
           style={
-            headerIndex == 4 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
+            headerIndex === 4 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
           }
           className="home-header-item"
           onClick={() => dispatch(setCommonHeaderIndex(4))}

@@ -19,7 +19,7 @@ export const group = (state = defaultState, action: any) => {
   switch (action.type) {
     case actionTypes.GET_GROUP_SUCCESS:
       let groupArray = action.data.filter((item: any, index: number) => {
-        return item.groupName.indexOf('主群') == -1;
+        return item.groupName.indexOf('主群') === -1;
       });
       return {
         ...state,

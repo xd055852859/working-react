@@ -14,7 +14,10 @@ import _ from 'lodash';
 import tablePng from '../../assets/img/table.png';
 import './workingTableHeader.css';
 import DropMenu from '../../components/common/dropMenu';
+import Dialog from '../../components/common/dialog';
 import HeaderFilter from '../../components/headerFilter/headerFilter';
+import Vitality from '../../components/vitality/vitality';
+import VitalityIcon from '../../components/vitalityIcon/vitalityIcon';
 import labelPng from '../../assets/img/label.png';
 import labelTabPng from '../../assets/img/labelTab.png';
 import groupPng from '../../assets/img/group.png';
@@ -26,7 +29,6 @@ import groupbPng from '../../assets/img/groupb.png';
 import groupTabbPng from '../../assets/img/groupTabb.png';
 import calendarbPng from '../../assets/img/calendarb.png';
 import filterPng from '../../assets/img/filter.png';
-import { Console } from 'console';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -45,6 +47,9 @@ const WorkingTableHeader: React.FC = (prop) => {
     (state) => state.member.memberHeaderIndex
   );
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const memberArray = useTypedSelector((state) => state.member.memberArray);
+  const userKey = useTypedSelector((state) => state.auth.userKey);
+  const targetUserKey = useTypedSelector((state) => state.auth.targetUserKey);
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const theme = useTypedSelector((state) => state.auth.theme);
   const dispatch = useDispatch();
@@ -75,6 +80,7 @@ const WorkingTableHeader: React.FC = (prop) => {
   ];
   const [viewVisible, setViewVisible] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
+  const [vitalityVisible, setVitalityVisible] = useState(false);
   const [filterCheckedArray, setFilterCheckedArray] = useState<any>([
     false,
     false,
@@ -83,16 +89,33 @@ const WorkingTableHeader: React.FC = (prop) => {
     false,
     false,
   ]);
-
+  const [energyValueTotal, setEnergyValueTotal] = useState(0);
   const chooseMemberHeader = (headIndex: number) => {
     dispatch(setHeaderIndex(headIndex));
     setViewVisible(false);
   };
   useEffect(() => {
+    if (memberArray) {
+      let key = '';
+      if (headerIndex === 1 && userKey) {
+        key = userKey;
+      } else if (headerIndex === 2 && targetUserKey) {
+        key = targetUserKey;
+      }
+      console.log('userKey', key);
+      if (key) {
+        setEnergyValueTotal(
+          memberArray[_.findIndex(memberArray, { userId: key })]
+            .energyValueTotal
+        );
+      }
+    }
+  }, [memberArray, userKey, targetUserKey]);
+  useEffect(() => {
     let filterCheckedArray: any = [];
     if (filterObject.filterType.length > 0) {
       filterCheckedArray = checkedTitle.map((item: any) => {
-        return filterObject.filterType.indexOf(item) != -1;
+        return filterObject.filterType.indexOf(item) !== -1;
       });
     }
     console.log('filterCheckedArray', filterCheckedArray);
@@ -118,7 +141,7 @@ const WorkingTableHeader: React.FC = (prop) => {
   const changeFilterCheck = (filterTypeText: string) => {
     let filterType = filterObject.filterType;
     let fikterIndex = filterType.indexOf(filterTypeText);
-    if (fikterIndex == -1) {
+    if (fikterIndex === -1) {
       filterType.push(filterTypeText);
     } else {
       filterType.splice(fikterIndex, 1);
@@ -161,6 +184,19 @@ const WorkingTableHeader: React.FC = (prop) => {
         工作台
       </div>
       <div className="workingTableHeader-line">|</div>
+      <div
+        className="workingTableHeader-vitalityNum"
+        onClick={() => {
+          setVitalityVisible(true);
+        }}
+      >
+        <div style={{ width: '50px', flexShrink: 0 }}>活力值</div>
+        <VitalityIcon
+          vitalityNum={energyValueTotal}
+          vitalityDirection={'vertical'}
+          vitalityStyle={{ marginLeft: '5px', color: '#fff' }}
+        />
+      </div>
       <div className="view-container">
         <div
           className="workingTableHeader-logo"
@@ -300,9 +336,20 @@ const WorkingTableHeader: React.FC = (prop) => {
           </div>
         </DropMenu>
       </div>
-      <div>
-        <div></div>
-      </div>
+      <Dialog
+        visible={vitalityVisible}
+        onClose={() => {
+          setVitalityVisible(false);
+        }}
+        footer={false}
+        // title={'搜索中心'}
+        dialogStyle={{ width: '850px', height: '700px' }}
+      >
+        <Vitality
+          vitalityType={2}
+          vitalityKey={headerIndex == 1 ? userKey : targetUserKey}
+        />
+      </Dialog>
     </div>
   );
 };

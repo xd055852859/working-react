@@ -99,7 +99,7 @@ const Contact: React.FC<ContactProps> = (props) => {
     e.stopPropagation();
     let newContactArray: any = _.cloneDeep(contactArray);
     api.auth.dealCareFriendOrGroup(type, key, status);
-    newContactArray[index].isCare = status == 1 ? true : false;
+    newContactArray[index].isCare = status === 1 ? true : false;
     setContactArray(newContactArray);
   };
   return (
@@ -124,7 +124,7 @@ const Contact: React.FC<ContactProps> = (props) => {
                     ? toTargetUser(key, index)
                     : toTargetGroup(key, index);
                 }}
-                // selected={selectedIndex == index}
+                // selected={selectedIndex === index}
               >
                 <div className="contact-avatar">
                   <img
@@ -142,7 +142,7 @@ const Contact: React.FC<ContactProps> = (props) => {
                     alt=""
                     className="contact-care-img"
                     onClick={(e) => {
-                      changeCare(e, contactIndex == 0 ? 2 : 1, key, 2, index);
+                      changeCare(e, contactIndex === 0 ? 2 : 1, key, 2, index);
                     }}
                   />
                 ) : (
@@ -151,7 +151,7 @@ const Contact: React.FC<ContactProps> = (props) => {
                     alt=""
                     className="contact-uncare-img"
                     onClick={(e) => {
-                      changeCare(e, contactIndex == 0 ? 2 : 1, key, 1, index);
+                      changeCare(e, contactIndex === 0 ? 2 : 1, key, 1, index);
                     }}
                   />
                 )}

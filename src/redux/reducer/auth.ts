@@ -48,6 +48,7 @@ export const auth = (state = defaultState, action: any) => {
   switch (action.type) {
     case actionTypes.GET_USERINFO_SUCCESS:
       localStorage.setItem('auth_token', action.data.token);
+      localStorage.setItem('userKey', action.data._key);      
       return {
         ...state,
         user: action.data,
@@ -65,6 +66,7 @@ export const auth = (state = defaultState, action: any) => {
       return {
         ...state,
         targetUserInfo: action.targetUserInfo,
+        targetUserKey:action.targetUserInfo._key
       };
     case actionTypes.GET_TARGET_USERINFO_SUCCESS:
       return {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import _ from 'lodash';
-import moment from 'moment'
+import moment from 'moment';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import './messageBoard.css';
 import api from '../../services/api';
@@ -45,7 +45,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
   const getMessage = async (page: number, limit: number) => {
     let newMessageArray = _.cloneDeep(messageArray);
     let messageRes: any = await api.auth.getMessageList(page, limit);
-    if (messageRes.msg == 'OK') {
+    if (messageRes.msg === 'OK') {
       newMessageArray.push(...messageRes.result);
       setMessageArray(newMessageArray);
       setMessageTotal(messageRes.totalNumber);
@@ -64,7 +64,10 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
               {messageItem.data.name1 ? (
                 <div className="messageBoard-item-item">
                   <div className="messageBoard-item-img">
-                    <img src={messageImgArray[messageItem.data.type]} alt="" />
+                    <img
+                      src={messageImgArray[messageItem.data.type - 1]}
+                      alt=""
+                    />
                   </div>
                   <div className="messageBoard-item-container">
                     <div className="messageBoard-item-time">
@@ -76,10 +79,16 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                     {/* <div className="messageBoard-item-action">
                      
                     </div> */}
-                    {messageItem.data.name2?<div className="messageBoard-item-name2">
-                      {messageItem.data.name2}
-                    </div>:null}
-                    {messageItem.data.commentContent?<div className="messageBoard-item-commentContent">{messageItem.data.commentContent}</div>:null}
+                    {messageItem.data.name2 ? (
+                      <div className="messageBoard-item-name2">
+                        {messageItem.data.name2}
+                      </div>
+                    ) : null}
+                    {messageItem.data.commentContent ? (
+                      <div className="messageBoard-item-commentContent">
+                        {messageItem.data.commentContent}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               ) : null}

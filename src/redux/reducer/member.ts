@@ -28,7 +28,7 @@ export const member = (state = defaultState, action: any) => {
       };
     case actionTypes.GET_GROUP_MEMBER_SUCCESS:
       let userIndex = _.findIndex(action.data, {
-        userId: localStorage.getItem('userKey'),
+        userId:localStorage.getItem('userKey')
       });
       let groupMemberItem = action.data[userIndex];
       if (!groupMemberItem.config) {

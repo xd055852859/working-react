@@ -44,7 +44,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
     0.9,
   ];
   useEffect(() => {
-    if (timeDate.length == 0) {
+    if (timeDate.length === 0) {
       mouthDate();
       changeDateIndex(timeDateType);
     }
@@ -155,7 +155,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                   className="timeSet-time-choose"
                   style={{
                     borderColor:
-                      timeNumber == timeItem
+                      timeNumber === timeItem
                         ? '#F28806  transparent transparent transparent'
                         : '#35a6f8 transparent transparent transparent',
                   }}
@@ -193,7 +193,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                 }}
                 style={{
                   backgroundColor:
-                    dateIndex == dateTimeItem
+                    dateIndex === dateTimeItem
                       ? '#F28806'
                       : timeWeek[dateTimeIndex] > 4
                       ? '#BABABA'

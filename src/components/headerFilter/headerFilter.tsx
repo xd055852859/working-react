@@ -34,14 +34,14 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
   const dispatch = useDispatch();
   useEffect(() => {
     // 用户已登录
-    if (headerIndex != 3 && workingTaskArray) {
+    if (headerIndex !== 3 && workingTaskArray) {
       dispatch(setFilterObject(theme.filterObject));
       getData(workingTaskArray, theme.filterObject);
     }
   }, [workingTaskArray, headerIndex]);
   useEffect(() => {
     // 用户已登录
-    if (headerIndex == 3 && taskArray) {
+    if (headerIndex === 3 && taskArray) {
       getData(taskArray, filterObject);
     }
   }, [taskArray, headerIndex, groupKey]);
@@ -66,7 +66,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
     ];
     _.flatten(cardArray).forEach((item: any) => {
       let groupIndex = _.findIndex(groupFilterArray, { key: item.groupKey });
-      if (groupIndex == -1 && item.groupKey) {
+      if (groupIndex === -1 && item.groupKey) {
         groupFilterArray.push({
           key: item.groupKey,
           name: item.groupName,
@@ -76,7 +76,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
       let creatorIndex = _.findIndex(creatorFilterArray, {
         key: item.creatorKey,
       });
-      if (creatorIndex == -1 && item.creatorKey) {
+      if (creatorIndex === -1 && item.creatorKey) {
         creatorFilterArray.push({
           key: item.creatorKey,
           name: item.creatorName,
@@ -86,7 +86,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
       let executorIndex = _.findIndex(executorfilterArray, {
         key: item.executorKey,
       });
-      if (executorIndex == -1 && item.executorKey) {
+      if (executorIndex === -1 && item.executorKey) {
         executorfilterArray.push({
           key: item.executorKey,
           name: item.executorName,
@@ -99,25 +99,26 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
       let newGroupIndex = _.findIndex(groupFilterArray, {
         key: filterObject.groupKey,
       });
-      if (newGroupIndex != -1) {
+      if (newGroupIndex !== -1) {
         setGroupIndex(newGroupIndex);
       }
     }
     setExecutorFilterArray(executorfilterArray);
     if (filterObject.executorKey) {
-      let newExecutorIndex = _.findIndex(groupFilterArray, {
+      let newExecutorIndex = _.findIndex(executorfilterArray, {
         key: filterObject.executorKey,
       });
-      if (newExecutorIndex != -1) {
+
+      if (newExecutorIndex !== -1) {
         setExecutorIndex(newExecutorIndex);
       }
     }
     setCreatorFilterArray(creatorFilterArray);
     if (filterObject.creatorKey) {
-      let newCreatorIndex = _.findIndex(groupFilterArray, {
+      let newCreatorIndex = _.findIndex(creatorFilterArray, {
         key: filterObject.creatorKey,
       });
-      if (newCreatorIndex != -1) {
+      if (newCreatorIndex !== -1) {
         setCreatorIndex(newCreatorIndex);
       }
     }
@@ -139,7 +140,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
       },
     ];
     let arr = [];
-    if (headerIndex == 3) {
+    if (headerIndex === 3) {
       arr = _.cloneDeep(taskArray);
     } else {
       arr = _.cloneDeep(_.flatten(workingTaskArray));
@@ -166,14 +167,14 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
         newFilterObject.executorAvatar = filterItem.avatar;
         newFilterObject.executorName = filterItem.name;
     }
-    if (type == 'groupKey') {
+    if (type === 'groupKey') {
       if (filterItem.key) {
         arr.forEach((item: any) => {
-          if (item.groupKey == filterItem.key) {
+          if (item.groupKey === filterItem.key) {
             let creatorIndex = _.findIndex(creatorFilterArray, {
               key: item.creatorKey,
             });
-            if (creatorIndex == -1 && item.creatorKey) {
+            if (creatorIndex === -1 && item.creatorKey) {
               creatorFilterArray.push({
                 key: item.creatorKey,
                 name: item.creatorName,
@@ -183,7 +184,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
             // this.creatorFindIndex = this._.findIndex(this.creatorArr, {
             //   key: this.user._key,
             // });
-            // if (this.creatorFindIndex != -1) {
+            // if (this.creatorFindIndex !== -1) {
             //   let creatorFindItem = this._.cloneDeep(
             //     this.creatorArr[this.creatorFindIndex]
             //   );
@@ -193,7 +194,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
             let executorIndex = _.findIndex(executorfilterArray, {
               key: item.executorKey,
             });
-            if (executorIndex == -1 && item.executorKey) {
+            if (executorIndex === -1 && item.executorKey) {
               executorfilterArray.push({
                 key: item.executorKey,
                 name: item.executorName,
@@ -203,7 +204,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
             // this.executorFindIndex = this._.findIndex(this.executorArr, {
             //   key: this.user._key,
             // });
-            // if (this.executorFindIndex != -1) {
+            // if (this.executorFindIndex !== -1) {
             //   let executorFindItem = this._.cloneDeep(
             //     this.executorArr[this.executorFindIndex]
             //   );
@@ -219,12 +220,12 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
       //     getData(arr);
       //   }
     }
-    if (headerIndex == 3) {
+    if (headerIndex === 3) {
       let res: any = await api.member.setConfig(
         groupMemberItem._key,
         newFilterObject
       );
-      if (res.msg == 'OK') {
+      if (res.msg === 'OK') {
         console.log('设置成功');
       } else {
         dispatch(setMessage(true, res.msg, 'error'));
@@ -238,7 +239,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
   };
   return (
     <React.Fragment>
-      {headerIndex != 3 ? (
+      {headerIndex !== 3 ? (
         <Filter
           title={'群组'}
           visible={groupFilterVisible}

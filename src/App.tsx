@@ -27,11 +27,12 @@ const App: React.FC = () => {
       user &&
       user._key &&
       token &&
-      token == localStorage.getItem('auth_token')
+      token === localStorage.getItem('auth_token')
     ) {
       // console.log(user);
       dispatch(getMainGroupKey());
       dispatch(getTheme());
+     
     }
     if (!user) {
       // 用户未登录
@@ -52,13 +53,13 @@ const App: React.FC = () => {
   return (
     <div className="App" style={ theme.backgroundImg?{backgroundImage:'url('+theme.backgroundImg+')'}:{backgroundColor:theme.backgroundColor}}>
       <Home />
-      {headerIndex == 0 ? <Content /> : null}
-      {headerIndex == 1 ? <WorkingTable /> : null}
-      {headerIndex == 3 ? <GroupTable /> : null}
-      {headerIndex == 2 ? <WorkingTable /> : null}
+      {headerIndex === 0 ? <Content /> : null}
+      {headerIndex === 1 ? <WorkingTable /> : null}
+      {headerIndex === 3 ? <GroupTable /> : null}
+      {headerIndex === 2 ? <WorkingTable /> : null}
       <div
         className="home-chat"
-        style={headerIndex == 4 ? { zIndex: 1 } : { zIndex: -1 }}
+        style={headerIndex === 4 ? { zIndex: 1 } : { zIndex: -1 }}
       >
         <Chat />
       </div>
