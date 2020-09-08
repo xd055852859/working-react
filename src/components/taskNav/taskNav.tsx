@@ -10,6 +10,7 @@ import DropMenu from '../common/dropMenu';
 import Dialog from '../common/dialog';
 import './taskNav.css';
 import plusPng from '../../assets/img/plus.png';
+import unDragPng from '../../assets/img/undrag.png';
 import ellipsisPng from '../../assets/img/ellipsis.png';
 import { getGroupTask } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
@@ -75,6 +76,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
   const [avatarVisible, setAvatarVisible] = useState(false);
   const [batchAddVisible, setBatchAddVisible] = useState(false);
   const [batchAddText, setBatchAddText] = useState('');
+  const [deleteVisible, setDeleteVisible] = useState(false);
 
   useEffect(() => {
     if (name) {
@@ -98,7 +100,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       labelInfo.executorKey
     );
     if (addTaskRes.msg === 'OK') {
-      dispatch(setMessage(true, '新增成功', 'success'));
+      dispatch(setMessage(true, '新增频道成功', 'success'));
       if (headerIndex === 1) {
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
       } else if (headerIndex === 2) {
@@ -125,7 +127,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       type
     );
     setLabelAvatar(executorItem.avatar);
-    changeLabelAvatar(executorItem,colorIndex);
+    changeLabelAvatar(executorItem, colorIndex);
   };
   const batchAddTask = async () => {
     let batchTaskRes: any = await api.task.batchCard(
@@ -145,6 +147,25 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       setBatchAddVisible(false);
     } else {
       dispatch(setMessage(true, batchTaskRes.msg, 'error'));
+    }
+  };
+  const deleteLabel = async () => {
+    let deleteLabelRes: any = await api.task.deleteTaskLabel(
+      taskNavArray[0]._key,
+      taskNavArray[1]._key
+    );
+    if (deleteLabelRes.msg === 'OK') {
+      dispatch(setMessage(true, '删除成功', 'success'));
+      if (headerIndex === 1) {
+        dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
+      } else if (headerIndex === 2) {
+        dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
+      } else if (headerIndex === 3) {
+        dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+      }
+      setBatchAddVisible(false);
+    } else {
+      dispatch(setMessage(true, deleteLabelRes.msg, 'error'));
     }
   };
   return (
@@ -235,7 +256,6 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                 id="outlined-basic"
                 variant="outlined"
                 label="标题名"
-                // className={classes.input}
                 onChange={(e: any) => {
                   setLabelName(e.target.value);
                 }}
@@ -247,6 +267,8 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
               />
             )}
           </div>
+          {!taskNavArray[1]._key ? <img src={unDragPng} alt="" style={{width:'17px',height:'20px'}}/> : null}
+
           {role > 0 && role < 4 ? (
             <div className="taskNav-name-info">
               <div
@@ -267,10 +289,11 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                 <img src={ellipsisPng} className="taskNav-name-ellipsis" />
               </div>
               <DropMenu
-                visible={taskNavArray[1]._key === chooseLabelKey && batchVisible}
+                visible={
+                  taskNavArray[1]._key === chooseLabelKey && batchVisible
+                }
                 dropStyle={{
                   width: '150px',
-                  height: '150px',
                   top: '45px',
                   left: '190px',
                   color: '#333',
@@ -282,7 +305,9 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                 title={'设置频道'}
               >
                 <div className="taskNav-set">
-                  <div onClick={batchTaskArray}>归档全部已完成任务</div>
+                  {role > 0 && role < 3 ? (
+                    <div onClick={batchTaskArray}>归档全部已完成任务</div>
+                  ) : null}
                   <div
                     onClick={() => {
                       setBatchAddVisible(true);
@@ -290,6 +315,15 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                   >
                     批量导入
                   </div>
+                  {role > 0 && role < 3 && taskNavArray[1]._key ? (
+                    <div
+                      onClick={() => {
+                        setDeleteVisible(true);
+                      }}
+                    >
+                      删除频道
+                    </div>
+                  ) : null}
                 </div>
               </DropMenu>
             </div>
@@ -314,6 +348,20 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                 className="taskNav-textarea"
               ></textarea>
             </div>
+          </Dialog>
+          <Dialog
+            visible={deleteVisible}
+            onClose={() => {
+              setDeleteVisible(false);
+            }}
+            onOK={() => {
+              deleteLabel();
+              setDeleteVisible(false);
+            }}
+            title={'删除频道'}
+            dialogStyle={{ width: '300px', height: '200px' }}
+          >
+            <div className="deleteLabel-container">是否删除该频道</div>
           </Dialog>
         </div>
       ) : null}

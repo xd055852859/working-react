@@ -268,7 +268,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             width: '400px',
             maxHeight: '600px',
             top: '65px',
-            left: '-320px',
+            left: '-180px',
           }}
           onClose={() => {
             setClockInVisible(false);

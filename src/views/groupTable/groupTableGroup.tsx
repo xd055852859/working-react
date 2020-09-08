@@ -67,9 +67,10 @@ const GroupTableGroup: React.FC = (prop) => {
   }, [user, groupKey]);
   useEffect(() => {
     if (taskArray) {
+      console.log('Xxx', '变化了');
       getData(labelArray, taskArray, filterObject);
     }
-  }, [taskArray, filterObject]);
+  }, [taskArray, filterObject, labelArray]);
 
   const getData = (labelArray: any, taskArray: any, filterObject: any) => {
     let taskNameArr: any = [];
@@ -83,11 +84,19 @@ const GroupTableGroup: React.FC = (prop) => {
       // this.taskClickArr[index] = false;
       // this.taskMoveArr[index] = false;
       taskNameArr.push({ name: item.cardLabelName, key: item._key });
+      // if (item.executorKey) {
       labelExecutorArray.push({
         executorKey: item.executorKey,
         executorAvatar: item.executorAvatar,
         executorNickName: item.executorNickName,
       });
+      // } else {
+      //   labelExecutorArray.push({
+      //     executorKey: null,
+      //     executorAvatar: '',
+      //     executorNickName: '',
+      //   });
+      // }
     });
 
     taskArray.forEach((item: any) => {
@@ -153,7 +162,8 @@ const GroupTableGroup: React.FC = (prop) => {
     });
     console.log(taskInfo);
     setTaskInfo(taskInfo);
-    console.log(taskNameArr);
+    console.log('taskNameArr', taskNameArr);
+    console.log('labelExecutorArray', labelExecutorArray);
     setTaskNameArr(taskNameArr);
     setLabelExecutorArray(labelExecutorArray);
   };
@@ -395,68 +405,71 @@ const GroupTableGroup: React.FC = (prop) => {
                 ref={provided.innerRef}
                 className="task-container-taskName"
               >
-                {taskNameArr.map((taskNameitem: any, taskNameindex: any) => (
-                  <Draggable
-                    key={'drag' + taskNameindex}
-                    draggableId={
-                      taskNameindex !== 0 ? taskNameitem.key: taskNameindex
-                    }
-                    index={taskNameindex}
-                  >
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        // style={{ marginRight: '15px' }}
-                        onMouseEnter={() => {
-                          setLabelIndex(taskNameindex);
-                          setLabelLogoVisible(true);
-                        }}
-                        onMouseLeave={() => {
-                          setLabelLogoVisible(false);
-                        }}
-                        className="task-container-taskName-item"
-                      >
-                        <React.Fragment>
-                          {labelIndex === taskNameindex && labelLogoVisible ? (
-                            <img
-                              src={taskAddPng}
-                              onClick={() => {
-                                setLabelVisible(true);
-                              }}
-                              className="task-container-taskName-logo"
-                            />
-                          ) : null}
+                {taskNameArr.map((taskNameitem: any, taskNameindex: any) => {
+                  return (
+                    <Draggable
+                      key={'drag' + taskNameindex}
+                      draggableId={
+                        taskNameindex !== 0 ? taskNameitem.key : taskNameindex
+                      }
+                      index={taskNameindex}
+                    >
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          // style={{ marginRight: '15px' }}
+                          onMouseEnter={() => {
+                            setLabelIndex(taskNameindex);
+                            setLabelLogoVisible(true);
+                          }}
+                          onMouseLeave={() => {
+                            setLabelLogoVisible(false);
+                          }}
+                          className="task-container-taskName-item"
+                        >
+                          <React.Fragment>
+                            {labelIndex === taskNameindex &&
+                            labelLogoVisible ? (
+                              <img
+                                src={taskAddPng}
+                                onClick={() => {
+                                  setLabelVisible(true);
+                                }}
+                                className="task-container-taskName-logo"
+                              />
+                            ) : null}
 
-                          <TaskNav
-                            avatar={
-                              labelExecutorArray[taskNameindex] &&
-                              labelExecutorArray[taskNameindex].executorAvatar
-                                ? labelExecutorArray[taskNameindex]
-                                    .executorAvatar
-                                : defaultPerson
-                            }
-                            name={taskNameitem.name}
-                            role={groupInfo && groupInfo.role}
-                            colorIndex={taskNameindex}
-                            taskNavArray={[
-                              groupInfo,
-                              labelArray[taskNameindex],
-                            ]}
-                            taskNavWidth={'350px'}
-                            chooseLabelKey={chooseLabelKey}
-                            setChooseLabelKey={setChooseLabelKey}
-                            batchTaskArray={() => {
-                              batchTaskArray(taskInfo[taskNameindex]);
-                            }}
-                            changeLabelAvatar={changeLabelAvatar}
-                          />
-                        </React.Fragment>
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
+                            <TaskNav
+                              avatar={
+                                labelExecutorArray[taskNameindex] &&
+                                labelExecutorArray[taskNameindex].executorAvatar
+                                  ? labelExecutorArray[taskNameindex]
+                                      .executorAvatar
+                                  : defaultPerson
+                              }
+                              name={taskNameitem.name}
+                              role={groupInfo && groupInfo.role}
+                              colorIndex={taskNameindex}
+                              taskNavArray={[
+                                groupInfo,
+                                labelArray[taskNameindex],
+                              ]}
+                              taskNavWidth={'350px'}
+                              chooseLabelKey={chooseLabelKey}
+                              setChooseLabelKey={setChooseLabelKey}
+                              batchTaskArray={() => {
+                                batchTaskArray(taskInfo[taskNameindex]);
+                              }}
+                              changeLabelAvatar={changeLabelAvatar}
+                            />
+                          </React.Fragment>
+                        </div>
+                      )}
+                    </Draggable>
+                  );
+                })}
                 {provided.placeholder}
               </div>
             )}

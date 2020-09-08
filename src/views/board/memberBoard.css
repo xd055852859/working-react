@@ -51,13 +51,6 @@
   margin: 14px 0px 10px 0px;
 }
 
-.memberBoard-item::-webkit-scrollbar {
-  width: 1.5px;
-}
-.memberBoard-item::-webkit-scrollbar-thumb {
-  background: #dedede;
-  border-radius: 100px;
-}
 
 .memberBoard-group-item {
   width: 100%;

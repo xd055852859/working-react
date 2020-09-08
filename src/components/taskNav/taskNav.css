@@ -66,3 +66,7 @@
   height: 300px;
   border-radius: 5px;
 }
+.deleteLabel-container{
+  display: flex;
+  align-items: center;
+}

@@ -8,6 +8,7 @@ import _ from 'lodash';
 import searchPng from '../../assets/img/search.png';
 import sortPng from '../../assets/img/contact-sort.png';
 import addPng from '../../assets/img/contact-add.png';
+import addPersonPng from '../../assets/img/addPerson.png';
 import Contact from '../contact/contact';
 import Dialog from '../../components/common/dialog';
 import GroupSet from './groupSet';
@@ -53,6 +54,7 @@ const useStyles = makeStyles((theme: Theme) =>
     button: {
       backgroundColor: '#17B881',
       padding: '6 26px',
+      color:'#fff'
     },
     addInput: {
       width: '100%',
@@ -176,7 +178,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       dispatch(setMessage(true, '添加好友成功', 'success'));
       newSearchList[searchIndex].isMyMainGroupMember = true;
       setSearchList(newSearchList);
-      dispatch(getMember(mainGroupKey,theme.personSortType));
+      dispatch(getMember(mainGroupKey, theme.personSortType));
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }
@@ -190,7 +192,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       dispatch(setMessage(true, '删除好友成功', 'success'));
       newSearchList[searchIndex].isMyMainGroupMember = false;
       setSearchList(newSearchList);
-      dispatch(getMember(mainGroupKey,theme.personSortType));
+      dispatch(getMember(mainGroupKey, theme.personSortType));
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }
@@ -202,7 +204,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       dispatch(setMessage(true, '退出群组成功', 'success'));
       newSearchList[searchIndex].isGroupMember = false;
       setSearchList(newSearchList);
-      dispatch(getGroup(3,null, theme.groupSortType));
+      dispatch(getGroup(3, null, theme.groupSortType));
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }
@@ -236,7 +238,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
         dispatch(setMessage(true, '加入群组成功', 'success'));
         newSearchList[searchIndex].isGroupMember = true;
         setSearchList(newSearchList);
-        dispatch(getGroup(3,null, theme.groupSortType));
+        dispatch(getGroup(3, null, theme.groupSortType));
       }
     } else {
       dispatch(setMessage(true, groupRes.msg, 'error'));
@@ -260,7 +262,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       dispatch(setMessage(true, '口令加群成功', 'success'));
       newSearchList[searchIndex].isGroupMember = true;
       setSearchList(newSearchList);
-      dispatch(getGroup(3,null, theme.groupSortType));
+      dispatch(getGroup(3, null, theme.groupSortType));
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }
@@ -291,7 +293,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       dispatch(getGroupInfo(groupRes.result._key));
       dispatch(setCommonHeaderIndex(3));
       dispatch(setMoveState('in'));
-      dispatch(getGroup(3,null, theme.groupSortType));
+      dispatch(getGroup(3, null, theme.groupSortType));
     } else {
       dispatch(setMessage(true, groupRes.msg, 'error'));
     }
@@ -303,7 +305,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       newTheme.groupSortType = sortType;
       dispatch(setTheme(newTheme));
     } else if (contactIndex === 1) {
-      dispatch(getMember(mainGroupKey,sortType));
+      dispatch(getMember(mainGroupKey, sortType));
       newTheme.personSortType = sortType;
       dispatch(setTheme(newTheme));
     }
@@ -317,7 +319,9 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             setSearchList([]);
           }}
           style={
-            contactIndex === 0 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
+            contactIndex === 0
+              ? { background: 'rgba(255, 255, 255, 0.34)' }
+              : {}
           }
           className="tabs-tab-nav-item"
         >
@@ -328,21 +332,25 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             setContactIndex(1);
           }}
           style={
-            contactIndex === 1 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
+            contactIndex === 1
+              ? { background: 'rgba(255, 255, 255, 0.34)' }
+              : {}
           }
           className="tabs-tab-nav-item"
         >
           队友
         </div>
-        <img
-          src={searchPng}
-          alt=""
-          className="search-icon"
-          onClick={() => {
-            setSearchVisible(true);
-            setSearchList([]);
-          }}
-        />
+        {contactIndex === 0 ? (
+          <img
+            src={searchPng}
+            alt=""
+            className="search-icon"
+            onClick={() => {
+              setSearchVisible(true);
+              setSearchList([]);
+            }}
+          />
+        ) : null}
         <img
           src={sortPng}
           alt=""
@@ -353,14 +361,27 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
               : setGroupSortVisible(true);
           }}
         />
-        <img
-          src={addPng}
-          alt=""
-          className="add-icon"
-          onClick={() => {
-            setAddVisible(true);
-          }}
-        />
+        {contactIndex === 0 ? (
+          <img
+            src={addPng}
+            alt=""
+            className="add-icon"
+            onClick={() => {
+              setAddVisible(true);
+            }}
+          />
+        ) : null}
+        {contactIndex === 1 ? (
+          <img
+            src={addPersonPng}
+            alt=""
+            className="add-icon"
+            onClick={() => {
+              setSearchVisible(true);
+              setSearchList([]);
+            }}
+          />
+        ) : null}
         <DropMenu
           visible={memberSortVisible || groupSortVisible}
           dropStyle={{

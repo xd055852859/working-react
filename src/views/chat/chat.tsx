@@ -21,8 +21,8 @@ const Chat: React.FC<ChatProps> = (prop) => {
       className="chat-iframe"
       style={
         headerIndex === 4
-          ? { width: '100%', height: '100%' }
-          : { width: '0px', height: '0px' }
+          ? { width: '100%', height: '100%', opacity: 1 }
+          : { opacity: 0 }
       }
     >
       <iframe src={url} style={{ height: '100%', width: '100%' }}></iframe>

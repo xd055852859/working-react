@@ -9,6 +9,7 @@
   height: 45px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0px 9px;
   border-radius: 10px;
   box-sizing: border-box;
@@ -45,10 +46,56 @@
   display: flex;
 }
 
-.contact::-webkit-scrollbar {
-  width: 3px;
+.contact-left {
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
-.contact::-webkit-scrollbar-thumb {
-  background: #dedede;
-  border-radius: 100px;
+.contact-right {
+  width: 25px;
+  height: 25px;
+  line-height: 25px;
+  padding: 3px 0px 0px 6px;
+  color: #fff;
+  background-color: #535353;
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+  margin-right: 5px;
+  font-size: 12px;
+  margin-top: 4px;
+}
+.contanct-time {
+  width: 0;
+  height: 0;
+  border-width: 25px;
+  border-style: solid;
+  border-color: #35a6f8 transparent transparent transparent;
+  position: absolute;
+  top: -2px;
+  right: -25px;
+}
+.contanct-time-hour {
+  width: 10px;
+  height: 10px;
+  line-height: 10px;
+  font-size: 8px;
+  color: #fff;
+  position: absolute;
+  top: 2px;
+  /* left: 9px; */
+  z-index: 1;
+  transform: scale(0.8);
+  text-align: center;
+}
+.contanct-time-day {
+  width: 10px;
+  height: 10px;
+  line-height: 10px;
+  font-size: 10px;
+  color: #fff;
+  position: absolute;
+  bottom: 0px;
+  z-index: 3;
+  text-align: center;
 }

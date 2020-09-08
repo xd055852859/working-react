@@ -442,7 +442,9 @@ const Task: React.FC<TaskProps> = (props) => {
                           minHeight: '28px',
                           backgroundColor: bottomtype ? 'transparent' : '',
                           textDecoration:
-                            taskDetail.finishPercent === 2 ? 'line-through' : '',
+                            taskDetail.finishPercent === 2
+                              ? 'line-through'
+                              : '',
                         }}
                         id={'taskDetail' + taskDetail._key}
                       >
@@ -550,6 +552,7 @@ const Task: React.FC<TaskProps> = (props) => {
                           onClick={() => {
                             changeImportant(0);
                           }}
+                          style={{ height: '18px', width: '19px' }}
                         />
                       ) : (
                         <img
@@ -558,6 +561,7 @@ const Task: React.FC<TaskProps> = (props) => {
                           onClick={() => {
                             changeImportant(1);
                           }}
+                          style={{ height: '18px', width: '19px' }}
                         />
                       )}
                     </div>
@@ -652,6 +656,9 @@ const Task: React.FC<TaskProps> = (props) => {
         visible={taskInfoDialogShow}
         footer={false}
         dialogStyle={{ width: '414px', height: '80%' }}
+        onClose={() => {
+          setTaskInfoDialogShow(false);
+        }}
       >
         <TaskInfo
           taskInfo={taskDetail}

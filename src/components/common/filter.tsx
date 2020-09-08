@@ -44,7 +44,7 @@ const Filter: React.FC<FilterProps> = (prop) => {
     onClick,
   } = prop;
   const classes = useStyles();
-  console.log("filterArray",filterArray)
+
   return (
     <div className="filter" style={filterStyle}>
       <div className="filter-title">{title}</div>
@@ -54,10 +54,8 @@ const Filter: React.FC<FilterProps> = (prop) => {
             <Avatar
               alt={filterArray[filterIndex][filterItem[1]]}
               src={
-                filterArray[filterIndex][filterItem[1]] +
-                '?imageMogr2/auto-orient/thumbnail/30x30/format/jpg'
-                  ? filterArray[filterIndex][filterItem[1]] +
-                    '?imageMogr2/auto-orient/thumbnail/30x30/format/jpg'
+                filterArray[filterIndex][filterItem[1]] 
+                  ? filterArray[filterIndex][filterItem[1]]
                   : defaultPngType === 0
                   ? defaultPersonPng
                   : defaultGroupPng

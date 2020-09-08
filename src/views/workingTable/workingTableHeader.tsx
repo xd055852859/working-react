@@ -256,6 +256,9 @@ const WorkingTableHeader: React.FC = (prop) => {
                 }
               />
             }
+            onClick={() => {
+              setFilterVisible(true);
+            }}
             label={filterObject.groupName}
             onDelete={() => deleteFilter('groupKey')}
             className={classes.chip}
@@ -273,6 +276,9 @@ const WorkingTableHeader: React.FC = (prop) => {
                 }
               />
             }
+            onClick={() => {
+              setFilterVisible(true);
+            }}
             label={'创建人: ' + filterObject.creatorName}
             onDelete={() => deleteFilter('creatorKey')}
             className={classes.chip}
@@ -290,6 +296,9 @@ const WorkingTableHeader: React.FC = (prop) => {
                 }
               />
             }
+            onClick={() => {
+              setFilterVisible(true);
+            }}
             label={'执行人: ' + filterObject.executorName}
             onDelete={() => deleteFilter('executorKey')}
             className={classes.chip}
@@ -300,6 +309,9 @@ const WorkingTableHeader: React.FC = (prop) => {
             size="small"
             label={filterObject.filterType.join(' / ')}
             className={classes.chip}
+            onClick={() => {
+              setFilterVisible(true);
+            }}
           />
         ) : null}
         <DropMenu

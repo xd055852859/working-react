@@ -35,20 +35,26 @@ const useStyles = makeStyles((theme: Theme) =>
     root: {
       margin: '-10px 0px',
     },
-    // input: {
-    //   width: '280px',
-    //   height: '36px',
-    //   marginRight: '10px',
-
-    //   '& .MuiInput-formControl': {
-    //     marginTop: '0px',
-    //   },
-    //   '& .MuiInputLabel-formControl': {
-    //     transform: 'translate(0, 10px) scale(1)',
-    //   },
-    // },
+    input: {
+      width: '80%',
+      color: '#fff',
+      '& .MuiInput-formControl': {
+        marginTop: '0px',
+        borderColor: '#fff',
+      },
+      '& .MuiOutlinedInput-input': {
+        padding: '10px 14px',
+        borderColor: '#fff',
+        color: '#fff',
+      },
+      '& .MuiInputLabel-formControl': {
+        marginTop: '-10px',
+        color: '#fff',
+      },
+    },
     button: {
       backgroundColor: '#17B881',
+      color: '#fff',
     },
     datePicker: {
       '& .MuiInput-formControl': {
@@ -263,8 +269,19 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
               ) : null}
 
               <div className="taskInfo-mainTitle-left-info">
-                <img src={unExecutorPng} alt="" />
-                <div>未分配</div>
+                <div className="taskInfo-mainTitle-left-avatar">
+                  <img
+                    src={
+                      taskItem.executorAvatar
+                        ? taskItem.executorAvatar
+                        : unExecutorPng
+                    }
+                    alt=""
+                  />
+                </div>
+                <div>
+                  {taskItem.executorName ? taskItem.executorName : '未分配'}
+                </div>
               </div>
             </div>
             <div className="taskInfo-mainTitle-right">
@@ -281,12 +298,12 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
               >
                 保存
               </Button>
-              <img
+              {/* <img
                 src={taskClosePng}
                 alt=""
                 className="taskInfo-mainTitle-right-icon"
                 onClick={onClose}
-              />
+              /> */}
             </div>
           </div>
           <div className="taskInfo-container">
@@ -481,7 +498,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                 id="outlined-basic"
                 variant="outlined"
                 label="评论"
-                // className={classes.input}
+                className={classes.input}
                 onChange={changeInput}
                 value={commentInput}
               />

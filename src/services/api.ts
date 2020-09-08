@@ -358,6 +358,13 @@ const task = {
       type: 3,
     });
   },
+  deleteTaskLabel(groupKey: string, cardLabelKey: string) {
+    return request.post(HOME_URL + '/card/deleteCardLabel', {
+      token: auth_token,
+      groupKey: groupKey,
+      cardLabelKey: cardLabelKey,
+    });
+  },
   setLabelCardOrder(labelObject: object) {
     return request.patch(HOME_URL + '/card/setLabelCardOrder', {
       token: auth_token,

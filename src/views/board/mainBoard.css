@@ -28,10 +28,3 @@
   box-sizing: border-box;
 }
 
-.mainBoard-item::-webkit-scrollbar {
-  width: 1.5px;
-}
-.mainBoard-item::-webkit-scrollbar-thumb {
-  background: #dedede;
-  border-radius: 100px;
-}

@@ -23,11 +23,3 @@
   /* box-sizing: border-box; */
   overflow: auto;
 }
-
-.dropMenu-info::-webkit-scrollbar {
-  width: 1.5px;
-}
-.dropMenu-info::-webkit-scrollbar-thumb {
-  background: #dedede;
-  border-radius: 100px;
-}

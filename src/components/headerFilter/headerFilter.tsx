@@ -7,6 +7,7 @@ import { setMessage } from '../../redux/actions/commonActions';
 import { setTheme } from '../../redux/actions/authActions';
 import _ from 'lodash';
 import api from '../../services/api';
+import allPng from '../../assets/img/all.png'
 interface HeaderFilterProps {}
 
 const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
@@ -50,18 +51,21 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
       {
         name: '全部',
         key: null,
+        avatar:allPng
       },
     ];
     let creatorFilterArray: any = [
       {
         name: '全部',
         key: null,
+        avatar:allPng
       },
     ];
     let executorfilterArray: any = [
       {
         name: '全部',
         key: null,
+        avatar:allPng
       },
     ];
     _.flatten(cardArray).forEach((item: any) => {
@@ -131,12 +135,14 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
       {
         name: '全部',
         key: null,
+        avatar:allPng
       },
     ];
     let executorfilterArray: any = [
       {
         name: '全部',
         key: null,
+        avatar:allPng
       },
     ];
     let arr = [];

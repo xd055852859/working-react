@@ -82,7 +82,7 @@ const Contact: React.FC<ContactProps> = (props) => {
   };
   const toTargetUser = (targetUserKey: string, index: number) => {
     console.log(targetUserKey);
-    dispatch(setTargetUserKey(targetUserKey));
+    // dispatch(setTargetUserKey(targetUserKey));
     // dispatch(userKeyToGroupKey(targetUserKey));
     dispatch(getTargetUserInfo(targetUserKey));
     dispatch(setCommonHeaderIndex(2));
@@ -126,35 +126,79 @@ const Contact: React.FC<ContactProps> = (props) => {
                 }}
                 // selected={selectedIndex === index}
               >
-                <div className="contact-avatar">
-                  <img
-                    alt={name}
-                    src={
-                      avatar +
-                      '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
-                    }
-                  />
+                <div className="contact-left">
+                  <div className="contact-avatar">
+                    <img
+                      alt={name}
+                      src={
+                        avatar +
+                        '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
+                      }
+                    />
+                  </div>
+                  <div>{name}</div>
+                  {item.isCare ? (
+                    <img
+                      src={carePng}
+                      alt=""
+                      className="contact-care-img"
+                      onClick={(e) => {
+                        changeCare(
+                          e,
+                          contactIndex === 0 ? 2 : 1,
+                          key,
+                          2,
+                          index
+                        );
+                      }}
+                    />
+                  ) : (
+                    <img
+                      src={uncarePng}
+                      alt=""
+                      className="contact-uncare-img"
+                      onClick={(e) => {
+                        changeCare(
+                          e,
+                          contactIndex === 0 ? 2 : 1,
+                          key,
+                          1,
+                          index
+                        );
+                      }}
+                    />
+                  )}
                 </div>
-                <div>{name}</div>
-                {item.isCare ? (
-                  <img
-                    src={carePng}
-                    alt=""
-                    className="contact-care-img"
-                    onClick={(e) => {
-                      changeCare(e, contactIndex === 0 ? 2 : 1, key, 2, index);
-                    }}
-                  />
-                ) : (
-                  <img
-                    src={uncarePng}
-                    alt=""
-                    className="contact-uncare-img"
-                    onClick={(e) => {
-                      changeCare(e, contactIndex === 0 ? 2 : 1, key, 1, index);
-                    }}
-                  />
-                )}
+                {item.todayTotalTaskNumber ? (
+                  <div className="contact-right">
+                    {/* <div>
+                    今日任务:{item.todayTotalTaskNumber},今日工时:
+                    {item.todayTotalTaskHours}
+                  </div> */}
+                    <div
+                      className="contanct-time-day"
+                      style={{
+                        left: item.todayTotalTaskNumber < 10 ? '5px' : '3px',
+                      }}
+                    >
+                      {item.todayTotalTaskNumber}
+                    </div>
+                    <div className="contanct-time"></div>
+                    <div
+                      className="contanct-time-hour"
+                      style={{
+                        right:
+                          item.todayTotalTaskHours < 1
+                            ? '0px'
+                            : item.todayTotalTaskHours > 10
+                            ? '7px'
+                            : '5px',
+                      }}
+                    >
+                      {item.todayTotalTaskHours}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             );
           })
