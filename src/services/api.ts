@@ -2,8 +2,10 @@ import axios from 'axios';
 import moment from 'moment';
 const AUTH_URL = 'https://baokudata.qingtime.cn/sgbh';
 const HOME_URL = 'https://workingdata.qingtime.cn/sgbh';
+// const HOME_URL = 'http://192.168.0.101:8529/_db/working/my_sgbh';
 const ROCKET_CHAT_URL = 'https://chat.qingtime.cn';
-const SOCKET_URL = 'http://192.168.1.249:9033';
+// const SOCKET_URL = 'http://192.168.0.101:9033';
+const SOCKET_URL = 'https://workingdata.qingtime.cn';
 
 // const API_URL = "http://192.168.1.108:8529/_db/timeOS/myOs"; let token:
 // string | null = localStorage.getItem('auth_token');

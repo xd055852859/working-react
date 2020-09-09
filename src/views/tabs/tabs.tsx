@@ -54,7 +54,7 @@ const useStyles = makeStyles((theme: Theme) =>
     button: {
       backgroundColor: '#17B881',
       padding: '6 26px',
-      color:'#fff'
+      color: '#fff',
     },
     addInput: {
       width: '100%',
@@ -340,17 +340,15 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
         >
           队友
         </div>
-        {contactIndex === 0 ? (
-          <img
-            src={searchPng}
-            alt=""
-            className="search-icon"
-            onClick={() => {
-              setSearchVisible(true);
-              setSearchList([]);
-            }}
-          />
-        ) : null}
+        <img
+          src={searchPng}
+          alt=""
+          className="search-icon"
+          onClick={() => {
+            setSearchVisible(true);
+            setSearchList([]);
+          }}
+        />
         <img
           src={sortPng}
           alt=""
@@ -482,7 +480,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                       <div className="personMember-item-avatar">
                         <img src={avatar} alt="" />
                       </div>
-                      <div>{name}</div>
+                      <div className="personMember-item-name">{name}</div>
                     </div>
                     {contactIndex ? (
                       searchItem.isMyMainGroupMember ? (

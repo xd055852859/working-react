@@ -79,6 +79,7 @@
   height: 45px;
   overflow: hidden;
   margin-right: 10px;
+  flex-shrink: 0;
 }
 .personMember-item-avatar img {
   width: 100%;
@@ -110,4 +111,9 @@
 }
 .tabs-sort-item:hover {
   background: #f0f0f0;
+}
+.personMember-item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

@@ -45,11 +45,11 @@ const useStyles = makeStyles((theme: Theme) =>
       '& .MuiOutlinedInput-input': {
         padding: '10px 14px',
         borderColor: '#fff',
-        color: '#fff',
+        // color: '#fff',
       },
       '& .MuiInputLabel-formControl': {
         marginTop: '-10px',
-        color: '#fff',
+        // color: '#fff',
       },
     },
     button: {
@@ -209,13 +209,16 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   };
   const saveCommentMsg = async () => {
     let newCommentArray = _.cloneDeep(taskCommentArray);
+    let newCommentTotal = taskCommentTotal;
     if (commentInput !== '') {
       //保存
       let saveRes: any = await api.task.addComment(taskItem._key, commentInput);
       if (saveRes.msg === 'OK') {
         dispatch(setMessage(true, '评论成功', 'success'));
         newCommentArray.push(saveRes.result);
+        newCommentTotal = newCommentTotal + 1;
         setTaskCommentArray(newCommentArray);
+        setTaskCommentTotal(newCommentTotal);
         setCommentInput('');
       } else {
         dispatch(setMessage(true, saveRes.msg, 'error'));

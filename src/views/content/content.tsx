@@ -8,7 +8,6 @@ import MessageBoard from '../board/messageBoard';
 import ContentHeader from './contentHeader';
 import { setMessage } from '../../redux/actions/commonActions';
 import api from '../../services/api';
-import io from 'socket.io-client';
 import moment from 'moment';
 export interface ContentProps {}
 const Content: React.FC<ContentProps> = (props) => {
@@ -17,7 +16,6 @@ const Content: React.FC<ContentProps> = (props) => {
   const theme = useTypedSelector((state) => state.auth.theme);
   const [nowTime, setNowTime] = useState<any>([]);
   const [prompt, setPrompt] = useState();
-  const [socket, setSocket] = useState<any>(null);
   useEffect(() => {
     let interval: any = null;
     if (user) {
@@ -28,13 +26,6 @@ const Content: React.FC<ContentProps> = (props) => {
     }
     return clearInterval(interval);
   }, [user]);
-  const getSocket = () => {
-    const socket = io.connect(api.SOCKET_URL);
-    console.log(socket);
-    socket.on('connect', () => {
-      console.log('已连接...', socket.id);
-    });
-  };
   const formatTime = () => {
     let hour = moment().hour();
     let minute = moment().minute();

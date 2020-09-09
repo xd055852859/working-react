@@ -100,7 +100,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       labelInfo.executorKey
     );
     if (addTaskRes.msg === 'OK') {
-      dispatch(setMessage(true, '新增频道成功', 'success'));
+      dispatch(setMessage(true, '新增任务成功', 'success'));
       if (headerIndex === 1) {
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
       } else if (headerIndex === 2) {
@@ -189,7 +189,11 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                 className="taskNav-avatar"
                 onClick={() => {
                   if (role > 0 && role < 4 && headerIndex === 3) {
-                    setChooseLabelKey(taskNavArray[1]._key);
+                    setChooseLabelKey(
+                      taskNavArray[1]._key
+                        ? taskNavArray[1]._key
+                        : taskNavArray[0]._key
+                    );
                     setAvatarVisible(true);
                   }
                 }}
@@ -197,7 +201,9 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                 <img src={labelAvatar} alt="" />
                 <DropMenu
                   visible={
-                    taskNavArray[1]._key === chooseLabelKey && avatarVisible
+                    (taskNavArray[1]._key === chooseLabelKey ||
+                      taskNavArray[0]._key === chooseLabelKey) &&
+                    avatarVisible
                   }
                   dropStyle={{
                     width: '150px',
@@ -267,7 +273,13 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
               />
             )}
           </div>
-          {!taskNavArray[1]._key ? <img src={unDragPng} alt="" style={{width:'17px',height:'20px'}}/> : null}
+          {!taskNavArray[1]._key ? (
+            <img
+              src={unDragPng}
+              alt=""
+              style={{ width: '17px', height: '20px' }}
+            />
+          ) : null}
 
           {role > 0 && role < 4 ? (
             <div className="taskNav-name-info">
@@ -282,7 +294,11 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
               <div
                 className="icon-container"
                 onClick={() => {
-                  setChooseLabelKey(taskNavArray[1]._key);
+                  setChooseLabelKey(
+                    taskNavArray[1]._key
+                      ? taskNavArray[1]._key
+                      : taskNavArray[0]._key
+                  );
                   setBatchVisible(true);
                 }}
               >
@@ -290,7 +306,9 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
               </div>
               <DropMenu
                 visible={
-                  taskNavArray[1]._key === chooseLabelKey && batchVisible
+                  (taskNavArray[1]._key + '' == chooseLabelKey ||
+                    taskNavArray[0]._key + '' == chooseLabelKey) &&
+                  batchVisible
                 }
                 dropStyle={{
                   width: '150px',

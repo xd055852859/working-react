@@ -288,7 +288,9 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
                   value="0"
                   control={<Radio />}
                   label="开放加入"
-                  disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
+                  disabled={
+                    (groupRole > 2 || groupRole === 0) && type === '设置'
+                  }
                 />
               ) : null}
               <FormControlLabel
@@ -299,12 +301,6 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
               />
               <FormControlLabel
                 value="2"
-                control={<Radio />}
-                label="管理员通过审核后加入"
-                disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
-              />
-              <FormControlLabel
-                value="3"
                 control={<Radio />}
                 label="管理员邀请加入"
                 disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
@@ -367,7 +363,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
             <div className="contact-name-title">新成员默认权限</div>
             <div
               onClick={() => {
-                if ((groupRole > 2 || groupRole === 0) && type === '设置') {
+                if (groupRole > 0 && groupRole < 3) {
                   setDefaultPowerVisible(true);
                 }
               }}

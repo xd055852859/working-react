@@ -136,7 +136,7 @@ const Contact: React.FC<ContactProps> = (props) => {
                       }
                     />
                   </div>
-                  <div>{name}</div>
+                  <div className="contact-left-title">{name}</div>
                   {item.isCare ? (
                     <img
                       src={carePng}

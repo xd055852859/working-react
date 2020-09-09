@@ -10,6 +10,7 @@ import WorkingTableHeader from './workingTableHeader';
 import WorkingTableLabel from './workingTableLabel';
 import WorkingTableGroup from './workingTableGroup';
 import WorkingCalendar from './workingCalendar';
+import WorkingReport from './workingReport';
 interface WorkingTableProps {}
 
 const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
@@ -61,6 +62,7 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
           <WorkingTableGroup />
         ) : null}
         {memberHeaderIndex === 4 ? <WorkingCalendar /> : null}
+        {memberHeaderIndex === 7 ? <WorkingReport /> : null}
       </div>
       <div
         className="cooperation-container-item"

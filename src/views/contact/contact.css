@@ -99,3 +99,8 @@
   z-index: 3;
   text-align: center;
 }
+.contact-left-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

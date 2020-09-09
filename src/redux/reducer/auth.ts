@@ -1,5 +1,7 @@
 import { actionTypes } from '../actions/authActions';
 import moment from 'moment';
+import io from 'socket.io-client';
+import api from '../../services/api';
 export interface AuthType {
   user: any;
   userKey: string;
@@ -10,6 +12,7 @@ export interface AuthType {
   uploadToken: string | null;
   theme: any;
   nowTime: number;
+  socket: any;
 }
 
 const defaultState: AuthType = {
@@ -42,19 +45,25 @@ const defaultState: AuthType = {
     },
   },
   nowTime: 0,
+  socket: null,
 };
 
 export const auth = (state = defaultState, action: any) => {
   switch (action.type) {
     case actionTypes.GET_USERINFO_SUCCESS:
       localStorage.setItem('auth_token', action.data.token);
-      localStorage.setItem('userKey', action.data._key);      
+      localStorage.setItem('userKey', action.data._key);
+      const socket = io.connect(api.SOCKET_URL);
+      console.log(socket);
+      // socket.on('online', () => {
+      socket.emit('login', action.data._key);
       return {
         ...state,
         user: action.data,
         userKey: action.data._key,
         token: action.data.token,
         nowTime: moment().hour() < 12 ? 0 : 1,
+        socket: socket,
       };
     case actionTypes.GET_MAIN_GROUP_KEY_SUCCESS:
       localStorage.setItem('mainGroupKey', action.data.mainGroupKey);
@@ -66,7 +75,7 @@ export const auth = (state = defaultState, action: any) => {
       return {
         ...state,
         targetUserInfo: action.targetUserInfo,
-        targetUserKey:action.targetUserInfo._key
+        targetUserKey: action.targetUserInfo._key,
       };
     case actionTypes.GET_TARGET_USERINFO_SUCCESS:
       return {
