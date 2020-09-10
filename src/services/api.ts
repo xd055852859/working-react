@@ -139,7 +139,7 @@ const auth = {
       type: 2,
     });
   },
-  getNote(targetUKey: string, startTime: number) {
+  getNote(targetUKey: string | number, startTime: number) {
     return request.post(HOME_URL + '/card/getNote', {
       token: auth_token,
       targetUKey: targetUKey,
@@ -211,6 +211,47 @@ const auth = {
       endTime: endTime,
       type: type,
       targetUGKey: targetUGKey,
+    });
+  },
+  getDiaryList(targetUKey: string, startTime: number, endTime: number) {
+    return request.post(HOME_URL + '/card/clockInList', {
+      token: auth_token,
+      targetUKey: targetUKey,
+      startTime: startTime,
+      endTime: endTime,
+    });
+  },
+  getClockInCommentList(
+    clockInKey: number | string,
+    curPage: number,
+    perPage: number
+  ) {
+    return request.post(HOME_URL + '/card/getClockInCommentList', {
+      token: auth_token,
+      clockInKey: clockInKey,
+      curPage: curPage,
+      perPage: perPage,
+    });
+  },
+  addClockInComment(clockInKey: string | number, content: string) {
+    return request.post(HOME_URL + '/card/addClockInComment', {
+      token: auth_token,
+      clockInKey: clockInKey,
+      content: content,
+    });
+  },
+  deleteClockInComment(clockInCommentKey: number | string) {
+    return request.post(HOME_URL + '/card/deleteClockInComment ', {
+      token: auth_token,
+      clockInCommentKey: clockInCommentKey,
+    });
+  },
+  setRole(groupKey:string,targetUKey:string,role:number|string) {
+    return request.patch(HOME_URL + '/groupmember/setRole', {
+      token: auth_token,
+      groupKey: groupKey,
+      targetUKey: targetUKey,
+      role: role,
     });
   },
 };

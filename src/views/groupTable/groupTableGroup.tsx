@@ -410,8 +410,9 @@ const GroupTableGroup: React.FC = (prop) => {
                     <Draggable
                       key={'drag' + taskNameindex}
                       draggableId={
-                        taskNameindex !== 0 ? taskNameitem.key : taskNameindex
+                        taskNameindex !== 0 ? taskNameitem.key : '0'
                       }
+                      isDragDisabled={!taskNameitem.key}
                       index={taskNameindex}
                     >
                       {(provided, snapshot) => (
@@ -539,7 +540,7 @@ const GroupTableGroup: React.FC = (prop) => {
               // required
               id="outlined-basic"
               variant="outlined"
-              label="搜索"
+              label="添加频道"
               className={classes.input}
               style={{ width: '100%' }}
               value={addLabelInput}

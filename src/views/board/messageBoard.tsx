@@ -26,7 +26,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
   const [messageTotal, setMessageTotal] = useState(0);
   const [messageArray, setMessageArray] = useState<any>([]);
   const [socketObj, setSocketObj] = useState<any>(null);
-  const messageLimit = 10;
+  const messageLimit = 30;
   const messageImgArray = [
     messageType1Png,
     messageType2Png,

@@ -7,6 +7,8 @@ import {} from '../../redux/actions/taskActions';
 import {
   setTaskKey,
   editTask,
+  getSelfTask,
+  getWorkingTableTask,
   getGroupTask,
 } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
@@ -79,6 +81,7 @@ const Task: React.FC<TaskProps> = (props) => {
   const bottomtype = '';
   const taskKey = useTypedSelector((state) => state.task.taskKey);
   const user = useTypedSelector((state) => state.auth.user);
+  const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
@@ -173,7 +176,7 @@ const Task: React.FC<TaskProps> = (props) => {
     // let dom: any = document.getElementById('taskDetailText' + taskItem._key);
     // dom.focus()
   };
-  const cancelTask = (e: React.MouseEvent) => {
+  const cancelTask = async (e: React.MouseEvent) => {
     let newTaskDetail = _.cloneDeep(taskDetail);
     if (taskKey !== 0) {
       if (editState) {
@@ -182,7 +185,31 @@ const Task: React.FC<TaskProps> = (props) => {
         //   newTaskDetail.title = titleRef.current.innerText;
         // }
         console.log('newTaskDetail', newTaskDetail);
-        dispatch(editTask({ key: taskKey, ...newTaskDetail }));
+        // let editRes: any = await api.task.editTask({
+        //   key: taskKey,
+        //   ...newTaskDetail,
+        // });
+        // if (editRes.msg === 'OK') {
+        //   if (headerIndex === 0) {
+        //     dispatch(getSelfTask(1, user._key, '[0, 1]'));
+        //   } else if (headerIndex === 1) {
+        //     dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
+        //   } else if (headerIndex === 2) {
+        //     dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
+        //   } else if (headerIndex === 3) {
+        //     dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+        //   }
+        //   setEditState(false);
+        //   setTaskExecutorShow(false);
+        // } else {
+        //   dispatch(setMessage(true, editRes.msg, 'error'));
+        // }
+        dispatch(
+          editTask({
+            key: taskKey,
+            ...newTaskDetail,
+          },headerIndex)
+        );
         setEditState(false);
         setTaskExecutorShow(false);
       }
@@ -280,9 +307,6 @@ const Task: React.FC<TaskProps> = (props) => {
       let newTaskItem = {};
       newTaskItem = _.cloneDeep(taskDetail);
       setTaskDetail(newTaskItem);
-      if (changeTask) {
-        changeTask(newTaskItem, taskIndex, taskInfoIndex);
-      }
     }
   };
   const plusTask = async () => {
@@ -371,7 +395,7 @@ const Task: React.FC<TaskProps> = (props) => {
                     <div className="taskItem-time"></div>
                     <div
                       className="taskItem-time-hour"
-                      style={{ right: taskItem.hour < 1 ? '5px' : '0px' }}
+                      style={{ right: taskDetail.hour < 1 ? '5px' : '0px' }}
                     >
                       {taskDetail.hour}
                     </div>

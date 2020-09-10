@@ -67,6 +67,7 @@
 }
 .contentHeader-set-item-title {
   display: flex;
+  align-items: center;
 }
 .bg-title {
   width: 100%;
@@ -97,6 +98,7 @@
   justify-content: space-between;
 }
 .contentHeader-set-item-bg-info {
+  height: 100%;
   display: flex;
   align-items: center;
 }
@@ -119,7 +121,8 @@
   justify-content: space-between;
   align-items: center;
 }
-.addTask-item,.chooseItem {
+.addTask-item,
+.chooseItem {
   width: 50%;
   height: 100%;
   display: flex;

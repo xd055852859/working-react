@@ -4,7 +4,7 @@ export const actionTypes = {
   GET_GROUP_TASK_SUCCESS: 'GET_GROUP_TASK_SUCCESS',
   GET_TEAM_TASK: 'GET_TEAM_TASK',
   GET_TEAM_TASK_SUCCESS: 'GET_TEAM_TASK_SUCCESS',
-  GET_PROJECT_TASK:"GET_PROJECT_TASK",
+  GET_PROJECT_TASK: 'GET_PROJECT_TASK',
   GET_PROJECT_TASK_SUCCESS: 'GET_PROJECT_TASK_SUCCESS',
   GET_SELF_TASK: 'GET_SELF_TASK',
   GET_SELF_TASK_SUCCESS: 'GET_SELF_TASK_SUCCESS',
@@ -109,10 +109,11 @@ export function getWorkingTableSuccess(data: any) {
 export function setTaskKey(taskKey: string | number) {
   return { type: actionTypes.SET_TASK_KEY, taskKey };
 }
-export function editTask(data: any) {
+export function editTask(data: any, headerIndex: number) {
   return {
     type: actionTypes.EDIT_TASK,
     data,
+    headerIndex,
   };
 }
 export function editTaskSuccess(data: any) {

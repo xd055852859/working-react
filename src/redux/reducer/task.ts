@@ -100,9 +100,32 @@ export const task = (state = defaultState, action: any) => {
       };
     case actionTypes.EDIT_TASK_SUCCESS:
       console.log('编辑成功');
+      console.log(action);
+      let taskInfo = _.cloneDeep(action.data[0]);
+      let headerIndex = action.data[1];
+      if (headerIndex === 0) {
+        state.selfTaskArray.forEach((taskItem: any, taskIndex: number) => {
+          if (taskItem._key === taskInfo._key) {
+            taskItem = _.cloneDeep(taskInfo);
+          }
+        });
+      } else if (headerIndex === 1 || headerIndex === 2) {
+        _.flatten(state.workingTaskArray).forEach(
+          (taskItem: any, taskIndex: number) => {
+            if (taskItem._key === taskInfo._key) {
+              taskItem = _.cloneDeep(taskInfo);
+            }
+          }
+        );
+      } else if (headerIndex == 3) {
+        state.taskArray.forEach((taskItem: any, taskIndex: number) => {
+          if (taskItem._key === taskInfo._key) {
+            taskItem = _.cloneDeep(taskInfo);
+          }
+        });
+      }
       return {
         ...state,
-        // taskKey: action.taskKey
       };
     case actionTypes.ADD_WORKING_TABLE_TASK_SUCCESS:
       console.log('新建成功');

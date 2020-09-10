@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import './dropMenu.css';
 interface dropMenuProp {
   children: any;
@@ -13,15 +14,17 @@ const DropMenu: React.FC<dropMenuProp> = (prop) => {
   return (
     <React.Fragment>
       {visible ? (
-        <div className="dropMenu" style={dropStyle} onMouseLeave={onClose}>
-          {title ? <div className="dropMenu-title">{title}</div> : null}
-          <div
-            className="dropMenu-info"
-            style={{ height: title ? 'calc(100% - 53px)' : '100%' }}
-          >
-            {children}
+        <ClickAwayListener onClickAway={onClose}>
+          <div className="dropMenu" style={dropStyle}>
+            {title ? <div className="dropMenu-title">{title}</div> : null}
+            <div
+              className="dropMenu-info"
+              style={{ height: title ? 'calc(100% - 53px)' : '100%' }}
+            >
+              {children}
+            </div>
           </div>
-        </div>
+        </ClickAwayListener>
       ) : null}
     </React.Fragment>
   );

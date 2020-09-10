@@ -44,6 +44,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
+  const groupKey = useTypedSelector((state) => state.group.groupKey);
   const memberArray = useTypedSelector((state) => state.member.memberArray);
   const groupMemberArray = useTypedSelector(
     (state) => state.member.groupMemberArray
@@ -99,7 +100,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
     if (searchInput !== '') {
       if (newSearchMemberList[index].checked) {
         newSearchMemberList[index].checked = false;
-        let newSearchIndex = _.findIndex(newSearchMemberList, {
+        let newSearchIndex = _.findIndex(newMemberList, {
           userId: newSearchMemberList[index].userId,
         });
         if (newSearchIndex !== -1) {
@@ -114,7 +115,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
     } else {
       if (newMainMemberList[index].checked) {
         newMainMemberList[index].checked = false;
-        let newSearchIndex = _.findIndex(newMainMemberList, {
+        let newSearchIndex = _.findIndex(newMemberList, {
           userId: newMainMemberList[index].userId,
         });
         if (newSearchIndex !== -1) {
@@ -151,7 +152,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       res.result.forEach((searchItem: any) => {
         searchItem.avatar = searchItem.avatar
           ? searchItem.avatar +
-            '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
+            '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
           : defaultPersonPng;
         let searchMemberIndex = _.findIndex(newMemberList, {
           userId: searchItem.userId,
@@ -187,7 +188,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       getSearchPerson(newPage);
     }
   };
-  const deleteMember = (userId: number) => {
+  const deleteMember = async (userId: number) => {
     let newMainMemberList = _.cloneDeep(mainMemberList);
     let newMemberList = _.cloneDeep(memberList);
     let newSearchMemberList = _.cloneDeep(searchMemberList);
@@ -220,6 +221,16 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
     }
     setMemberList(newMemberList);
     setMember(newMemberList);
+    if (_.findIndex(groupMemberArray, { userId: userId }) != -1) {
+      let memberRes: any = await api.group.deleteGroupMember(groupKey, [
+        userId,
+      ]);
+      if (memberRes.msg === 'OK') {
+        // dispatch(setMessage(true, '删除群成员成功', 'success'));
+      } else {
+        dispatch(setMessage(true, memberRes.msg, 'error'));
+      }
+    }
   };
   const changeRoleVisible = (event: any, index: number) => {
     let posX: number = 0,
@@ -247,12 +258,23 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
     newMemberRoleList[index].role = roleIndex + 1;
     setMemberList(newMemberRoleList);
     setMember(newMemberRoleList);
+    setRoleVisible(false);
     // this.$set(this.targetMemberList, index, this.targetMemberList[index]);
     // this.setRole({
     //   groupKey: this.groupKey,
     //   targetUKey: this.newMemberList[index].userId,
     //   role: roleIndex + 1,
     // });
+    let memberIndex = _.findIndex(groupMemberArray, {
+      userId: newMemberRoleList[index].userId,
+    });
+    if (memberIndex !== -1) {
+      api.auth.setRole(
+        groupKey,
+        newMemberRoleList[index].userId,
+        roleIndex + 1
+      );
+    }
   };
   return (
     <div className="group-member">
@@ -299,7 +321,15 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                 <div className="group-member-item" key={'main' + mainIndex}>
                   <div className="group-member-item-container">
                     <div className="group-member-img">
-                      <img src={mainItem.avatar} alt="" />
+                      <img
+                        src={
+                          mainItem.avatar
+                            ? mainItem.avatar +
+                              '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
+                            : defaultPersonPng
+                        }
+                        alt=""
+                      />
                     </div>
                     <div className="group-member-name">{mainItem.nickName}</div>
                   </div>
@@ -323,7 +353,15 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
               <div className="group-member-item" key={'new' + newIndex}>
                 <div className="group-member-item-container">
                   <div className="group-member-img">
-                    <img src={newItem.avatar} alt="" />
+                    <img
+                      src={
+                        newItem.avatar
+                          ? newItem.avatar +
+                            '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
+                          : defaultPersonPng
+                      }
+                      alt=""
+                    />
                   </div>
                   <div className="group-member-name">{newItem.nickName}</div>
                 </div>

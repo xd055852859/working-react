@@ -348,6 +348,36 @@ const WorkingTableHeader: React.FC = (prop) => {
           </div>
         </DropMenu>
       </div>
+      <div
+        className="view-tab"
+        onClick={() => {
+          chooseMemberHeader(0);
+        }}
+        style={
+          memberHeaderIndex !== 7
+            ? {
+                background: 'rgba(255,255,255,0.24)',
+              }
+            : {}
+        }
+      >
+        任务
+      </div>
+      <div
+        className="view-tab"
+        onClick={() => {
+          chooseMemberHeader(7);
+        }}
+        style={
+          memberHeaderIndex === 7
+            ? {
+                background: 'rgba(255,255,255,0.24)',
+              }
+            : {}
+        }
+      >
+        日报
+      </div>
       <Dialog
         visible={vitalityVisible}
         onClose={() => {

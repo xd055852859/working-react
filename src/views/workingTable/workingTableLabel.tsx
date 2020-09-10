@@ -264,7 +264,6 @@ const WorkingTableLabel: React.FC = (prop) => {
       ref={workingTableRef}
     >
       {mainLabelArray.map((labelItem: any, labelIndex: number) => {
-        console.log('labelItem', labelItem);
         return (
           <div
             key={'label' + labelIndex}

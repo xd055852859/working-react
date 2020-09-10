@@ -53,6 +53,9 @@ const GroupTableHeader: React.FC = (prop) => {
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const groupArray = useTypedSelector((state) => state.group.groupArray);
+  const groupMemberArray = useTypedSelector(
+    (state) => state.member.groupMemberArray
+  );
   const groupMemberItem = useTypedSelector(
     (state) => state.member.groupMemberItem
   );
@@ -123,6 +126,16 @@ const GroupTableHeader: React.FC = (prop) => {
     );
     dispatch(setHeaderIndex(0));
   }, [headerIndex]);
+  useEffect(() => {
+    let filterCheckedArray: any = [];
+    if (filterObject.filterType.length > 0) {
+      filterCheckedArray = checkedTitle.map((item: any) => {
+        return filterObject.filterType.indexOf(item) !== -1;
+      });
+    }
+    console.log('filterCheckedArray', filterCheckedArray);
+    setFilterCheckedArray(filterCheckedArray);
+  }, [filterObject]);
   const changeFilterCheck = (filterTypeText: string) => {
     let filterType = filterObject.filterType;
     let fikterIndex = filterType.indexOf(filterTypeText);
@@ -147,10 +160,24 @@ const GroupTableHeader: React.FC = (prop) => {
     setGroupMember(groupMember);
   };
   const saveGroupMember = () => {
-    let newGroupMember = groupMember.map((groupMemberItem: any) => {
-      return groupMemberItem.userId;
+    let newGroupMember: any = [];
+    groupMember.forEach((groupMemberItem: any) => {
+      let newGroupIndex = _.findIndex(groupMemberArray, {
+        userId: groupMemberItem.userId,
+      });
+      if (newGroupIndex === -1) {
+        newGroupMember.push({
+          userKey: groupMemberItem.userId,
+          nickName: groupMemberItem.nickName,
+          avatar: groupMemberItem.avatar,
+          gender: groupMemberItem.gender,
+          role: groupMemberItem.role,
+        });
+      }
     });
-    api.group.addAllGroupMember(groupKey, newGroupMember);
+    console.log(newGroupMember);
+    api.group.addGroupMember(groupKey, newGroupMember);
+    // api.group.addAllGroupMember(groupKey, newGroupMember);
     dispatch(setMessage(true, '修改群成员成功', 'success'));
     dispatch(getGroupMember(groupKey));
     setGroupMemberVisible(false);
@@ -238,12 +265,17 @@ const GroupTableHeader: React.FC = (prop) => {
           </DropMenu>
         </div>
       </div>
-      <div className="groupTableHeader-vitalityNum" onClick={()=>{setVitalityVisible(true)}}>
+      <div
+        className="groupTableHeader-vitalityNum"
+        onClick={() => {
+          setVitalityVisible(true);
+        }}
+      >
         <div style={{ width: '50px', flexShrink: 0 }}>活力值</div>
         <VitalityIcon
           vitalityNum={groupInfo && groupInfo.energyValueTotal}
           vitalityDirection={'vertical'}
-          vitalityStyle={{ marginLeft: '5px',color:'#fff' }}
+          vitalityStyle={{ marginLeft: '5px', color: '#fff' }}
         />
       </div>
       <div className="groupTableHeader-info">
@@ -478,10 +510,7 @@ const GroupTableHeader: React.FC = (prop) => {
         // title={'搜索中心'}
         dialogStyle={{ width: '850px', height: '700px' }}
       >
-        <Vitality
-          vitalityType={3}
-          vitalityKey={groupKey}
-        />
+        <Vitality vitalityType={3} vitalityKey={groupKey} />
       </Dialog>
     </div>
   );

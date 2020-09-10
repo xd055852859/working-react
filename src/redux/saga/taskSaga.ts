@@ -105,7 +105,7 @@ function* editTask(action: any) {
     const res = yield call(api.task.editTask, action.data);
     console.log('res', res);
     if (res.msg === 'OK') {
-      yield put(editTaskSuccess(res.result));
+      yield put(editTaskSuccess([res.result,action.headerIndex]));
     } else {
       yield put(Failed(res));
     }

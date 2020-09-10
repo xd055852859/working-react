@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import { useTypedSelector } from '../../redux/reducer/RootState';
 import DateFnsUtils from '@date-io/moment';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import {
@@ -66,6 +67,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   const { taskInfo, setNewDetail, onClose } = prop;
+  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const classes = useStyles();
   const dispatch = useDispatch();
   const [taskItem, setTaskItem] = useState<any>(null);
@@ -294,7 +296,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                 className={classes.button}
                 onClick={() => {
                   setNewDetail(taskItem);
-                  dispatch(editTask({ key: taskItem._key, ...taskItem }));
+                  dispatch(editTask({ key: taskItem._key, ...taskItem },headerIndex));
                   dispatch(setMessage(true, '编辑成功', 'success'));
                   onClose();
                 }}

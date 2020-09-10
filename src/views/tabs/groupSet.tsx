@@ -163,6 +163,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
     setDefaultPower(newDefaultPower);
     setDefaultPowerIndex(index);
     setGroupSet('defaultPower', newDefaultPower);
+    setDefaultPowerVisible(false);
   };
   const uploadImg = (e: any) => {
     let mimeType = ['image/png', 'image/jpeg'];
@@ -363,7 +364,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
             <div className="contact-name-title">新成员默认权限</div>
             <div
               onClick={() => {
-                if (groupRole > 0 && groupRole < 3) {
+                if (groupRole > 0 && groupRole < 3||type === '创建') {
                   setDefaultPowerVisible(true);
                 }
               }}

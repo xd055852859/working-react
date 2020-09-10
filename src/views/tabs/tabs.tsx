@@ -349,7 +349,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             setSearchList([]);
           }}
         />
-        <img
+        {/* <img
           src={sortPng}
           alt=""
           className="sort-icon"
@@ -358,7 +358,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
               ? setMemberSortVisible(true)
               : setGroupSortVisible(true);
           }}
-        />
+        /> */}
         {contactIndex === 0 ? (
           <img
             src={addPng}

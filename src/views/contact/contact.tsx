@@ -57,13 +57,13 @@ const Contact: React.FC<ContactProps> = (props) => {
   useEffect(() => {
     if (user && user._key && (theme.backgroundColor || theme.backgroundImg)) {
       if (!groupArray) {
-        dispatch(getGroup(3, 1, theme.groupSortType));
+        dispatch(getGroup(3, 1, 2));
         setTimeout(() => {
-          dispatch(getGroup(3, null, theme.groupSortType));
+          dispatch(getGroup(3, null, 2));
         }, 2000);
       }
       if (!memberArray) {
-        dispatch(getMember(mainGroupKey, theme.personSortType));
+        dispatch(getMember(mainGroupKey, 2));
       }
 
       if (groupArray && contactIndex === 0) {
@@ -118,7 +118,7 @@ const Contact: React.FC<ContactProps> = (props) => {
             return (
               <div
                 className="contact-item"
-                key={key}
+                key={'contact'+index}
                 onClick={() => {
                   contactIndex
                     ? toTargetUser(key, index)

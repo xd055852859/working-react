@@ -81,9 +81,11 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
   useEffect(() => {
     if (name) {
       setLabelName(name);
+    }
+    if (avatar) {
       setLabelAvatar(avatar);
     }
-  }, [name]);
+  }, [name, avatar]);
   const BgColorArray = [
     'rgba(48,191,191,0.3)',
     'rgba(0,170,255,0.3)',
@@ -178,10 +180,6 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
             width: taskNavWidth,
             marginRight: headerIndex === 3 ? '15px' : '0px',
           }}
-          onMouseLeave={() => {
-            setBatchVisible(false);
-            setAvatarVisible(false);
-          }}
         >
           <div className="taskNav-name-info">
             {avatar ? (
@@ -255,6 +253,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                 }}
               >
                 {labelName}
+                {}
               </div>
             ) : (
               <TextField

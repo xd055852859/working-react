@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
+import { useLocation, useHistory } from 'react-router-dom';
 import { TextField, Button } from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux';
@@ -11,11 +12,13 @@ import ClockIn from '../clockIn/clockIn';
 import Task from '../task/task';
 import { setTheme } from '../../redux/actions/authActions';
 import { setMessage } from '../../redux/actions/commonActions';
-import { getGroupTask } from '../../redux/actions/taskActions';
+import { getSelfTask } from '../../redux/actions/taskActions';
 import './headerSet.css';
 import set1Png from '../../assets/img/set1.png';
 import set2Png from '../../assets/img/set2.png';
 import set3Png from '../../assets/img/set3.png';
+import logoutPng from '../../assets/img/logout.png';
+
 import bgImg from '../../assets/img/bgImg.png';
 import clockInPng from '../../assets/img/clockIn.png';
 import searchPng from '../../assets/img/headerSearch.png';
@@ -50,12 +53,14 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const dispatch = useDispatch();
+  const history = useHistory();
   const classes = useStyles();
   const user = useTypedSelector((state) => state.auth.user);
   const theme = useTypedSelector((state) => state.auth.theme);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const groupArray = useTypedSelector((state) => state.group.groupArray);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
+  const socket = useTypedSelector((state) => state.auth.socket);
   const [avatar, setAvatar] = useState<any>(null);
   const [contentSetVisilble, setContentSetVisilble] = useState(false);
   const [bgVisible, setBgVisible] = useState(false);
@@ -205,23 +210,25 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     if (addTaskRes.msg === 'OK') {
       setAddVisible(false);
       setAddInput('');
-      dispatch(setMessage(true, '新增成功', 'success'));
-      if (headerIndex === 3) {
-        dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
-      }
+      dispatch(setMessage(true, '新增对应群任务成功', 'success'));
+      // if (headerIndex === 3) {
+      //   dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+      // }
+      dispatch(getSelfTask(1, user._key, '[0, 1]'));
     } else {
       dispatch(setMessage(true, addTaskRes.msg, 'error'));
     }
+  };
+  const logout = async () => {
+    localStorage.clear();
+    socket.emit('logout', user._key);
+    dispatch(setMessage(true, '退出登录成功', 'success'));
+    history.push('/bootpage');
   };
   return (
     <React.Fragment>
       <div
         className="contentHeader-set"
-        onMouseLeave={() => {
-          setContentSetVisilble(false);
-          setAvatarShow(false);
-          setClockInVisible(false);
-        }}
       >
         <img
           src={addPng}
@@ -310,7 +317,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           visible={contentSetVisilble}
           dropStyle={{
             width: '260px',
-            height: '370px',
+            height: '450px',
             top: '65px',
             left: '-35px',
           }}
@@ -407,6 +414,26 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                 name="checkedC"
                 inputProps={{ 'aria-label': 'secondary checkbox' }}
               />
+            </div>
+          </div>
+          <div className="contentHeader-set-item">
+            <div
+              className="contentHeader-set-item-title"
+              onClick={() => {
+                logout();
+              }}
+              style={{ cursor: 'pointer' }}
+            >
+              <img
+                src={logoutPng}
+                alt=""
+                style={{
+                  width: '16px',
+                  height: '15px',
+                  marginRight: '5px',
+                }}
+              />
+              <div>退出登录</div>
             </div>
           </div>
         </DropMenu>
