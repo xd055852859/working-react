@@ -50,6 +50,8 @@
 .taskInfo-title {
   width: 100%;
   margin-bottom: 25px;
+  border: 0px;
+  font-size: 18px;
 }
 .taskInfo-item {
   width: 100%;

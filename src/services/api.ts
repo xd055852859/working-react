@@ -444,6 +444,12 @@ const task = {
       cardCommentKey: cardCommentKey,
     });
   },
+  allGridGroupTask(params:any) {
+    return request.post(HOME_URL + '/card/allGroupTaskFS', {
+      token: auth_token,
+      ...params,
+    });
+  },
 };
 const member = {
   getMember(groupId: string, sortType?: number) {

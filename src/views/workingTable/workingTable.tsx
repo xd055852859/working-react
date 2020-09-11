@@ -11,6 +11,7 @@ import WorkingTableLabel from './workingTableLabel';
 import WorkingTableGroup from './workingTableGroup';
 import WorkingCalendar from './workingCalendar';
 import WorkingReport from './workingReport';
+import Grid from '../../components/grid/grid';
 interface WorkingTableProps {}
 
 const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
@@ -61,7 +62,9 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
         {memberHeaderIndex === 1 || memberHeaderIndex === 3 ? (
           <WorkingTableGroup />
         ) : null}
-        {memberHeaderIndex === 4 ? <WorkingCalendar /> : null}
+        {memberHeaderIndex === 4 ? <Grid gridState={true} /> : null}
+        {memberHeaderIndex === 5 ? <Grid gridState={false} /> : null}
+        {memberHeaderIndex === 6 ? <WorkingCalendar /> : null}
         {memberHeaderIndex === 7 ? <WorkingReport /> : null}
       </div>
       <div

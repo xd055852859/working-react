@@ -26,7 +26,6 @@ import DropMenu from '../common/dropMenu';
 import Editor from '../common/Editor';
 interface TaskInfoProps {
   taskInfo: any;
-  setNewDetail: any;
   onClose: any;
 }
 // pick a date util library
@@ -66,7 +65,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
-  const { taskInfo, setNewDetail, onClose } = prop;
+  const { taskInfo, onClose } = prop;
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const classes = useStyles();
   const dispatch = useDispatch();
@@ -295,8 +294,10 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                 color="primary"
                 className={classes.button}
                 onClick={() => {
-                  setNewDetail(taskItem);
-                  dispatch(editTask({ key: taskItem._key, ...taskItem },headerIndex));
+                  console.log('taskItem', taskItem);
+                  dispatch(
+                    editTask({ key: taskItem._key, ...taskItem }, headerIndex)
+                  );
                   dispatch(setMessage(true, '编辑成功', 'success'));
                   onClose();
                 }}
@@ -312,13 +313,14 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
             </div>
           </div>
           <div className="taskInfo-container">
-            <div
+            <input
               className="taskInfo-title"
-              suppressContentEditableWarning
-              contentEditable
-            >
-              {taskInfo.title}
-            </div>
+              value={taskItem.title}
+              onChange={(e:any) => {
+                changeTaskItem('title', e.target.value);
+              }}
+            />
+
             <div className="taskInfo-item">
               <div className="taskInfo-item-title">开始</div>
               <div className="taskInfo-item-info">

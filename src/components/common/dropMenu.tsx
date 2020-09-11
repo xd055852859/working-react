@@ -5,7 +5,7 @@ interface dropMenuProp {
   children: any;
   visible: boolean;
   dropStyle: any;
-  onClose: any;
+  onClose?: any;
   title?: string | null;
 }
 
@@ -14,7 +14,7 @@ const DropMenu: React.FC<dropMenuProp> = (prop) => {
   return (
     <React.Fragment>
       {visible ? (
-        <ClickAwayListener onClickAway={onClose}>
+        <ClickAwayListener onClickAway={onClose ? onClose : {}}>
           <div className="dropMenu" style={dropStyle}>
             {title ? <div className="dropMenu-title">{title}</div> : null}
             <div

@@ -104,25 +104,36 @@ export const task = (state = defaultState, action: any) => {
       let taskInfo = _.cloneDeep(action.data[0]);
       let headerIndex = action.data[1];
       if (headerIndex === 0) {
-        state.selfTaskArray.forEach((taskItem: any, taskIndex: number) => {
-          if (taskItem._key === taskInfo._key) {
-            taskItem = _.cloneDeep(taskInfo);
-          }
-        });
-      } else if (headerIndex === 1 || headerIndex === 2) {
-        _.flatten(state.workingTaskArray).forEach(
+        state.selfTaskArray = state.selfTaskArray.map(
           (taskItem: any, taskIndex: number) => {
             if (taskItem._key === taskInfo._key) {
               taskItem = _.cloneDeep(taskInfo);
             }
+            return taskItem;
           }
         );
-      } else if (headerIndex == 3) {
-        state.taskArray.forEach((taskItem: any, taskIndex: number) => {
-          if (taskItem._key === taskInfo._key) {
-            taskItem = _.cloneDeep(taskInfo);
+      } else if (headerIndex === 1 || headerIndex === 2) {
+        state.workingTaskArray = state.workingTaskArray.map(
+          (taskItem: any, taskIndex: number) => {
+            taskItem = taskItem.map((item: any, index: number) => {
+              if (item._key === taskInfo._key) {
+                item = _.cloneDeep(taskInfo);
+              }
+              return item;
+            });
+            return taskItem;
           }
-        });
+        );
+        console.log(state.workingTaskArray);
+      } else if (headerIndex == 3) {
+        state.taskArray = state.taskArray.map(
+          (taskItem: any, taskIndex: number) => {
+            if (taskItem._key === taskInfo._key) {
+              taskItem = _.cloneDeep(taskInfo);
+            }
+            return taskItem;
+          }
+        );
       }
       return {
         ...state,

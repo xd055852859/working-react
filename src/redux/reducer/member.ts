@@ -9,7 +9,7 @@ export interface MemberType {
 
 const defaultState: MemberType = {
   memberArray: null,
-  memberHeaderIndex: 7,
+  memberHeaderIndex: 0,
   groupMemberArray: null,
   groupMemberItem: null,
 };

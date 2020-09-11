@@ -205,10 +205,13 @@ const Task: React.FC<TaskProps> = (props) => {
         //   dispatch(setMessage(true, editRes.msg, 'error'));
         // }
         dispatch(
-          editTask({
-            key: taskKey,
-            ...newTaskDetail,
-          },headerIndex)
+          editTask(
+            {
+              key: taskKey,
+              ...newTaskDetail,
+            },
+            headerIndex
+          )
         );
         setEditState(false);
         setTaskExecutorShow(false);
@@ -679,14 +682,23 @@ const Task: React.FC<TaskProps> = (props) => {
       <Dialog
         visible={taskInfoDialogShow}
         footer={false}
-        dialogStyle={{ width: '414px', height: '80%' }}
+        dialogStyle={{
+          width: '414px',
+          height: '80%',
+          position: 'fixed',
+          top: '65px',
+          right: '0px',
+          maxHeight: 'calc(100% - 66px)',
+          overflow: 'auto',
+          zIndex:'10'
+        }}
         onClose={() => {
           setTaskInfoDialogShow(false);
         }}
+        showMask={false}
       >
         <TaskInfo
           taskInfo={taskDetail}
-          setNewDetail={setNewDetail}
           onClose={() => {
             setTaskInfoDialogShow(false);
           }}

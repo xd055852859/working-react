@@ -227,9 +227,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   };
   return (
     <React.Fragment>
-      <div
-        className="contentHeader-set"
-      >
+      <div className="contentHeader-set">
         <img
           src={addPng}
           alt=""
@@ -447,7 +445,15 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           addLabelTask();
         }}
         title={'跨群添加'}
-        dialogStyle={{ width: '400px', height: '250px', overflow: 'visible' }}
+        dialogStyle={{
+          position: 'fixed',
+          top: '65px',
+          right: '10px',
+          width: '400px',
+          height: '250px',
+          overflow: 'visible',
+        }}
+        showMask={false}
       >
         <div className="headerSet-search-title">
           <TextField
@@ -572,7 +578,15 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
         }}
         footer={false}
         title={'搜索中心'}
-        dialogStyle={{ width: '370px', height: '500px' }}
+        dialogStyle={{
+          position: 'fixed',
+          top: '65px',
+          right: '10px',
+          width: '370px',
+          maxHeight: 'calc(100% - 66px)',
+          overflow: 'auto',
+        }}
+        showMask={false}
       >
         <div className="headerSet-search-title">
           <TextField
