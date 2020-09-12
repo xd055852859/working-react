@@ -450,6 +450,18 @@ const task = {
       ...params,
     });
   },
+  getGroupDataTask( groupKey:string,
+    finishPercentArray: any,
+    startTime: number|null,
+    endTime: number) {
+    return request.post(HOME_URL + '/card/getTeamCareTask', {
+      token: auth_token,
+      groupKey: groupKey,
+      finishPercentArray: finishPercentArray,
+      startTime: startTime,
+      endTime: endTime
+    });
+  },
 };
 const member = {
   getMember(groupId: string, sortType?: number) {

@@ -58,10 +58,10 @@ const WorkingTableHeader: React.FC = (prop) => {
   const theme = useTypedSelector((state) => state.auth.theme);
   const dispatch = useDispatch();
   const viewArray: string[] = [
-    '项目',
     '频道',
-    '项目卡',
+    '项目',
     '频道卡',
+    '项目卡',
     '时间表',
     '执行表',
     '日历',

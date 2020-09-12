@@ -14,7 +14,7 @@ const DropMenu: React.FC<dropMenuProp> = (prop) => {
   return (
     <React.Fragment>
       {visible ? (
-        <ClickAwayListener onClickAway={onClose ? onClose : {}}>
+        <ClickAwayListener onClickAway={onClose ? onClose : ()=>{}}>
           <div className="dropMenu" style={dropStyle}>
             {title ? <div className="dropMenu-title">{title}</div> : null}
             <div

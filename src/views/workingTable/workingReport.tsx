@@ -59,13 +59,14 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
   const user = useTypedSelector((state) => state.auth.user);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const taskArray = useTypedSelector((state) => state.task.taskArray);
   const workingTaskArray = useTypedSelector(
     (state) => state.task.workingTaskArray
   );
   const [dateArray, setDateArray] = useState<any>([]);
   const [diaryList, setDiaryList] = useState<any>([]);
   const [diaryIndex, setDiaryIndex] = useState(0);
-  const [diaryKey, setDiaryKey] = useState(0);
+  const [diaryKey, setDiaryKey] = useState<any>(null);
   const [comment, setComment] = useState('');
   const [positive, setPositive] = useState('');
   const [negative, setNegative] = useState('');
@@ -84,10 +85,15 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
   const commentLimit = 10;
 
   useEffect(() => {
-    if (user && user._key && workingTaskArray) {
-      getData(_.flatten(workingTaskArray));
+    if (user && user._key) {
+      setDiaryKey(user._key);
+      if (headerIndex == 3 && taskArray) {
+        getData(taskArray);
+      } else if (workingTaskArray) {
+        getData(_.flatten(workingTaskArray));
+      }
     }
-  }, [user, workingTaskArray]);
+  }, [user, workingTaskArray, taskArray]);
   useEffect(() => {
     if (contentKey) {
       if (headerIndex != 3) {
@@ -106,21 +112,18 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     }
     getDiaryNote(dateArray[index].start);
   };
-  // choosePerson(key, index) {
-  //   this.diaryList = [];
-  //   this.dayCanlendarArray = [];
-  //   this.personArray = [];
-  //   this.diaryKey = key;
-  //   this.personIndex = index;
-  // },
-  const getData = async (taskArray: any) => {
+  const choosePerson = (key: string, index: number) => {
+    setDiaryKey(key);
+    setPersonIndex(index);
+    getData(taskArray, key);
+  };
+  const getData = async (taskArray: any, chooseDiaryKey?: string | number) => {
     let newDateArray: any = [];
     let newDayCanlendarArray: any = [];
     let newPersonObj = _.cloneDeep(personObj);
     let newPersonArray = _.cloneDeep(personArray);
-    let newDiaryKey = diaryKey;
+    let newDiaryKey: string | number = '';
     let arr: any = [];
-
     for (let i = 30; i > 0; i--) {
       arr.push({
         start: moment().subtract(i, 'days').startOf('day').valueOf(),
@@ -143,15 +146,12 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       }
     });
     newPersonArray = Object.values(newPersonObj);
-    let personIndex = _.findIndex(newPersonObj, {
-      key: diaryKey,
-    });
-    if (personIndex == -1) {
-      setPersonIndex(0);
-      newDiaryKey = newPersonArray[0].key;
-      setDiaryKey(newPersonArray[0].key);
+    if (chooseDiaryKey) {
+      setDiaryKey(chooseDiaryKey);
+      newDiaryKey = chooseDiaryKey;
     } else {
-      setPersonIndex(personIndex);
+      setDiaryKey(newPersonArray[0].key);
+      newDiaryKey = newPersonArray[0].key;
     }
     arr.forEach((item: any, index: number) => {
       newDateArray[index] = {
@@ -191,15 +191,19 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     //   moment().subtract(1, 'days').startOf('day').valueOf(),
     //   moment().subtract(1, 'days').endOf('day').valueOf()
     // );
-    getDiaryList(
-      moment().subtract(1, 'days').startOf('day').valueOf(),
-      moment().subtract(1, 'days').endOf('day').valueOf()
-    );
+    if (headerIndex != 3) {
+      getDiaryList(
+        moment().subtract(1, 'days').startOf('day').valueOf(),
+        moment().subtract(1, 'days').endOf('day').valueOf()
+      );
+    }
     getDiaryNote(moment().subtract(1, 'days').startOf('day').valueOf());
+    console.log('newPersonArray', newPersonArray);
     console.log('newDateArray', newDateArray);
     console.log('newDayCanlendarArray', newDayCanlendarArray);
     setDateArray(newDateArray);
     setDayCanlendarArray(newDayCanlendarArray);
+    setPersonArray(newPersonArray);
   };
   const getDiaryNote = async (startTime: number) => {
     let noteRes: any = await api.auth.getNote(diaryKey, startTime);
@@ -270,10 +274,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       getCommentList(commentPage);
     }
   };
-  // onChange(current) {
-  //   this.page = current;
-  //   this.getData(this.page, this.limit);
-  // },
+
   const likeDiary = async (num: number) => {
     // let res = await api.task.likeClockIn({
     //   clockInKey: this.contentItem._key,
@@ -499,18 +500,49 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
           </div>
         ) : null}
       </div>
-      {/* <DropMenu>
-      <div class="diary-avatar">
-        <img src={personArray[personIndex]|defaultPerson} alt />
-      </div>
-      <div slot="overlay">
-        <dov v-for="(item,index) in personArray" key={'person'+index}>
-          <div class="diary-avatar" onClick={choosePerson(item.key,index)}>
-            <img src={item|defaultPerson} alt />
-          </div>
-        </div>
-      </div>
-    </DropMenu> */}
+
+      <DropMenu
+        visible={headerIndex === 3}
+        dropStyle={{
+          width: '45px',
+          maxHeight: '800px',
+          top: '108px',
+          left: 'calc(100% - 50px)',
+          color: '#333',
+          position: 'fixed',
+          zIndex: 5,
+          padding: '5px',
+          boxSizing: 'border-box',
+          overflow: 'auto',
+        }}
+      >
+        <React.Fragment>
+          {personArray.length > 0 ? (
+            <React.Fragment>
+              {personArray.map((item: any, index: number) => {
+                return (
+                  <div
+                    className="diary-avatar"
+                    onClick={() => {
+                      choosePerson(item.key, index);
+                    }}
+                    key={'person' + index}
+                    style={
+                      item.key === diaryKey
+                        ? {
+                            backgroundColor: '#f0f0f0',
+                          }
+                        : {}
+                    }
+                  >
+                    <img src={item.avatar} alt="" />
+                  </div>
+                );
+              })}
+            </React.Fragment>
+          ) : null}
+        </React.Fragment>
+      </DropMenu>
     </div>
   );
 };

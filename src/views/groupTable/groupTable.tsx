@@ -6,13 +6,19 @@ import { getGroupMember } from '../../redux/actions/memberActions';
 import api from '../../services/api';
 import GroupTableHeader from './groupTableHeader';
 import GroupTableGroup from './groupTableGroup';
-
+import GroupTableData from './groupTableData';
+import WorkingCalendar from '../workingTable/workingCalendar';
+import WorkingReport from '../workingTable/workingReport';
+import Grid from '../../components/grid/grid';
 interface GroupTableProps {}
 
 const GroupTable: React.FC<GroupTableProps> = (prop) => {
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const memberHeaderIndex = useTypedSelector(
+    (state) => state.member.memberHeaderIndex
+  );
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const moveState = useTypedSelector((state) => state.common.moveState);
   const [inputVisible, setInputVisible] = useState(false);
@@ -47,8 +53,14 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
       <GroupTableHeader />
       <div className="groupTableContent">
         {/* <WorkingTableLabel /> */}
-        <GroupTableGroup />
+        {memberHeaderIndex === 0 ? <GroupTableGroup /> : null}
+        {memberHeaderIndex === 1 ? <Grid gridState={true} /> : null}
+        {memberHeaderIndex === 2 ? <Grid gridState={false} /> : null}
+        {memberHeaderIndex === 3 ? <WorkingCalendar /> : null}
+        {memberHeaderIndex === 7 ? <WorkingReport /> : null}
+        {memberHeaderIndex === 8 ? <GroupTableData /> : null}
       </div>
+
       {/* <div
         className="cooperation-container-item"
         style={{

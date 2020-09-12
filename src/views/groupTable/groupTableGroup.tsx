@@ -67,7 +67,6 @@ const GroupTableGroup: React.FC = (prop) => {
   }, [user, groupKey]);
   useEffect(() => {
     if (taskArray) {
-      console.log('Xxx', '变化了');
       getData(labelArray, taskArray, filterObject);
     }
   }, [taskArray, filterObject, labelArray]);
@@ -350,15 +349,15 @@ const GroupTableGroup: React.FC = (prop) => {
   //   setBatchTaskVisible(true);
   //   setBatchTaskIndex(index - 1);
   // };
-  const changeTask = (
-    taskItem: any,
-    taskIndex: number,
-    taskInfoIndex: number
-  ) => {
-    let newTaskInfo = _.cloneDeep(taskInfo);
-    newTaskInfo[taskInfoIndex][taskIndex] = taskItem;
-    setTaskInfo(newTaskInfo);
-  };
+  // const changeTask = (
+  //   taskItem: any,
+  //   taskIndex: number,
+  //   taskInfoIndex: number
+  // ) => {
+  //   let newTaskInfo = _.cloneDeep(taskInfo);
+  //   newTaskInfo[taskInfoIndex][taskIndex] = taskItem;
+  //   setTaskInfo(newTaskInfo);
+  // };
   const addLabel = async () => {
     let newTaskNameArr: any = _.cloneDeep(taskNameArr);
     let newLabelIndex: any = labelIndex + 1;
@@ -409,9 +408,7 @@ const GroupTableGroup: React.FC = (prop) => {
                   return (
                     <Draggable
                       key={'drag' + taskNameindex}
-                      draggableId={
-                        taskNameindex !== 0 ? taskNameitem.key : '0'
-                      }
+                      draggableId={taskNameindex !== 0 ? taskNameitem.key : '0'}
                       isDragDisabled={!taskNameitem.key}
                       index={taskNameindex}
                     >
@@ -504,14 +501,7 @@ const GroupTableGroup: React.FC = (prop) => {
                               className="task-item-item"
                               // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
                             >
-                              {item.show ? (
-                                <Task
-                                  taskItem={item}
-                                  changeTask={changeTask}
-                                  taskIndex={index}
-                                  taskInfoIndex={taskInfoindex}
-                                />
-                              ) : null}
+                              {item.show ? <Task taskItem={item} /> : null}
                             </div>
                           )}
                         </Draggable>

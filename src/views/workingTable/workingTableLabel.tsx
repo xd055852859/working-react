@@ -51,9 +51,9 @@ const WorkingTableLabel: React.FC = (prop) => {
       dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
     }
   }, [user, targetUserInfo, headerIndex]);
-  useEffect(() => {
-    dispatch(setHeaderIndex(0));
-  }, [userKey, targetUserKey]);
+  // useEffect(() => {
+  //   dispatch(setHeaderIndex(0));
+  // }, [userKey, targetUserKey]);
   useEffect(() => {
     if (workingTaskArray) {
       setMainLabelArray([]);
@@ -293,6 +293,8 @@ const WorkingTableLabel: React.FC = (prop) => {
                     }
                   : {
                       width: '100%',
+                      padding: '0px 5px',
+                      boxSizing: 'border-box',
                     }
               }
             >

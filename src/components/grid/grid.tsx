@@ -7,7 +7,7 @@ import _ from 'lodash';
 import moment from 'moment';
 import './grid.css';
 import api from '../../services/api';
-import allPng from '../../assets/img/all.png';
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
 interface GridProps {
   gridState: boolean;
 }
@@ -17,18 +17,20 @@ const Grid: React.FC<GridProps> = (prop) => {
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
-  const userKey = useTypedSelector((state) => state.auth.userKey);
+  const groupMemberArray = useTypedSelector(
+    (state) => state.member.groupMemberArray
+  );
   const targetUserKey = useTypedSelector((state) => state.auth.targetUserKey);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const memberArray = useTypedSelector((state) => state.member.memberArray);
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const [gridGroupArray, setGridGroupArray] = useState<any>([]);
-  const [allGridGroupArray, setAllGridGroupArray] = useState<any>([]);
-  const [allGridTaskArray, setAllGridTaskArray] = useState<any>([]);
-  const [allGridChildArray, setAllGridChildArray] = useState<any>([]);
+  const [allGridGroupArray, setAllGridGroupArray] = useState<any>(null);
+  const [allGridTaskArray, setAllGridTaskArray] = useState<any>(null);
+  const [allGridChildArray, setAllGridChildArray] = useState<any>(null);
   const [taskNavDate, setTaskNavDate] = useState<any>([]);
-  const [taskNavDay, setTaskNavDay] = useState<any>([]);
+  const [taskNavDay, setTaskNavDay] = useState<any>(null);
   const [taskNavWeek, setTaskNavWeek] = useState<any>([]);
   const [moveIndex, setMoveIndex] = useState<any>(null);
   const [taskWidth, setTaskWidth] = useState(0);
@@ -45,6 +47,15 @@ const Grid: React.FC<GridProps> = (prop) => {
       setAvatarHeight(clientWidth);
     }
   }, [labelRef.current]);
+  useEffect(() => {
+    if (taskNavDate.length > 0 && allGridTaskArray) {
+      getGroupData(
+        _.cloneDeep(allGridGroupArray),
+        _.cloneDeep(allGridTaskArray)
+      );
+    }
+  }, [taskNavDate, allGridTaskArray]);
+
   const getGridData = async () => {
     let obj: any = {
       type1: headerIndex,
@@ -60,7 +71,6 @@ const Grid: React.FC<GridProps> = (prop) => {
     }
     let gridRes: any = await api.task.allGridGroupTask(obj);
     if (gridRes.msg === 'OK') {
-      console.log('gridRes', gridRes);
       let gridObj = _.cloneDeep(gridRes.result);
       let newAllGridChildArray: any = [];
       let newAllGridTaskArray: any = [];
@@ -102,15 +112,13 @@ const Grid: React.FC<GridProps> = (prop) => {
       setAllGridGroupArray(newAllGridGroupArray);
       setAllGridTaskArray(newAllGridTaskArray);
       setAllGridChildArray(newAllGridChildArray);
-      formatData(
-        _.cloneDeep(newAllGridTaskArray),
-        _.cloneDeep(newAllGridGroupArray)
-      );
+      formatData();
     } else {
       dispatch(setMessage(true, gridRes.msg, 'error'));
     }
   };
   const formatDate = () => {
+    console.log('');
     let newTaskNavDate: any = [];
     let newTaskNavDay: any = [];
     let newTaskNavWeek: any = [];
@@ -124,23 +132,31 @@ const Grid: React.FC<GridProps> = (prop) => {
       });
       newTaskNavWeek.push(moment().add(i, 'days').weekday());
     }
-    setTaskNavDate(newTaskNavDate);
     setTaskNavDay(newTaskNavDay);
+    setTaskNavDate(newTaskNavDate);
     setTaskNavWeek(newTaskNavWeek);
   };
   const formatPerson = () => {
     let newTaskNavDate: any = [];
     let newTaskNavDay: any = [];
-    let newMemberArray = _.cloneDeep(memberArray);
+    let newMemberArray =
+      headerIndex == 3
+        ? _.cloneDeep(groupMemberArray)
+        : _.cloneDeep(memberArray);
     newMemberArray.forEach((item: any, index: number) => {
       newTaskNavDate.push(item);
       newTaskNavDay.push({
         userId: item.userId,
+        name: item.nickName,
+        avatar: item.avatar
+          ? item.avatar + '?imageMogr2/auto-orient/thumbnail/50x50/format/jpg'
+          : defaultPersonPng,
         allTaskNum: 0,
       });
     });
-    setTaskNavDate(newTaskNavDate);
     setTaskNavDay(newTaskNavDay);
+    setTaskNavDate(newTaskNavDate);
+
     // this.$nextTick(() => {
     //   avatarHeight = document.querySelectorAll(
     //     ".grid-label-td"
@@ -211,7 +227,7 @@ const Grid: React.FC<GridProps> = (prop) => {
                 (dayItem: any, dayIndex: number) => {
                   let state = gridState
                     ? arrItem.taskEndDate >= dayItem.startTime &&
-                      arrItem.taskEndDate < dayItem.endTime
+                      arrItem.taskEndDate <= dayItem.endTime
                     : dayItem.userId == arrItem.executorKey;
                   if (state) {
                     arrItem.dayArr.push(arrItem.hour);
@@ -296,86 +312,16 @@ const Grid: React.FC<GridProps> = (prop) => {
     }
     setTaskNavDay(newTaskNavDay);
   };
-  // showLabel(index, type) {
-  //   this.groupArray[index].tabShow = type;
-  //   for (let key in this.groupArray[index]) {
-  //     if (
-  //       key != "groupObj" &&
-  //       key != "tabShow" &&
-  //       key != "arrlength" &&
-  //       key != "show"
-  //     ) {
-  //       this.groupArray[index][key].show = type;
-  //     }
-  //   }
-  //   this.groupArray.splice(0, 1, this.groupArray[0]);
-  // },
-  // showTask(index, groupIndex, type) {
-  //   this.groupArray[index][groupIndex].tabShow = type;
-  //   this.groupArray[index][groupIndex].arr.forEach((taskItem, taskIndex) => {
-  //     taskItem.show = type;
-  //   });
-  //   this.groupArray.splice(0, 1, this.groupArray[0]);
-  //   // this.$set(this.groupArray[index], "tabShow");
-  // },
-  // chooseTaskTime(index, groupIndex, taskIndex, dateIndex) {
-  //   this.groupArray[index][groupIndex].arr[taskIndex].taskEndDate =
-  //     this.groupArray[index][groupIndex].arr[taskIndex].taskEndDate +
-  //     (this.taskNavDay[dateIndex].startTime -
-  //       this.$moment(
-  //         this.groupArray[index][groupIndex].arr[taskIndex].taskEndDate
-  //       )
-  //         .startOf("day")
-  //         .valueOf());
-  //   this.editCard({
-  //     key: this.groupArray[index][groupIndex].arr[taskIndex]._key,
-  //     taskEndDate: this.groupArray[index][groupIndex].arr[taskIndex]
-  //       .taskEndDate,
-  //   });
-  // },
-  // async chooseTaskPerson(index, groupIndex, taskIndex, dateIndex) {
-  //   await this.addGroupMember({
-  //     param: {
-  //       groupKey: this.groupArray[index].groupObj._key,
-  //       targetUidList: [
-  //         {
-  //           userKey: this.taskNavDate[dateIndex].userId,
-  //           nickName: this.taskNavDate[dateIndex].nickName,
-  //           avatar: this.taskNavDate[dateIndex].avatar,
-  //           gender: this.taskNavDate[dateIndex].gender,
-  //           role: this.groupArray[index].groupObj.defaultPower,
-  //         },
-  //       ],
-  //     },
-  //     item: this.taskNavDate[dateIndex],
-  //     type: "member",
-  //   });
-  //   await this.editCard({
-  //     key: this.groupArray[index][groupIndex].arr[taskIndex]._key,
-  //     executorKey: this.taskNavDay[dateIndex].userId,
-  //   });
-  // },
-  // changeGridState(viewState) {
-  //   if (
-  //     (viewState == 4 && (this.groupType == 1 || this.groupType == 2)) ||
-  //     (viewState == 2 && this.groupType == 3)
-  //   ) {
-  //     this.gridState = true;
-  //   } else if (
-  //     (viewState == 5 && (this.groupType == 1 || this.groupType == 2)) ||
-  //     (viewState == 3 && this.groupType == 3)
-  //   ) {
-  //     this.gridState = false;
-  //   }
-  // },
-  const formatData = (newTaskArray: any, newGroupArray: any) => {
+  const formatData = () => {
     gridState ? formatDate() : formatPerson();
-    getGroupData(newGroupArray, newTaskArray);
   };
   // playTreeAudio() {
   //   console.log("????????", this.$refs.treeAudio);
   //   this.$refs.treeAudio.play();
   // },
+  const changeTaskNum = (newTaskNavDay: any) => {
+    setTaskNavDay(newTaskNavDay);
+  };
   const getItem = (item: any) => {
     let dom = [];
     for (let groupIndex in item) {
@@ -396,7 +342,7 @@ const Grid: React.FC<GridProps> = (prop) => {
                     className="grid-grouptitle"
                     style={{ border: '0px', color: '#000' }}
                   >
-                    <div className="point-label"></div>
+                    {/* <div className="point-label"></div> */}
                     {groupItem.labelObj.cardLabelName}
                   </div>
                 </div>
@@ -413,12 +359,13 @@ const Grid: React.FC<GridProps> = (prop) => {
                 </div>
               </div>
               {groupItem.arr.map((taskItem: any, taskIndex: number) => {
+                // console.log(taskItem);
                 return (
                   <div
                     key={'task' + taskIndex}
                     className="grid-title-task chooseTr"
                   >
-                    <div v-if="taskItem">
+                    {taskItem ? (
                       <GridTree
                         taskItem={taskItem}
                         left={45}
@@ -426,9 +373,10 @@ const Grid: React.FC<GridProps> = (prop) => {
                         gridState={gridState}
                         taskNavDate={taskNavDate}
                         taskNavDay={taskNavDay}
+                        changeTaskNum={changeTaskNum}
                         // @playTreeAudio="playTreeAudio"
                       />
-                    </div>
+                    ) : null}
                   </div>
                 );
               })}
@@ -444,15 +392,15 @@ const Grid: React.FC<GridProps> = (prop) => {
       <div className="grid-group-date" style={{ height: '35px' }}>
         <div className="grid-date-label-title">任务数量统计</div>
         <div className="grid-date-label">
-          {taskNavDay.length > 0
+          {taskNavDay
             ? taskNavDate.map((dateItem: any, dateIndex: number) => {
                 return (
-                  <React.Fragment key={'taskNavDate' + dateIndex}>
-                    <div
-                      style={{ border: '0px' }}
-                      className="grid-label-td"
-                      ref={labelRef}
-                    ></div>
+                  <div
+                    style={{ border: '0px' }}
+                    className="grid-label-td"
+                    ref={labelRef}
+                    key={'taskNavDate' + dateIndex}
+                  >
                     <div
                       style={{
                         background:
@@ -473,7 +421,7 @@ const Grid: React.FC<GridProps> = (prop) => {
                         ? taskNavDay[dateIndex].allTaskNum.toFixed(1)
                         : ''}
                     </div>
-                  </React.Fragment>
+                  </div>
                 );
               })
             : null}
@@ -512,8 +460,16 @@ const Grid: React.FC<GridProps> = (prop) => {
                           : '0px',
                     }}
                   >
-                    <div slot="title">{dateItem.nickName}</div>
-                    <img src={dateItem.avatar} alt="" />
+                    {/* <div slot="title">{dateItem.nickName}</div> */}
+                    <img
+                      src={
+                        dateItem.avatar
+                          ? dateItem.avatar +
+                            '?imageMogr2/auto-orient/thumbnail/50x50/format/jpg'
+                          : defaultPersonPng
+                      }
+                      alt=""
+                    />
                   </div>
                 )}
               </div>
@@ -524,7 +480,7 @@ const Grid: React.FC<GridProps> = (prop) => {
       <div className="grid-container">
         {gridGroupArray.map((item: any, index: number) => {
           return (
-            <div key={'gridGroup' + index}>
+            <React.Fragment key={'gridGroup' + index}>
               {item.arrlength > 0 ? (
                 <div className="grid-group-container">
                   {headerIndex != 3 ? (
@@ -534,25 +490,27 @@ const Grid: React.FC<GridProps> = (prop) => {
                         style={{ color: '#000', paddingLeft: '30px' }}
                       >
                         <div className="grid-grouptitle">
-                          <div className="point-group"></div>
+                          {/* <div className="point-group"></div> */}
                           {item.groupObj.groupName}
                         </div>
                       </div>
                       <div className="grid-label-tr">
-                        {/* <div
-              // v-for="(dateItem,dateIndex) in taskNavDate"
-              key={dateIndex}
-              className="grid-label-td"
-              style={{border:'1px solid #fff'}}
-              // :ref="'task'+dateIndex"
-            ></div> */}
+                        {taskNavDate.map((dateItem: any, dateIndex: number) => {
+                          return (
+                            <div
+                              key={'tr' + dateIndex}
+                              className="grid-label-td"
+                              style={{ border: '1px solid #fff' }}
+                            ></div>
+                          );
+                        })}
                       </div>
                     </div>
                   ) : null}
                   {getItem(item)}
                 </div>
               ) : null}
-            </div>
+            </React.Fragment>
           );
         })}
       </div>

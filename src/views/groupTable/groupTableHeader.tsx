@@ -28,6 +28,10 @@ import labelPng from '../../assets/img/label.png';
 import labelbPng from '../../assets/img/labelb.png';
 import calendarPng from '../../assets/img/calendar.png';
 import calendarbPng from '../../assets/img/calendarb.png';
+import gridTimePng from '../../assets/img/gridTime.png';
+import gridPersonPng from '../../assets/img/gridPerson.png';
+import gridTimebPng from '../../assets/img/gridTimeb.png';
+import gridPersonbPng from '../../assets/img/gridPersonb.png';
 import filterPng from '../../assets/img/filter.png';
 import chatPng from '../../assets/img/chat.png';
 import infoPng from '../../assets/img/info.png';
@@ -62,9 +66,14 @@ const GroupTableHeader: React.FC = (prop) => {
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const theme = useTypedSelector((state) => state.auth.theme);
   const dispatch = useDispatch();
-  const viewArray: string[] = ['项目', '日历'];
-  const viewImg: string[] = [labelPng, calendarPng];
-  const viewImgb: string[] = [labelbPng, calendarbPng];
+  const viewArray: string[] = ['项目', '时间表', '执行表', '日历'];
+  const viewImg: string[] = [labelPng, gridTimePng, gridPersonPng, calendarPng];
+  const viewImgb: string[] = [
+    labelbPng,
+    gridTimebPng,
+    gridPersonbPng,
+    calendarbPng,
+  ];
   const checkedTitle = [
     '过期',
     '今天',
@@ -471,8 +480,50 @@ const GroupTableHeader: React.FC = (prop) => {
           </div>
         </DropMenu>
       </div>
-      <div>
-        <div></div>
+      <div
+        className="view-tab"
+        onClick={() => {
+          chooseMemberHeader(0);
+        }}
+        style={
+          memberHeaderIndex < 7
+            ? {
+                background: 'rgba(255,255,255,0.24)',
+              }
+            : {}
+        }
+      >
+        任务
+      </div>
+      <div
+        className="view-tab"
+        onClick={() => {
+          chooseMemberHeader(7);
+        }}
+        style={
+          memberHeaderIndex === 7
+            ? {
+                background: 'rgba(255,255,255,0.24)',
+              }
+            : {}
+        }
+      >
+        日报
+      </div>
+      <div
+        className="view-tab"
+        onClick={() => {
+          chooseMemberHeader(8);
+        }}
+        style={
+          memberHeaderIndex === 8
+            ? {
+                background: 'rgba(255,255,255,0.24)',
+              }
+            : {}
+        }
+      >
+        动态
       </div>
       <Dialog
         visible={groupSetVisible}

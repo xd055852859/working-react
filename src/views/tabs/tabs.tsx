@@ -22,13 +22,18 @@ import {
   setCommonHeaderIndex,
   setMoveState,
 } from '../../redux/actions/commonActions';
-import { setTheme } from '../../redux/actions/authActions';
-import { getMember } from '../../redux/actions/memberActions';
+import {
+  getTargetUserInfo,
+  // userKeyToGroupKey
+} from '../../redux/actions/authActions';
 import {
   getGroup,
   getGroupInfo,
   setGroupKey,
 } from '../../redux/actions/groupActions';
+
+import { setTheme } from '../../redux/actions/authActions';
+import { getMember } from '../../redux/actions/memberActions';
 
 // import { Theme, makeStyles } from '@material-ui/core/styles';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
@@ -372,6 +377,20 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       dispatch(setTheme(newTheme));
     }
   };
+  const toTargetGroup = (groupKey: string) => {
+    dispatch(setGroupKey(groupKey));
+    dispatch(getGroupInfo(groupKey));
+    dispatch(setCommonHeaderIndex(3));
+    dispatch(setMoveState('in'));
+  };
+  const toTargetUser = (targetUserKey: string) => {
+    console.log(targetUserKey);
+    // dispatch(setTargetUserKey(targetUserKey));
+    // dispatch(userKeyToGroupKey(targetUserKey));
+    dispatch(getTargetUserInfo(targetUserKey));
+    dispatch(setCommonHeaderIndex(2));
+    dispatch(setMoveState('in'));
+  };
   return (
     <div className="tabs" ref={tabsRef}>
       <ClickAwayListener
@@ -591,6 +610,9 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                     <div
                       className="personMember-item"
                       key={'mainSearch' + mainSearchIndex}
+                      onClick={() => {
+                        contactIndex ? toTargetUser(key) : toTargetGroup(key);
+                      }}
                     >
                       <div className="personMember-item-title">
                         <div className="personMember-item-avatar">

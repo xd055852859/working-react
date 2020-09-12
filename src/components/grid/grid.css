@@ -1,12 +1,13 @@
 .grid {
-  height: calc(100% - 90px);
+  height: 100%;
   width: 100%;
   color: #fff;
 }
 .grid-container {
-  height: 100%;
+  height: calc(100% - 75px);
   width: 100%;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 .grid-group-container {
   position: relative;
@@ -81,7 +82,7 @@
 }
 
 .chooseTr:hover {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(240,240,240, 0.3);
 }
 .taskItem-day {
   width: 20px;
@@ -208,7 +209,6 @@
 .grid-date-label {
   width: 60%;
   display: flex;
-
   margin-right: 1px;
 }
 .grid-date-label-title {
