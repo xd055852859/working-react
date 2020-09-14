@@ -10,6 +10,7 @@ import _ from 'lodash';
 import Avatar from '@material-ui/core/Avatar';
 import DropMenu from '../../components/common/dropMenu';
 import downArrowPng from '../../assets/img/downArrow.png';
+import Loading from '../../components/common/loading';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     avatar: {
@@ -122,9 +123,11 @@ const MemberBoard: React.FC = () => {
   const [projectGroupArray, setProjectGroupArray] = useState<any>([]);
   const [boardVisible, setBoardVisible] = useState(false);
   const [boardIndex, setBoardIndex] = useState(0);
+  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   useEffect(() => {
     if (mainGroupKey) {
+      setLoading(true);
       if (boardIndex === 0) {
         dispatch(getTeamTask([0, 1]));
       } else {
@@ -135,6 +138,7 @@ const MemberBoard: React.FC = () => {
   useEffect(() => {
     // 用户已登录
     if (teamTaskArray && user && user._key) {
+      setLoading(false);
       let personObj: any = {};
       let personGroupObj: any = {};
       let personGroupArray: any = [];
@@ -173,6 +177,7 @@ const MemberBoard: React.FC = () => {
   }, [teamTaskArray, user]);
   useEffect(() => {
     if (projectTaskArray && user && user._key) {
+      setLoading(false);
       let taskArray = _.cloneDeep(projectTaskArray.cardArray);
       let groupArray = _.cloneDeep(projectTaskArray.groupArray);
       let arr: any = [];
@@ -249,6 +254,7 @@ const MemberBoard: React.FC = () => {
   };
   return (
     <div className="memberBoard">
+      {loading ? <Loading /> : null}
       <div
         className="memberBoard-maintitle"
         onClick={() => {

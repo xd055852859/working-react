@@ -9,11 +9,12 @@ import {
   editTaskSuccess,
   addWorkingTableTaskSuccess,
 } from '../actions/taskActions';
-import { Failed } from '../actions/commonActions';
+import { Failed, Loading } from '../actions/commonActions';
 import api from '../../services/api';
 
 function* getGroupTask(action: any) {
   try {
+    Loading(true);
     const res = yield call(
       api.task.getTaskList,
       action.typeBoard1,
@@ -21,8 +22,8 @@ function* getGroupTask(action: any) {
       action.finishPercentArray,
       action.fileDay
     );
-    console.log('res', res);
     if (res.msg === 'OK') {
+      yield Loading(false);
       yield put(getGroupTaskSuccess(res.result));
     } else {
       yield put(Failed(res));
@@ -105,7 +106,7 @@ function* editTask(action: any) {
     const res = yield call(api.task.editTask, action.data);
     console.log('res', res);
     if (res.msg === 'OK') {
-      yield put(editTaskSuccess([res.result,action.headerIndex]));
+      yield put(editTaskSuccess([res.result, action.headerIndex]));
     } else {
       yield put(Failed(res));
     }

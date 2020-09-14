@@ -16,6 +16,7 @@ import messageType7Png from '../../assets/img/messageType7.png';
 import messageType8Png from '../../assets/img/messageType8.png';
 import messageType9Png from '../../assets/img/messageType9.png';
 import messageType10Png from '../../assets/img/messageType10.png';
+import Loading from '../../components/common/loading';
 interface MessageBoardProps {}
 
 const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
@@ -26,6 +27,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
   const [messageTotal, setMessageTotal] = useState(0);
   const [messageArray, setMessageArray] = useState<any>([]);
   const [socketObj, setSocketObj] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
   const messageLimit = 30;
   const messageImgArray = [
     messageType1Png,
@@ -66,17 +68,21 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
   }, [socketObj]);
   const getMessage = async (page: number, limit: number) => {
     let newMessageArray = _.cloneDeep(messageArray);
+    setLoading(true);
     let messageRes: any = await api.auth.getMessageList(page, limit);
     if (messageRes.msg === 'OK') {
+      setLoading(false);
       newMessageArray.push(...messageRes.result);
       setMessageArray(newMessageArray);
       setMessageTotal(messageRes.totalNumber);
     } else {
+      setLoading(false);
       dispatch(setMessage(true, messageRes.msg, 'error'));
     }
   };
   return (
     <div className="messageBoard">
+      {loading ? <Loading /> : null}
       <div className="messageBoard-maintitle">提醒</div>
       <div className="messageBoard-item">
         {messageArray.map((messageItem: any, messageIndex: number) => {

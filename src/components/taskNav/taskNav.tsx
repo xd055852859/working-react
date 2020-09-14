@@ -93,7 +93,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
     'rgba(179,152,152,0.3)',
     'rgba(242,237,166,0.3)',
   ];
-  const taskNavBgColor = colorIndex % 4;
+  const taskNavBgColor = colorIndex % 5;
   const addTask = async (groupInfo: any, labelInfo: any) => {
     let addTaskRes: any = await api.task.addTask(
       groupInfo._key,
@@ -322,7 +322,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                 title={'设置频道'}
               >
                 <div className="taskNav-set">
-                  {role > 0 && role < 3 ? (
+                  {role > 0 && role < 4 ? (
                     <div onClick={batchTaskArray}>归档全部已完成任务</div>
                   ) : null}
                   <div

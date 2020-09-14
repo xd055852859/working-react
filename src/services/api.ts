@@ -246,7 +246,7 @@ const auth = {
       clockInCommentKey: clockInCommentKey,
     });
   },
-  setRole(groupKey:string,targetUKey:string,role:number|string) {
+  setRole(groupKey: string, targetUKey: string, role: number | string) {
     return request.patch(HOME_URL + '/groupmember/setRole', {
       token: auth_token,
       groupKey: groupKey,
@@ -444,22 +444,24 @@ const task = {
       cardCommentKey: cardCommentKey,
     });
   },
-  allGridGroupTask(params:any) {
+  allGridGroupTask(params: any) {
     return request.post(HOME_URL + '/card/allGroupTaskFS', {
       token: auth_token,
       ...params,
     });
   },
-  getGroupDataTask( groupKey:string,
+  getGroupDataTask(
+    groupKey: string,
     finishPercentArray: any,
-    startTime: number|null,
-    endTime: number) {
+    startTime: number | null,
+    endTime: number
+  ) {
     return request.post(HOME_URL + '/card/getTeamCareTask', {
       token: auth_token,
       groupKey: groupKey,
       finishPercentArray: finishPercentArray,
       startTime: startTime,
-      endTime: endTime
+      endTime: endTime,
     });
   },
 };
@@ -561,6 +563,12 @@ const group = {
     return request.post(HOME_URL + '/group', {
       token: auth_token,
       ...params,
+    });
+  },
+  dismissGroup(key: string) {
+    return request.delete(HOME_URL + '/group', {
+      token: auth_token,
+      key: key,
     });
   },
   //设置默认执行者

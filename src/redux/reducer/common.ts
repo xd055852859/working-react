@@ -86,7 +86,12 @@ export const common = (state = defaultState, action: any) => {
         ...state,
         moveState: action.moveState,
       };
-
+    case commonActionTypes.LOADING:
+      console.log(action.loading);
+      return {
+        ...state,
+        loading: action.loading,
+      };
     default:
       return state;
   }

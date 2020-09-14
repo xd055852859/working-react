@@ -57,3 +57,7 @@
   cursor: pointer;
   z-index: 3;
 }
+.dialog-onlyTitle {
+  display: flex;
+  align-items: center;
+}

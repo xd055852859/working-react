@@ -642,7 +642,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                             // addMember(item)
                           }
                         >
-                          <div>退出群组</div>
+                          {/* <div>退出群组</div> */}
                         </div>
                       )}
                     </div>

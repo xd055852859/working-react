@@ -5,7 +5,8 @@ export const actionTypes = {
   SWITCH_SEARCH: "SWITCH_SEARCH",
   SET_MESSAGE: "SET_MESSAGE",
   SET_HEADERINDEX:'SET_HEADERINDEX',
-  SET_MOVESTATE:'SET_MOVESTATE'
+  SET_MOVESTATE:'SET_MOVESTATE',
+  LOADING: "LOADING",
 };
 
 export function Failed(error: any) {
@@ -54,5 +55,11 @@ export function setMoveState(moveState: string) {
   return {
     type: actionTypes.SET_MOVESTATE,
     moveState
+  };
+}
+export function Loading(loading: boolean) {
+  return {
+    type: actionTypes.LOADING,
+    loading
   };
 }

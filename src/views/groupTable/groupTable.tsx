@@ -10,6 +10,7 @@ import GroupTableData from './groupTableData';
 import WorkingCalendar from '../workingTable/workingCalendar';
 import WorkingReport from '../workingTable/workingReport';
 import Grid from '../../components/grid/grid';
+
 interface GroupTableProps {}
 
 const GroupTable: React.FC<GroupTableProps> = (prop) => {
@@ -23,6 +24,7 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
   const moveState = useTypedSelector((state) => state.common.moveState);
   const [inputVisible, setInputVisible] = useState(false);
   const [inputValue, setInputValue] = useState('');
+
   useEffect(() => {
     if (user && user._key && groupKey) {
       dispatch(getGroupMember(groupKey));
@@ -50,6 +52,7 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
           : {}
       }
     >
+    
       <GroupTableHeader />
       <div className="groupTableContent">
         {/* <WorkingTableLabel /> */}

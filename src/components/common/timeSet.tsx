@@ -9,14 +9,13 @@ import timeSet5Png from '../../assets/img/timeSet5.png';
 import timeSet6Png from '../../assets/img/timeSet6.png';
 interface timeSetProp {
   timeSetClick: any;
-  dayNumber: number | null;
+  dayNumber: number;
   timeNumber: number | null;
   percentClick?: any;
 }
 
 const TimeSet: React.FC<timeSetProp> = (prop) => {
   const { dayNumber, timeSetClick, timeNumber, percentClick } = prop;
-  console.log('dayNumber', dayNumber);
   const [timeDate, setTimeDate] = useState<any>([]);
   const [timeWeek, setTimeWeek] = useState<any>([]);
   const [timeMonth, setTimeMonth] = useState<any>([]);
@@ -85,19 +84,18 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
     let dateTime = 0;
     let dateIndex = 0;
     if (timeDateType) {
-      dateIndex = moment(dayNumber).date();
+      dateIndex = moment()
+        .add(dayNumber - 1, 'day')
+        .endOf('day')
+        .date();
+      console.log('date', dateIndex);
     } else {
-      console.log(dayNumber);
-      dateTime =
-        Math.floor(
-          (moment(dayNumber).endOf('day').valueOf() -
-            moment().endOf('day').valueOf()) /
-            86400000
-        ) + 1;
-      dateIndex = dateTime > 0 ? dateTime : 0;
+      if (dayNumber >= 0) {
+        dateIndex = dayNumber;
+      } else {
+        dateIndex = 0;
+      }
     }
-    console.log(timeDateType);
-    console.log(dateIndex);
     setdateIndex(dateIndex);
   };
   const changeTimeDateType = (timeDateType: number) => {
@@ -189,7 +187,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                 key={'date' + dateTimeIndex}
                 className="timeSet-date-item"
                 onClick={() => {
-                  timeSetClick('day', dateTimeItem);
+                  timeSetClick('day', dateTimeIndex + 1);
                 }}
                 style={{
                   backgroundColor:

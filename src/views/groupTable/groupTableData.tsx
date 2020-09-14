@@ -7,6 +7,7 @@ import Task from '../../components/task/task';
 import chart from '../../components/common/chart';
 import { setMessage } from '../../redux/actions/commonActions';
 import api from '../../services/api';
+import Loading from '../../components/common/loading';
 import './groupTableData.css';
 
 import _ from 'lodash';
@@ -23,6 +24,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
   const [positionObj, setPositionObj] = useState<any>({});
   const [taskState, setTaskState] = useState(0);
   const [XYlength, setXYlength] = useState(0);
+  const [loading, setLoading] = useState(false);
   let colWidth = 0;
   let dataChart = null;
   let XYLeftchart = null;
@@ -63,6 +65,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
     }
   }, [groupDataRef.current]);
   const getGroupData = async () => {
+    setLoading(true);
     let dataRes: any = await api.task.getGroupDataTask(
       groupKey,
       [0, 1],
@@ -70,6 +73,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
       moment().endOf('day').valueOf()
     );
     if (dataRes.msg === 'OK') {
+      setLoading(false);
       setGroupData(dataRes.result);
       handleChart(taskState, dataRes.result);
       getTeamData(dataRes.result, taskState);
@@ -97,12 +101,12 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
       switch (taskState) {
         case 0:
           state =
-            item.todayTaskTime > startTaskTime &&
+            item.todayTaskTime >= startTaskTime &&
             item.todayTaskTime <= endTaskTime &&
             item.finishPercent == 1;
           break;
         case 1:
-          state = item.taskEndDate > startTime && item.taskEndDate <= endTime;
+          state = item.taskEndDate >= startTime && item.taskEndDate <= endTime;
           break;
         case 2:
           state = item.finishPercent == 0;
@@ -118,6 +122,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
         state &&
         item.taskEndDate
       ) {
+        console.log('xxxxxxx', item);
         if (!newData[item.creatorName + '-' + item.executorName]) {
           newData[item.creatorName + '-' + item.executorName] = 1;
         } else {
@@ -163,6 +168,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
       }
       // {"from":"Monica","to":"Rachel","value":4}
     });
+    console.log('newData', newData);
     for (let key in newData) {
       let keyArr = key.split('-');
       data.push({ from: keyArr[0], to: keyArr[1], value: newData[key] });
@@ -435,6 +441,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
         position: 'relative',
       }}
     >
+      {loading ? <Loading /> : null}
       <div className="choose-container">
         {/* <radio-group v-model="taskState" onChange={onChange}> */}
         {/* <radio

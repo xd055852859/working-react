@@ -4,6 +4,7 @@
   overflow: auto;
   margin-right: 2%;
   color: #fff;
+  position: relative;
 }
 .messageBoard-maintitle {
   width: 100%;

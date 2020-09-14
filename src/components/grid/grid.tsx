@@ -5,6 +5,7 @@ import { setMessage } from '../../redux/actions/commonActions';
 import GridTree from './gridTree';
 import _ from 'lodash';
 import moment from 'moment';
+import Loading from '../common/loading';
 import './grid.css';
 import api from '../../services/api';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
@@ -35,9 +36,11 @@ const Grid: React.FC<GridProps> = (prop) => {
   const [moveIndex, setMoveIndex] = useState<any>(null);
   const [taskWidth, setTaskWidth] = useState(0);
   const [avatarHeight, setAvatarHeight] = useState(0);
+  const [loading, setLoading] = useState(false);
   const labelRef: React.RefObject<any> = useRef();
   useEffect(() => {
     if (user && user._key) {
+      setLoading(true);
       getGridData();
     }
   }, [user, targetUserInfo, headerIndex]);
@@ -113,6 +116,7 @@ const Grid: React.FC<GridProps> = (prop) => {
       setAllGridTaskArray(newAllGridTaskArray);
       setAllGridChildArray(newAllGridChildArray);
       formatData();
+      setLoading(false);
     } else {
       dispatch(setMessage(true, gridRes.msg, 'error'));
     }
@@ -389,6 +393,7 @@ const Grid: React.FC<GridProps> = (prop) => {
   };
   return (
     <div className="grid">
+      {loading ? <Loading /> : null}
       <div className="grid-group-date" style={{ height: '35px' }}>
         <div className="grid-date-label-title">任务数量统计</div>
         <div className="grid-date-label">

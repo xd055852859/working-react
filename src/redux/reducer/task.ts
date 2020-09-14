@@ -144,8 +144,9 @@ export const task = (state = defaultState, action: any) => {
         ...state,
         // taskKey: action.taskKey
       };
-    case actionTypes.SET_Filter_OBJECT:
-      let filterObject = _.cloneDeep(state.filterObject);
+    case actionTypes.SET_FILTER_OBJECT:
+      console.log("?????????????????");
+      let filterObject = _.cloneDeep(state.filterObject);   
       for (let key in action.filterObj) {
         filterObject[key] = action.filterObj[key];
       }

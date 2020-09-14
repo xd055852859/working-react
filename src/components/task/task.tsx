@@ -128,15 +128,13 @@ const Task: React.FC<TaskProps> = (props) => {
         taskDetail,
       ]: any = [0, 0, 0, null, false, false, {}];
       if (taskItem.taskEndDate) {
-        time = Math.floor(
-          (moment(taskItem.taskEndDate).endOf('day').valueOf() -
-            moment().endOf('day').valueOf()) /
-            86400000
-        );
+        time = moment(taskItem.taskEndDate)
+          .endOf('day')
+          .diff(moment().endOf('day'), 'days');
         // this.endTimeText = this.$moment(taskEndDate).format('YYYY年MM月DD日');
       }
       endTime = time < 0 ? Math.abs(time) : Math.abs(time) + 1;
-      dayNumber = taskItem.taskEndDate;
+      dayNumber = time;
       endState = time < 0 ? false : true;
       taskDayColor = !endState
         ? taskItem.finishPercent === 0
@@ -155,7 +153,7 @@ const Task: React.FC<TaskProps> = (props) => {
       setEndtime(endTime);
       setTaskDayColor(taskDayColor);
       setEditRole(editRole);
-      setDayNumber(dayNumber);
+      setDayNumber(time);
       setTimeNumber(taskItem.hour);
       taskDetail = _.cloneDeep(taskItem);
       setTaskDetail(taskDetail);
@@ -250,21 +248,21 @@ const Task: React.FC<TaskProps> = (props) => {
   const changeTimeSet = (type: string, value: number) => {
     let newTaskDetail = _.cloneDeep(taskDetail);
     let time = 0;
-    let endTime = 0;
     if (type === 'hour') {
       setTimeNumber(value);
       newTaskDetail.hour = value;
     } else if (type === 'day') {
       newTaskDetail.day = value;
-      newTaskDetail.taskEndDate = new Date().getTime() + 86400000 * (value - 1);
-      setDayNumber(newTaskDetail.taskEndDate);
-      time = Math.floor(
-        (moment(newTaskDetail.taskEndDate).endOf('day').valueOf() -
-          moment().endOf('day').valueOf()) /
-          86400000
-      );
-      endTime = time < 0 ? Math.abs(time) : Math.abs(time) + 1;
-      setEndtime(endTime);
+      newTaskDetail.taskEndDate = moment()
+        .add(value - 1, 'day')
+        .endOf('day')
+        .valueOf();
+      time = moment(newTaskDetail.taskEndDate)
+        .endOf('day')
+        .diff(moment().endOf('day'), 'days');
+      // this.endTimeText = this.$moment(taskEndDate).format('YYYY年MM月DD日');
+      setDayNumber(time);
+      setEndtime(time + 1);
     }
     setNewDetail(newTaskDetail);
   };
@@ -658,18 +656,18 @@ const Task: React.FC<TaskProps> = (props) => {
         title={'删除任务'}
         dialogStyle={{ width: '400px', height: '200px' }}
       >
-        <div>是否删除该任务</div>
+        <div className="dialog-onlyTitle">是否删除该任务</div>
       </Dialog>
       <Dialog
         visible={taskInfoDialogShow}
         footer={false}
         dialogStyle={{
           width: '414px',
-          height: '80%',
+          height: 'calc(100% - 66px)',
           position: 'fixed',
           top: '65px',
           right: '0px',
-          maxHeight: 'calc(100% - 66px)',
+          // maxHeight: 'calc(100% - 66px)',
           overflow: 'auto',
           zIndex: '10',
         }}

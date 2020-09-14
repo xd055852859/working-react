@@ -98,9 +98,9 @@ const WorkingTableHeader: React.FC = (prop) => {
   const [filterVisible, setFilterVisible] = useState(false);
   const [vitalityVisible, setVitalityVisible] = useState(false);
   const [filterCheckedArray, setFilterCheckedArray] = useState<any>([
-    false,
-    false,
-    false,
+    true,
+    true,
+    true,
     false,
     false,
     false,
@@ -128,30 +128,30 @@ const WorkingTableHeader: React.FC = (prop) => {
     }
   }, [memberArray, userKey, targetUserKey]);
   useEffect(() => {
+    dispatch(setFilterObject(theme.filterObject));
     let filterCheckedArray: any = [];
-    if (filterObject.filterType.length > 0) {
+    if (theme.filterObject.filterType.length > 0) {
       filterCheckedArray = checkedTitle.map((item: any) => {
-        return filterObject.filterType.indexOf(item) !== -1;
+        return theme.filterObject.filterType.indexOf(item) !== -1;
       });
     }
-    console.log('filterCheckedArray', filterCheckedArray);
     setFilterCheckedArray(filterCheckedArray);
-  }, [filterObject]);
+  }, [theme]);
   useEffect(() => {
-    dispatch(
-      setFilterObject({
-        groupKey: null,
-        groupName: '',
-        groupLogo: '',
-        creatorKey: null,
-        creatorAvatar: '',
-        creatorName: '',
-        executorKey: null,
-        executorAvatar: '',
-        executorName: '',
-        filterType: ['过期', '今天', '已完成'],
-      })
-    );
+    //   dispatch(
+    //     setFilterObject({
+    //       groupKey: null,
+    //       groupName: '',
+    //       groupLogo: '',
+    //       creatorKey: null,
+    //       creatorAvatar: '',
+    //       creatorName: '',
+    //       executorKey: null,
+    //       executorAvatar: '',
+    //       executorName: '',
+    //       filterType: ['过期', '今天', '已完成'],
+    //     })
+    //   );
     dispatch(setHeaderIndex(0));
   }, [headerIndex]);
   const changeFilterCheck = (filterTypeText: string) => {
@@ -162,6 +162,9 @@ const WorkingTableHeader: React.FC = (prop) => {
     } else {
       filterType.splice(fikterIndex, 1);
     }
+    let newTheme = _.cloneDeep(theme);
+    newTheme.filterObject.filterType = filterType;
+    dispatch(setTheme(newTheme));
     dispatch(setFilterObject({ filterType: filterType }));
   };
   const deleteFilter = (filterTypeText: string) => {

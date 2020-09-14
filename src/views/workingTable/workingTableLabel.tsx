@@ -43,14 +43,6 @@ const WorkingTableLabel: React.FC = (prop) => {
   const [chooseLabelKey, setChooseLabelKey] = useState('');
   const workingTableRef: React.RefObject<any> = useRef();
   const dispatch = useDispatch();
-  useEffect(() => {
-    if (user && user._key && headerIndex === 1) {
-      dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
-    }
-    if (targetUserInfo && targetUserInfo._key && headerIndex === 2) {
-      dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
-    }
-  }, [user, targetUserInfo, headerIndex]);
   // useEffect(() => {
   //   dispatch(setHeaderIndex(0));
   // }, [userKey, targetUserKey]);

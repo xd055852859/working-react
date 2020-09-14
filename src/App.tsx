@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import { useLocation,useHistory } from 'react-router-dom';
+import { useLocation, useHistory } from 'react-router-dom';
 import { useTypedSelector } from './redux/reducer/RootState';
 import { getSearchParamValue } from './services/util';
 import { useDispatch } from 'react-redux';
-import { getUserInfo, getMainGroupKey,getUploadToken } from './redux/actions/authActions';
+import {
+  getUserInfo,
+  getMainGroupKey,
+  getUploadToken,
+} from './redux/actions/authActions';
 import { getTheme } from './redux/actions/authActions';
 import Home from './views/home/home';
 import Content from './views/content/content';
@@ -31,7 +35,6 @@ const App: React.FC = () => {
       // console.log(user);
       dispatch(getMainGroupKey());
       dispatch(getTheme());
-     
     }
     if (!user) {
       // 用户未登录
@@ -48,9 +51,24 @@ const App: React.FC = () => {
       }
     }
   }, [history, dispatch, location.search, user, token]);
-
+  // useEffect(() => {
+  //   if (document.querySelectorAll('svg')) {
+  //     Array.from(document.querySelectorAll('svg')).forEach((item: any) => {
+  //       if (item.parentElement.parentElement.style.width) {
+  //         item.parentElement.parentElement.style.display = 'none';
+  //       }
+  //     });
+  //   }
+  // }, [document.querySelectorAll('svg')]);
   return (
-    <div className="App" style={ theme.backgroundImg?{backgroundImage:'url('+theme.backgroundImg+')'}:{backgroundColor:theme.backgroundColor}}>
+    <div
+      className="App"
+      style={
+        theme.backgroundImg
+          ? { backgroundImage: 'url(' + theme.backgroundImg + ')' }
+          : { backgroundColor: theme.backgroundColor }
+      }
+    >
       <Home />
       {headerIndex === 0 ? <Content /> : null}
       {headerIndex === 1 ? <WorkingTable /> : null}

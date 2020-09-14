@@ -18,7 +18,7 @@ import DropMenu from '../../components/common/dropMenu';
 import Dialog from '../../components/common/dialog';
 import defaultPerson from '../../assets/img/defaultPerson.png';
 import taskAddPng from '../../assets/img/contact-add.png';
-
+import Loading from '../../components/common/loading';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     input: {
@@ -51,7 +51,7 @@ const GroupTableGroup: React.FC = (prop) => {
   const [labelVisible, setLabelVisible] = useState(false);
   const [labelLogoVisible, setLabelLogoVisible] = useState(false);
   const [addLabelInput, setAddLabelInput] = useState('');
-
+  const [loading, setLoading] = useState(false);
   // const [batchTaskVisible, setBatchTaskVisible] = useState(false);
   // const [batchLabelKey, setBatchLabelKey] = useState<string | null>('');
   // const [batchGroupKey, setBatchGroupKey] = useState<string | null>('');
@@ -60,6 +60,7 @@ const GroupTableGroup: React.FC = (prop) => {
   const dispatch = useDispatch();
   useEffect(() => {
     if (user && user._key && groupKey) {
+      setLoading(true);
       dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
       dispatch(getGroupInfo(groupKey));
       dispatch(getTheme());
@@ -67,6 +68,7 @@ const GroupTableGroup: React.FC = (prop) => {
   }, [user, groupKey]);
   useEffect(() => {
     if (taskArray) {
+      setLoading(false);
       getData(labelArray, taskArray, filterObject);
     }
   }, [taskArray, filterObject, labelArray]);
@@ -218,12 +220,13 @@ const GroupTableGroup: React.FC = (prop) => {
     const result: any = {};
     result[droppableSource.droppableId] = sourceClone;
     result[droppableDestination.droppableId] = destClone;
-    console.log(result);
+    console.log('????????', result);
     return result;
   };
 
   const onDragEnd = async (result: any) => {
     const { source, destination } = result;
+
     let cardOrder1: any = [];
     let cardOrder2: any = [];
     let newTaskInfo: any = [];
@@ -301,6 +304,13 @@ const GroupTableGroup: React.FC = (prop) => {
     }
   };
   const onDragNameEnd = async (result: any) => {
+    console.log('result', result);
+    if (!result.destination) {
+      result.destination = {
+        index: taskNameArr.length - 1,
+        droppableId: 'droppable',
+      };
+    }
     let newTaskNameArr: any = _.cloneDeep(taskNameArr);
     let newLabelExecutorArray = _.cloneDeep(labelExecutorArray);
     let newLabelItem = newTaskNameArr.splice(result.source.index, 1)[0];
@@ -308,6 +318,7 @@ const GroupTableGroup: React.FC = (prop) => {
       result.source.index,
       1
     )[0];
+
     newTaskNameArr.splice(result.destination.index, 0, newLabelItem);
     newLabelExecutorArray.splice(
       result.destination.index,
@@ -395,6 +406,7 @@ const GroupTableGroup: React.FC = (prop) => {
   };
   return (
     <div className="task">
+      {loading ? <Loading /> : null}
       <div className="task-container-profile">
         <DragDropContext onDragEnd={onDragNameEnd}>
           <Droppable droppableId="droppable" direction="horizontal">
@@ -429,7 +441,10 @@ const GroupTableGroup: React.FC = (prop) => {
                         >
                           <React.Fragment>
                             {labelIndex === taskNameindex &&
-                            labelLogoVisible ? (
+                            labelLogoVisible &&
+                            groupInfo &&
+                            groupInfo.role < 4 &&
+                            groupInfo.role > 0 ? (
                               <img
                                 src={taskAddPng}
                                 onClick={() => {
@@ -478,7 +493,7 @@ const GroupTableGroup: React.FC = (prop) => {
             {taskInfo.map((taskInfoitem: any, taskInfoindex: any) => {
               return (
                 <Droppable
-                  droppableId={taskInfoindex + ''}
+                  droppableId={taskInfoindex + 'task'}
                   key={'taskInfoitem' + taskInfoindex}
                 >
                   {(provided, snapshot) => (

@@ -33,6 +33,9 @@
   align-items: center;
   cursor: pointer;
 }
+body > div[visibility='hidden'] {
+  display: none;
+}
 @keyframes moveIn {
   from {
     width: 320px;

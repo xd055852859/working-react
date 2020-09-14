@@ -91,6 +91,8 @@ const GroupTableHeader: React.FC = (prop) => {
   const [groupSetVisible, setGroupSetVisible] = useState(false);
   const [vitalityVisible, setVitalityVisible] = useState(false);
   const [groupMemberVisible, setGroupMemberVisible] = useState(false);
+  const [dismissVisible, setDismissVisible] = useState(false);
+  const [outGroupVisible, setOutGroupVisible] = useState(false);
   const [groupMember, setGroupMember] = useState<any>([]);
   const [groupObj, setGroupObj] = React.useState<any>(null);
   const [filterCheckedArray, setFilterCheckedArray] = useState<any>([
@@ -108,31 +110,23 @@ const GroupTableHeader: React.FC = (prop) => {
   useEffect(() => {
     if (groupMemberItem) {
       dispatch(setFilterObject(groupMemberItem.config));
-      let newFilterObject = _.cloneDeep(groupMemberItem.config);
-      let filterCheckedArray: any = [];
-      if (newFilterObject.filterType.length > 0) {
-        filterCheckedArray = checkedTitle.map((item: any) => {
-          return newFilterObject.filterType.indexOf(item) !== -1;
-        });
-      }
-      setFilterCheckedArray(filterCheckedArray);
     }
   }, [groupMemberItem]);
   useEffect(() => {
-    dispatch(
-      setFilterObject({
-        groupKey: null,
-        groupName: '',
-        groupLogo: '',
-        creatorKey: null,
-        creatorAvatar: '',
-        creatorName: '',
-        executorKey: null,
-        executorAvatar: '',
-        executorName: '',
-        filterType: ['过期', '今天', '已完成'],
-      })
-    );
+  //   dispatch(
+  //     setFilterObject({
+  //       groupKey: null,
+  //       groupName: '',
+  //       groupLogo: '',
+  //       creatorKey: null,
+  //       creatorAvatar: '',
+  //       creatorName: '',
+  //       executorKey: null,
+  //       executorAvatar: '',
+  //       executorName: '',
+  //       filterType: ['过期', '今天', '已完成'],
+  //     })
+  //   );
     dispatch(setHeaderIndex(0));
   }, [headerIndex]);
   useEffect(() => {
@@ -142,18 +136,18 @@ const GroupTableHeader: React.FC = (prop) => {
         return filterObject.filterType.indexOf(item) !== -1;
       });
     }
-    console.log('filterCheckedArray', filterCheckedArray);
     setFilterCheckedArray(filterCheckedArray);
   }, [filterObject]);
-  const changeFilterCheck = (filterTypeText: string) => {
-    let filterType = filterObject.filterType;
-    let fikterIndex = filterType.indexOf(filterTypeText);
+  const changeFilterCheck = async (filterTypeText: string) => {
+    let newFilterObject: any = _.cloneDeep(filterObject);
+    let fikterIndex = newFilterObject.filterType.indexOf(filterTypeText);
     if (fikterIndex === -1) {
-      filterType.push(filterTypeText);
+      newFilterObject.filterType.push(filterTypeText);
     } else {
-      filterType.splice(fikterIndex, 1);
+      newFilterObject.filterType.splice(fikterIndex, 1);
     }
-    dispatch(setFilterObject({ filterType: filterType }));
+    await api.member.setConfig(groupMemberItem._key, newFilterObject);
+    dispatch(setFilterObject({ filterType: newFilterObject.filterType }));
   };
   const saveGroupSet = (obj: any) => {
     setGroupObj(obj);
@@ -209,16 +203,36 @@ const GroupTableHeader: React.FC = (prop) => {
         newFilterObject.executorAvatar = '';
         newFilterObject.executorName = '';
     }
-    let res: any = await api.member.setConfig(
-      groupMemberItem._key,
-      newFilterObject
-    );
-    if (res.msg === 'OK') {
-      console.log('设置成功');
-    } else {
-      dispatch(setMessage(true, res.msg, 'error'));
-    }
+    // let res: any =
+    await api.member.setConfig(groupMemberItem._key, newFilterObject);
+    // if (res.msg === 'OK') {
+    //   console.log('设置成功');
+    // } else {
+    //   dispatch(setMessage(true, res.msg, 'error'));
+    // }
     dispatch(setFilterObject(newFilterObject));
+  };
+  const outGroup = async () => {
+    let memberRes: any = await api.group.outGroup(groupKey);
+    if (memberRes.msg === 'OK') {
+      dispatch(setMessage(true, '退出群组成功', 'success'));
+      dispatch(getGroup(3, null, 2));
+      dispatch(setCommonHeaderIndex(1));
+      dispatch(setMoveState('out'));
+    } else {
+      dispatch(setMessage(true, memberRes.msg, 'error'));
+    }
+  };
+  const dismissGroup = async () => {
+    let groupRes: any = await api.group.dismissGroup(groupKey);
+    if (groupRes.msg === 'OK') {
+      dispatch(setMessage(true, '解散群组成功', 'success'));
+      dispatch(getGroup(3, null, 2));
+      dispatch(setCommonHeaderIndex(1));
+      dispatch(setMoveState('out'));
+    } else {
+      dispatch(setMessage(true, groupRes.msg, 'error'));
+    }
   };
   return (
     <div className="workingTableHeader">
@@ -328,6 +342,24 @@ const GroupTableHeader: React.FC = (prop) => {
             >
               <img /> 群成员
             </div>
+            <div
+              className="groupTableHeader-info-item"
+              onClick={() => {
+                setOutGroupVisible(true);
+              }}
+            >
+              <img /> 退出群组
+            </div>
+            {groupInfo && groupInfo.role == 1 ? (
+              <div
+                className="groupTableHeader-info-item"
+                onClick={() => {
+                  setDismissVisible(true);
+                }}
+              >
+                <img /> 解散群组
+              </div>
+            ) : null}
           </div>
         </DropMenu>
       </div>
@@ -525,6 +557,33 @@ const GroupTableHeader: React.FC = (prop) => {
       >
         动态
       </div>
+      <Dialog
+        visible={outGroupVisible}
+        onClose={() => {
+          setOutGroupVisible(false);
+        }}
+        onOK={() => {
+          outGroup();
+        }}
+        title={'退出群组'}
+        dialogStyle={{ width: '400px', height: '200px' }}
+      >
+        <div className="dialog-onlyTitle">是否退出该群</div>
+      </Dialog>
+
+      <Dialog
+        visible={dismissVisible}
+        onClose={() => {
+          setDismissVisible(false);
+        }}
+        onOK={() => {
+          dismissGroup();
+        }}
+        title={'解散群组'}
+        dialogStyle={{ width: '400px', height: '200px' }}
+      >
+        <div className="dialog-onlyTitle">是否解散该群</div>
+      </Dialog>
       <Dialog
         visible={groupSetVisible}
         onClose={() => {
