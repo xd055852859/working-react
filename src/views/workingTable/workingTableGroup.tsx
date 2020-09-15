@@ -117,7 +117,7 @@ const WorkingTableGroup: React.FC = (prop) => {
         setMainGroupArray(groupArray);
       }
     }
-  }, [workingTaskArray]);
+  }, [workingTaskArray,workingGroupArray]);
   useEffect(() => {
     let clientWidth = workingTableRef.current.clientWidth;
     if (clientWidth < 600) {

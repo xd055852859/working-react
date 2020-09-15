@@ -24,7 +24,9 @@ const Content: React.FC<ContentProps> = (props) => {
       interval = setInterval(formatTime, 60000);
       // getSocket();
     }
-    return clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+    };
   }, [user]);
   const formatTime = () => {
     let hour = moment().hour();

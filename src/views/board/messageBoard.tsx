@@ -28,7 +28,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
   const [messageArray, setMessageArray] = useState<any>([]);
   const [socketObj, setSocketObj] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const messageLimit = 30;
+  const messageLimit = 10;
   const messageImgArray = [
     messageType1Png,
     messageType2Png,
@@ -43,7 +43,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
   ];
   useEffect(() => {
     if (user && user._key) {
-      getMessage(messagePage, messageLimit);
+      getMessage(messagePage);
     }
   }, [user]);
   useEffect(() => {
@@ -58,18 +58,16 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
     if (socketObj) {
       let newMessageArray = _.cloneDeep(messageArray);
       let newSocketObj = _.cloneDeep(socketObj);
-      console.log(newSocketObj);
       let newMessageTotal = messageTotal;
-      console.log(messageArray);
       newMessageArray.unshift(newSocketObj);
       setMessageArray(newMessageArray);
       setMessageTotal(newMessageTotal + 1);
     }
   }, [socketObj]);
-  const getMessage = async (page: number, limit: number) => {
+  const getMessage = async (page: number) => {
     let newMessageArray = _.cloneDeep(messageArray);
     setLoading(true);
-    let messageRes: any = await api.auth.getMessageList(page, limit);
+    let messageRes: any = await api.auth.getMessageList(page, messageLimit);
     if (messageRes.msg === 'OK') {
       setLoading(false);
       newMessageArray.push(...messageRes.result);
@@ -80,11 +78,29 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
       dispatch(setMessage(true, messageRes.msg, 'error'));
     }
   };
+  const scrollMessageLoading = async (e: any) => {
+    // console.log(e);
+    let newPage = messagePage;
+    //文档内容实际高度（包括超出视窗的溢出部分）
+    let scrollHeight = e.target.scrollHeight;
+    //滚动条滚动距离
+    let scrollTop = e.target.scrollTop;
+    //窗口可视范围高度
+    let clientHeight = e.target.clientHeight;
+    if (
+      clientHeight + scrollTop >= scrollHeight &&
+      messageArray.length < messageTotal
+    ) {
+      newPage = newPage + 1;
+      setMessagePage(newPage);
+      getMessage(newPage);
+    }
+  };
   return (
     <div className="messageBoard">
       {loading ? <Loading /> : null}
       <div className="messageBoard-maintitle">提醒</div>
-      <div className="messageBoard-item">
+      <div className="messageBoard-item" onScroll={scrollMessageLoading}>
         {messageArray.map((messageItem: any, messageIndex: number) => {
           return (
             <React.Fragment key={'message' + messageIndex}>

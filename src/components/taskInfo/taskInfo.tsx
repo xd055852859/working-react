@@ -15,6 +15,7 @@ import moment from 'moment';
 import Comment from '../comment/comment';
 import hourPng from '../../assets/img/hour.png';
 import playPng from '../../assets/img/play.png';
+import stopPng from '../../assets/img/stop.png';
 import unExecutorPng from '../../assets/img/unExecutor.png';
 import taskFinishPng from '../../assets/img/taskFinish.png';
 import taskUnfinishPng from '../../assets/img/taskUnfinish.png';
@@ -23,7 +24,9 @@ import api from '../../services/api';
 import { setMessage } from '../../redux/actions/commonActions';
 import { editTask } from '../../redux/actions/taskActions';
 import DropMenu from '../common/dropMenu';
+import TimeSet from '../common/timeSet';
 import Editor from '../common/Editor';
+import { countReset } from 'console';
 interface TaskInfoProps {
   taskInfo: any;
   onClose: any;
@@ -81,8 +84,13 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   const [commentIndex, setCommentIndex] = useState(0);
   const [commentInput, setCommentInput] = useState('');
   const [suggestVisible, setSuggestVisible] = useState(false);
+  const [hourVisible, setHourVisible] = useState(false);
+  const [executorVisible, setExecutorVisible] = useState(false);
   const [taskTypeIndex, setTaskTypeIndex] = useState(0);
-
+  const [taskMemberArray, setTaskMemberArray] = useState<any>([]);
+  const [countDownTime, setCountDownTime] = useState(0);
+  const [countDownState, setCountDownState] = useState(false);
+  const [countInterval, setCountInterval] = useState<any>(null);
   const color = [
     '#6FD29A',
     '#21ABE4',
@@ -124,8 +132,20 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
           setTaskTypeIndex(index);
         }
       });
+      setCountDownTime(taskInfo.countDownTime);
+      getTaskMemberArray(taskInfo.groupKey);
     }
+    return () => {
+      clearInterval(countInterval);
+    };
   }, [taskInfo]);
+  const getTaskMemberArray = async (groupKey: string) => {
+    let taskMemberRes: any = null;
+    taskMemberRes = await api.member.getMember(groupKey);
+    if (taskMemberRes.msg === 'OK') {
+      setTaskMemberArray(taskMemberRes.result);
+    }
+  };
   const getCommentList = async (page: number) => {
     let newCommentArray = _.cloneDeep(taskCommentArray);
     let commentRes: any = await api.task.getTaskComment(
@@ -208,6 +228,20 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   const changeTaskContent = (value: string) => {
     changeTaskItem('content', value);
   };
+  const changeTimeSet = (type: string, hour: number) => {
+    changeTaskItem(type, hour);
+  };
+  const changeExecutor = (
+    executorKey: number | string,
+    executorName: string,
+    executorAvatar: string
+  ) => {
+    let newTaskItem: any = _.cloneDeep(taskItem);
+    newTaskItem['executorKey'] = executorKey;
+    newTaskItem['executorName'] = executorName;
+    newTaskItem['executorAvatar'] = executorAvatar;
+    setTaskItem(newTaskItem);
+  };
   const saveCommentMsg = async () => {
     let newCommentArray = _.cloneDeep(taskCommentArray);
     let newCommentTotal = taskCommentTotal;
@@ -246,6 +280,43 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     console.log(newTaskItem);
     setTaskItem(newTaskItem);
   };
+  const playCountdown = () => {
+    let newCountDownTime = countDownTime;
+    let newCountInterval = countInterval;
+    let newTaskItem: any = _.cloneDeep(taskItem);
+    setCountDownState(true);
+    clearInterval(countInterval);
+    newCountInterval = setInterval(() => {
+      if (newCountDownTime == 0) {
+        clearInterval(countInterval);
+        //任务状态变为完成
+        newTaskItem['finishPercent'] = 1;
+        newTaskItem['countDownTime'] = newCountDownTime;
+        setTaskItem(newTaskItem);
+      }
+      newCountDownTime = newCountDownTime - 1000;
+      setCountDownTime(newCountDownTime);
+    }, 1000);
+    setCountInterval(newCountInterval);
+  };
+  const stopCountdown = () => {
+    clearInterval(countInterval);
+    setCountDownState(false);
+    let newTaskItem: any = _.cloneDeep(taskItem);
+    newTaskItem['countDownTime'] = countDownTime;
+    setTaskItem(newTaskItem);
+  };
+  const formatHour = (formatTime: number) => {
+    let hours = parseInt(
+      (formatTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60) + ''
+    );
+    let minutes = parseInt((formatTime % (1000 * 60 * 60)) / (1000 * 60) + '');
+    let seconds = parseInt((formatTime % (1000 * 60)) / 1000 + '');
+    return addZero(hours) + ' : ' + addZero(minutes) + ' : ' + addZero(seconds);
+  };
+  const addZero = (num: number) => {
+    return num > 9 ? num + '' : '0' + num;
+  };
   return (
     <div className="taskInfo">
       {taskItem ? (
@@ -272,7 +343,12 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                 />
               ) : null}
 
-              <div className="taskInfo-mainTitle-left-info">
+              <div
+                className="taskInfo-mainTitle-left-info"
+                onClick={() => {
+                  setExecutorVisible(true);
+                }}
+              >
                 <div className="taskInfo-mainTitle-left-avatar">
                   <img
                     src={
@@ -286,6 +362,49 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                 <div>
                   {taskItem.executorName ? taskItem.executorName : '未分配'}
                 </div>
+                <DropMenu
+                  visible={executorVisible}
+                  dropStyle={{
+                    width: '180px',
+                    height: '290px',
+                    top: '60px',
+                    left: '0px',
+                  }}
+                  onClose={() => {
+                    setExecutorVisible(false);
+                  }}
+                  title={'分配任务'}
+                >
+                  <div className="task-executor-dropMenu-info">
+                    {taskMemberArray.map(
+                      (taskMemberItem: any, taskMemberIndex: number) => {
+                        return (
+                          <div
+                            className="task-executor-dropMenu-container"
+                            key={'taskMember' + taskMemberIndex}
+                            style={
+                              taskItem.executorKey === taskMemberItem.userId
+                                ? { background: '#F0F0F0' }
+                                : {}
+                            }
+                            onClick={() => {
+                              changeExecutor(
+                                taskMemberItem.userId,
+                                taskMemberItem.nickName,
+                                taskMemberItem.avatar
+                              );
+                            }}
+                          >
+                            <div className="task-executor-dropMenu-img">
+                              <img src={taskMemberItem.avatar} />
+                            </div>
+                            <div>{taskMemberItem.nickName}</div>
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
+                </DropMenu>
               </div>
             </div>
             <div className="taskInfo-mainTitle-right">
@@ -316,7 +435,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
             <input
               className="taskInfo-title"
               value={taskItem.title}
-              onChange={(e:any) => {
+              onChange={(e: any) => {
                 changeTaskItem('title', e.target.value);
               }}
             />
@@ -370,13 +489,38 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
             <div className="taskInfo-item">
               <div className="taskInfo-item-title">工时</div>
               <div className="taskInfo-item-info">
-                <div className="taskInfo-item-hour">
+                <div
+                  className="taskInfo-item-hour"
+                  onClick={() => {
+                    setHourVisible(true);
+                  }}
+                >
                   <img src={hourPng} alt="" />
-                  预计工时
+                  {taskItem.hour ? taskItem.hour + ' 小时' : '预计工时'}
+                  <DropMenu
+                    visible={hourVisible}
+                    dropStyle={{ top: '36px' }}
+                    onClose={() => {
+                      setHourVisible(false);
+                    }}
+                    title="预计工时"
+                  >
+                    <TimeSet
+                      timeSetClick={changeTimeSet}
+                      timestate={'hour'}
+                      dayNumber={0}
+                      timeNumber={taskItem.hour}
+                    />
+                  </DropMenu>
                 </div>
-                <div className="taskInfo-item-countdown">
-                  <img src={playPng} alt="" />
-                  00:00:00
+                <div
+                  className="taskInfo-item-countdown"
+                  onClick={() => {
+                    countDownState ? stopCountdown() : playCountdown();
+                  }}
+                >
+                  <img src={countDownState ? stopPng : playPng} alt="" />
+                  {formatHour(countDownTime)}
                 </div>
               </div>
             </div>

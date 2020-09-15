@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
 import { getWorkingTableTask } from '../../redux/actions/taskActions';
+import { setMessage } from '../../redux/actions/commonActions';
 import './workingTable.css';
 import api from '../../services/api';
 
@@ -33,6 +34,8 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
   const [inputVisible, setInputVisible] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
+  const [addLabelInputState, setAddLabelInputState] = useState<any>(null);
+  const addLabelRef: React.RefObject<any> = useRef();
   const handleInputChange = (e: any) => {
     setInputValue(e.target.value);
   };
@@ -56,12 +59,21 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
     }
   }, [workingTaskArray]);
   const handleInputConfirm = async () => {
-    setInputVisible(false);
-    if (inputValue !== '') {
-      console.log(mainGroupKey);
-      await api.task.addTaskLabel(mainGroupKey, inputValue);
-      setInputValue('');
-      await api.task.getGroupTask(1, user._key, 1, [0, 1, 2]);
+    if (addLabelInputState == 'out') {
+      setAddLabelInputState('in');
+      if (inputValue !== '') {
+        let addLabelRes: any = await api.task.addTaskLabel(
+          mainGroupKey,
+          inputValue
+        );
+        if (addLabelRes.msg === 'OK') {
+          dispatch(setMessage(true, '添加私有频道成功', 'success'));
+          setInputValue('');
+          dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
+        } else {
+          dispatch(setMessage(true, addLabelRes.msg, 'error'));
+        }
+      }
     }
   };
 
@@ -90,45 +102,52 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
         {memberHeaderIndex === 6 ? <WorkingCalendar /> : null}
         {memberHeaderIndex === 7 ? <WorkingReport /> : null}
       </div>
-      <div
-        className="cooperation-container-item"
-        style={{
-          width: '350px',
-          position: 'fixed',
-          bottom: '2px',
-          right: '0px',
-        }}
-      >
-        <div className="cooperation-info" style={{ width: '100%' }}>
-          {inputVisible ? (
-            <input
-              style={{ width: '100%', height: '35px' }}
-              onChange={handleInputChange}
-              value={inputValue}
-              onBlur={() => {
-                handleInputConfirm();
-              }}
-              placeholder="输入标签名"
+      {headerIndex === 1 ? (
+        <React.Fragment>
+          <input
+            className="workingTable-addLabel-input"
+            onChange={handleInputChange}
+            onBlur={() => {
+              handleInputConfirm();
+            }}
+            value={inputValue}
+            ref={addLabelRef}
+            placeholder="输入标签名"
+            style={
+              addLabelInputState === 'in'
+                ? {
+                    animation: 'addLabelInputIn 500ms',
+                    width: '0px',
+                    padding: '0px',
+                  }
+                : addLabelInputState === 'out'
+                ? {
+                    animation: 'addLabelInputOut 500ms',
+                    width: '250px',
+                    padding: '0px 8px',
+                  }
+                : { width: '0px', opacity: 0, padding: '0px' }
+            }
+          />
+          <div
+            // className="cooperation-info-labelName"
+            className="workingTable-addLabel"
+            onClick={() => {
+              // setInputVisible(true);
+              addLabelRef.current.focus();
+              setAddLabelInputState('out');
+              // handleInputConfirm();
+            }}
+            // style={{ background: '#fff', color: '#333' }}
+          >
+            <img
+              src={taskAddPng}
+              alt=""
+              style={{ height: '35px', color: '35px' }}
             />
-          ) : (
-            <div
-              // className="cooperation-info-labelName"
-              className="workingTable-addLabel"
-              onClick={() => {
-                setInputVisible(true);
-                // handleInputConfirm();
-              }}
-              // style={{ background: '#fff', color: '#333' }}
-            >
-              <img
-                src={taskAddPng}
-                alt=""
-                style={{ height: '60px', color: '60px' }}
-              />
-            </div>
-          )}
-        </div>
-      </div>
+          </div>
+        </React.Fragment>
+      ) : null}
     </div>
   );
 };

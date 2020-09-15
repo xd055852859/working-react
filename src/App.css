@@ -33,7 +33,7 @@
   align-items: center;
   cursor: pointer;
 }
-body > div[visibility='hidden'] {
+body > div[style] {
   display: none;
 }
 @keyframes moveIn {
@@ -86,6 +86,29 @@ body > div[visibility='hidden'] {
     opacity: 1;
     right: 0px;
     height: 100%;
+  }
+}
+@keyframes addLabelInputIn {
+  from {
+    width: 250px;
+    opacity: 1;
+  }
+
+  to {
+    width: 0px;
+    opacity: 0;
+  }
+}
+
+@keyframes addLabelInputOut {
+  from {
+    width: 0px;
+    opacity: 0;
+  }
+
+  to {
+    width: 250px;
+    opacity: 1;
   }
 }
 @keyframes contentmoveIn {

@@ -6,8 +6,9 @@
   overflow: auto;
   box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.5);
   border-radius: 12px;
-  font-weight:500;
+  font-weight: 500;
   box-sizing: border-box;
+  color: #333;
 }
 .dropMenu-title {
   width: 100%;

@@ -25,7 +25,8 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
   const [taskState, setTaskState] = useState(0);
   const [XYlength, setXYlength] = useState(0);
   const [loading, setLoading] = useState(false);
-  let colWidth = 0;
+  const [colWidth, setColWidth] = useState(0);
+  const [divHeight, setDivHeight] = useState(0);
   let dataChart = null;
   let XYLeftchart = null;
   let XYLeft1chart = null;
@@ -61,9 +62,32 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
       } else {
         colNumbers = 4;
       }
-      colWidth = Math.floor(clientWidth / colNumbers);
+      setColWidth(Math.floor(clientWidth / colNumbers));
+
+      if (
+        groupDataRef.current.childNodes.length > 0 &&
+        JSON.stringify(personGroupObj) != '{}'
+      ) {
+        console.log(personGroupObj);
+        console.log(groupDataRef.current.childNodes[0].offsetHeight);
+        let newPositionObj = _.cloneDeep(positionObj);
+        Object.keys(personObj).forEach((item: any, index: number) => {
+          newPositionObj[item] = render(index, item);
+        });
+        setPositionObj(newPositionObj);
+      }
     }
-  }, [groupDataRef.current]);
+  }, [personGroupObj]);
+  // useEffect(() => {
+  //   if (groupDataRef.current.childNodes.length > 0) {
+  //     console.log(
+  //       'groupDataRef.current.childNodes',
+  //       groupDataRef.current.childNodes
+  //     );
+
+  //   }
+  // }, [groupDataRef.current]);
+
   const getGroupData = async () => {
     setLoading(true);
     let dataRes: any = await api.task.getGroupDataTask(
@@ -83,9 +107,11 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
   };
   const onChange = (e: any) => {
     setTaskState(parseInt(e.target.value));
-    handleChart(e.target.value, groupData);
+    handleChart(parseInt(e.target.value), groupData);
+    getTeamData(groupData, parseInt(e.target.value));
   };
   const handleChart = (taskState: number, groupData: any) => {
+    console.log('taskState', typeof taskState);
     let data: any = [];
     let newData: any = {};
     let XYLeftdata: any = [];
@@ -122,7 +148,6 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
         state &&
         item.taskEndDate
       ) {
-        console.log('xxxxxxx', item);
         if (!newData[item.creatorName + '-' + item.executorName]) {
           newData[item.creatorName + '-' + item.executorName] = 1;
         } else {
@@ -227,8 +252,8 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
   };
   const getTeamData = (arr: any, taskState: number) => {
     let newPositionObj = _.cloneDeep(positionObj);
-    let newPersonObj = _.cloneDeep(personObj);
-    let newPersonGroupObj = _.cloneDeep(personGroupObj);
+    let newPersonObj: any = {};
+    let newPersonGroupObj: any = {};
     let state = false;
     arr.forEach((item: any, index: number) => {
       // item.finishPercent == 1
@@ -282,14 +307,8 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
         });
       }
     }
-    // Object.keys()
-    Object.keys(newPersonObj).forEach((item: any, index: number) => {
-      newPositionObj[item] = render(index, item);
-    });
-    console.log('newPositionObj', newPositionObj);
     setPersonObj(newPersonObj);
     setPersonGroupObj(newPersonGroupObj);
-    setPositionObj(newPositionObj);
   };
 
   const formatDay = (item: any) => {
@@ -331,9 +350,9 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
       left: 0,
       top: 700,
     };
-    let dom = document.getElementById('groupData' + item);
+    let dom: any = document.getElementById('groupData' + item);
     if (dom) {
-      let height = dom.offsetHeight;
+      let height = dom.clientHeight;
       let width = dom.offsetWidth;
       let ratio = width / height;
       let colIndex = index % colNumbers;
@@ -347,10 +366,10 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
         let minHeight = Math.min.apply(null, colHeight);
         let minIndex = colHeight.indexOf(minHeight);
         //此图片的 top 为上面图片的高度，left 相等
-        obj.top = parseInt(minHeight.toFixed(1));
-        obj.left = parseInt((minIndex * colWidth).toFixed(1));
+        obj.top = parseInt(minHeight + '');
+        obj.left = parseInt(minIndex * colWidth + '');
         //     //把高度加上去
-        colHeight[minIndex] += colWidth / ratio + 5;
+        colHeight[minIndex] += parseInt(colWidth / ratio + '');
       }
       return obj;
       // this.$set(this.positionObj, item,obj);
@@ -362,14 +381,14 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
     for (let personIndex in groupItem) {
       let personItem = groupItem[personIndex];
       dom.push(
-        <div key={'personItem' + personIndex}>
+        <React.Fragment key={'personItem' + personIndex}>
           <div className="countdown-right-group" style={{ marginTop: '5px' }}>
-            <div>
+            <React.Fragment>
               <div className="countdown-right-group-logo">
                 <img src={personItem[0].groupLogo} alt="" />
               </div>
               {personItem[0].groupName}
-            </div>
+            </React.Fragment>
           </div>
           <div className="countdown-right-info">
             {personItem.map((taskItem: any, taskIndex: number) => {
@@ -383,7 +402,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
               );
             })}
           </div>
-        </div>
+        </React.Fragment>
       );
     }
     return dom;
@@ -401,7 +420,6 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
       let item: any = personObj[key];
       //
       //     }
-      console.log(personGroupObj);
       dom.push(
         <div
           key={'person' + key}
@@ -480,7 +498,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
         <div className="chart-div" id="chartdiv"></div>
       </div>
       <div className="countdown-right-item" ref={groupDataRef}>
-        {/* {getDom()} */}
+        {getDom()}
       </div>
     </div>
   );

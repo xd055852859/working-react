@@ -12,10 +12,11 @@ interface timeSetProp {
   dayNumber: number;
   timeNumber: number | null;
   percentClick?: any;
+  timestate?: string;
 }
 
 const TimeSet: React.FC<timeSetProp> = (prop) => {
-  const { dayNumber, timeSetClick, timeNumber, percentClick } = prop;
+  const { dayNumber, timeSetClick, timeNumber, percentClick, timestate } = prop;
   const [timeDate, setTimeDate] = useState<any>([]);
   const [timeWeek, setTimeWeek] = useState<any>([]);
   const [timeMonth, setTimeMonth] = useState<any>([]);
@@ -110,33 +111,35 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
   return (
     <React.Fragment>
       <div className="timeSet">
-        <div className="timeSet-time-logo">
-          <img
-            src={timeSet1Png}
-            onClick={() => {
-              percentClick(10);
-            }}
-          />
-          <img
-            src={timeSet2Png}
-            onClick={() => {
-              percentClick(0);
-            }}
-          />
-          <img
-            src={timeSet3Png}
-            onClick={() => {
-              percentClick(1);
-            }}
-          />
-          <img
-            src={timeSet4Png}
-            onClick={() => {
-              percentClick(2);
-            }}
-            style={{ width: '17px', height: '16px' }}
-          />
-        </div>
+        {!timestate ? (
+          <div className="timeSet-time-logo">
+            <img
+              src={timeSet1Png}
+              onClick={() => {
+                percentClick(10);
+              }}
+            />
+            <img
+              src={timeSet2Png}
+              onClick={() => {
+                percentClick(0);
+              }}
+            />
+            <img
+              src={timeSet3Png}
+              onClick={() => {
+                percentClick(1);
+              }}
+            />
+            <img
+              src={timeSet4Png}
+              onClick={() => {
+                percentClick(2);
+              }}
+              style={{ width: '17px', height: '16px' }}
+            />
+          </div>
+        ) : null}
         <div className="timeSet-time-info">
           {timeArray.map((timeItem: any, timeIndex: number) => {
             return (
@@ -164,46 +167,48 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
         </div>
       </div>
       {/* v-if="dateType" */}
-      <div className="timeSet-date">
-        <div className="timeSet-date-logo">
-          <img
-            src={timeSet5Png}
-            onClick={() => {
-              changeTimeDateType(0);
-            }}
-          />
-          <img
-            src={timeSet6Png}
-            style={{ width: '17px', height: '14px' }}
-            onClick={() => {
-              changeTimeDateType(1);
-            }}
-          />
+      {!timestate ? (
+        <div className="timeSet-date">
+          <div className="timeSet-date-logo">
+            <img
+              src={timeSet5Png}
+              onClick={() => {
+                changeTimeDateType(0);
+              }}
+            />
+            <img
+              src={timeSet6Png}
+              style={{ width: '17px', height: '14px' }}
+              onClick={() => {
+                changeTimeDateType(1);
+              }}
+            />
+          </div>
+          <div className="timeSet-date-info">
+            {timeDateArray.map((dateTimeItem: any, dateTimeIndex: number) => {
+              return (
+                <div
+                  key={'date' + dateTimeIndex}
+                  className="timeSet-date-item"
+                  onClick={() => {
+                    timeSetClick('day', dateTimeIndex + 1);
+                  }}
+                  style={{
+                    backgroundColor:
+                      dateIndex === dateTimeItem
+                        ? '#F28806'
+                        : timeWeek[dateTimeIndex] > 4
+                        ? '#BABABA'
+                        : '#505050',
+                  }}
+                >
+                  {dateTimeItem}
+                </div>
+              );
+            })}
+          </div>
         </div>
-        <div className="timeSet-date-info">
-          {timeDateArray.map((dateTimeItem: any, dateTimeIndex: number) => {
-            return (
-              <div
-                key={'date' + dateTimeIndex}
-                className="timeSet-date-item"
-                onClick={() => {
-                  timeSetClick('day', dateTimeIndex + 1);
-                }}
-                style={{
-                  backgroundColor:
-                    dateIndex === dateTimeItem
-                      ? '#F28806'
-                      : timeWeek[dateTimeIndex] > 4
-                      ? '#BABABA'
-                      : '#505050',
-                }}
-              >
-                {dateTimeItem}
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      ) : null}
     </React.Fragment>
   );
 };

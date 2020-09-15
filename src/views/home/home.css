@@ -26,13 +26,13 @@
   padding: 8px 10px 10px 10px;
   box-sizing: border-box;
   display: flex;
-  justify-content: center;
+  /* justify-content: center; */
   align-items: center;
   flex-wrap: wrap;
 }
 .home-header-logo {
-  width: 197px;
-  height: 65px;
+  width: 157px;
+  height: 52px;
   margin-bottom: 8px;
 }
 .home-header-logo img {

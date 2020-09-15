@@ -126,7 +126,7 @@ const WorkingTableLabel: React.FC = (prop) => {
         setMainLabelArray(labelArray);
       }
     }
-  }, [workingTaskArray, filterObject]);
+  }, [workingTaskArray,workingGroupArray,filterObject]);
   useEffect(() => {
     let clientWidth = workingTableRef.current.clientWidth;
     if (clientWidth < 600) {
