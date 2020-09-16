@@ -8,6 +8,7 @@ import _ from 'lodash';
 import Switch from '@material-ui/core/Switch';
 import Dialog from '../common/dialog';
 import DropMenu from '../common/dropMenu';
+import Tooltip from '../common/tooltip';
 import ClockIn from '../clockIn/clockIn';
 import Task from '../task/task';
 import { setTheme } from '../../redux/actions/authActions';
@@ -228,45 +229,52 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   return (
     <React.Fragment>
       <div className="contentHeader-set">
-        <img
-          src={addPng}
-          alt=""
-          style={{
-            width: '40px',
-            height: '40px',
-            marginRight: '15px',
-            cursor: 'pointer',
-          }}
-          onClick={() => {
-            setAddVisible(true);
-          }}
-        />
-        <img
-          src={searchPng}
-          alt=""
-          style={{
-            width: '40px',
-            height: '40px',
-            marginRight: '15px',
-            cursor: 'pointer',
-          }}
-          onClick={() => {
-            setSearchVisible(true);
-          }}
-        />
-        <img
-          src={clockInPng}
-          alt=""
-          style={{
-            width: '40px',
-            height: '40px',
-            marginRight: '15px',
-            cursor: 'pointer',
-          }}
-          onClick={() => {
-            setClockInVisible(true);
-          }}
-        />
+        <Tooltip title="跨群添加">
+          <img
+            src={addPng}
+            alt=""
+            style={{
+              width: '40px',
+              height: '40px',
+              marginRight: '15px',
+              cursor: 'pointer',
+              position: 'relative',
+            }}
+            onClick={() => {
+              setAddVisible(true);
+            }}
+          />
+        </Tooltip>
+        <Tooltip title="搜索中心">
+          <img
+            src={searchPng}
+            alt=""
+            style={{
+              width: '40px',
+              height: '40px',
+              marginRight: '15px',
+              cursor: 'pointer',
+            }}
+            onClick={() => {
+              setSearchVisible(true);
+            }}
+          />
+        </Tooltip>
+        <Tooltip title="打卡中心">
+          <img
+            src={clockInPng}
+            alt=""
+            style={{
+              width: '40px',
+              height: '40px',
+              marginRight: '15px',
+              cursor: 'pointer',
+            }}
+            onClick={() => {
+              setClockInVisible(true);
+            }}
+          />
+        </Tooltip>
         <DropMenu
           visible={clockInVisible}
           dropStyle={{
@@ -282,35 +290,37 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
         >
           <ClockIn />
         </DropMenu>
-        <div
-          className="contentHeader-avatar-info"
-          onClick={() => {
-            setContentSetVisilble(true);
-            setAvatarShow(true);
-          }}
-        >
+        <Tooltip title="用户中心">
           <div
-            className="contentHeader-avatar"
-            style={
-              avatarShow
-                ? {
-                    animation: 'avatarSmall 500ms',
-                    // animationFillMode: 'forwards',
-                    width: '30px',
-                    height: '30px',
-                  }
-                : {
-                    animation: 'avatarBig 500ms',
-                    // animationFillMode: 'forwards',
-                    width: '40px',
-                    height: '40px',
-                  }
-            }
+            className="contentHeader-avatar-info"
+            onClick={() => {
+              setContentSetVisilble(true);
+              setAvatarShow(true);
+            }}
           >
-            <img src={avatar} alt="" />
+            <div
+              className="contentHeader-avatar"
+              style={
+                avatarShow
+                  ? {
+                      animation: 'avatarSmall 500ms',
+                      // animationFillMode: 'forwards',
+                      width: '30px',
+                      height: '30px',
+                    }
+                  : {
+                      animation: 'avatarBig 500ms',
+                      // animationFillMode: 'forwards',
+                      width: '40px',
+                      height: '40px',
+                    }
+              }
+            >
+              <img src={avatar} alt="" />
+            </div>
+            <div className="contentHeader-avatar-bg"></div>
           </div>
-          <div className="contentHeader-avatar-bg"></div>
-        </div>
+        </Tooltip>
         <DropMenu
           visible={contentSetVisilble}
           dropStyle={{

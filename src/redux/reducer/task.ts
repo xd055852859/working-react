@@ -9,6 +9,7 @@ export interface TaskType {
   workingGroupArray: any;
   workingTaskArray: any;
   taskKey: string | number;
+  chooseKey: string | number;
   filterObject: any;
 }
 
@@ -21,6 +22,7 @@ const defaultState: TaskType = {
   workingGroupArray: null,
   workingTaskArray: null,
   taskKey: 0,
+  chooseKey:0,
   filterObject: {
     groupKey: null,
     groupName: '',
@@ -97,6 +99,11 @@ export const task = (state = defaultState, action: any) => {
       return {
         ...state,
         taskKey: action.taskKey,
+      };
+      case actionTypes.SET_CHOOSE_KEY:
+      return {
+        ...state,
+        chooseKey: action.chooseKey,
       };
     case actionTypes.EDIT_TASK_SUCCESS:
       console.log('编辑成功');

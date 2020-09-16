@@ -1,4 +1,13 @@
 .chat-iframe {
-  width: 100%;
+  width: calc(100% - 320px);
   height: 100%;
+  position: fixed;
+}
+.chat-close {
+  width:25px;
+  height:25px;
+  position: absolute;
+  top: 20px;
+  right: 3px;
+  z-index: 3;
 }

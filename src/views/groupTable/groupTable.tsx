@@ -10,7 +10,7 @@ import GroupTableData from './groupTableData';
 import WorkingCalendar from '../workingTable/workingCalendar';
 import WorkingReport from '../workingTable/workingReport';
 import Grid from '../../components/grid/grid';
-
+import GroupTableDocument from './groupTableDocument';
 interface GroupTableProps {}
 
 const GroupTable: React.FC<GroupTableProps> = (prop) => {
@@ -52,7 +52,6 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
           : {}
       }
     >
-    
       <GroupTableHeader />
       <div className="groupTableContent">
         {/* <WorkingTableLabel /> */}
@@ -62,6 +61,7 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
         {memberHeaderIndex === 3 ? <WorkingCalendar /> : null}
         {memberHeaderIndex === 7 ? <WorkingReport /> : null}
         {memberHeaderIndex === 8 ? <GroupTableData /> : null}
+        {memberHeaderIndex === 9 ? <GroupTableDocument /> : null}
       </div>
 
       {/* <div

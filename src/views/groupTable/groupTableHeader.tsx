@@ -7,6 +7,7 @@ import {
   setCommonHeaderIndex,
   setMessage,
   setMoveState,
+  setChatState,
 } from '../../redux/actions/commonActions';
 import { setFilterObject } from '../../redux/actions/taskActions';
 import { changeGroupInfo, getGroup } from '../../redux/actions/groupActions';
@@ -16,6 +17,7 @@ import _ from 'lodash';
 import '../workingTable/workingTableHeader.css';
 import DropMenu from '../../components/common/dropMenu';
 import Dialog from '../../components/common/dialog';
+import Tooltip from '../../components/common/tooltip';
 import GroupSet from '../tabs/groupSet';
 import GroupMember from '../tabs/groupMember';
 import Vitality from '../../components/vitality/vitality';
@@ -113,20 +115,20 @@ const GroupTableHeader: React.FC = (prop) => {
     }
   }, [groupMemberItem]);
   useEffect(() => {
-  //   dispatch(
-  //     setFilterObject({
-  //       groupKey: null,
-  //       groupName: '',
-  //       groupLogo: '',
-  //       creatorKey: null,
-  //       creatorAvatar: '',
-  //       creatorName: '',
-  //       executorKey: null,
-  //       executorAvatar: '',
-  //       executorName: '',
-  //       filterType: ['过期', '今天', '已完成'],
-  //     })
-  //   );
+    //   dispatch(
+    //     setFilterObject({
+    //       groupKey: null,
+    //       groupName: '',
+    //       groupLogo: '',
+    //       creatorKey: null,
+    //       creatorAvatar: '',
+    //       creatorName: '',
+    //       executorKey: null,
+    //       executorAvatar: '',
+    //       executorName: '',
+    //       filterType: ['过期', '今天', '已完成'],
+    //     })
+    //   );
     dispatch(setHeaderIndex(0));
   }, [headerIndex]);
   useEffect(() => {
@@ -234,6 +236,17 @@ const GroupTableHeader: React.FC = (prop) => {
       dispatch(setMessage(true, groupRes.msg, 'error'));
     }
   };
+  const goChat = () => {
+    const dom: any = document.querySelector('iframe');
+    dom.contentWindow.postMessage(
+      {
+        externalCommand: 'go',
+        path: '/channel/' + groupInfo.groupUUID,
+      },
+      '*'
+    );
+    dispatch(setChatState(true));
+  };
   return (
     <div className="workingTableHeader">
       <div
@@ -301,78 +314,92 @@ const GroupTableHeader: React.FC = (prop) => {
           vitalityStyle={{ marginLeft: '5px', color: '#fff' }}
         />
       </div>
-      <div className="groupTableHeader-info">
-        <img
-          src={infoPng}
-          alt=""
-          style={{ width: '30px', height: '30px', marginRight: '30px' }}
-          onClick={() => {
-            setInfoVisible(true);
-          }}
-        />
-        <DropMenu
-          visible={infoVisible}
-          dropStyle={{
-            width: '264px',
-            height: '194px',
-            top: '65px',
-            left: '-15px',
-            color: '#333',
-          }}
-          onClose={() => {
-            setInfoVisible(false);
-          }}
-          // title={'视图切换'}
-        >
-          <div className="groupTableHeader-info-container">
-            <div
-              className="groupTableHeader-info-item"
-              onClick={() => {
-                setGroupSetVisible(true);
-              }}
-            >
-              <img />
-              项目属性
-            </div>
-            <div
-              className="groupTableHeader-info-item"
-              onClick={() => {
-                setGroupMemberVisible(true);
-              }}
-            >
-              <img /> 群成员
-            </div>
-            <div
-              className="groupTableHeader-info-item"
-              onClick={() => {
-                setOutGroupVisible(true);
-              }}
-            >
-              <img /> 退出群组
-            </div>
-            {groupInfo && groupInfo.role == 1 ? (
+      <Tooltip title="群属性">
+        <div className="groupTableHeader-info">
+          <img
+            src={infoPng}
+            alt=""
+            style={{ width: '30px', height: '30px' }}
+            onClick={() => {
+              setInfoVisible(true);
+            }}
+          />
+          <DropMenu
+            visible={infoVisible}
+            dropStyle={{
+              width: '264px',
+              height: '194px',
+              top: '65px',
+              left: '-15px',
+              color: '#333',
+            }}
+            onClose={() => {
+              setInfoVisible(false);
+            }}
+            // title={'视图切换'}
+          >
+            <div className="groupTableHeader-info-container">
               <div
                 className="groupTableHeader-info-item"
                 onClick={() => {
-                  setDismissVisible(true);
+                  setGroupSetVisible(true);
                 }}
               >
-                <img /> 解散群组
+                <img />
+                项目属性
               </div>
-            ) : null}
-          </div>
-        </DropMenu>
-      </div>
-      <img
-        src={chatPng}
-        alt=""
-        style={{ width: '27px', height: '25px', marginRight: '20px' }}
-      />
-      <img
-        src={filePng}
-        alt=""
-        style={{ width: '30px', height: '25px', marginRight: '30px' }}
-      />
+              <div
+                className="groupTableHeader-info-item"
+                onClick={() => {
+                  setGroupMemberVisible(true);
+                }}
+              >
+                <img /> 群成员
+              </div>
+              <div
+                className="groupTableHeader-info-item"
+                onClick={() => {
+                  setOutGroupVisible(true);
+                }}
+              >
+                <img /> 退出群组
+              </div>
+              {groupInfo && groupInfo.role == 1 ? (
+                <div
+                  className="groupTableHeader-info-item"
+                  onClick={() => {
+                    setDismissVisible(true);
+                  }}
+                >
+                  <img /> 解散群组
+                </div>
+              ) : null}
+            </div>
+          </DropMenu>
+        </div>
+      </Tooltip>
+      <Tooltip title="群聊天">
+        <img
+          src={chatPng}
+          alt=""
+          style={{
+            width: '27px',
+            height: '25px',
+            marginRight: '20px',
+            cursor: 'pointer',
+          }}
+          onClick={() => {
+            goChat();
+          }}
+        />
+      </Tooltip>
+      <Tooltip title="群文件">
+        <img
+          src={filePng}
+          alt=""
+          style={{ width: '30px', height: '25px', marginRight: '30px' }}
+        />
+      </Tooltip>
       <div className="view-container">
         <div
           className="workingTableHeader-logo"
@@ -526,6 +553,21 @@ const GroupTableHeader: React.FC = (prop) => {
         }
       >
         任务
+      </div>
+      <div
+        className="view-tab"
+        onClick={() => {
+          chooseMemberHeader(9);
+        }}
+        style={
+          memberHeaderIndex === 9
+            ? {
+                background: 'rgba(255,255,255,0.24)',
+              }
+            : {}
+        }
+      >
+        文档
       </div>
       <div
         className="view-tab"

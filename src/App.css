@@ -36,6 +36,10 @@
 body > div[style] {
   display: none;
 }
+body > div[role] {
+  display: block;
+}
+
 @keyframes moveIn {
   from {
     width: 320px;

@@ -43,18 +43,18 @@ const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
           {mainItem[0].groupName}
         </div>
       </div>
-      <div
-        // style={{backgroundColor: countType==='index'?'rgba(0, 0, 0, 0.05)':'rgba(0, 0, 0, 0.12)'}}
-        className="countdown-right-info"
+      <React.Fragment
+      // style={{backgroundColor: countType==='index'?'rgba(0, 0, 0, 0.05)':'rgba(0, 0, 0, 0.12)'}}
+      // className="countdown-right-info"
       >
         {mainItem.map((taskItem: any, taskIndex: number) => {
           return (
-            <div className="countdown-right-task" key={'task' + taskIndex}>
-              <Task taskItem={taskItem} />
-            </div>
+            // <div className="countdown-right-task">
+            <Task taskItem={taskItem} key={'task' + taskIndex} />
+            // </div>
           );
         })}
-      </div>
+      </React.Fragment>
     </React.Fragment>
   );
 };

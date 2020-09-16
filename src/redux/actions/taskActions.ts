@@ -1,5 +1,5 @@
 import moment from 'moment';
-import _ from 'lodash'
+import _ from 'lodash';
 export const actionTypes = {
   GET_GROUP_TASK: 'GET_GROUP_TASK',
   GET_GROUP_TASK_SUCCESS: 'GET_GROUP_TASK_SUCCESS',
@@ -14,6 +14,7 @@ export const actionTypes = {
   ADD_WORKING_TABLE_TASK: 'CREATE_WORKING_TABLE_TASK',
   ADD_WORKING_TABLE_TASK_SUCCESS: 'CREATE_WORKING_TABLE_TASK_SUCCESS',
   SET_TASK_KEY: 'SET_TASK_KEY',
+  SET_CHOOSE_KEY: 'SET_CHOOSE_KEY',
   EDIT_TASK: 'EDIT_TASK',
   EDIT_TASK_SUCCESS: 'EDIT_TASK_SUCCESS',
   SET_FILTER_OBJECT: 'SET_FILTER_OBJECT',
@@ -110,6 +111,10 @@ export function getWorkingTableSuccess(data: any) {
 export function setTaskKey(taskKey: string | number) {
   return { type: actionTypes.SET_TASK_KEY, taskKey };
 }
+export function setChooseKey(chooseKey: string | number) {
+  return { type: actionTypes.SET_CHOOSE_KEY, chooseKey };
+}
+
 export function editTask(data: any, headerIndex: number) {
   return {
     type: actionTypes.EDIT_TASK,
@@ -142,7 +147,7 @@ export function addWorkingTableTaskSuccess(data: any) {
   return { type: actionTypes.ADD_WORKING_TABLE_TASK_SUCCESS, data };
 }
 export function setFilterObject(filterObj: any) {
-  console.log('filterObj',filterObj)
+  console.log('filterObj', filterObj);
   return {
     type: actionTypes.SET_FILTER_OBJECT,
     filterObj: filterObj,

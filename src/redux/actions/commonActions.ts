@@ -1,16 +1,17 @@
 export const actionTypes = {
-  FAILED: "FAILED",
-  SWITCH_APPS: "SWITCH_APPS",
-  SWITCH_NOTIFICATION: "SWITCH_NOTIFICATION",
-  SWITCH_SEARCH: "SWITCH_SEARCH",
-  SET_MESSAGE: "SET_MESSAGE",
-  SET_HEADERINDEX:'SET_HEADERINDEX',
-  SET_MOVESTATE:'SET_MOVESTATE',
-  LOADING: "LOADING",
+  FAILED: 'FAILED',
+  SWITCH_APPS: 'SWITCH_APPS',
+  SWITCH_NOTIFICATION: 'SWITCH_NOTIFICATION',
+  SWITCH_SEARCH: 'SWITCH_SEARCH',
+  SET_MESSAGE: 'SET_MESSAGE',
+  SET_HEADERINDEX: 'SET_HEADERINDEX',
+  SET_MOVESTATE: 'SET_MOVESTATE',
+  LOADING: 'LOADING',
+  SET_CHATSTATE: 'SET_CHATSTATE',
 };
 
 export function Failed(error: any) {
-  console.log("---error---", error);
+  console.log('---error---', error);
   return {
     type: actionTypes.FAILED,
     error,
@@ -41,25 +42,31 @@ export function switchSearch(visible?: boolean) {
 export function setMessage(
   visible: boolean,
   text: string,
-  severity: "success" | "info" | "warning" | "error" | undefined
+  severity: 'success' | 'info' | 'warning' | 'error' | undefined
 ) {
   return { type: actionTypes.SET_MESSAGE, visible, text, severity };
 }
 export function setCommonHeaderIndex(headerIndex: number) {
   return {
     type: actionTypes.SET_HEADERINDEX,
-    headerIndex
+    headerIndex,
   };
 }
 export function setMoveState(moveState: string) {
   return {
     type: actionTypes.SET_MOVESTATE,
-    moveState
+    moveState,
   };
 }
 export function Loading(loading: boolean) {
   return {
     type: actionTypes.LOADING,
-    loading
+    loading,
+  };
+}
+export function setChatState(chatState: boolean) {
+  return {
+    type: actionTypes.SET_CHATSTATE,
+    chatState,
   };
 }

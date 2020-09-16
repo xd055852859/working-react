@@ -13,6 +13,7 @@ export interface Common {
   message: Message;
   headerIndex: number;
   moveState: string;
+  chatState: boolean;
 }
 
 const defaultState: Common = {
@@ -28,6 +29,7 @@ const defaultState: Common = {
   // headerIndex: 3,
   headerIndex: 0,
   moveState: '',
+  chatState: false,
 };
 
 export const common = (state = defaultState, action: any) => {
@@ -91,6 +93,12 @@ export const common = (state = defaultState, action: any) => {
       return {
         ...state,
         loading: action.loading,
+      };
+    case commonActionTypes.SET_CHATSTATE:
+      console.log(action.chatState);
+      return {
+        ...state,
+        chatState: action.chatState,
       };
     default:
       return state;

@@ -51,6 +51,7 @@
   justify-content: center;
   position: relative;
   cursor: pointer;
+  margin-right: 15px;
 }
 
 .groupTableHeader-info-container {

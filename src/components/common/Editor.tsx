@@ -34,7 +34,7 @@ import 'froala-editor/css/froala_style.min.css';
 import 'froala-editor/css/froala_editor.pkgd.min.css';
 import FroalaEditor from 'react-froala-wysiwyg';
 import FroalaEditorView from 'react-froala-wysiwyg/FroalaEditorView';
-import uploadFile from "./upload";
+import uploadFile from './upload';
 // import ArticleTree from "./ArticleTree";
 
 interface EditorProps {
@@ -42,13 +42,22 @@ interface EditorProps {
   editable: boolean;
   onChange: Function;
   editorHeight?: string;
+  editorState?: boolean;
+  setInit?: any;
 }
 const Editor: React.FC<EditorProps> = (prop) => {
-  const { data, editable, onChange, editorHeight } = prop;
+  const { data, editable, onChange, editorHeight, editorState, setInit } = prop;
   const uptoken = useTypedSelector((state) => state.auth.uploadToken);
   let selectedFile: any;
 
   const events = {
+    initialized: function () {
+      // Do something here.
+      // this is the editor instance.
+      if (editorState) {
+        setInit();
+      }
+    },
     'image.inserted': async function ($img: any, response: any) {
       // get a file or blob from an blob url
       let blob = await fetch($img[0].src).then((r) => r.blob());
@@ -65,9 +74,10 @@ const Editor: React.FC<EditorProps> = (prop) => {
 
   const config = {
     placeholder: 'Edit Me',
-    documentReady: false,
+    documentReady: editorState ? true : false,
     language: 'zh_cn',
     // iframe: true,
+    toolbarSticky: editorState ? true : false,
     events: events,
     height: editorHeight,
     // toolbarButtons: [

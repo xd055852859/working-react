@@ -133,7 +133,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     taskArray = taskArray.filter((item: any, index: number) => {
       return (
         item.taskEndDate >= arr[0].start &&
-        item.taskEndDate < arr[arr.length - 1].end
+        item.taskEndDate <= arr[arr.length - 1].end
       );
     });
     taskArray.forEach((taskItem: any, taskIndex: number) => {
@@ -149,7 +149,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     if (chooseDiaryKey) {
       setDiaryKey(chooseDiaryKey);
       newDiaryKey = chooseDiaryKey;
-    } else {
+    } else if (newPersonArray[0]) {
       setDiaryKey(newPersonArray[0].key);
       newDiaryKey = newPersonArray[0].key;
     }
@@ -163,7 +163,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       taskArray.forEach((taskItem: any, taskIndex: number) => {
         if (
           taskItem.taskEndDate >= item.start &&
-          taskItem.taskEndDate < item.end &&
+          taskItem.taskEndDate <= item.end &&
           newDiaryKey == taskItem.executorKey
         ) {
           newDateArray[index].arr.push(taskItem);

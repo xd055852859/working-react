@@ -10,6 +10,7 @@ import {
   getSelfTask,
   getWorkingTableTask,
   getGroupTask,
+  setChooseKey,
 } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import moment from 'moment';
@@ -46,7 +47,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     button: {
       backgroundColor: '#17B881',
-      padding: '6 16px',
+      padding: '6px 16px',
       color: '#fff',
     },
     input: {
@@ -83,6 +84,7 @@ const Task: React.FC<TaskProps> = (props) => {
     bottomtype,
   } = props;
   const taskKey = useTypedSelector((state) => state.task.taskKey);
+  const chooseKey = useTypedSelector((state) => state.task.chooseKey);
   const user = useTypedSelector((state) => state.auth.user);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
@@ -106,6 +108,7 @@ const Task: React.FC<TaskProps> = (props) => {
   const [addTaskVisible, setAddTaskVisible] = useState(false);
   const [addInput, setAddInput] = useState('');
   const [textHeight, setTextHeight] = useState(20);
+
   const titleRef: React.RefObject<any> = useRef();
   const color = [
     '#6FD29A',
@@ -160,6 +163,11 @@ const Task: React.FC<TaskProps> = (props) => {
     }
   }, [taskItem]);
   useEffect(() => {
+    dispatch(setTaskKey(0));
+    dispatch(setChooseKey(0));
+  }, [headerIndex, groupKey]);
+
+  useEffect(() => {
     if (taskDetail && document.getElementById('taskDetail' + taskDetail._key)) {
       let dom: any = document.getElementById('taskDetail' + taskDetail._key);
       setTextHeight(dom.clientHeight - 6);
@@ -174,6 +182,7 @@ const Task: React.FC<TaskProps> = (props) => {
   };
   const chooseTask = (e: React.MouseEvent) => {
     dispatch(setTaskKey(taskItem._key));
+    dispatch(setChooseKey(taskItem._key));
     // let dom: any = document.getElementById('taskDetailText' + taskItem._key);
     // dom.focus()
   };
@@ -591,7 +600,7 @@ const Task: React.FC<TaskProps> = (props) => {
               </div>
             </React.Fragment>
           </div>
-          {taskKey === taskDetail._key && editRole && headerIndex === 3 ? (
+          {chooseKey === taskDetail._key && editRole && headerIndex === 3 ? (
             !addTaskVisible ? (
               <div
                 className="taskItem-plus"

@@ -19,6 +19,7 @@
   border-radius: 12px;
   overflow: auto;
   position: relative;
+  z-index: 10;
 }
 .dialog-title {
   width: 100%;

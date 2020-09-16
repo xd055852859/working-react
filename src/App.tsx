@@ -74,12 +74,7 @@ const App: React.FC = () => {
       {headerIndex === 1 ? <WorkingTable /> : null}
       {headerIndex === 3 ? <GroupTable /> : null}
       {headerIndex === 2 ? <WorkingTable /> : null}
-      <div
-        className="home-chat"
-        style={headerIndex === 4 ? { zIndex: 1 } : { zIndex: -1 }}
-      >
-        <Chat />
-      </div>
+      <Chat />
     </div>
   );
 };
