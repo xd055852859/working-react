@@ -246,12 +246,19 @@ const auth = {
       clockInCommentKey: clockInCommentKey,
     });
   },
+  //修改权限
   setRole(groupKey: string, targetUKey: string, role: number | string) {
     return request.patch(HOME_URL + '/groupmember/setRole', {
       token: auth_token,
       groupKey: groupKey,
       targetUKey: targetUKey,
       role: role,
+    });
+  },
+  updateAccount(param:any) {
+    return request.patch(AUTH_URL + '/account', {
+      token: auth_token,
+      ...param,
     });
   },
 };

@@ -379,13 +379,17 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                   >
                     {roleTypeArr[newItem.role - 1]}
                   </div>
-                  <img
-                    src={closePng}
-                    className="group-time-close"
-                    onClick={() => {
-                      deleteMember(newItem.userId);
-                    }}
-                  />
+
+                  <div className="group-time-close">
+                    {newItem.role > groupRole ? (
+                      <img
+                        src={closePng}
+                        onClick={() => {
+                          deleteMember(newItem.userId);
+                        }}
+                      />
+                    ) : null}
+                  </div>
                 </div>
               </div>
             );

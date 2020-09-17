@@ -11,6 +11,7 @@ import DropMenu from '../common/dropMenu';
 import Tooltip from '../common/tooltip';
 import ClockIn from '../clockIn/clockIn';
 import Task from '../task/task';
+import UserCenter from '../userCenter/userCenter';
 import { setTheme } from '../../redux/actions/authActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import { getSelfTask } from '../../redux/actions/taskActions';
@@ -79,6 +80,8 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const [labelVisible, setLabelVisible] = useState(false);
   const [labelArray, setLabelArray] = useState<any>([]);
   const [addInput, setAddInput] = useState('');
+  const [userVisible, setUserVisible] = useState(false);
+
   const color1 = [
     '#46558C',
     '#9C5D9E',
@@ -335,7 +338,12 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           }}
         >
           <div className="contentHeader-set-title">
-            <div className="contentHeader-set-avatar">
+            <div
+              className="contentHeader-set-avatar"
+              onClick={() => {
+                setUserVisible(true);
+              }}
+            >
               <img src={avatar} alt="" />
             </div>
           </div>
@@ -444,6 +452,29 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
               <div>退出登录</div>
             </div>
           </div>
+          <Dialog
+            visible={userVisible}
+            footer={false}
+            onClose={() => {
+              setUserVisible(false);
+            }}
+            title={'用户设置'}
+            dialogStyle={{
+              position: 'fixed',
+              top: '65px',
+              right: '270px',
+              width: '400px',
+              height: 'calc(100% - 66px)',
+              overflow: 'visible',
+            }}
+            showMask={false}
+          >
+            <UserCenter
+              onClose={() => {
+                setUserVisible(false);
+              }}
+            />
+          </Dialog>
         </DropMenu>
       </div>
       <Dialog
@@ -630,13 +661,23 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
         </div>
       </Dialog>
       <Dialog
-        visible={bgVisible}
+        visible={addVisible}
         onClose={() => {
-          setBgVisible(false);
+          setAddVisible(false);
         }}
-        footer={false}
-        title={'壁纸设置'}
-        dialogStyle={{ width: '360px', height: '500px' }}
+        onOK={() => {
+          addLabelTask();
+        }}
+        title={'跨群添加'}
+        dialogStyle={{
+          position: 'fixed',
+          top: '65px',
+          right: '10px',
+          width: '400px',
+          height: '250px',
+          overflow: 'visible',
+        }}
+        showMask={false}
       >
         <div className="bg-title">颜色</div>
         <div className="bg-container">

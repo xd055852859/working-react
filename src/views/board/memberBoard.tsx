@@ -184,7 +184,11 @@ const MemberBoard: React.FC = () => {
       taskArray.forEach((item: any, index: number) => {
         arr[index] = { groupObj: groupArray[index] };
         item.forEach((groupItem: any, groupIndex: number) => {
-          if (groupItem.finishPercent === 0 && item.title !== '') {
+          if (
+            groupItem.finishPercent === 0 &&
+            item.title !== '' &&
+            groupItem.groupName.indexOf('主群') === -1
+          ) {
             if (groupItem.labelKey) {
               if (!arr[index][groupItem.labelKey]) {
                 let labelIndex = _.findIndex(groupArray[index].labelArray, {

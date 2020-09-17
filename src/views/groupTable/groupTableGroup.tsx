@@ -6,7 +6,7 @@ import { useTypedSelector } from '../../redux/reducer/RootState';
 import { TextField } from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux';
-import { getGroupTask } from '../../redux/actions/taskActions';
+import { getGroupTask, setChooseKey } from '../../redux/actions/taskActions';
 import { getGroupInfo } from '../../redux/actions/groupActions';
 import { getTheme } from '../../redux/actions/authActions';
 import { setMessage } from '../../redux/actions/commonActions';
@@ -405,7 +405,12 @@ const GroupTableGroup: React.FC = (prop) => {
     setLabelExecutorArray(newLabelExecutorArray);
   };
   return (
-    <div className="task">
+    <div
+      className="task"
+      onClick={(e: any) => {
+        dispatch(setChooseKey(0));
+      }}
+    >
       {loading ? <Loading /> : null}
       <div className="task-container-profile">
         <DragDropContext onDragEnd={onDragNameEnd}>

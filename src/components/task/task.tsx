@@ -208,8 +208,8 @@ const Task: React.FC<TaskProps> = (props) => {
       dispatch(setTaskKey(0));
       setTaskExecutorShow(false);
       setTimeSetShow(false);
-      setAddTaskVisible(false);
-      setAddInput('');
+      // setAddTaskVisible(false);
+      // setAddInput('');
     }
   };
   const changeFinishPercent = (finishPercent: number) => {
@@ -322,7 +322,13 @@ const Task: React.FC<TaskProps> = (props) => {
   return (
     <React.Fragment>
       {taskShow && taskDetail ? (
-        <div className="task-container" onMouseLeave={cancelTask}>
+        <div
+          className="task-container"
+          onMouseLeave={cancelTask}
+          onClick={(e: any) => {
+            e.stopPropagation();
+          }}
+        >
           <div
             className="taskItem"
             onClick={chooseTask}
@@ -579,17 +585,19 @@ const Task: React.FC<TaskProps> = (props) => {
                           />
                         )}
                       </div>
-                      <div
-                        className="taskItem-check-icon"
-                        style={
-                          taskDetail.content !== '' ? { display: 'flex' } : {}
-                        }
-                        onClick={() => {
-                          setTaskInfoDialogShow(true);
-                        }}
-                      >
-                        <img src={ellipsisbPng} alt="详情" />
-                      </div>
+                      {editRole ? (
+                        <div
+                          className="taskItem-check-icon"
+                          style={
+                            taskDetail.content !== '' ? { display: 'flex' } : {}
+                          }
+                          onClick={() => {
+                            setTaskInfoDialogShow(true);
+                          }}
+                        >
+                          <img src={ellipsisbPng} alt="详情" />
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 ) : null}
@@ -643,6 +651,7 @@ const Task: React.FC<TaskProps> = (props) => {
                     color="primary"
                     onClick={() => {
                       setAddTaskVisible(false);
+                      setAddInput('');
                     }}
                     className={classes.button}
                   >

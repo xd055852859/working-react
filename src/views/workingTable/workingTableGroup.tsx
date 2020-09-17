@@ -101,7 +101,11 @@ const WorkingTableGroup: React.FC = (prop) => {
         groupArray = groupArray.map((item: any) => {
           item.arrlength = 0;
           for (let key in item) {
-            if (key !== 'groupObj' && key !== 'position' && key !== 'arrlength') {
+            if (
+              key !== 'groupObj' &&
+              key !== 'position' &&
+              key !== 'arrlength'
+            ) {
               item[key].arr = format
                 .formatFilter(item[key].arr, filterObject)
                 .filter((arrItem, arrIndex) => {
@@ -117,7 +121,7 @@ const WorkingTableGroup: React.FC = (prop) => {
         setMainGroupArray(groupArray);
       }
     }
-  }, [workingTaskArray,workingGroupArray]);
+  }, [workingTaskArray, workingGroupArray]);
   useEffect(() => {
     let clientWidth = workingTableRef.current.clientWidth;
     if (clientWidth < 600) {

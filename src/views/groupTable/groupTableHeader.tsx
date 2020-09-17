@@ -167,18 +167,18 @@ const GroupTableHeader: React.FC = (prop) => {
   const saveGroupMember = () => {
     let newGroupMember: any = [];
     groupMember.forEach((groupMemberItem: any) => {
-      let newGroupIndex = _.findIndex(groupMemberArray, {
-        userId: groupMemberItem.userId,
+      // let newGroupIndex = _.findIndex(groupMemberArray, {
+      //   userId: groupMemberItem.userId,
+      // });
+      // if (newGroupIndex === -1) {
+      newGroupMember.push({
+        userKey: groupMemberItem.userId,
+        nickName: groupMemberItem.nickName,
+        avatar: groupMemberItem.avatar,
+        gender: groupMemberItem.gender,
+        role: groupMemberItem.role,
       });
-      if (newGroupIndex === -1) {
-        newGroupMember.push({
-          userKey: groupMemberItem.userId,
-          nickName: groupMemberItem.nickName,
-          avatar: groupMemberItem.avatar,
-          gender: groupMemberItem.gender,
-          role: groupMemberItem.role,
-        });
-      }
+      // }
     });
     console.log(newGroupMember);
     api.group.addGroupMember(groupKey, newGroupMember);
@@ -329,7 +329,7 @@ const GroupTableHeader: React.FC = (prop) => {
             dropStyle={{
               width: '264px',
               height: '194px',
-              top: '65px',
+              top: '40px',
               left: '-15px',
               color: '#333',
             }}

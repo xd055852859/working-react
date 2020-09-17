@@ -59,6 +59,7 @@
   height: 88px;
   overflow: hidden;
   border-radius: 50%;
+  cursor: pointer;
 }
 .contentHeader-set-avatar img {
   width: 100%;

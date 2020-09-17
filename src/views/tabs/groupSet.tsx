@@ -64,7 +64,6 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
   const [isHasPassword, setIsHasPassword] = useState(false);
   const [isLinkJoin, setIsLinkJoin] = useState(false);
   const [defaultPower, setDefaultPower] = useState(5);
-  const [defaultPowerIndex, setDefaultPowerIndex] = useState(3);
   const [defaultPowerVisible, setDefaultPowerVisible] = useState(false);
   const roleArray = [
     {
@@ -161,7 +160,6 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
   const changeRole = (value: any, index: number) => {
     let newDefaultPower = value;
     setDefaultPower(newDefaultPower);
-    setDefaultPowerIndex(index);
     setGroupSet('defaultPower', newDefaultPower);
     setDefaultPowerVisible(false);
   };
@@ -370,7 +368,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
               }}
               style={{ cursor: 'pointer' }}
             >
-              {roleArray[defaultPowerIndex].name}
+              {roleArray[defaultPower - 2].name}
             </div>
             <DropMenu
               visible={defaultPowerVisible}

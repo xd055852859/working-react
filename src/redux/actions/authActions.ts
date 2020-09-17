@@ -14,7 +14,7 @@ export const actionTypes = {
   GET_UPLOAD_TOKEN_SUCCESS: 'GET_UPLOAD_TOKEN_SUCCESS',
 };
 
-export function getUserInfo(token: string) {
+export function getUserInfo(token: string | null) {
   return {
     type: actionTypes.GET_USERINFO,
     token: token,
