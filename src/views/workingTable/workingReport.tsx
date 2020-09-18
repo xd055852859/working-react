@@ -86,14 +86,15 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
 
   useEffect(() => {
     if (user && user._key) {
-      setDiaryKey(user._key);
       if (headerIndex == 3 && taskArray) {
         getData(taskArray);
-      } else if (workingTaskArray) {
+      } else if (headerIndex == 1 && workingTaskArray) {
+        getData(_.flatten(workingTaskArray));
+      } else if (headerIndex == 2 && workingTaskArray && targetUserInfo) {
         getData(_.flatten(workingTaskArray));
       }
     }
-  }, [user, workingTaskArray, taskArray]);
+  }, [user, workingTaskArray, taskArray, targetUserInfo]);
   useEffect(() => {
     if (contentKey) {
       if (headerIndex != 3) {
@@ -130,6 +131,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
         end: moment().subtract(i, 'days').endOf('day').valueOf(),
       });
     }
+    console.log('arr', arr);
     taskArray = taskArray.filter((item: any, index: number) => {
       return (
         item.taskEndDate >= arr[0].start &&
@@ -146,12 +148,22 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       }
     });
     newPersonArray = Object.values(newPersonObj);
-    if (chooseDiaryKey) {
-      setDiaryKey(chooseDiaryKey);
-      newDiaryKey = chooseDiaryKey;
-    } else if (newPersonArray[0]) {
-      setDiaryKey(newPersonArray[0].key);
-      newDiaryKey = newPersonArray[0].key;
+    if (headerIndex == 3) {
+      if (chooseDiaryKey) {
+        setDiaryKey(chooseDiaryKey);
+        newDiaryKey = chooseDiaryKey;
+      } else if (newPersonArray[0]) {
+        setDiaryKey(newPersonArray[0].key);
+        newDiaryKey = newPersonArray[0].key;
+      }
+    } else if (headerIndex == 1) {
+      setDiaryKey(user._key);
+      newDiaryKey = user._key;
+      getData(_.flatten(workingTaskArray));
+    } else if (headerIndex == 2) {
+      setDiaryKey(targetUserInfo._key);
+      newDiaryKey = targetUserInfo._key;
+      getData(_.flatten(workingTaskArray));
     }
     arr.forEach((item: any, index: number) => {
       newDateArray[index] = {
@@ -349,25 +361,27 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       <div className="diary-bg">
         <div className="diary-menu">
           <div className="diary-menu-title">目录</div>
-          {dateArray.map((item: any, index: number) => {
-            return (
-              <div
-                key={'date' + index}
-                className="diary-menu-item"
-                onClick={() => {
-                  chooseDiary(index);
-                }}
-                style={{
-                  backgroundColor:
-                    diaryIndex == index ? 'rgb(229, 231, 234)' : '',
-                }}
-              >
-                <span style={{ marginRight: '10px' }}>{item.date[0]}</span>
-                <span>{item.date[1]}</span>
-                <span>({item.arr.length})</span>
-              </div>
-            );
-          })}
+          <div className="diary-menu-container">
+            {dateArray.map((item: any, index: number) => {
+              return (
+                <div
+                  key={'date' + index}
+                  className="diary-menu-item"
+                  onClick={() => {
+                    chooseDiary(index);
+                  }}
+                  style={{
+                    backgroundColor:
+                      diaryIndex == index ? 'rgb(229, 231, 234)' : '',
+                  }}
+                >
+                  <span style={{ marginRight: '10px' }}>{item.date[0]}</span>
+                  <span>{item.date[1]}</span>
+                  <span>({item.arr.length})</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
         {dayCanlendarArray.length > 0 ? (
           <div className="diary-container">

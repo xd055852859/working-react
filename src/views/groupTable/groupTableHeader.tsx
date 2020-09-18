@@ -14,6 +14,7 @@ import { changeGroupInfo, getGroup } from '../../redux/actions/groupActions';
 import { getGroupMember } from '../../redux/actions/memberActions';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import _ from 'lodash';
+import copy from 'copy-to-clipboard';
 import '../workingTable/workingTableHeader.css';
 import DropMenu from '../../components/common/dropMenu';
 import Dialog from '../../components/common/dialog';
@@ -247,6 +248,11 @@ const GroupTableHeader: React.FC = (prop) => {
     );
     dispatch(setChatState(true));
   };
+  const shareGroup = ()=>{
+    const redirect = `${window.location.protocol}//${window.location.host}`;
+    copy(redirect + '/?groupKey=' + groupKey);
+    dispatch(setMessage(true, '复制链接群成功', 'success'));
+  }
   return (
     <div className="workingTableHeader">
       <div
@@ -355,6 +361,14 @@ const GroupTableHeader: React.FC = (prop) => {
                 }}
               >
                 <img /> 群成员
+              </div>
+              <div
+                className="groupTableHeader-info-item"
+                onClick={() => {
+                  shareGroup();
+                }}
+              >
+                <img /> 分享群组
               </div>
               <div
                 className="groupTableHeader-info-item"

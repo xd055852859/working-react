@@ -24,3 +24,16 @@
   /* box-sizing: border-box; */
   overflow: auto;
 }
+.dropMenu-item {
+  height: 38px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0px 17px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+.dropMenu-item:hover {
+  background-color: #f0f0f0;
+}

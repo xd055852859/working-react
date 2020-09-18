@@ -11,6 +11,7 @@ import {
   getWorkingTableTask,
   getGroupTask,
   setChooseKey,
+  changeTaskInfoVisible
 } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import moment from 'moment';
@@ -163,8 +164,8 @@ const Task: React.FC<TaskProps> = (props) => {
     }
   }, [taskItem]);
   useEffect(() => {
-    dispatch(setTaskKey(0));
-    dispatch(setChooseKey(0));
+    dispatch(setTaskKey('0'));
+    // dispatch(setChooseKey('0'));
   }, [headerIndex, groupKey]);
 
   useEffect(() => {
@@ -188,7 +189,7 @@ const Task: React.FC<TaskProps> = (props) => {
   };
   const cancelTask = async (e: React.MouseEvent) => {
     let newTaskDetail = _.cloneDeep(taskDetail);
-    if (taskKey !== 0) {
+    if (taskKey !== '') {
       if (editState) {
         dispatch(
           editTask(
@@ -205,7 +206,7 @@ const Task: React.FC<TaskProps> = (props) => {
       if (changeTask) {
         changeTask(newTaskDetail);
       }
-      dispatch(setTaskKey(0));
+      dispatch(setTaskKey(''));
       setTaskExecutorShow(false);
       setTimeSetShow(false);
       // setAddTaskVisible(false);
@@ -592,7 +593,7 @@ const Task: React.FC<TaskProps> = (props) => {
                             taskDetail.content !== '' ? { display: 'flex' } : {}
                           }
                           onClick={() => {
-                            setTaskInfoDialogShow(true);
+                            dispatch(changeTaskInfoVisible(true))
                           }}
                         >
                           <img src={ellipsisbPng} alt="详情" />
@@ -675,32 +676,7 @@ const Task: React.FC<TaskProps> = (props) => {
         dialogStyle={{ width: '400px', height: '200px' }}
       >
         <div className="dialog-onlyTitle">是否删除该任务</div>
-      </Dialog>
-      <Dialog
-        visible={taskInfoDialogShow}
-        footer={false}
-        dialogStyle={{
-          width: '414px',
-          height: 'calc(100% - 66px)',
-          position: 'fixed',
-          top: '65px',
-          right: '0px',
-          // maxHeight: 'calc(100% - 66px)',
-          overflow: 'auto',
-          zIndex: '10',
-        }}
-        onClose={() => {
-          setTaskInfoDialogShow(false);
-        }}
-        showMask={false}
-      >
-        <TaskInfo
-          taskInfo={taskDetail}
-          onClose={() => {
-            setTaskInfoDialogShow(false);
-          }}
-        />
-      </Dialog>
+      </Dialog>    
     </React.Fragment>
   );
 };

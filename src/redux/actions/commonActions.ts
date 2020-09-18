@@ -47,6 +47,7 @@ export function setMessage(
   return { type: actionTypes.SET_MESSAGE, visible, text, severity };
 }
 export function setCommonHeaderIndex(headerIndex: number) {
+  localStorage.setItem('headerIndex', headerIndex + '');
   return {
     type: actionTypes.SET_HEADERINDEX,
     headerIndex,
@@ -55,7 +56,7 @@ export function setCommonHeaderIndex(headerIndex: number) {
 export function setMoveState(moveState: string) {
   return {
     type: actionTypes.SET_MOVESTATE,
-    moveState,
+    moveState:moveState,
   };
 }
 export function Loading(loading: boolean) {

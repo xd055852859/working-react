@@ -64,6 +64,9 @@ export const auth = (state = defaultState, action: any) => {
         token: action.data.token,
         nowTime: moment().hour() < 12 ? 0 : 1,
         socket: socket,
+        targetUserKey: localStorage.getItem('targetUserKey')
+          ? localStorage.getItem('targetUserKey')
+          : '',
       };
     case actionTypes.GET_MAIN_GROUP_KEY_SUCCESS:
       localStorage.setItem('mainGroupKey', action.data.mainGroupKey);
@@ -72,6 +75,7 @@ export const auth = (state = defaultState, action: any) => {
         mainGroupKey: action.data.mainGroupKey,
       };
     case actionTypes.SET_TARGET_USER_KEY:
+      localStorage.setItem('targetUserKey', action.targetUserInfo._key);
       return {
         ...state,
         targetUserInfo: action.targetUserInfo,

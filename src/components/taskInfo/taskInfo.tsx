@@ -12,6 +12,7 @@ import './taskInfo.css';
 import _ from 'lodash';
 import 'moment/locale/zh-cn';
 import moment from 'moment';
+import copy from 'copy-to-clipboard';
 import Comment from '../comment/comment';
 import hourPng from '../../assets/img/hour.png';
 import playPng from '../../assets/img/play.png';
@@ -20,17 +21,19 @@ import unExecutorPng from '../../assets/img/unExecutor.png';
 import taskFinishPng from '../../assets/img/taskFinish.png';
 import taskUnfinishPng from '../../assets/img/taskUnfinish.png';
 import taskClosePng from '../../assets/img/taskClose.png';
+import ellipsisbPng from '../../assets/img/ellipsisb.png';
 import api from '../../services/api';
 import { setMessage } from '../../redux/actions/commonActions';
-import { editTask } from '../../redux/actions/taskActions';
+import {
+  editTask,
+  changeTaskInfoVisible,
+  setChooseKey,
+} from '../../redux/actions/taskActions';
 import DropMenu from '../common/dropMenu';
 import TimeSet from '../common/timeSet';
 import Editor from '../common/Editor';
 import { countReset } from 'console';
-interface TaskInfoProps {
-  taskInfo: any;
-  onClose: any;
-}
+interface TaskInfoProps {}
 // pick a date util library
 moment.locale('zh-cn');
 const useStyles = makeStyles((theme: Theme) =>
@@ -68,8 +71,12 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
-  const { taskInfo, onClose } = prop;
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const chooseKey = useTypedSelector((state) => state.task.chooseKey);
+  const taskInfoVisible = useTypedSelector(
+    (state) => state.task.taskInfoVisible
+  );
+
   const classes = useStyles();
   const dispatch = useDispatch();
   const [taskItem, setTaskItem] = useState<any>(null);
@@ -86,6 +93,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   const [suggestVisible, setSuggestVisible] = useState(false);
   const [hourVisible, setHourVisible] = useState(false);
   const [executorVisible, setExecutorVisible] = useState(false);
+  const [ellipsisVisible, setEllipsisVisible] = useState(false);
   const [taskTypeIndex, setTaskTypeIndex] = useState(0);
   const [taskMemberArray, setTaskMemberArray] = useState<any>([]);
   const [countDownTime, setCountDownTime] = useState(0);
@@ -117,10 +125,20 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   ];
   const taskLimit = 10;
   useEffect(() => {
-    if (taskInfo) {
-      setTaskItem(_.cloneDeep(taskInfo));
-      getHistoryList(taskHistoryPage);
-      getCommentList(taskHistoryPage);
+    if (taskInfoVisible && chooseKey != '') {
+      getTaskItem();
+    }
+    return () => {
+      clearInterval(countInterval);
+    };
+  }, [chooseKey, taskInfoVisible]);
+  const getTaskItem = async () => {
+    let taskItemRes: any = await api.task.getTaskInfo(chooseKey);
+    console.log(taskItemRes);
+    if (taskItemRes.msg === 'OK') {
+      let taskInfo = _.cloneDeep(taskItemRes.result);
+      getHistoryList(taskHistoryPage, taskInfo);
+      getCommentList(taskHistoryPage, taskInfo);
       setStartDate(
         new Date(
           taskInfo.taskStartDate ? taskInfo.taskStartDate : taskInfo.taskEndDate
@@ -132,13 +150,14 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
           setTaskTypeIndex(index);
         }
       });
+      setTaskItem(taskInfo);
       setCountDownTime(taskInfo.countDownTime);
       getTaskMemberArray(taskInfo.groupKey);
+    } else {
+      dispatch(setMessage(true, taskItemRes.msg, 'error'));
     }
-    return () => {
-      clearInterval(countInterval);
-    };
-  }, [taskInfo]);
+  };
+
   const getTaskMemberArray = async (groupKey: string) => {
     let taskMemberRes: any = null;
     taskMemberRes = await api.member.getMember(groupKey);
@@ -146,7 +165,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       setTaskMemberArray(taskMemberRes.result);
     }
   };
-  const getCommentList = async (page: number) => {
+  const getCommentList = async (page: number, taskInfo: any) => {
     let newCommentArray = _.cloneDeep(taskCommentArray);
     let commentRes: any = await api.task.getTaskComment(
       taskInfo._key,
@@ -161,7 +180,8 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       dispatch(setMessage(true, commentRes.msg, 'error'));
     }
   };
-  const getHistoryList = async (page: number) => {
+
+  const getHistoryList = async (page: number, taskInfo: any) => {
     let newHistoryArray = _.cloneDeep(taskHistoryArray);
     let historyRes: any = await api.task.getTaskHistory(
       taskInfo._key,
@@ -202,7 +222,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     ) {
       page = page + 1;
       setTaskCommentPage(page);
-      getCommentList(page);
+      getCommentList(page, taskItem);
     }
   };
   const scrollHistoryLoading = async (e: any) => {
@@ -219,7 +239,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     ) {
       page = page + 1;
       setTaskHistoryPage(page);
-      getHistoryList(page);
+      getHistoryList(page, taskItem);
     }
   };
   const changeInput = (e: any) => {
@@ -296,6 +316,8 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       }
       newCountDownTime = newCountDownTime - 1000;
       setCountDownTime(newCountDownTime);
+      newTaskItem['countDownTime'] = newCountDownTime;
+      setTaskItem(newTaskItem);
     }, 1000);
     setCountInterval(newCountInterval);
   };
@@ -317,7 +339,14 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   const addZero = (num: number) => {
     return num > 9 ? num + '' : '0' + num;
   };
+  const shareTask = () => {
+    const redirect = `${window.location.protocol}//${window.location.host}`;
+    console.log(chooseKey);
+    copy(redirect + '/?shareKey=' + chooseKey);
+    dispatch(setMessage(true, '复制链接任务成功', 'success'));
+  };
   return (
+    // changeTaskInfoVisible
     <div className="taskInfo">
       {taskItem ? (
         <React.Fragment>
@@ -418,17 +447,54 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     editTask({ key: taskItem._key, ...taskItem }, headerIndex)
                   );
                   dispatch(setMessage(true, '编辑成功', 'success'));
-                  onClose();
+                  dispatch(changeTaskInfoVisible(false));
                 }}
               >
                 保存
               </Button>
-              {/* <img
-                src={taskClosePng}
-                alt=""
+              <div
                 className="taskInfo-mainTitle-right-icon"
-                onClick={onClose}
-              /> */}
+                onClick={() => {
+                  setEllipsisVisible(true);
+                }}
+              >
+                <img
+                  src={ellipsisbPng}
+                  alt="详情"
+                  style={{ width: '12px', height: '2px' }}
+                />
+                <DropMenu
+                  visible={ellipsisVisible}
+                  dropStyle={{
+                    width: '120px',
+                    top: '45px',
+                    left: '-88px',
+                  }}
+                  onClose={() => {
+                    setEllipsisVisible(false);
+                  }}
+                >
+                  <div
+                    className="dropMenu-item"
+                    onClick={() => {
+                      shareTask();
+                    }}
+                  >
+                    分享任务
+                  </div>
+                </DropMenu>
+              </div>
+              <div className="taskInfo-mainTitle-right-icon">
+                <img
+                  src={taskClosePng}
+                  alt=""
+                  style={{ width: '12px', height: '12px' }}
+                  onClick={() => {
+                    dispatch(changeTaskInfoVisible(false));
+                    dispatch(setChooseKey('0'));
+                  }}
+                />
+              </div>
             </div>
           </div>
           <div className="taskInfo-container">

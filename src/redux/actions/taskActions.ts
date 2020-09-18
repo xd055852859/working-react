@@ -18,6 +18,8 @@ export const actionTypes = {
   EDIT_TASK: 'EDIT_TASK',
   EDIT_TASK_SUCCESS: 'EDIT_TASK_SUCCESS',
   SET_FILTER_OBJECT: 'SET_FILTER_OBJECT',
+  CHANGE_TASKINFO_VISIBLE:'CHANGE_TASKINFO_VISIBLE'
+  
 };
 
 export function getGroupTask(
@@ -127,7 +129,7 @@ export function editTaskSuccess(data: any) {
 }
 export function addWorkingTableTask(
   title: string,
-  groupKey: number | string,
+  groupKey: string,
   groupRole: number | string,
   labelKey: number | string,
   cardIndex: number | string,
@@ -151,5 +153,11 @@ export function setFilterObject(filterObj: any) {
   return {
     type: actionTypes.SET_FILTER_OBJECT,
     filterObj: filterObj,
+  };
+}
+export function changeTaskInfoVisible(taskInfoVisible: boolean) {
+  return {
+    type: actionTypes.CHANGE_TASKINFO_VISIBLE,
+    taskInfoVisible: taskInfoVisible,
   };
 }

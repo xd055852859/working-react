@@ -408,7 +408,7 @@ const GroupTableGroup: React.FC = (prop) => {
     <div
       className="task"
       onClick={(e: any) => {
-        dispatch(setChooseKey(0));
+        dispatch(setChooseKey('0'));
       }}
     >
       {loading ? <Loading /> : null}

@@ -8,13 +8,23 @@ import {
   getUserInfo,
   getMainGroupKey,
   getUploadToken,
+  getTheme,
 } from './redux/actions/authActions';
-import { getTheme } from './redux/actions/authActions';
+import {
+  setCommonHeaderIndex,
+  setMoveState,
+} from './redux/actions/commonActions';
+import {
+  setChooseKey,
+  changeTaskInfoVisible,
+} from './redux/actions/taskActions';
 import Home from './views/home/home';
 import Content from './views/content/content';
 import WorkingTable from './views/workingTable/workingTable';
 import GroupTable from './views/groupTable/groupTable';
 import Chat from './views/chat/chat';
+import TaskInfo from './components/taskInfo/taskInfo';
+import { setGroupKey } from './redux/actions/groupActions';
 const App: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
@@ -22,6 +32,9 @@ const App: React.FC = () => {
   const user = useTypedSelector((state) => state.auth.user);
   const token = useTypedSelector((state) => state.auth.token);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const taskInfoVisible = useTypedSelector(
+    (state) => state.task.taskInfoVisible
+  );
   const theme = useTypedSelector((state) => state.auth.theme);
   const message = useTypedSelector((state) => state.common.message);
   useEffect(() => {
@@ -35,6 +48,28 @@ const App: React.FC = () => {
       // console.log(user);
       dispatch(getMainGroupKey());
       dispatch(getTheme());
+      let headerIndex = localStorage.getItem('headerIndex');
+      if (headerIndex) {
+        dispatch(setCommonHeaderIndex(parseInt(headerIndex)));
+        if (headerIndex == '3') {
+          dispatch(setMoveState('in'));
+        } else {
+          dispatch(setMoveState('out'));
+        }
+      }
+      const groupKey = localStorage.getItem('groupKey');
+      if (groupKey) {
+        dispatch(setGroupKey(groupKey));
+        // dispatch(setMoveState('in'));
+        // dispatch(setCommonHeaderIndex(3));
+        // localStorage.setItem('groupKey', '');
+      }
+      const shareKey = localStorage.getItem('shareKey');
+      if (shareKey) {
+        dispatch(setChooseKey(shareKey));
+        dispatch(changeTaskInfoVisible(true));
+        localStorage.setItem('shareKey', '');
+      }
     }
     if (!user) {
       // 用户未登录
@@ -48,6 +83,16 @@ const App: React.FC = () => {
         dispatch(getUploadToken());
       } else {
         history.push('/bootpage');
+      }
+      const groupKey = getSearchParamValue(location.search, 'groupKey');
+      if (groupKey) {
+        localStorage.setItem('groupKey', groupKey);
+        window.location.href = window.location.origin + '/';
+      }
+      const shareKey = getSearchParamValue(location.search, 'shareKey');
+      if (shareKey) {
+        localStorage.setItem('shareKey', shareKey);
+        window.location.href = window.location.origin + '/';
       }
     }
   }, [history, dispatch, location.search, user, token]);
@@ -75,6 +120,7 @@ const App: React.FC = () => {
       {headerIndex === 3 ? <GroupTable /> : null}
       {headerIndex === 2 ? <WorkingTable /> : null}
       <Chat />
+      {taskInfoVisible ? <TaskInfo /> : null}
     </div>
   );
 };

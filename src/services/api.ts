@@ -255,7 +255,7 @@ const auth = {
       role: role,
     });
   },
-  updateAccount(param:any) {
+  updateAccount(param: any) {
     return request.patch(AUTH_URL + '/account', {
       token: auth_token,
       ...param,
@@ -469,6 +469,12 @@ const task = {
       finishPercentArray: finishPercentArray,
       startTime: startTime,
       endTime: endTime,
+    });
+  },
+  getTaskInfo(cardKey: string) {
+    return request.get(HOME_URL + '/card/cardDetail', {
+      token: auth_token,
+      cardKey: cardKey,
     });
   },
 };

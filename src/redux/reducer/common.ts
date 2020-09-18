@@ -95,7 +95,6 @@ export const common = (state = defaultState, action: any) => {
         loading: action.loading,
       };
     case commonActionTypes.SET_CHATSTATE:
-      console.log(action.chatState);
       return {
         ...state,
         chatState: action.chatState,

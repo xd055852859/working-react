@@ -8,9 +8,10 @@ export interface TaskType {
   selfTaskArray: any;
   workingGroupArray: any;
   workingTaskArray: any;
-  taskKey: string | number;
-  chooseKey: string | number;
+  taskKey: string;
+  chooseKey: string;
   filterObject: any;
+  taskInfoVisible: boolean;
 }
 
 const defaultState: TaskType = {
@@ -21,8 +22,8 @@ const defaultState: TaskType = {
   selfTaskArray: null,
   workingGroupArray: null,
   workingTaskArray: null,
-  taskKey: 0,
-  chooseKey:0,
+  taskKey: '',
+  chooseKey: '',
   filterObject: {
     groupKey: null,
     groupName: '',
@@ -35,6 +36,7 @@ const defaultState: TaskType = {
     executorName: '',
     filterType: ['过期', '今天', '已完成'],
   },
+  taskInfoVisible: false,
 };
 
 export const task = (state = defaultState, action: any) => {
@@ -100,7 +102,7 @@ export const task = (state = defaultState, action: any) => {
         ...state,
         taskKey: action.taskKey,
       };
-      case actionTypes.SET_CHOOSE_KEY:
+    case actionTypes.SET_CHOOSE_KEY:
       return {
         ...state,
         chooseKey: action.chooseKey,
@@ -152,14 +154,18 @@ export const task = (state = defaultState, action: any) => {
         // taskKey: action.taskKey
       };
     case actionTypes.SET_FILTER_OBJECT:
-      console.log("?????????????????");
-      let filterObject = _.cloneDeep(state.filterObject);   
+      let filterObject = _.cloneDeep(state.filterObject);
       for (let key in action.filterObj) {
         filterObject[key] = action.filterObj[key];
       }
       return {
         ...state,
         filterObject: filterObject,
+      };
+    case actionTypes.CHANGE_TASKINFO_VISIBLE:
+      return {
+        ...state,
+        taskInfoVisible: action.taskInfoVisible,
       };
     default:
       return state;

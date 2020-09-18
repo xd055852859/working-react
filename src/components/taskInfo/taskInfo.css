@@ -1,10 +1,21 @@
 .taskInfo {
-  width: 100%;
-  height: 100%;
+  width: 414px;
+  height: calc(100% - 66px);
+  position: fixed;
+  top: 65px;
+  right: 0px;
+  overflow: auto;
+  z-index: 10;
+  background-color: #fff;
+  padding: 10px 15px;
+  box-sizing: border-box;
+  color: #333;
+  box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
 }
 .taskInfo-mainTitle {
   width: 100%;
-  height: 80px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -37,11 +48,20 @@
   height: 100%;
   object-fit: cover;
 }
+.taskInfo-mainTitle-right {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
 .taskInfo-mainTitle-right-icon {
-  width: 12px;
-  height: 12px;
+  width: 20px;
+  height: 100%;
   margin-left: 11px;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
 }
 .taskInfo-container {
   width: 100%;

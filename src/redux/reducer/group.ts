@@ -26,7 +26,7 @@ export const group = (state = defaultState, action: any) => {
         groupArray: groupArray,
       };
     case actionTypes.SET_GROUP_KEY:
-      console.log(action);
+      localStorage.setItem('groupKey',action.groupKey)
       return {
         ...state,
         groupKey: action.groupKey,
