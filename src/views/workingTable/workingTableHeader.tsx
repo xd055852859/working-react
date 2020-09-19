@@ -113,9 +113,9 @@ const WorkingTableHeader: React.FC = (prop) => {
   useEffect(() => {
     if (memberArray) {
       let key = '';
-      if (headerIndex === 1 && userKey) {
+      if (headerIndex === 1 && userKey != '') {
         key = userKey;
-      } else if (headerIndex === 2 && targetUserKey) {
+      } else if (headerIndex === 2 && targetUserKey != '') {
         key = targetUserKey;
       }
       console.log('userKey', key);

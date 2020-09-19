@@ -82,9 +82,11 @@ export const auth = (state = defaultState, action: any) => {
         targetUserKey: action.targetUserInfo._key,
       };
     case actionTypes.GET_TARGET_USERINFO_SUCCESS:
+      localStorage.setItem('targetUserKey', action.data._key);
       return {
         ...state,
         targetUserInfo: action.data,
+        targetUserKey: action.data._key,
       };
     case actionTypes.GET_THEME_SUCCESS:
       if (!action.data.backgroundColor && !action.data.backgroundImg) {

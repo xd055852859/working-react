@@ -9,6 +9,7 @@ import {
   getMainGroupKey,
   getUploadToken,
   getTheme,
+  getTargetUserInfo,
 } from './redux/actions/authActions';
 import {
   setCommonHeaderIndex,
@@ -48,12 +49,17 @@ const App: React.FC = () => {
       // console.log(user);
       dispatch(getMainGroupKey());
       dispatch(getTheme());
-      let headerIndex = localStorage.getItem('headerIndex');
+      const headerIndex = localStorage.getItem('headerIndex');
+
       if (headerIndex) {
         dispatch(setCommonHeaderIndex(parseInt(headerIndex)));
         if (headerIndex == '3') {
           dispatch(setMoveState('in'));
         } else {
+          const targetUserKey = localStorage.getItem('targetUserKey');
+          if (headerIndex == '2' && targetUserKey) {
+            dispatch(getTargetUserInfo(targetUserKey));
+          }
           dispatch(setMoveState('out'));
         }
       }

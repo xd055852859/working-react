@@ -17,7 +17,7 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     button: {
       backgroundColor: '#17B881',
-      padding: '6 16px',
+      padding: '6px 16px',
       color: '#fff',
     },
     input: {

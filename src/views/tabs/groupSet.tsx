@@ -10,6 +10,7 @@ import {
 } from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useTypedSelector } from '../../redux/reducer/RootState';
+import copy from 'copy-to-clipboard';
 import { setMessage } from '../../redux/actions/commonActions';
 import DropMenu from '../../components/common/dropMenu';
 import plusPng from '../../assets/img/contact-plus.png';
@@ -197,6 +198,11 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
     obj[type] = value;
     saveGroupSet(obj);
   };
+  const shareGroup = ()=>{
+    const redirect = `${window.location.protocol}//${window.location.host}`;
+    copy(redirect + '/?groupKey=' + groupKey);
+    dispatch(setMessage(true, '复制链接群成功', 'success'));
+  }
   return (
     <div className="contact-dialog-content">
       <div className="contact-dialog-info">
@@ -353,6 +359,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
                 color="primary"
                 className={classes.button}
                 style={{ marginLeft: '10px' }}
+                onClick={()=>{shareGroup()}}
               >
                 拷贝
               </Button>

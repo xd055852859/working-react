@@ -511,12 +511,18 @@ const member = {
   },
 };
 const group = {
-  getGroup(listType: number, simple?: number | null, sortType?: number) {
+  getGroup(
+    listType: number,
+    simple?: number | null,
+    sortType?: number,
+    groupKey?: string
+  ) {
     return request.get(HOME_URL + '/group/groupList', {
       token: auth_token,
       listType: listType,
       simple: simple,
       sortType: sortType,
+      groupKey: groupKey,
     });
   },
   getGroupInfo(key: string) {
@@ -617,6 +623,27 @@ const group = {
       token: auth_token,
       groupKey: groupKey,
       labelOrder: labelOrder,
+    });
+  },
+  getSonGroupList(fatherGroupKey: string) {
+    return request.post(HOME_URL + '/group/getSonGroupListMultilayer', {
+      token: auth_token,
+      fatherGroupKey: fatherGroupKey,
+    });
+  },
+  //设置子群
+  setSonGroup(fatherGroupKey: string, sonGroupKey: string) {
+    return request.post(HOME_URL + '/group/setSonGroup', {
+      token: auth_token,
+      fatherGroupKey: fatherGroupKey,
+      sonGroupKey: sonGroupKey,
+    });
+  },
+  deleteFSGroup(fatherGroupKey: string, sonGroupKey: string) {
+    return request.post(HOME_URL + '/group/deleteFSGroup', {
+      token: auth_token,
+      fatherGroupKey: fatherGroupKey,
+      sonGroupKey: sonGroupKey,
     });
   },
 };

@@ -21,6 +21,7 @@ import Dialog from '../../components/common/dialog';
 import Tooltip from '../../components/common/tooltip';
 import GroupSet from '../tabs/groupSet';
 import GroupMember from '../tabs/groupMember';
+import SonGroup from '../tabs/sonGroup';
 import Vitality from '../../components/vitality/vitality';
 import api from '../../services/api';
 import HeaderFilter from '../../components/headerFilter/headerFilter';
@@ -42,6 +43,7 @@ import filePng from '../../assets/img/file.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import downArrowPng from '../../assets/img/downArrow.png';
 import './groupTableHeader.css';
+import sonGroup from '../tabs/sonGroup';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     chip: {
@@ -94,6 +96,7 @@ const GroupTableHeader: React.FC = (prop) => {
   const [groupSetVisible, setGroupSetVisible] = useState(false);
   const [vitalityVisible, setVitalityVisible] = useState(false);
   const [groupMemberVisible, setGroupMemberVisible] = useState(false);
+  const [sonGroupVisible, setSonGroupVisible] = useState(false);
   const [dismissVisible, setDismissVisible] = useState(false);
   const [outGroupVisible, setOutGroupVisible] = useState(false);
   const [groupMember, setGroupMember] = useState<any>([]);
@@ -248,11 +251,11 @@ const GroupTableHeader: React.FC = (prop) => {
     );
     dispatch(setChatState(true));
   };
-  const shareGroup = ()=>{
+  const shareGroup = () => {
     const redirect = `${window.location.protocol}//${window.location.host}`;
     copy(redirect + '/?groupKey=' + groupKey);
     dispatch(setMessage(true, '复制链接群成功', 'success'));
-  }
+  };
   return (
     <div className="workingTableHeader">
       <div
@@ -334,7 +337,6 @@ const GroupTableHeader: React.FC = (prop) => {
             visible={infoVisible}
             dropStyle={{
               width: '264px',
-              height: '194px',
               top: '40px',
               left: '-15px',
               color: '#333',
@@ -361,6 +363,14 @@ const GroupTableHeader: React.FC = (prop) => {
                 }}
               >
                 <img /> 群成员
+              </div>
+              <div
+                className="groupTableHeader-info-item"
+                onClick={() => {
+                  setSonGroupVisible(true);
+                }}
+              >
+                <img /> 子群列表
               </div>
               <div
                 className="groupTableHeader-info-item"
@@ -653,6 +663,7 @@ const GroupTableHeader: React.FC = (prop) => {
       >
         <GroupSet saveGroupSet={saveGroupSet} type={'设置'} />
       </Dialog>
+
       <Dialog
         visible={groupMemberVisible}
         onClose={() => {
@@ -666,6 +677,22 @@ const GroupTableHeader: React.FC = (prop) => {
       >
         {/* saveGroupSet={saveGroupSet} type={'设置'}  */}
         <GroupMember setMember={setMember} />
+      </Dialog>
+      <Dialog
+        visible={sonGroupVisible}
+        onClose={() => {
+          setSonGroupVisible(false);
+        }}
+        footer={false}
+        title={'设置子群'}
+        dialogStyle={{ width: '850px', height: '700px' }}
+      >
+        {/* saveGroupSet={saveGroupSet} type={'设置'}  */}
+        <SonGroup
+          onClose={() => {
+            setSonGroupVisible(false);
+          }}
+        />
       </Dialog>
       <Dialog
         visible={vitalityVisible}
