@@ -409,7 +409,6 @@ const Task: React.FC<TaskProps> = (props) => {
                   </div>
                   <DropMenu
                     visible={timeSetShow}
-                    title={'预计工时'}
                     dropStyle={{
                       width: '318px',
                       height: '230px',
@@ -425,6 +424,7 @@ const Task: React.FC<TaskProps> = (props) => {
                       percentClick={changeFinishPercent}
                       dayNumber={dayNumber + 1}
                       timeNumber={timeNumber}
+                      endDate={taskDetail.taskEndDate}
                     />
                   </DropMenu>
                   {bottomtype === 'grid' ? (

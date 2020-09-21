@@ -116,7 +116,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
   const choosePerson = (key: string, index: number) => {
     setDiaryKey(key);
     setPersonIndex(index);
-    // getData(taskArray, key);
+    getData(taskArray, key);
   };
   const getData = async (taskArray: any, chooseDiaryKey?: string | number) => {
     let newDateArray: any = [];

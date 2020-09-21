@@ -32,6 +32,7 @@
 .task-container-task {
   display: flex;
   /* padding: 0px 0.5%; */
+  height: calc(100% - 60px);
 }
 .task-container-info {
   width: 100%;
@@ -153,7 +154,7 @@
 }
 
 .task-container-profile .task-item-info {
-  height: calc(100% - 67px);
+  height: 100%;
   min-height: 300px;
   width: 350px;
   overflow: auto;

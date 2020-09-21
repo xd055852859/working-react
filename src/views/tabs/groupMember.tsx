@@ -4,6 +4,7 @@ import { Checkbox, TextField, Button } from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux';
 import { setMessage } from '../../redux/actions/commonActions';
+import { getMember } from '../../redux/actions/memberActions';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import _ from 'lodash';
 import api from '../../services/api';
@@ -18,6 +19,11 @@ const useStyles = makeStyles((theme: Theme) =>
     button: {
       backgroundColor: '#17B881',
       padding: '6px 16px',
+      color: '#fff',
+    },
+    addButton: {
+      backgroundColor: '#17B881',
+      padding: '3px 7px',
       color: '#fff',
     },
     input: {
@@ -53,9 +59,11 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
   const [mainMemberList, setMainMemberList] = useState<any>([]);
   const [searchMemberList, setSearchMemberList] = useState<any>([]);
   const [groupMemberList, setGroupMemberList] = useState<any>([]);
+  const [joinMemberList, setJoinMemberList] = useState<any>([]);
   const [memberList, setMemberList] = useState<any>([]);
   const [searchInput, setSearchInput] = useState('');
   const [roleVisible, setRoleVisible] = useState(false);
+  const [chooseIndex, setChooseIndex] = useState(0);
   const [roleIndex, setRoleIndex] = useState<any>(null);
   const [pos, setPos] = useState<any>([]);
   const [page, setPage] = React.useState(1);
@@ -68,7 +76,8 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       user._key &&
       memberArray &&
       groupMemberArray &&
-      searchInput === ''
+      searchInput === '' &&
+      groupKey
     ) {
       let newMemberList: any = [];
       if (memberList.length === 0) {
@@ -92,7 +101,18 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       setGroupMemberList(_.sortBy(newMemberArray, ['checked']).reverse());
       setMemberList(_.sortBy(newMemberList, ['role']));
     }
-  }, [user, memberArray, groupMemberArray, searchInput]);
+    if (user && user._key && groupKey) {
+      getJoinGroupList();
+    }
+  }, [user, groupKey, memberArray, groupMemberArray, searchInput]);
+  const getJoinGroupList = async () => {
+    let res: any = await api.group.applyJoinGroupList(groupKey);
+    if (res.msg === 'OK') {
+      setJoinMemberList(res.result);
+    } else {
+      dispatch(setMessage(true, res.msg, 'error'));
+    }
+  };
   const changeMember = (index: number) => {
     let newMainMemberList = _.cloneDeep(mainMemberList);
     let newMemberList = _.cloneDeep(memberList);
@@ -276,73 +296,159 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       );
     }
   };
+  const addJoinMember = async (joinItem: any, joinIndex: number) => {
+    let newJoinMemberList = _.cloneDeep(joinMemberList);
+    let memberRes: any = await api.group.addGroupMember(groupKey, [
+      {
+        userKey: joinItem.userKey,
+        nickName: joinItem.nickName,
+        avatar: joinItem.avatar,
+        gender: 0,
+        role: groupInfo.defaultPower,
+      },
+    ]);
+    if (memberRes.msg === 'OK') {
+      dispatch(setMessage(true, '通过审核成功', 'success'));
+      console.log(joinIndex);
+      newJoinMemberList.splice(joinIndex, 1);
+      setJoinMemberList(newJoinMemberList);
+      dispatch(getMember(groupKey, 2));
+      api.group.deleteApplyJoinGroup(joinItem._key);
+    } else {
+      dispatch(setMessage(true, memberRes.msg, 'error'));
+    }
+  };
   return (
     <div className="group-member">
       <div className="group-member-person">
         <div className="group-member-choose">
           <div className="group-member-title">
-            联系人({mainMemberList.length})
-          </div>
-          <div className="group-member-search">
-            <TextField
-              // required
-              id="outlined-basic"
-              variant="outlined"
-              label="搜索"
-              className={classes.input}
-              style={{ width: '70%' }}
-              value={searchInput}
-              onChange={(e) => {
-                setSearchInput(e.target.value);
-              }}
-            />
-            <Button
-              variant="contained"
-              color="primary"
+            <div
               onClick={() => {
-                searchMember();
+                setChooseIndex(0);
               }}
-              style={{ marginLeft: '10px' }}
-              className={classes.button}
+              style={{
+                borderBottom: chooseIndex == 0 ? '2px solid #17B881' : 'none',
+                marginRight: '15px',
+                cursor: 'pointer',
+              }}
             >
-              搜索
-            </Button>
+              联系人({mainMemberList.length})
+            </div>
+            <div
+              onClick={() => {
+                setChooseIndex(1);
+              }}
+              style={{
+                borderBottom: chooseIndex == 1 ? '2px solid #17B881' : 'none',
+                cursor: 'pointer',
+              }}
+            >
+              申请人({joinMemberList.length})
+            </div>
           </div>
-          <div
-            className="group-member-container"
-            onScroll={(e) => {
-              if (searchInput !== '') {
-                scrollSearchLoading(e);
-              }
-            }}
-          >
-            {groupMemberList.map((mainItem: any, mainIndex: number) => {
-              return (
-                <div className="group-member-item" key={'main' + mainIndex}>
-                  <div className="group-member-item-container">
-                    <div className="group-member-img">
-                      <img
-                        src={
-                          mainItem.avatar
-                            ? mainItem.avatar +
-                              '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
-                            : defaultPersonPng
-                        }
-                        alt=""
+          {chooseIndex === 0 ? (
+            <React.Fragment>
+              <div className="group-member-search">
+                <TextField
+                  // required
+                  id="outlined-basic"
+                  variant="outlined"
+                  label="搜索"
+                  className={classes.input}
+                  style={{ width: '70%' }}
+                  value={searchInput}
+                  onChange={(e) => {
+                    setSearchInput(e.target.value);
+                  }}
+                />
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => {
+                    searchMember();
+                  }}
+                  style={{ marginLeft: '10px' }}
+                  className={classes.button}
+                >
+                  搜索
+                </Button>
+              </div>
+              <div
+                className="group-member-container"
+                onScroll={(e) => {
+                  if (searchInput !== '') {
+                    scrollSearchLoading(e);
+                  }
+                }}
+              >
+                {groupMemberList.map((mainItem: any, mainIndex: number) => {
+                  return (
+                    <div className="group-member-item" key={'main' + mainIndex}>
+                      <div className="group-member-item-container">
+                        <div className="group-member-img">
+                          <img
+                            src={
+                              mainItem.avatar
+                                ? mainItem.avatar +
+                                  '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
+                                : defaultPersonPng
+                            }
+                            alt=""
+                          />
+                        </div>
+                        <div className="group-member-name">
+                          {mainItem.nickName}
+                        </div>
+                      </div>
+                      <Checkbox
+                        onChange={() => {
+                          changeMember(mainIndex);
+                        }}
+                        checked={mainItem.checked}
                       />
                     </div>
-                    <div className="group-member-name">{mainItem.nickName}</div>
+                  );
+                })}
+              </div>
+            </React.Fragment>
+          ) : null}
+          {chooseIndex === 1 ? (
+            <div className="group-member-container" style={{ height: '100%' }}>
+              {joinMemberList.map((mainItem: any, mainIndex: number) => {
+                return (
+                  <div className="group-member-item" key={'join' + mainIndex}>
+                    <div className="group-member-item-container">
+                      <div className="group-member-img">
+                        <img
+                          src={
+                            mainItem.avatar
+                              ? mainItem.avatar +
+                                '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
+                              : defaultPersonPng
+                          }
+                          alt=""
+                        />
+                      </div>
+                      <div className="group-member-name">
+                        {mainItem.nickName}
+                      </div>
+                    </div>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        addJoinMember(mainItem, mainIndex);
+                      }}
+                      className={classes.addButton}
+                    >
+                      通过审核
+                    </Button>
                   </div>
-                  <Checkbox
-                    onChange={() => {
-                      changeMember(mainIndex);
-                    }}
-                    checked={mainItem.checked}
-                  />
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          ) : null}
         </div>
       </div>
       <div className="group-member-team">

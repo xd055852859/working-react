@@ -646,6 +646,19 @@ const group = {
       sonGroupKey: sonGroupKey,
     });
   },
+  applyJoinGroupList(groupKey: string) {
+    return request.post(HOME_URL + '/group/applyJoinGroupList', {
+      token: auth_token,
+      groupKey: groupKey,
+    });
+  },
+  //移除群申请
+  deleteApplyJoinGroup(applyJoinGroupKey:string) {
+    return request.post(HOME_URL + '/group/deleteApplyJoinGroup', {
+      token: auth_token,
+      applyJoinGroupKey:applyJoinGroupKey
+    });
+  },
 };
 export default {
   auth,

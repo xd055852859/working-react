@@ -101,7 +101,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   const [mainSearchList, setMainSearchList] = React.useState<any>([]);
   const [searchInput, setSearchInput] = React.useState('');
   const [passwordInput, setPasswordInput] = React.useState('');
-  const [joinType, setJoinType] = React.useState(0);
+  const [joinType, setJoinType] = React.useState('');
   const [searchIndex, setSearchIndex] = React.useState(0);
   const [searchItem, setSearchItem] = React.useState<any>(null);
   const [isHasPassword, setIsHasPassword] = React.useState(false);
@@ -785,7 +785,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                     口令加群
                   </Button>
                 ) : null}
-                {joinType === 1 ? (
+                {joinType === '1' ? (
                   <Button
                     variant="contained"
                     color="primary"
