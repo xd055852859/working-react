@@ -411,7 +411,7 @@ const Task: React.FC<TaskProps> = (props) => {
                     visible={timeSetShow}
                     dropStyle={{
                       width: '318px',
-                      height: '230px',
+                      height: '245px',
                       top: '28px',
                       left: '-25px',
                     }}

@@ -4,6 +4,7 @@ import logoPng from '../../assets/img/logo.png';
 import boardPng from '../../assets/img/board.png';
 import tablePng from '../../assets/img/table.png';
 import chatPng from '../../assets/img/chat.png';
+import calendarPng from '../../assets/img/calendarHome.png';
 import Tabs from '../tabs/tabs';
 import { useDispatch } from 'react-redux';
 import { setCommonHeaderIndex } from '../../redux/actions/commonActions';
@@ -68,6 +69,16 @@ const Home: React.FC<HomeProps> = (props) => {
         >
           <img src={tablePng} alt="" className="home-header-item-logo" />
           我的工作台
+        </div>
+        <div
+          style={
+            headerIndex === 5 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
+          }
+          className="home-header-item"
+          onClick={() => dispatch(setCommonHeaderIndex(5))}
+        >
+          <img src={calendarPng} alt="" className="home-header-item-logo" />
+          日程
         </div>
         <div
           style={

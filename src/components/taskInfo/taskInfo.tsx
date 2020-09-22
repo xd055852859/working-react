@@ -32,7 +32,6 @@ import {
 import DropMenu from '../common/dropMenu';
 import TimeSet from '../common/timeSet';
 import Editor from '../common/Editor';
-import { countReset } from 'console';
 interface TaskInfoProps {}
 // pick a date util library
 moment.locale('zh-cn');

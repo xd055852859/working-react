@@ -24,6 +24,7 @@ import Content from './views/content/content';
 import WorkingTable from './views/workingTable/workingTable';
 import GroupTable from './views/groupTable/groupTable';
 import Chat from './views/chat/chat';
+import Calendar from './views/calendar/calendar';
 import TaskInfo from './components/taskInfo/taskInfo';
 import { setGroupKey } from './redux/actions/groupActions';
 const App: React.FC = () => {
@@ -125,6 +126,7 @@ const App: React.FC = () => {
       {headerIndex === 1 ? <WorkingTable /> : null}
       {headerIndex === 3 ? <GroupTable /> : null}
       {headerIndex === 2 ? <WorkingTable /> : null}
+      {headerIndex === 5 ? <Calendar /> : null}
       <Chat />
       {taskInfoVisible ? <TaskInfo /> : null}
     </div>
