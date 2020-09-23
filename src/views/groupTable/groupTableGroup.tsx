@@ -238,7 +238,7 @@ const GroupTableGroup: React.FC = (prop) => {
     }
     if (source.droppableId === destination.droppableId) {
       const items = reorder(
-        newTaskInfo[source.droppableId],
+        newTaskInfo[parseInt(source.droppableId)],
         source.index,
         destination.index
       );
@@ -284,9 +284,10 @@ const GroupTableGroup: React.FC = (prop) => {
     }
 
     setTaskInfo(newTaskInfo);
+    console.log(source.droppableId, source.index);
     let taskRes: any = await api.task.changeTaskLabel(
       groupKey,
-      taskInfo[source.droppableId][source.index]._key,
+      taskInfo[parseInt(source.droppableId)][source.index]._key,
       labelArray[parseInt(destination.droppableId)]._key
     );
     if (taskRes.msg === 'OK') {

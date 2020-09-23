@@ -55,24 +55,21 @@ const Contact: React.FC<ContactProps> = (props) => {
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const theme = useTypedSelector((state) => state.auth.theme);
   useEffect(() => {
-    if (user && user._key && (theme.backgroundColor || theme.backgroundImg)) {
-      if (!groupArray) {
+    if (user && user._key) {
+      if (!groupArray && contactIndex === 0) {
         dispatch(getGroup(3, 1, 2));
         setTimeout(() => {
           dispatch(getGroup(3, null, 2));
         }, 2000);
-      }
-      if (!memberArray) {
         dispatch(getMember(mainGroupKey, 2));
       }
-
       if (groupArray && contactIndex === 0) {
         setContactArray(groupArray);
       } else if (memberArray && contactIndex === 1) {
         setContactArray(memberArray);
       }
     }
-  }, [groupArray, memberArray, user, contactIndex, theme]);
+  }, [groupArray, user, contactIndex]);
   const toTargetGroup = (groupKey: string, index: number) => {
     dispatch(setGroupKey(groupKey));
     dispatch(getGroupInfo(groupKey));
@@ -118,7 +115,7 @@ const Contact: React.FC<ContactProps> = (props) => {
             return (
               <div
                 className="contact-item"
-                key={'contact'+index}
+                key={'contact' + index}
                 onClick={() => {
                   contactIndex
                     ? toTargetUser(key, index)

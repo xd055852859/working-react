@@ -201,6 +201,17 @@ const traditionalDate = {
     if (this.cDay % 10 != 0 || this.cDay == 10) {
       tmp[2] += this.numString.charAt((this.cDay - 1) % 10);
     }
+    if (this.cMonth == 0 && this.cDay == 1) tmp[2] = '元旦';
+    if (this.cMonth == 2 && this.cDay == 12) tmp[2] = '植树节';
+    if (this.cMonth == 3 && this.cDay == 5) tmp[2] = '清明节';
+    if (this.cMonth == 4 && this.cDay == 1) tmp[2] = '国际劳动节';
+    if (this.cMonth == 4 && this.cDay == 4) tmp[2] = '青年节';
+    if (this.cMonth == 5 && this.cDay == 1) tmp[2] = '国际儿童节';
+    if (this.cMonth == 7 && this.cDay == 1) tmp[2] = '建军节';
+    if (tmp[1] + tmp[2] === '七月初七') tmp[2] = '七夕情人节';
+    if (this.cMonth == 9 && this.cDay == 1) tmp[2] = '国庆节';
+    if (this.cMonth == 11 && this.cDay == 24) tmp[2] = '平安夜';
+    if (this.cMonth == 11 && this.cDay == 25) tmp[2] = '圣诞节';
     return tmp;
   },
   GetLunarDay(targetDate) {

@@ -1,5 +1,6 @@
 import { actionTypes } from '../actions/taskActions';
 import _ from 'lodash';
+import moment from 'moment';
 export interface TaskType {
   labelArray: any;
   taskArray: any;
@@ -12,6 +13,9 @@ export interface TaskType {
   chooseKey: string;
   filterObject: any;
   taskInfoVisible: boolean;
+  calendarList: any;
+  taskActionArray: any;
+  taskAction: any;
 }
 
 const defaultState: TaskType = {
@@ -37,6 +41,9 @@ const defaultState: TaskType = {
     filterType: ['过期', '今天', '已完成'],
   },
   taskInfoVisible: false,
+  calendarList: null,
+  taskActionArray: [],
+  taskAction: {},
 };
 
 export const task = (state = defaultState, action: any) => {
@@ -166,6 +173,28 @@ export const task = (state = defaultState, action: any) => {
       return {
         ...state,
         taskInfoVisible: action.taskInfoVisible,
+      };
+    case actionTypes.SET_TASK_ACTION:
+      console.log("???????????",action.taskAction)
+      return {
+        ...state,
+        taskAction: action.taskAction,
+      };
+    case actionTypes.GET_CALENDAR_LIST_SUCCESS:
+      let taskActionArray: any = [];
+      action.data.forEach((item: any) => {
+        if (
+          item.taskEndDate >= moment().startOf('day').valueOf() &&
+          item.taskEndDate <= moment().endOf('day').valueOf()
+        ) {
+          taskActionArray.push(item);
+        }
+      });
+      console.log(taskActionArray);
+      return {
+        ...state,
+        calendarList: action.data,
+        taskActionArray: _.cloneDeep(taskActionArray),
       };
     default:
       return state;

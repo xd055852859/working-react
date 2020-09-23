@@ -11,7 +11,7 @@ export interface Common {
   showNotification: boolean;
   showSearch: boolean;
   message: Message;
-  headerIndex: number;
+  headerIndex: any;
   moveState: string;
   chatState: boolean;
 }
@@ -27,7 +27,7 @@ const defaultState: Common = {
     severity: undefined,
   },
   // headerIndex: 3,
-  headerIndex: 0,
+  headerIndex: null,
   moveState: '',
   chatState: false,
 };
@@ -39,6 +39,7 @@ export const common = (state = defaultState, action: any) => {
         const redirect = `${window.location.protocol}//${window.location.host}`;
         window.location.href = `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`;
       }
+      console.log('action.error.msg,', action.error.msg);
       return {
         ...state,
         loading: false,

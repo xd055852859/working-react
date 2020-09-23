@@ -661,23 +661,21 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
         </div>
       </Dialog>
       <Dialog
-        visible={addVisible}
+        visible={bgVisible}
         onClose={() => {
-          setAddVisible(false);
+          setBgVisible(false);
         }}
-        onOK={() => {
-          addLabelTask();
-        }}
-        title={'跨群添加'}
+        title={'背景设置'}
         dialogStyle={{
-          position: 'fixed',
-          top: '65px',
-          right: '10px',
-          width: '400px',
-          height: '250px',
-          overflow: 'visible',
+          // position: 'fixed',
+          // top: '65px',
+          // right: '10px',
+          width: '435px',
+          height: '450px',
+          // overflow: 'visible',
         }}
-        showMask={false}
+        footer={false}
+        // showMask={false}
       >
         <div className="bg-title">颜色</div>
         <div className="bg-container">

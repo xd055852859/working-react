@@ -14,11 +14,12 @@ const Content: React.FC<ContentProps> = (props) => {
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
   const theme = useTypedSelector((state) => state.auth.theme);
+  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const [nowTime, setNowTime] = useState<any>([]);
   const [prompt, setPrompt] = useState();
   useEffect(() => {
     let interval: any = null;
-    if (user) {
+    if (user && headerIndex === 0) {
       formatTime();
       getPrompt();
       interval = setInterval(formatTime, 60000);
@@ -27,7 +28,7 @@ const Content: React.FC<ContentProps> = (props) => {
     return () => {
       clearInterval(interval);
     };
-  }, [user]);
+  }, [user, headerIndex]);
   const formatTime = () => {
     let hour = moment().hour();
     let minute = moment().minute();

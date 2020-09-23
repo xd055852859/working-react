@@ -18,8 +18,10 @@ export const actionTypes = {
   EDIT_TASK: 'EDIT_TASK',
   EDIT_TASK_SUCCESS: 'EDIT_TASK_SUCCESS',
   SET_FILTER_OBJECT: 'SET_FILTER_OBJECT',
-  CHANGE_TASKINFO_VISIBLE:'CHANGE_TASKINFO_VISIBLE'
-  
+  CHANGE_TASKINFO_VISIBLE: 'CHANGE_TASKINFO_VISIBLE',
+  SET_TASK_ACTION: 'SET_TASK_ACTION',
+  GET_CALENDAR_LIST: 'GET_CALENDAR_LIST',
+  GET_CALENDAR_LIST_SUCCESS: 'GET_CALENDAR_LIST_SUCCESS',
 };
 
 export function getGroupTask(
@@ -160,4 +162,26 @@ export function changeTaskInfoVisible(taskInfoVisible: boolean) {
     type: actionTypes.CHANGE_TASKINFO_VISIBLE,
     taskInfoVisible: taskInfoVisible,
   };
+}
+export function setTaskAction(taskAction: any) {
+  return {
+    type: actionTypes.SET_TASK_ACTION,
+    taskAction: taskAction,
+  };
+}
+
+export function getCalendarList(
+  targetUKey: string,
+  startTime: number,
+  endTime: number
+) {
+  return {
+    type: actionTypes.GET_CALENDAR_LIST,
+    targetUKey: targetUKey,
+    startTime: startTime,
+    endTime: endTime,
+  };
+}
+export function getCalendarListSuccess(data: any) {
+  return { type: actionTypes.GET_CALENDAR_LIST_SUCCESS, data };
 }

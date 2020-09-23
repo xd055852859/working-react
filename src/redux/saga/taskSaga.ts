@@ -8,6 +8,7 @@ import {
   getWorkingTableSuccess,
   editTaskSuccess,
   addWorkingTableTaskSuccess,
+  getCalendarListSuccess
 } from '../actions/taskActions';
 import { Failed, Loading } from '../actions/commonActions';
 import api from '../../services/api';
@@ -133,6 +134,25 @@ function* addWorkingTableTask(action: any) {
     yield put(Failed(e));
   }
 }
+function* getCalendarList(action: any) {
+  try {
+    const res = yield call(
+      api.task.getCalendarList,
+      action.targetUKey,
+      action.startTime,
+      action.endTime,
+    );
+    console.log('res', res);
+    if (res.msg === 'OK') {
+      yield put(getCalendarListSuccess(res.result));
+    } else {
+      yield put(Failed(res));
+    }
+  } catch (e) {
+    yield put(Failed(e));
+  }
+}
+
 const taskSaga = [
   takeLatest(actionTypes.GET_GROUP_TASK, getGroupTask),
   takeLatest(actionTypes.GET_TEAM_TASK, getTeamTask),
@@ -141,6 +161,8 @@ const taskSaga = [
   takeLatest(actionTypes.GET_WORKING_TABLE_TASK, getWorkingTableTask),
   takeLatest(actionTypes.EDIT_TASK, editTask),
   takeLatest(actionTypes.ADD_WORKING_TABLE_TASK, addWorkingTableTask),
+  takeLatest(actionTypes.GET_CALENDAR_LIST, getCalendarList),
+  
 ];
 
 export default taskSaga;

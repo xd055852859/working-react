@@ -701,7 +701,11 @@ const GroupTableHeader: React.FC = (prop) => {
         }}
         footer={false}
         // title={'搜索中心'}
-        dialogStyle={{ width: '850px', height: '700px' }}
+        dialogStyle={{
+          width: 'calc(100% - 330px)',
+          height: 'calc(100% - 20px)',
+          marginLeft: '330px',
+        }}
       >
         <Vitality vitalityType={3} vitalityKey={groupKey} />
       </Dialog>

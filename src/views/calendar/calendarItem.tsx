@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './calendarItem.css';
 import { useDispatch } from 'react-redux';
+import { useTypedSelector } from '../../redux/reducer/RootState';
 import DateFnsUtils from '@date-io/moment';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import {
@@ -8,7 +9,10 @@ import {
   KeyboardDatePicker,
 } from '@material-ui/pickers';
 import { Button, TextField, Checkbox } from '@material-ui/core';
+import { setMessage } from '../../redux/actions/commonActions';
+import { getCalendarList } from '../../redux/actions/taskActions';
 import _ from 'lodash';
+import api from '../../services/api';
 import 'moment/locale/zh-cn';
 import moment from 'moment';
 import DropMenu from '../../components/common/dropMenu';
@@ -17,6 +21,9 @@ interface CalendarItemProps {
   calendarStyle: Object;
   visible: Boolean;
   targetDay: any;
+  calendarColor: any;
+  calendarStartTime: number;
+  calendarEndTime: number;
 }
 moment.locale('zh-cn');
 const useStyles = makeStyles((theme: Theme) =>
@@ -68,7 +75,17 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 const CalendarItem: React.FC<CalendarItemProps> = (props) => {
-  const { onClose, calendarStyle, visible, targetDay } = props;
+  const {
+    onClose,
+    calendarStyle,
+    visible,
+    targetDay,
+    calendarColor,
+    calendarStartTime,
+    calendarEndTime,
+  } = props;
+  const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
+  const userKey = useTypedSelector((state) => state.auth.userKey);
   const classes = useStyles();
   const dispatch = useDispatch();
   const [calendarInput, setCalendarInput] = useState('');
@@ -77,18 +94,7 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
   const [calendarCheck, setCalendarCheck] = useState(false);
   const [calendarIndex, setCalendarIndex] = useState(0);
   const [calendarColorVisible, setCalendarColorVisible] = useState(false);
-  const calendarColor = [
-    '#39B98D',
-    '#3C8FB5',
-    '#B762BD',
-    '#86B93F',
-    '#8B572A',
-    '#D0021B',
-    '#F5A623',
-    '#FC766A',
-    '#4A4A4A',
-    '#9B9B9B',
-  ];
+
   useEffect(() => {
     if (targetDay) {
       setCalendarDay(targetDay);
@@ -97,9 +103,30 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
   const handleDateChange = (date: any) => {
     setCalendarDay(date.startOf('day'));
   };
-  const saveCalendarItem = () => {
-    const calendarTime = calendarDay.format('yyyy-MM-DD') + ' ' + calendarHour;
-    console.log(moment(calendarTime).valueOf());
+  const saveCalendarItem = async () => {
+    const calendarTime = moment(
+      calendarDay.format('yyyy-MM-DD') + ' ' + calendarHour
+    ).valueOf();
+    let res: any = await api.task.addTask(
+      mainGroupKey,
+      1,
+      '',
+      userKey,
+      calendarInput,
+      0,
+      5,
+      calendarIndex,
+      calendarCheck ? 1 : 0,
+      calendarTime
+    );
+    if (res.msg == 'OK') {
+      dispatch(setMessage(true, '新增日程成功', 'success'));
+      dispatch(getCalendarList(userKey, calendarStartTime, calendarEndTime));
+      setCalendarInput('');
+      onClose();
+    } else {
+      dispatch(setMessage(true, res.msg, 'error'));
+    }
   };
   return (
     <React.Fragment>
@@ -187,6 +214,7 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
                           width: '25px',
                           height: '25px',
                         }}
+                        key={'color' + colorIndex}
                         className="calendarItem-color-title"
                         onClick={() => {
                           setCalendarIndex(colorIndex);

@@ -366,16 +366,16 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     }
   };
   const contactSort = (sortType: number) => {
-    let newTheme = _.cloneDeep(theme);
-    if (contactIndex === 0) {
-      dispatch(getGroup(3, null, sortType));
-      newTheme.groupSortType = sortType;
-      dispatch(setTheme(newTheme));
-    } else if (contactIndex === 1) {
-      dispatch(getMember(mainGroupKey, sortType));
-      newTheme.personSortType = sortType;
-      dispatch(setTheme(newTheme));
-    }
+    // let newTheme = _.cloneDeep(theme);
+    // if (contactIndex === 0) {
+    //   dispatch(getGroup(3, null, sortType));
+    //   newTheme.groupSortType = sortType;
+    //   dispatch(setTheme(newTheme));
+    // } else if (contactIndex === 1) {
+    //   dispatch(getMember(mainGroupKey, sortType));
+    //   newTheme.personSortType = sortType;
+    //   dispatch(setTheme(newTheme));
+    // }
   };
   const toTargetGroup = (groupKey: string) => {
     dispatch(setGroupKey(groupKey));

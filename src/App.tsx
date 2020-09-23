@@ -4,6 +4,7 @@ import { useLocation, useHistory } from 'react-router-dom';
 import { useTypedSelector } from './redux/reducer/RootState';
 import { getSearchParamValue } from './services/util';
 import { useDispatch } from 'react-redux';
+import closePng from './assets/img/close.png';
 import {
   getUserInfo,
   getMainGroupKey,
@@ -18,6 +19,8 @@ import {
 import {
   setChooseKey,
   changeTaskInfoVisible,
+  getCalendarList,
+  setTaskAction,
 } from './redux/actions/taskActions';
 import Home from './views/home/home';
 import Content from './views/content/content';
@@ -27,6 +30,8 @@ import Chat from './views/chat/chat';
 import Calendar from './views/calendar/calendar';
 import TaskInfo from './components/taskInfo/taskInfo';
 import { setGroupKey } from './redux/actions/groupActions';
+import moment from 'moment';
+import _ from 'lodash';
 const App: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
@@ -37,8 +42,15 @@ const App: React.FC = () => {
   const taskInfoVisible = useTypedSelector(
     (state) => state.task.taskInfoVisible
   );
+  const taskActionArray = useTypedSelector(
+    (state) => state.task.taskActionArray
+  );
+  const taskAction = useTypedSelector((state) => state.task.taskAction);
   const theme = useTypedSelector((state) => state.auth.theme);
   const message = useTypedSelector((state) => state.common.message);
+  const [intervalTime, setIntervalTime] = useState<any>(null);
+  const [playAction, setPlayAction] = useState<any>({});
+  const [playState, setPlayState] = useState(false);
   useEffect(() => {
     // 用户已登录
     if (
@@ -50,7 +62,16 @@ const App: React.FC = () => {
       // console.log(user);
       dispatch(getMainGroupKey());
       dispatch(getTheme());
-      const headerIndex = localStorage.getItem('headerIndex');
+      dispatch(
+        getCalendarList(
+          user._key,
+          moment().startOf('month').startOf('day').valueOf(),
+          moment().endOf('month').endOf('day').valueOf()
+        )
+      );
+      const headerIndex = localStorage.getItem('headerIndex')
+        ? localStorage.getItem('headerIndex')
+        : 0;
 
       if (headerIndex) {
         dispatch(setCommonHeaderIndex(parseInt(headerIndex)));
@@ -103,15 +124,29 @@ const App: React.FC = () => {
       }
     }
   }, [history, dispatch, location.search, user, token]);
-  // useEffect(() => {
-  //   if (document.querySelectorAll('svg')) {
-  //     Array.from(document.querySelectorAll('svg')).forEach((item: any) => {
-  //       if (item.parentElement.parentElement.style.width) {
-  //         item.parentElement.parentElement.style.display = 'none';
-  //       }
-  //     });
-  //   }
-  // }, [document.querySelectorAll('svg')]);
+  useEffect(() => {
+    if (taskActionArray.length > 0) {
+      console.log(taskActionArray);
+      clearInterval(intervalTime);
+      let newIntervalTime: any = 0;
+      formatAction();
+      newIntervalTime = setInterval(formatAction, 60000);
+      setIntervalTime(newIntervalTime);
+    }
+  }, [taskActionArray]);
+  useEffect(() => {
+    setPlayAction(_.cloneDeep(taskAction));
+  }, [taskAction]);
+
+  const formatAction = () => {
+    const nowTime = moment().valueOf();
+    taskActionArray.forEach((item: any, index: number) => {
+      if (item.taskEndDate <= nowTime + 60000 && item.taskEndDate >= nowTime) {
+        setPlayAction(item);
+        setPlayState(true);
+      }
+    });
+  };
   return (
     <div
       className="App"
@@ -129,6 +164,19 @@ const App: React.FC = () => {
       {headerIndex === 5 ? <Calendar /> : null}
       <Chat />
       {taskInfoVisible ? <TaskInfo /> : null}
+      {playState ? (
+        <div className="action">
+          <div className="action-container">{playAction.title}</div>
+          <img
+            src={closePng}
+            className="action-close"
+            onClick={() => {
+              setPlayAction({});
+              setPlayState(false);
+            }}
+          />
+        </div>
+      ) : null}
     </div>
   );
 };

@@ -486,10 +486,14 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                         <div
                           style={{ width: '12%', color: 'rgba(94,138,251,1)' }}
                         >
-                          {logItem.creatorName} → {logItem.executorName}
+                          {logItem.creatorName}{' '}
+                          {logItem.creatorName && logItem.executorName
+                            ? '→'
+                            : ''}
+                          {logItem.executorName}
                         </div>
-                        <div style={{ width: '20%' }}>{logItem.log}</div>
-                        <div style={{ width: '45%' }}>{logItem.cardTitle}</div>
+                        <div style={{ width: '30%' }}>{logItem.log}</div>
+                        <div style={{ width: '35%' }}>{logItem.cardTitle}</div>
                         <div style={{ width: '10%' }}>{logItem.createTime}</div>
                         <div
                           style={{

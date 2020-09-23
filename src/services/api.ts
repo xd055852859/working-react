@@ -325,23 +325,27 @@ const task = {
     labelKey: number | string,
     executorKey?: number | string,
     title?: string,
-    cardIndex?: number
+    cardIndex?: number,
+    type?: number,
+    taskType?: number,
+    finishPercent?: number,
+    taskEndDate?: number
   ) {
     return request.post(HOME_URL + '/card', {
       token: auth_token,
-      type: 2,
+      type: type ? type : 2,
       title: title ? title : '',
       content: '',
       rootType: 0,
       groupKey: groupKey,
-      taskType: 1,
+      taskType: taskType ? taskType : taskType == 0 ? 0 : 1,
       executorKey: executorKey,
       followUKeyArray: [],
-      finishPercent: 0,
+      finishPercent: finishPercent ? finishPercent : 0,
       hour: 1,
       day: 1,
       date: moment().date(),
-      taskEndDate: moment().endOf('day').valueOf(),
+      taskEndDate: taskEndDate ? taskEndDate : moment().endOf('day').valueOf(),
       groupRole: groupRole,
       cardIndex: cardIndex ? cardIndex : 0,
       labelKey: labelKey,
@@ -475,6 +479,15 @@ const task = {
     return request.get(HOME_URL + '/card/cardDetail', {
       token: auth_token,
       cardKey: cardKey,
+    });
+  },
+  //获取日程任务
+  getCalendarList(targetUKey: string, startTime: number, endTime: number) {
+    return request.post(HOME_URL + '/card/getScheduleCardList', {
+      token: auth_token,
+      targetUKey: targetUKey,
+      startTime: startTime,
+      endTime: endTime,
     });
   },
 };
@@ -653,10 +666,10 @@ const group = {
     });
   },
   //移除群申请
-  deleteApplyJoinGroup(applyJoinGroupKey:string) {
+  deleteApplyJoinGroup(applyJoinGroupKey: string) {
     return request.post(HOME_URL + '/group/deleteApplyJoinGroup', {
       token: auth_token,
-      applyJoinGroupKey:applyJoinGroupKey
+      applyJoinGroupKey: applyJoinGroupKey,
     });
   },
 };
