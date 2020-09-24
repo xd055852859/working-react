@@ -1,29 +1,35 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import './calendar.css';
 import CalendarItem from './calendarItem';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import traditionalDate from '../../components/common/date';
 import { setMessage } from '../../redux/actions/commonActions';
-import { getCalendarList } from '../../redux/actions/taskActions';
+import { getCalendarList, editTask } from '../../redux/actions/taskActions';
 import CalendarHeader from './calendarHeader';
 import moment from 'moment';
 import _ from 'lodash';
 import api from '../../services/api';
+import Dialog from '../../components/common/dialog';
+import rightArrowPng from '../../assets/img/rightArrow.png';
+import leftArrowPng from '../../assets/img/leftArrow.png';
 interface CalendarProps {}
 
 const Calendar: React.FC<CalendarProps> = (props) => {
   const {} = props;
   const dispatch = useDispatch();
   const calendarList = useTypedSelector((state) => state.task.calendarList);
+  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const userKey = useTypedSelector((state) => state.auth.userKey);
   const [calendarDate, setCalendarDate] = useState<any>([]);
   const [calendarDay, setCalendarDay] = useState(moment());
-  // const [calendarList, setCalendarList] = useState<any>(null);
+  const [positionList, setPositionList] = useState<any>([]);
   const [itemVisible, setItemVisible] = useState(false);
   const [pos, setPos] = useState<number[]>([0, 0]);
   const [targetMonth, setTargetMonth] = useState('');
   const [taskList, setTaskList] = useState<any>([]);
+  const [taskItem, setTaskItem] = useState<any>(null);
+  const [deleteDialogShow, setDeleteDialogShow] = useState(false);
   const [calendarStartTime, setCalendarStartTime] = useState(
     moment().startOf('month').startOf('day').valueOf()
   );
@@ -54,17 +60,38 @@ const Calendar: React.FC<CalendarProps> = (props) => {
   const calendarRef: React.RefObject<any> = useRef();
   useEffect(() => {
     if (calendarList) {
-      getCalendar(moment(), calendarList);
+      getCalendar(moment(calendarStartTime), calendarList);
+      console.log(calendarStartTime, calendarEndTime);
       setTargetMonth(
-        moment().format('YYYY') + '年' + moment().format('MM') + '月'
+        moment(calendarStartTime).format('YYYY') +
+          '年' +
+          moment(calendarEndTime).format('MM') +
+          '月'
       );
     }
   }, [calendarList]);
   useEffect(() => {
-    const dom: any = document.querySelectorAll('.calendar-day-item');
-    if (dom.length > 0) {
-      console.log(dom[0].offsetTop, dom[0].offsetLeft);
-      console.log(dom[0].offsetHeight, dom[0].offsetWidth);
+    if (positionList.length == 0) {
+      let newPositionList: any = [];
+      const dom: any = document.querySelectorAll('.calendar-day-item');
+      console.log(dom);
+      if (dom.length > 0) {
+        Array.from(dom).forEach((item: any, index: number) => {
+          const startTop = item.offsetTop;
+          const endTop = startTop + item.offsetHeight;
+          const startLeft = item.offsetLeft + 320;
+          const endLeft = startLeft + item.offsetWidth;
+          newPositionList.push({
+            startTop: startTop,
+            endTop: endTop,
+            startLeft: startLeft,
+            endLeft: endLeft,
+          });
+        });
+        setPositionList(newPositionList);
+      }
+      // console.log(dom[0].offsetTop, dom[0].offsetLeft);
+      // console.log(dom[0].offsetHeight, dom[0].offsetWidth);
     }
   });
   // const getData = async (startTime: number, endTime: number) => {
@@ -107,7 +134,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
             '-' +
             upDays
         );
-        strDate.push({
+        strDate.unshift({
           month: 'last',
           day: upDays,
           date: momentDate,
@@ -208,65 +235,102 @@ const Calendar: React.FC<CalendarProps> = (props) => {
     }
     setPos([pageX, pageY + 20]);
   };
-  const reorder = (list: any, startIndex: number, endIndex: number) => {
-    const result = Array.from(list);
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
+  const dragTask = (e: any, dragIndex: number, taskIndex: number) => {
+    let newPositionList = _.cloneDeep(positionList);
+    let newTaskList = _.cloneDeep(taskList);
+    let newTaskItem = newTaskList[dragIndex][taskIndex];
+    let diffTime = 0;
+    newTaskList[dragIndex].splice(taskIndex, 1);
+    newPositionList.forEach((item: any, index: number) => {
+      if (
+        e.clientX > item.startLeft &&
+        e.clientX < item.endLeft &&
+        e.clientY > item.startTop &&
+        e.clientY < item.endTop
+      ) {
+        diffTime =
+          calendarDate[index].endTime - calendarDate[dragIndex].endTime;
+        newTaskItem.taskEndDate = newTaskItem.taskEndDate + diffTime;
+        newTaskList[index].push(newTaskItem);
+        newTaskList[index] = _.sortBy(newTaskList[index], ['taskEndDate']);
+      }
+    });
 
-    return result;
+    setTaskList(newTaskList);
+    dispatch(editTask({ key: newTaskItem._key, ...newTaskItem }, headerIndex));
+    // console.log(e.clientX, e.clientY);
   };
-  const move = (
-    source: any,
-    destination: any,
-    droppableSource: any,
-    droppableDestination: any
-  ) => {
-    const sourceClone = Array.from(source);
-    const destClone = Array.from(destination);
-    const [removed] = sourceClone.splice(droppableSource.index, 1);
-
-    destClone.splice(droppableDestination.index, 0, removed);
-
-    const result: any = {};
-    result[droppableSource.droppableId] = sourceClone;
-    result[droppableDestination.droppableId] = destClone;
-    console.log('????????', result);
-    return result;
+  const taskKeyDown = (e: any) => {
+    if (e.keyCode === 46) {
+      setItemVisible(false);
+      setDeleteDialogShow(true);
+    }
   };
-  const onDragEnd = async (result: any) => {
-    const { source, destination } = result;
-    let newCalendarDate = _.cloneDeep(calendarDate);
-    console.log('????????????', result);
-    // dropped outside the list
-    // if (!destination) {
-    //   return;
-    // }
-    // if (source.droppableId === destination.droppableId) {
-    //   const items = reorder(
-    //     newCalendarDate[parseInt(source.droppableId)],
-    //     source.index,
-    //     destination.index
-    //   );
-    //   newCalendarDate[parseInt(source.droppableId)] = items;
-    //   console.log(items);
-    // } else {
-    //   const result = move(
-    //     newCalendarDate[parseInt(source.droppableId)],
-    //     newCalendarDate[parseInt(destination.droppableId)],
-    //     source,
-    //     destination
-    //   );
-    //   console.log(result);
-    //   // newCalendarDate[parseInt(source.droppableId)] = result[source.droppableId];
-    //   // newCalendarDate[parseInt(destination.droppableId)] =
-    //   //   result[destination.droppableId];
-    // }
+  const deleteTask = async () => {
+    setDeleteDialogShow(false);
+    let deleteRes: any = await api.task.deleteTask(
+      taskItem._key,
+      taskItem.groupKey
+    );
+    if (deleteRes.msg === 'OK') {
+      dispatch(setMessage(true, '删除成功', 'success'));
+      dispatch(getCalendarList(userKey, calendarStartTime, calendarEndTime));
+    } else {
+      dispatch(setMessage(true, deleteRes.msg, 'error'));
+    }
+  };
+  const changeMonth = (type: number) => {
+    let newCalendarStartTime = 0;
+    let newCalendarEndTime = 0;
+    //当前时间
+    if (type == 0) {
+      newCalendarStartTime = moment(calendarStartTime)
+        .subtract(1, 'month')
+        .startOf('month')
+        .startOf('day')
+        .valueOf();
+      newCalendarEndTime = moment(calendarStartTime)
+        .subtract(1, 'month')
+        .endOf('month')
+        .endOf('day')
+        .valueOf();
+    } else {
+      newCalendarStartTime = moment(calendarStartTime)
+        .add(1, 'month')
+        .startOf('month')
+        .startOf('day')
+        .valueOf();
+      newCalendarEndTime = moment(calendarStartTime)
+        .add(1, 'month')
+        .endOf('month')
+        .endOf('day')
+        .valueOf();
+    }
+    setCalendarStartTime(newCalendarStartTime);
+    setCalendarEndTime(newCalendarEndTime);
+    dispatch(getCalendarList(userKey, newCalendarStartTime, newCalendarEndTime));
   };
   return (
     <div className="calendar">
       <CalendarHeader />
       <div className="calendar-container">
-        <div className="calendar-title">{targetMonth}</div>
+        <div className="calendar-title">
+          <img
+            src={leftArrowPng}
+            className="calendar-choose-icon"
+            onClick={() => {
+              changeMonth(0);
+            }}
+          />
+          {targetMonth}
+          <img
+            src={rightArrowPng}
+            className="calendar-choose-icon"
+            onClick={() => {
+              changeMonth(1);
+            }}
+          />
+        </div>
         <div className="calendar-week">
           {weekArr.map((weekItem: any, weekIndex: number) => {
             return (
@@ -276,94 +340,92 @@ const Calendar: React.FC<CalendarProps> = (props) => {
             );
           })}
         </div>
-        <DragDropContext onDragEnd={onDragEnd}>
-          <div className="calendar-day" ref={calendarRef}>
-            {calendarDate.map((calendarItem: any, calendarIndex: number) => {
-              return (
-                <Droppable
-                  droppableId={calendarItem.date + ''}
-                  key={'calendarItem' + calendarIndex}
-                  direction="horizontal"
-                >
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      key={'calendar' + calendarIndex}
-                      className="calendar-day-item"
-                      onClick={(e) => {
-                        setItemVisible(true);
-                        getMousePos(e, calendarIndex);
-                        setCalendarDay(moment(calendarItem.startTime));
-                      }}
+        <div className="calendar-day" ref={calendarRef}>
+          {calendarDate.map((calendarItem: any, calendarIndex: number) => {
+            return (
+              <div
+                key={'calendar' + calendarIndex}
+                className="calendar-day-item"
+                onClick={(e) => {
+                  setItemVisible(true);
+                  getMousePos(e, calendarIndex);
+                  setTaskItem(null);
+                  setCalendarDay(moment(calendarItem.startTime));
+                }}
+                style={{
+                  backgroundColor:
+                    ((calendarIndex + 2) % 7 === 0 ||
+                      (calendarIndex + 1) % 7 === 0) &&
+                    calendarIndex !== 0
+                      ? '#F9F9F9'
+                      : '',
+                  border: calendarItem.targetDay ? '2px solid #17B881' : '',
+                }}
+              >
+                <div className="calendar-day-item-title">
+                  {calendarItem.day}日 (
+                  {traditionalDate.GetLunarDay(calendarItem.date)[2]})
+                  {calendarItem.targetDay ? (
+                    <span
                       style={{
-                        backgroundColor:
-                          ((calendarIndex + 2) % 7 === 0 ||
-                            (calendarIndex + 1) % 7 === 0) &&
-                          calendarIndex !== 0
-                            ? '#F9F9F9'
-                            : '',
-                        border: calendarItem.targetDay
-                          ? '2px solid #17B881'
-                          : '',
+                        color: '#17B881',
+                        marginLeft: '5px',
                       }}
                     >
-                      <div className="calendar-day-item-title">
-                        {calendarItem.day}日 (
-                        {traditionalDate.GetLunarDay(calendarItem.date)[2]})
-                        {calendarItem.targetDay ? (
-                          <span
-                            style={{
-                              color: '#17B881',
-                              marginLeft: '5px',
-                            }}
-                          >
-                            今日
-                          </span>
-                        ) : null}
-                      </div>
-                      <div className="calendar-day-item-container">
-                        {taskList[calendarIndex].map(
-                          (taskItem: any, taskIndex: number) => {
-                            return (
-                              <Draggable
-                                key={'task' + taskIndex}
-                                draggableId={taskItem._key}
-                                index={taskIndex}
-                              >
-                                {(provided, snapshot) => (
-                                  <div
-                                    ref={provided.innerRef}
-                                    {...provided.draggableProps}
-                                    {...provided.dragHandleProps}
-                                    className="calendar-day-item-info"
-                                    // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
-                                    style={{
-                                      borderLeft:
-                                        '2px solid ' +
-                                        calendarColor[taskItem.taskType],
-                                    }}
-                                  >
-                                    {moment(taskItem.taskEndDate).format(
-                                      'HH:mm'
-                                    ) + ' '}
-                                    {taskItem.title}
-                                  </div>
-                                )}
-                              </Draggable>
-                            );
-                          }
-                        )}
-                        {provided.placeholder}
-                      </div>
-                    </div>
+                      今日
+                    </span>
+                  ) : null}
+                </div>
+                <div className="calendar-day-item-container">
+                  {taskList[calendarIndex].map(
+                    (taskItem: any, taskIndex: number) => {
+                      return (
+                        <div
+                          key={'task' + taskIndex}
+                          className="calendar-day-item-info"
+                          // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
+                          style={{
+                            borderLeft:
+                              '2px solid ' + calendarColor[taskItem.taskType],
+                          }}
+                          onDragEnd={(e: any) => {
+                            dragTask(e, calendarIndex, taskIndex);
+                          }}
+                          draggable="true"
+                          onClick={(e: any) => {
+                            setItemVisible(true);
+                            setTaskItem(taskItem);
+                            getMousePos(e, calendarIndex);
+                            e.stopPropagation();
+                          }}
+                          tabIndex={taskItem._key}
+                          onKeyDown={taskKeyDown}
+                        >
+                          {moment(taskItem.taskEndDate).format('HH:mm') + ' '}
+                          {taskItem.title}
+                        </div>
+                      );
+                    }
                   )}
-                </Droppable>
-              );
-            })}
-          </div>
-        </DragDropContext>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
-
+      <Dialog
+        visible={deleteDialogShow}
+        onClose={() => {
+          setDeleteDialogShow(false);
+        }}
+        onOK={() => {
+          deleteTask();
+        }}
+        title={'删除任务'}
+        dialogStyle={{ width: '400px', height: '200px' }}
+      >
+        <div className="dialog-onlyTitle">是否删除该任务</div>
+      </Dialog>
       <CalendarItem
         visible={itemVisible}
         onClose={() => {
@@ -377,6 +439,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
         calendarColor={calendarColor}
         calendarStartTime={calendarStartTime}
         calendarEndTime={calendarEndTime}
+        taskItem={taskItem}
       />
     </div>
   );

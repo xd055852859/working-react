@@ -70,16 +70,20 @@ const Home: React.FC<HomeProps> = (props) => {
           <img src={tablePng} alt="" className="home-header-item-logo" />
           我的工作台
         </div>
-        <div
-          style={
-            headerIndex === 5 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
-          }
-          className="home-header-item"
-          onClick={() => dispatch(setCommonHeaderIndex(5))}
-        >
-          <img src={calendarPng} alt="" className="home-header-item-logo" />
-          日程
-        </div>
+        {theme && theme.calendarVisible ? (
+          <div
+            style={
+              headerIndex === 5
+                ? { background: 'rgba(255, 255, 255, 0.34)' }
+                : {}
+            }
+            className="home-header-item"
+            onClick={() => dispatch(setCommonHeaderIndex(5))}
+          >
+            <img src={calendarPng} alt="" className="home-header-item-logo" />
+            日程
+          </div>
+        ) : null}
         <div
           style={
             headerIndex === 4 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}

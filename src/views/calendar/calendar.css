@@ -17,6 +17,10 @@
   display: flex;
   align-items: center;
   margin-bottom: 10px;
+  font-size: 18px;
+  font-family: PingFangSC-Medium, PingFang SC;
+  font-weight: 500;
+  line-height: 30px;
 }
 .calendar-week {
   width: 99.4%;
@@ -104,5 +108,19 @@
   line-height: 23px;
   padding-left: 8px;
   box-sizing: border-box;
+  cursor: pointer;
+}
+.calendar-choose {
+  width: 100px;
+  height: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.calendar-choose-icon {
+  width: 7px;
+  height: 11px;
+  margin: 0px 10px;
+  cursor: pointer;
 }
 /* border-left: 1px solid #e1e1e1; */

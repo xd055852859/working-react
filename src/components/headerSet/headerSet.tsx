@@ -19,6 +19,7 @@ import './headerSet.css';
 import set1Png from '../../assets/img/set1.png';
 import set2Png from '../../assets/img/set2.png';
 import set3Png from '../../assets/img/set3.png';
+import set4Png from '../../assets/img/set4.png';
 import logoutPng from '../../assets/img/logout.png';
 
 import bgImg from '../../assets/img/bgImg.png';
@@ -208,7 +209,9 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       groupArray[groupIndex]._key,
       groupArray[groupIndex].role,
       labelArray[labelIndex]._key,
-      labelArray[labelIndex].executorKey,
+      labelArray[labelIndex].executorKey
+        ? labelArray[labelIndex].executorKey
+        : user._key,
       addInput
     );
     if (addTaskRes.msg === 'OK') {
@@ -433,6 +436,26 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             </div>
           </div>
           <div className="contentHeader-set-item">
+            <div className="contentHeader-set-item-title">
+              <img
+                src={set4Png}
+                alt=""
+                style={{ width: '20px', height: '15px', marginRight: '5px' }}
+              />
+              <div>日程</div>
+            </div>
+            <div>
+              <Switch
+                checked={theme.calendarVisible ? true : false}
+                onChange={() => {
+                  changeBoard('calendarVisible');
+                }}
+                name="checkedD"
+                inputProps={{ 'aria-label': 'secondary checkbox' }}
+              />
+            </div>
+          </div>
+          <div className="contentHeader-set-item">
             <div
               className="contentHeader-set-item-title"
               onClick={() => {
@@ -530,44 +553,50 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
               </div>
               <div>{groupArray[groupIndex].groupName}</div>
               <img src={downArrowbPng} alt="" className="addTask-logo" />
-              <DropMenu
-                visible={groupVisible}
-                dropStyle={{
-                  width: '300px',
-                  height: '250px',
-                  top: '50px',
-                  overflow: 'auto',
-                }}
-                onClose={() => {
-                  setGroupVisible(false);
-                }}
-                title={'选择项目'}
-              >
-                <React.Fragment>
-                  {groupArray.map((item: any, index: number) => {
-                    return (
-                      <div
-                        className="chooseItem"
-                        onClick={() => {
-                          setGroupIndex(index);
-                          getLabelArray(item._key);
-                        }}
-                        key={'group' + index}
-                      >
-                        <div className="addTask-avatar">
-                          <img
-                            src={
-                              item.groupLogo ? item.groupLogo : defaultGroupPng
-                            }
-                            alt=""
-                          />
+              {groupVisible ? (
+                <DropMenu
+                  visible={groupVisible}
+                  dropStyle={{
+                    width: '300px',
+                    height: '250px',
+                    top: '50px',
+                    overflow: 'auto',
+                  }}
+                  onClose={() => {
+                    setGroupVisible(false);
+                  }}
+                  title={'选择项目'}
+                >
+                  <React.Fragment>
+                    {groupArray.map((item: any, index: number) => {
+                      return (
+                        <div
+                          className="chooseItem"
+                          onClick={(e: any) => {
+                            setGroupIndex(index);
+                            getLabelArray(item._key);
+                            setGroupVisible(false);
+                            e.stopPropagation();
+                          }}
+                          key={'group' + index}
+                        >
+                          <div className="addTask-avatar">
+                            <img
+                              src={
+                                item.groupLogo
+                                  ? item.groupLogo
+                                  : defaultGroupPng
+                              }
+                              alt=""
+                            />
+                          </div>
+                          <div>{item.groupName}</div>
                         </div>
-                        <div>{item.groupName}</div>
-                      </div>
-                    );
-                  })}
-                </React.Fragment>
-              </DropMenu>
+                      );
+                    })}
+                  </React.Fragment>
+                </DropMenu>
+              ) : null}
             </div>
             <div
               className="addTask-item"
@@ -577,37 +606,41 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             >
               <div>{labelArray[labelIndex].cardLabelName}</div>
               <img src={downArrowbPng} alt="" className="addTask-logo" />
-              <DropMenu
-                visible={labelVisible}
-                dropStyle={{
-                  width: '100%',
-                  height: '250px',
-                  top: '50px',
-                  overflow: 'auto',
-                }}
-                onClose={() => {
-                  setLabelVisible(false);
-                }}
-                title={'选择频道'}
-              >
-                <React.Fragment>
-                  {labelArray.map((item: any, index: number) => {
-                    return (
-                      <div
-                        className="chooseItem"
-                        onClick={() => {
-                          setLabelIndex(index);
-                        }}
-                        key={'label' + index}
-                      >
-                        <div style={{ textAlign: 'center', width: '100%' }}>
-                          {item.cardLabelName}
+              {labelVisible ? (
+                <DropMenu
+                  visible={labelVisible}
+                  dropStyle={{
+                    width: '100%',
+                    height: '250px',
+                    top: '50px',
+                    overflow: 'auto',
+                  }}
+                  onClose={() => {
+                    setLabelVisible(false);
+                  }}
+                  title={'选择频道'}
+                >
+                  <React.Fragment>
+                    {labelArray.map((item: any, index: number) => {
+                      return (
+                        <div
+                          className="chooseItem"
+                          onClick={(e: any) => {
+                            setLabelIndex(index);
+                            setLabelVisible(false);
+                            e.stopPropagation();
+                          }}
+                          key={'label' + index}
+                        >
+                          <div style={{ textAlign: 'center', width: '100%' }}>
+                            {item.cardLabelName}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </React.Fragment>
-              </DropMenu>
+                      );
+                    })}
+                  </React.Fragment>
+                </DropMenu>
+              ) : null}
             </div>
           </div>
         ) : null}
@@ -671,46 +704,47 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           // top: '65px',
           // right: '10px',
           width: '435px',
-          height: '450px',
           // overflow: 'visible',
         }}
         footer={false}
         // showMask={false}
       >
-        <div className="bg-title">颜色</div>
-        <div className="bg-container">
-          {color1.map((color1Item: any, color1Index: number) => {
-            return (
-              <div
-                style={{ backgroundColor: color1Item }}
-                key={'color1' + color1Index}
-                className="bg-item"
-                onClick={() => {
-                  changeBg('backgroundColor', color1Item);
-                }}
-              ></div>
-            );
-          })}
-        </div>
-        <div className="bg-title">壁纸</div>
-        <div className="bg-container">
-          {imgBigArr2.map((imgBigArr2Item: any, imgBigArr2Index: number) => {
-            return (
-              <div
-                style={{
-                  backgroundImage:
-                    'url(' +
-                    imgBigArr2Item +
-                    '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg)',
-                }}
-                key={'imgBigArr2' + imgBigArr2Index}
-                className="bg-item"
-                onClick={() => {
-                  changeBg('backgroundImg', imgBigArr2Item);
-                }}
-              ></div>
-            );
-          })}
+        <div className="bg">
+          <div className="bg-title">颜色</div>
+          <div className="bg-container">
+            {color1.map((color1Item: any, color1Index: number) => {
+              return (
+                <div
+                  style={{ backgroundColor: color1Item }}
+                  key={'color1' + color1Index}
+                  className="bg-item"
+                  onClick={() => {
+                    changeBg('backgroundColor', color1Item);
+                  }}
+                ></div>
+              );
+            })}
+          </div>
+          <div className="bg-title">壁纸</div>
+          <div className="bg-container">
+            {imgBigArr2.map((imgBigArr2Item: any, imgBigArr2Index: number) => {
+              return (
+                <div
+                  style={{
+                    backgroundImage:
+                      'url(' +
+                      imgBigArr2Item +
+                      '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg)',
+                  }}
+                  key={'imgBigArr2' + imgBigArr2Index}
+                  className="bg-item"
+                  onClick={() => {
+                    changeBg('backgroundImg', imgBigArr2Item);
+                  }}
+                ></div>
+              );
+            })}
+          </div>
         </div>
       </Dialog>
     </React.Fragment>

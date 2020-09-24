@@ -10,12 +10,13 @@ import {
 } from '@material-ui/pickers';
 import { Button, TextField, Checkbox } from '@material-ui/core';
 import { setMessage } from '../../redux/actions/commonActions';
-import { getCalendarList } from '../../redux/actions/taskActions';
+import { getCalendarList, editTask } from '../../redux/actions/taskActions';
 import _ from 'lodash';
 import api from '../../services/api';
 import 'moment/locale/zh-cn';
 import moment from 'moment';
 import DropMenu from '../../components/common/dropMenu';
+
 interface CalendarItemProps {
   onClose: any;
   calendarStyle: Object;
@@ -24,6 +25,7 @@ interface CalendarItemProps {
   calendarColor: any;
   calendarStartTime: number;
   calendarEndTime: number;
+  taskItem: any;
 }
 moment.locale('zh-cn');
 const useStyles = makeStyles((theme: Theme) =>
@@ -83,7 +85,9 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
     calendarColor,
     calendarStartTime,
     calendarEndTime,
+    taskItem,
   } = props;
+  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const userKey = useTypedSelector((state) => state.auth.userKey);
   const classes = useStyles();
@@ -100,38 +104,66 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
       setCalendarDay(targetDay);
     }
   }, [targetDay]);
+  useEffect(() => {
+    if (taskItem) {
+      setCalendarInput(taskItem.title);
+      setCalendarCheck(taskItem.importantStatus ? true : false);
+      setCalendarHour(moment(taskItem.taskEndDate).format('HH:mm'));
+      setCalendarIndex(taskItem.taskType);
+    }
+  }, [taskItem]);
   const handleDateChange = (date: any) => {
     setCalendarDay(date.startOf('day'));
   };
   const saveCalendarItem = async () => {
+    let newTaskItem = _.cloneDeep(taskItem);
     const calendarTime = moment(
       calendarDay.format('yyyy-MM-DD') + ' ' + calendarHour
     ).valueOf();
-    let res: any = await api.task.addTask(
-      mainGroupKey,
-      1,
-      '',
-      userKey,
-      calendarInput,
-      0,
-      5,
-      calendarIndex,
-      calendarCheck ? 1 : 0,
-      calendarTime
-    );
-    if (res.msg == 'OK') {
-      dispatch(setMessage(true, '新增日程成功', 'success'));
+    if (newTaskItem) {
+      dispatch(setMessage(true, '编辑日程成功', 'success'));
+      newTaskItem.title = calendarInput;
+      newTaskItem.importantStatus = calendarCheck ? 1 : 0;
+      newTaskItem.taskEndDate = calendarTime;
+      newTaskItem.taskType = calendarIndex;
+      await dispatch(
+        editTask({ key: newTaskItem._key, ...newTaskItem }, headerIndex)
+      );
       dispatch(getCalendarList(userKey, calendarStartTime, calendarEndTime));
       setCalendarInput('');
       onClose();
     } else {
-      dispatch(setMessage(true, res.msg, 'error'));
+      let res: any = await api.task.addTask(
+        mainGroupKey,
+        1,
+        '',
+        userKey,
+        calendarInput,
+        0,
+        5,
+        calendarIndex,
+        calendarCheck ? 1 : 0,
+        calendarTime
+      );
+      if (res.msg == 'OK') {
+        await dispatch(setMessage(true, '新增日程成功', 'success'));
+        dispatch(getCalendarList(userKey, calendarStartTime, calendarEndTime));
+        setCalendarInput('');
+        onClose();
+      } else {
+        dispatch(setMessage(true, res.msg, 'error'));
+      }
     }
   };
+  
   return (
     <React.Fragment>
       {visible ? (
-        <div className="calendarItem" style={calendarStyle}>
+        <div
+          className="calendarItem"
+          style={calendarStyle}
+        
+        >
           <div className="calendarItem-title">
             <TextField
               // required

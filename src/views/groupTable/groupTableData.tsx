@@ -94,7 +94,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
       groupKey,
       [0, 1],
       null,
-      moment().endOf('day').valueOf()
+      moment().add(1, 'days').startOf('day').valueOf()
     );
     if (dataRes.msg === 'OK') {
       setLoading(false);
@@ -260,13 +260,13 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
       switch (taskState) {
         case 0:
           state =
-            item.todayTaskTime > startTaskTime &&
+            item.todayTaskTime >= startTaskTime &&
             item.todayTaskTime <= endTaskTime &&
             item.finishPercent == 1;
           break;
         case 1:
           state =
-            item.taskEndDate > startTime &&
+            item.taskEndDate >= startTime &&
             item.taskEndDate <= endTime &&
             item.finishPercent == 0;
           break;
@@ -296,6 +296,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
         // this.showTabObj[item.executorKey] = true;
       }
     });
+    console.log('newPersonObj', newPersonObj);
     for (let key in newPersonObj) {
       if (key != 'position') {
         newPersonGroupObj[key] = {};

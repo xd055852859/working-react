@@ -51,6 +51,18 @@ const App: React.FC = () => {
   const [intervalTime, setIntervalTime] = useState<any>(null);
   const [playAction, setPlayAction] = useState<any>({});
   const [playState, setPlayState] = useState(false);
+  const calendarColor = [
+    '#39B98D',
+    '#3C8FB5',
+    '#B762BD',
+    '#86B93F',
+    '#8B572A',
+    '#D0021B',
+    '#F5A623',
+    '#FC766A',
+    '#4A4A4A',
+    '#9B9B9B',
+  ];
   useEffect(() => {
     // 用户已登录
     if (
@@ -69,14 +81,18 @@ const App: React.FC = () => {
           moment().endOf('month').endOf('day').valueOf()
         )
       );
-      const headerIndex = localStorage.getItem('headerIndex')
+      let headerIndex = localStorage.getItem('headerIndex')
         ? localStorage.getItem('headerIndex')
-        : 0;
+        : '0';
 
       if (headerIndex) {
-        dispatch(setCommonHeaderIndex(parseInt(headerIndex)));
         if (headerIndex == '3') {
           dispatch(setMoveState('in'));
+        }
+        if (headerIndex == '5') {
+          if (theme && !theme.calendarVisible) {
+            headerIndex = '0';
+          }
         } else {
           const targetUserKey = localStorage.getItem('targetUserKey');
           if (headerIndex == '2' && targetUserKey) {
@@ -84,6 +100,7 @@ const App: React.FC = () => {
           }
           dispatch(setMoveState('out'));
         }
+        dispatch(setCommonHeaderIndex(parseInt(headerIndex)));
       }
       const groupKey = localStorage.getItem('groupKey');
       if (groupKey) {
@@ -126,11 +143,10 @@ const App: React.FC = () => {
   }, [history, dispatch, location.search, user, token]);
   useEffect(() => {
     if (taskActionArray.length > 0) {
-      console.log(taskActionArray);
       clearInterval(intervalTime);
       let newIntervalTime: any = 0;
       formatAction();
-      newIntervalTime = setInterval(formatAction, 60000);
+      newIntervalTime = setInterval(formatAction, 10000);
       setIntervalTime(newIntervalTime);
     }
   }, [taskActionArray]);
@@ -141,7 +157,11 @@ const App: React.FC = () => {
   const formatAction = () => {
     const nowTime = moment().valueOf();
     taskActionArray.forEach((item: any, index: number) => {
-      if (item.taskEndDate <= nowTime + 60000 && item.taskEndDate >= nowTime) {
+      if (
+        item.taskEndDate <= nowTime + 10000 &&
+        item.taskEndDate >= nowTime &&
+        item.importantStatus
+      ) {
         setPlayAction(item);
         setPlayState(true);
       }
@@ -161,12 +181,22 @@ const App: React.FC = () => {
       {headerIndex === 1 ? <WorkingTable /> : null}
       {headerIndex === 3 ? <GroupTable /> : null}
       {headerIndex === 2 ? <WorkingTable /> : null}
-      {headerIndex === 5 ? <Calendar /> : null}
+      {headerIndex === 5 && theme && theme.calendarVisible ? (
+        <Calendar />
+      ) : null}
       <Chat />
       {taskInfoVisible ? <TaskInfo /> : null}
       {playState ? (
         <div className="action">
-          <div className="action-container">{playAction.title}</div>
+          <div className="action-title">日程提醒</div>
+          <div
+            className="action-container"
+            style={{
+              borderLeft: '2px solid ' + calendarColor[playAction.taskType],
+            }}
+          >
+            {playAction.title}
+          </div>
           <img
             src={closePng}
             className="action-close"

@@ -29,6 +29,7 @@ const defaultState: AuthType = {
     mainVisible: true,
     messageVisible: false,
     memberVisible: false,
+    calendarVisible:true,
     groupSortType: 1,
     personSortType: 1,
     filterObject: {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './vitality.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
@@ -20,6 +20,7 @@ const Vitality: React.FC<VitalityProps> = (props) => {
   let { vitalityType, vitalityKey } = props;
   const dispatch = useDispatch();
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const vitalityLogRef: React.RefObject<any> = useRef();
   const [vitalityInfo, setvitalityInfo] = useState<any>(null);
   const [targetNum, setTargetNum] = useState(0);
   const [targetTime, setTargetTime] = useState(0);
@@ -67,6 +68,11 @@ const Vitality: React.FC<VitalityProps> = (props) => {
       dispatch(setMessage(true, res.msg, 'error'));
     }
   };
+  useEffect(() => {
+    setLogPage(1);
+    setLogList([]);
+    getLog(startTime, 1, limit);
+  }, [startTime]);
   const getVitalityData = async (obj: any) => {
     let newMonthData = _.cloneDeep(monthData);
     let newMonthTitleArr = _.cloneDeep(monthTitleArr);
@@ -165,7 +171,7 @@ const Vitality: React.FC<VitalityProps> = (props) => {
     setLogDate(moment().format('M') + '月' + moment().format('D') + '日');
     setMonthData(newMonthData);
     setMonthTitleArr(newMonthTitleArr);
-    getLog(page, limit);
+    getLog(moment().startOf('day').valueOf(), page, limit);
   };
   const getPersonVitality = async (startTime: number, endTime: number) => {
     let personRes: any = await api.auth.monthEnergyWeb(
@@ -190,35 +196,32 @@ const Vitality: React.FC<VitalityProps> = (props) => {
       dispatch(setMessage(true, personRes.msg, 'error'));
     }
   };
-  const getLog = async (page: number, limit: number) => {
-    let newStartTime = _.cloneDeep(startTime);
-    let newEndTime = _.cloneDeep(endTime);
+  const getLog = async (startTime: number, page: number, limit: number) => {
     let newLogList: any = _.cloneDeep(logList);
-    if (page === 1) {
-      setLogList([]);
+    let dataRes: any = null;
+    if (page == 1) {
       newLogList = [];
     }
-    let dataRes: any = null;
     if (vitalityType === 3) {
       dataRes = await api.auth.getGroupLog(
         vitalityKey,
-        newStartTime,
-        newEndTime,
+        startTime,
+        moment(startTime).endOf('day').valueOf(),
         page,
         limit
       );
     } else if (vitalityType !== 3) {
       dataRes = await api.auth.getUserLog(
         vitalityKey,
-        newStartTime,
-        newEndTime,
+        startTime,
+        moment(startTime).endOf('day').valueOf(),
         page,
         limit
       );
     }
     if (dataRes.msg === 'OK') {
       dataRes.result.forEach((item: any) => {
-        item.createTime = moment(item.createTime).format('HH:mm:ss');
+        item.createTime = moment(item.createTime).format('MM-DD HH:mm:ss');
         newLogList.push(item);
       });
       setLogList(newLogList);
@@ -228,6 +231,8 @@ const Vitality: React.FC<VitalityProps> = (props) => {
     }
   };
   const getTargetLog = (startTime: number) => {
+    console.log('startTime', startTime);
+    vitalityLogRef.current.scrollTop = 0;
     setStartTime(startTime);
     setEndTime(moment(startTime).endOf('day').valueOf());
     setLogDate(
@@ -236,10 +241,6 @@ const Vitality: React.FC<VitalityProps> = (props) => {
         moment(startTime).format('D') +
         '日'
     );
-
-    setLogPage(1);
-    setLogList([]);
-    getLog(1, limit);
   };
   const getColor = (num: number) => {
     let color = '';
@@ -323,11 +324,11 @@ const Vitality: React.FC<VitalityProps> = (props) => {
     console.log(clientHeight + scrollTop);
     console.log(scrollHeight);
     if (
-      clientHeight + scrollTop >= scrollHeight - 2 &&
+      clientHeight + scrollTop >= scrollHeight - 1 &&
       logList.length < logtotal
     ) {
       newPage = newPage + 1;
-      getLog(newPage, limit);
+      getLog(startTime, newPage, limit);
     }
   };
   return (
@@ -479,6 +480,7 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                 <div
                   className="vitality-log-container"
                   onScroll={scrollLogLoading}
+                  ref={vitalityLogRef}
                 >
                   {logList.map((logItem: any, logIndex: number) => {
                     return (

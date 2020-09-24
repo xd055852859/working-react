@@ -361,6 +361,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       dispatch(setCommonHeaderIndex(3));
       dispatch(setMoveState('in'));
       dispatch(getGroup(3, null, theme.groupSortType));
+      setAddVisible(false);
     } else {
       dispatch(setMessage(true, groupRes.msg, 'error'));
     }
@@ -392,7 +393,16 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     dispatch(setMoveState('in'));
   };
   return (
-    <div className="tabs" ref={tabsRef}>
+    <div
+      className="tabs"
+      ref={tabsRef}
+      style={{
+        height:
+          theme && theme.calendarVisible
+            ? 'calc(100% - 242px)'
+            : 'calc(100% - 197px)',
+      }}
+    >
       <ClickAwayListener
         onClickAway={() => {
           if (searchInputState === 'out') {

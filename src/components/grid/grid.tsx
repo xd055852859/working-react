@@ -395,7 +395,7 @@ const Grid: React.FC<GridProps> = (prop) => {
     <div className="grid">
       {loading ? <Loading /> : null}
       <div className="grid-group-date" style={{ height: '35px' }}>
-        <div className="grid-date-label-title">任务数量统计</div>
+        <div className="grid-date-label-title">任务时长统计</div>
         <div className="grid-date-label">
           {taskNavDay
             ? taskNavDate.map((dateItem: any, dateIndex: number) => {

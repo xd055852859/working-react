@@ -89,36 +89,45 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       if (headerIndex == 3 && taskArray) {
         getData(taskArray);
       } else if (headerIndex == 1 && workingTaskArray) {
-        getData(_.flatten(workingTaskArray));
+        getDiaryList(
+          moment().subtract(30, 'days').startOf('day').valueOf(),
+          moment().subtract(1, 'days').endOf('day').valueOf()
+        );
       } else if (headerIndex == 2 && workingTaskArray && targetUserInfo) {
-        getData(_.flatten(workingTaskArray));
+        getDiaryList(
+          moment().subtract(30, 'days').startOf('day').valueOf(),
+          moment().subtract(1, 'days').endOf('day').valueOf()
+        );
       }
     }
   }, [user, workingTaskArray, taskArray, targetUserInfo]);
   useEffect(() => {
-    if (contentKey) {
+    if (diaryIndex) {
       if (headerIndex != 3) {
-        getCommentList(commentPage);
+        getCommentList(1);
       }
     }
-  }, [contentKey]);
+  }, [diaryIndex]);
   const chooseDiary = async (index: number) => {
     setDiaryIndex(index);
+    // setContentKey()
     setPositive('');
     setNegative('');
     setNote('');
     setCommentPage(1);
-    if (headerIndex != 3) {
-      getDiaryList(dateArray[index].start, dateArray[index].end);
-    }
+
     getDiaryNote(dateArray[index].start);
   };
   const choosePerson = (key: string, index: number) => {
     setDiaryKey(key);
     setPersonIndex(index);
-    getData(taskArray, key);
+    getData(taskArray, null, key);
   };
-  const getData = async (taskArray: any, chooseDiaryKey?: string | number) => {
+  const getData = async (
+    taskArray: any,
+    diaryList?: any,
+    chooseDiaryKey?: string | number
+  ) => {
     let newDateArray: any = [];
     let newDayCanlendarArray: any = [];
     let newPersonObj = _.cloneDeep(personObj);
@@ -131,7 +140,6 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
         end: moment().subtract(i, 'days').endOf('day').valueOf(),
       });
     }
-    console.log('arr', arr);
     taskArray = taskArray.filter((item: any, index: number) => {
       return (
         item.taskEndDate >= arr[0].start &&
@@ -195,22 +203,21 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
           newDayCanlendarArray[index][taskItem.executorKey].push(taskItem);
         }
       });
+      if (headerIndex !== 3) {
+        diaryList.forEach((diaryItem: any, diaryIndex: number) => {
+          if (diaryItem.startTime == item.start) {
+            item._key = diaryItem._key;
+          }
+        });
+      }
     });
     // api.auth.getDiaryList(
     //   headerIndex === 1 ? user._key : targetUserInfo._key,
     //   moment().subtract(1, 'days').startOf('day').valueOf(),
     //   moment().subtract(1, 'days').endOf('day').valueOf()
     // );
-    if (headerIndex != 3) {
-      getDiaryList(
-        moment().subtract(1, 'days').startOf('day').valueOf(),
-        moment().subtract(1, 'days').endOf('day').valueOf()
-      );
-    }
+    console.log(newDateArray);
     getDiaryNote(moment().subtract(1, 'days').startOf('day').valueOf());
-    console.log('newPersonArray', newPersonArray);
-    console.log('newDateArray', newDateArray);
-    console.log('newDayCanlendarArray', newDayCanlendarArray);
     setDateArray(newDateArray);
     setDayCanlendarArray(newDayCanlendarArray);
     setPersonArray(newPersonArray);
@@ -245,9 +252,11 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       endTime
     );
     if (res.msg == 'OK') {
+      setDiaryList(res.result);
       if (res.result.length > 0) {
         setContentKey(res.result[0]._key);
       }
+      getData(_.flatten(workingTaskArray), res.result);
     } else {
       dispatch(setMessage(true, res.msg, 'error'));
     }
