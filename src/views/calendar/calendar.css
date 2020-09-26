@@ -5,7 +5,7 @@
   z-index: 3;
 }
 .calendar-container {
-  height: calc(100% - 80px);
+  height: calc(100% - 68px);
   width: 100%;
   background-color: #fff;
   padding: 12px 23px;

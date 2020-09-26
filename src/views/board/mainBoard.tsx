@@ -58,8 +58,12 @@ const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
     </React.Fragment>
   );
 };
+interface MainBoardProps {
+  getNum: any;
+}
 
-const MainBoard: React.FC = () => {
+const MainBoard: React.FC<MainBoardProps> = (props) => {
+  const { getNum } = props;
   const user = useTypedSelector((state) => state.auth.user);
   const selfTaskArray = useTypedSelector((state) => state.task.selfTaskArray);
   const [mainArray, setMainArray] = useState<any>([]);
@@ -73,34 +77,48 @@ const MainBoard: React.FC = () => {
     if (selfTaskArray) {
       let groupObj: any = {};
       let groupArray = [];
+      let createNum = 0;
+      let finishNum = 0;
       const startTime = moment().startOf('day').valueOf();
       const endTime = moment().endOf('day').valueOf();
       selfTaskArray.forEach((item: any, index: number) => {
+        if (
+          item.creatorKey === user._key &&
+          item.createTime >= startTime &&
+          item.createTime < endTime
+        ) {
+          createNum++;
+        }
         let finishState =
           item.finishPercent === 1 &&
           item.todayTaskTime >= startTime &&
-          item.todayTaskTime < endTime;
+          item.todayTaskTime <= endTime;
         if (
-          item.executorKey === user._key &&
           ((item.finishPercent === 0 && item.taskEndDate <= endTime) ||
             finishState) &&
           item.title !== '' &&
           item.taskEndDate
         ) {
-          if (!groupObj[item.groupKey]) {
-            groupObj[item.groupKey] = [];
+          if (item.executorKey === user._key) {
+            if (!groupObj[item.groupKey]) {
+              groupObj[item.groupKey] = [];
+            }
+            item = formatDay(item);
+            groupObj[item.groupKey].push(item);
+            // this.showTabObj[item.groupKey] = true;
+            groupObj[item.groupKey] = _.sortBy(groupObj[item.groupKey], [
+              'taskEndDate',
+            ]).reverse();
+            groupObj[item.groupKey] = _.sortBy(groupObj[item.groupKey], [
+              'finishPercent',
+            ]);
           }
-          item = formatDay(item);
-          groupObj[item.groupKey].push(item);
-          // this.showTabObj[item.groupKey] = true;
-          groupObj[item.groupKey] = _.sortBy(groupObj[item.groupKey], [
-            'taskEndDate',
-          ]).reverse();
-          groupObj[item.groupKey] = _.sortBy(groupObj[item.groupKey], [
-            'finishPercent',
-          ]);
+          if (item.finishPercent === 1 && item.creatorKey === user._key) {
+            finishNum++;
+          }
         }
       });
+      getNum(createNum, finishNum);
       setMainArray(_.sortBy(_.values(groupObj), ['groupName']));
     }
   }, [selfTaskArray]);

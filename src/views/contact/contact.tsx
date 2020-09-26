@@ -27,6 +27,7 @@ import api from '../../services/api';
 import _ from 'lodash';
 export interface ContactProps {
   contactIndex: number;
+  contactType?: boolean;
 }
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -45,7 +46,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 const Contact: React.FC<ContactProps> = (props) => {
   const classes = useStyles();
-  const { contactIndex } = props;
+  const { contactIndex, contactType } = props;
   const [contactArray, setContactArray] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState<any>();
   const dispatch = useDispatch();
@@ -100,7 +101,10 @@ const Contact: React.FC<ContactProps> = (props) => {
     setContactArray(newContactArray);
   };
   return (
-    <div className="contact">
+    <div
+      className="contact"
+      style={{ height: contactType ? '100%' : 'calc(100% - 60px)' }}
+    >
       {contactArray && contactArray.length > 0
         ? contactArray.map((item: any, index: number) => {
             let name = contactIndex ? item.nickName : item.groupName;
@@ -134,39 +138,41 @@ const Contact: React.FC<ContactProps> = (props) => {
                     />
                   </div>
                   <div className="contact-left-title">{name}</div>
-                  {item.isCare ? (
-                    <img
-                      src={carePng}
-                      alt=""
-                      className="contact-care-img"
-                      onClick={(e) => {
-                        changeCare(
-                          e,
-                          contactIndex === 0 ? 2 : 1,
-                          key,
-                          2,
-                          index
-                        );
-                      }}
-                    />
-                  ) : (
-                    <img
-                      src={uncarePng}
-                      alt=""
-                      className="contact-uncare-img"
-                      onClick={(e) => {
-                        changeCare(
-                          e,
-                          contactIndex === 0 ? 2 : 1,
-                          key,
-                          1,
-                          index
-                        );
-                      }}
-                    />
-                  )}
+                  {!contactType ? (
+                    item.isCare ? (
+                      <img
+                        src={carePng}
+                        alt=""
+                        className="contact-care-img"
+                        onClick={(e) => {
+                          changeCare(
+                            e,
+                            contactIndex === 0 ? 2 : 1,
+                            key,
+                            2,
+                            index
+                          );
+                        }}
+                      />
+                    ) : (
+                      <img
+                        src={uncarePng}
+                        alt=""
+                        className="contact-uncare-img"
+                        onClick={(e) => {
+                          changeCare(
+                            e,
+                            contactIndex === 0 ? 2 : 1,
+                            key,
+                            1,
+                            index
+                          );
+                        }}
+                      />
+                    )
+                  ) : null}
                 </div>
-                {item.todayTotalTaskNumber ? (
+                {item.todayTotalTaskNumber && !contactType ? (
                   <div className="contact-right">
                     {/* <div>
                     今日任务:{item.todayTotalTaskNumber},今日工时:

@@ -312,6 +312,21 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     // }
     // this.contentItem.likeNumber = this.contentItem.likeNumber + num;
   };
+  const saveNote = async () => {
+    let noteRes: any = await api.auth.setNote({
+      startTime: dateArray[diaryIndex].start,
+      type: 2,
+      positive: positive,
+      negative: negative,
+      note: note,
+    });
+    if (noteRes.msg === 'OK') {
+      dispatch(setMessage(true, '随记保存成功', 'success'));
+    } else {
+      dispatch(setMessage(true, noteRes.msg, 'error'));
+    }
+  };
+
   const addComment = async () => {
     let newCommentList = _.cloneDeep(commentList);
     let res: any = await api.auth.addClockInComment(contentKey, comment);
@@ -365,6 +380,16 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
   };
   return (
     <div className="diary">
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => {
+          saveNote();
+        }}
+        className="save-button"
+      >
+        保存
+      </Button>
       <div className="diary-bg">
         <div className="diary-menu">
           <div className="diary-menu-title">目录</div>
@@ -408,28 +433,49 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                 );
               }
             )}
-
-            <h2>二、PN</h2>
-            <div className="diary-content-pn">
-              <div className="diary-content-tab">
-                <div>正面：利好、收获</div>
-                <div>负正：利空、风险、压力</div>
-              </div>
-              <div className="diary-content-info">
-                <div>{positive}</div>
-                <div>{negative}</div>
-              </div>
-            </div>
-            <h2>三、随记</h2>
-            {/* <Editor /> */}
-            {headerIndex != 3 ? (
-              <div className="diary-comment">
-                <div className="diary-comment-title">
-                  <div className="diary-comment-icon">
-                    <img src={commentPng} alt="" />
-                    评论
+            {headerIndex == 1 ? (
+              <React.Fragment>
+                <h2>二、PN</h2>
+                <div className="diary-content-pn">
+                  <div className="diary-content-tab">
+                    <div>正面：利好、收获</div>
+                    <div>负正：利空、风险、压力</div>
                   </div>
-                  {/* <div className="diary-comment-like">
+                  <div className="diary-content-info">
+                    <textarea
+                      value={positive}
+                      placeholder="正面：利好、收获"
+                      className="diary-content-textarea"
+                      onChange={(e) => {
+                        setPositive(e.target.value);
+                      }}
+                    />
+                    <textarea
+                      value={negative}
+                      placeholder="负面：利空、风险、压力"
+                      className="diary-content-textarea"
+                      onChange={(e) => {
+                        setNegative(e.target.value);
+                      }}
+                    />
+                  </div>
+                </div>
+                <h2>三、随记</h2>
+                <textarea
+                  value={note}
+                  placeholder="随记"
+                  className="diary-textarea"
+                  onChange={(e) => {
+                    setNote(e.target.value);
+                  }}
+                />
+                <div className="diary-comment">
+                  <div className="diary-comment-title">
+                    <div className="diary-comment-icon">
+                      <img src={commentPng} alt="" />
+                      评论
+                    </div>
+                    {/* <div className="diary-comment-like">
                       {contentItem.isLike ? (
                         <img
                           src={likePng}
@@ -449,74 +495,74 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                       )}
                       点赞 {contentItem.likeNumber}
                     </div> */}
-                </div>
-                {commentList.length > 0 ? (
-                  <div
-                    className="diary-comment-info"
-                    onScroll={scrollCommentLoading}
-                  >
-                    {commentList.map(
-                      (commentItem: any, commentIndex: number) => {
-                        return (
-                          <div
-                            className="diary-comment-item"
-                            key={commentIndex}
-                          >
-                            <div className="diary-comment-item-avatar">
-                              <img src={commentItem.avatar} alt="" />
-                            </div>
-                            <div className="diary-comment-item-info">
-                              <div className="diary-comment-item-nickName">
-                                {commentItem.nickName}
-                              </div>
-                              <div className="diary-comment-item-content">
-                                {commentItem.content}
-                              </div>
-                            </div>
-                            {commentItem.userKey == user._key ? (
-                              <div
-                                className="diary-comment-item-reply"
-                                onClick={() => {
-                                  deleteComment(commentItem, commentIndex);
-                                }}
-                              >
-                                <div className="diary-comment-delete-icon">
-                                  <img src={deletePng} alt="" />
-                                </div>
-                                <div className="diary-comment-reply-title">
-                                  删除
-                                </div>
-                              </div>
-                            ) : null}
-                          </div>
-                        );
-                      }
-                    )}
                   </div>
-                ) : null}
-              </div>
-            ) : null}
-            {headerIndex != 3 ? (
-              <div className="diary-comment-button" v-if="groupType != 3">
-                <TextField
-                  placeholder="我要评论......"
-                  style={{ width: '90%' }}
-                  onChange={(e: any) => {
-                    setComment(e.target.value);
-                  }}
-                />
-                <Button
-                  variant="contained"
-                  color="primary"
-                  style={{ marginRight: '10px' }}
-                  className={classes.button}
-                  onClick={() => {
-                    addComment();
-                  }}
-                >
-                  发送
-                </Button>
-              </div>
+                  {commentList.length > 0 ? (
+                    <div
+                      className="diary-comment-info"
+                      onScroll={scrollCommentLoading}
+                    >
+                      {commentList.map(
+                        (commentItem: any, commentIndex: number) => {
+                          return (
+                            <div
+                              className="diary-comment-item"
+                              key={commentIndex}
+                            >
+                              <div className="diary-comment-item-avatar">
+                                <img src={commentItem.avatar} alt="" />
+                              </div>
+                              <div className="diary-comment-item-info">
+                                <div className="diary-comment-item-nickName">
+                                  {commentItem.nickName}
+                                </div>
+                                <div className="diary-comment-item-content">
+                                  {commentItem.content}
+                                </div>
+                              </div>
+                              {commentItem.userKey == user._key ? (
+                                <div
+                                  className="diary-comment-item-reply"
+                                  onClick={() => {
+                                    deleteComment(commentItem, commentIndex);
+                                  }}
+                                >
+                                  <div className="diary-comment-delete-icon">
+                                    <img src={deletePng} alt="" />
+                                  </div>
+                                  <div className="diary-comment-reply-title">
+                                    删除
+                                  </div>
+                                </div>
+                              ) : null}
+                            </div>
+                          );
+                        }
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+
+                <div className="diary-comment-button">
+                  <TextField
+                    placeholder="我要评论......"
+                    style={{ width: '90%' }}
+                    onChange={(e: any) => {
+                      setComment(e.target.value);
+                    }}
+                  />
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    style={{ marginRight: '10px' }}
+                    className={classes.button}
+                    onClick={() => {
+                      addComment();
+                    }}
+                  >
+                    发送
+                  </Button>
+                </div>
+              </React.Fragment>
             ) : null}
           </div>
         ) : null}

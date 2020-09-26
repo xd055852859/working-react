@@ -17,10 +17,11 @@
   padding: 20px 30px;
   box-sizing: border-box;
   position: fixed;
-  top: 88px;
+  top: 68px;
   left: 0px;
   overflow: auto;
-  color: #fff;
+  color: #333;
+  background-color: #fff;
 }
 .groupDocument-title {
   border-bottom: 1px solid #dddddd;

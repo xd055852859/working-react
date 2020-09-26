@@ -16,13 +16,15 @@ const Content: React.FC<ContentProps> = (props) => {
   const theme = useTypedSelector((state) => state.auth.theme);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const [nowTime, setNowTime] = useState<any>([]);
+  const [createNum, setCreateNum] = useState(0);
+  const [finishNum, setfinishNum] = useState(0);
   const [prompt, setPrompt] = useState();
   useEffect(() => {
     let interval: any = null;
     if (user && headerIndex === 0) {
       formatTime();
       getPrompt();
-      interval = setInterval(formatTime, 60000);
+      interval = setInterval(formatTime, 600000);
       // getSocket();
     }
     return () => {
@@ -44,7 +46,7 @@ const Content: React.FC<ContentProps> = (props) => {
     } else {
       nowTime[0] = '晚上';
     }
-    nowTime[1] = moment().format('HH:mm');
+    // nowTime[1] = moment().format('HH:mm');
     console.log(new Date());
     setNowTime(nowTime);
   };
@@ -57,6 +59,10 @@ const Content: React.FC<ContentProps> = (props) => {
       dispatch(setMessage(true, promptRes.msg, 'error'));
     }
   };
+  const getNum = async (createNum: number, finishNum: number) => {
+    setCreateNum(createNum);
+    setfinishNum(finishNum);
+  };
   return (
     <div className="content">
       <ContentHeader />
@@ -65,11 +71,13 @@ const Content: React.FC<ContentProps> = (props) => {
           <div className="content-mainTitle">
             {nowTime[0]}好,亲爱的{user && user.profile.nickName}
           </div>
-          <div className="content-timeTitle">{nowTime[1]}</div>
-          <div className="content-subTitle">{prompt}</div>
+          <div className="content-timeTitle">创新力 {createNum}</div>
+          <div className="content-timeTitle">执行力 {finishNum}</div>
+          {/* <div className="content-timeTitle">{nowTime[1]}</div> */}
+          {/* <div className="content-subTitle">{prompt}</div> */}
         </div>
         {theme && theme.memberVisible ? <MemberBoard /> : null}
-        {theme && theme.mainVisible ? <MainBoard /> : null}
+        {theme && theme.mainVisible ? <MainBoard getNum={getNum} /> : null}
         {theme && theme.messageVisible ? <MessageBoard /> : null}
       </div>
     </div>

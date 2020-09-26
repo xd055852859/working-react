@@ -295,22 +295,23 @@ const GroupTableHeader: React.FC = (prop) => {
           <DropMenu
             visible={groupVisible}
             dropStyle={{
-              width: '350px',
+              width: '250px',
               height: '500px',
               top: '40px',
               left: '-40px',
               color: '#333',
+              overflow:'visible'
             }}
             onClose={() => {
               setGroupVisible(false);
             }}
             title={'群列表'}
           >
-            <Contact contactIndex={0} />
+            <Contact contactIndex={0} contactType={true}/>
           </DropMenu>
         </div>
       </div>
-      <div
+      {/* <div
         className="groupTableHeader-vitalityNum"
         onClick={() => {
           setVitalityVisible(true);
@@ -322,7 +323,7 @@ const GroupTableHeader: React.FC = (prop) => {
           vitalityDirection={'vertical'}
           vitalityStyle={{ marginLeft: '5px', color: '#fff' }}
         />
-      </div>
+      </div> */}
       <Tooltip title="群属性">
         <div className="groupTableHeader-info">
           <img
@@ -402,21 +403,6 @@ const GroupTableHeader: React.FC = (prop) => {
           </DropMenu>
         </div>
       </Tooltip>
-      <Tooltip title="群聊天">
-        <img
-          src={chatPng}
-          alt=""
-          style={{
-            width: '27px',
-            height: '25px',
-            marginRight: '20px',
-            cursor: 'pointer',
-          }}
-          onClick={() => {
-            goChat();
-          }}
-        />
-      </Tooltip>
       <Tooltip title="群文件">
         <img
           src={filePng}
@@ -484,6 +470,9 @@ const GroupTableHeader: React.FC = (prop) => {
               />
             }
             label={filterObject.groupName}
+            onClick={() => {
+              setFilterVisible(true);
+            }}
             onDelete={() => deleteFilter('groupKey')}
             className={classes.chip}
           />
@@ -501,6 +490,9 @@ const GroupTableHeader: React.FC = (prop) => {
               />
             }
             label={'创建人: ' + filterObject.creatorName}
+            onClick={() => {
+              setFilterVisible(true);
+            }}
             onDelete={() => deleteFilter('creatorKey')}
             className={classes.chip}
           />
@@ -518,6 +510,9 @@ const GroupTableHeader: React.FC = (prop) => {
               />
             }
             label={'执行人: ' + filterObject.executorName}
+            onClick={() => {
+              setFilterVisible(true);
+            }}
             onDelete={() => deleteFilter('executorKey')}
             className={classes.chip}
           />
@@ -527,6 +522,9 @@ const GroupTableHeader: React.FC = (prop) => {
             size="small"
             label={filterObject.filterType.join(' / ')}
             className={classes.chip}
+            onClick={() => {
+              setFilterVisible(true);
+            }}
           />
         ) : null}
         <DropMenu
@@ -544,7 +542,7 @@ const GroupTableHeader: React.FC = (prop) => {
         >
           <HeaderFilter />
           <div className="filter-info">
-            <div className="filter-title">状态</div>
+            <div className="filter-title">状态 :</div>
             <div className="filter-menu">
               {checkedTitle.map((item: any, index: number) => {
                 return (
@@ -623,6 +621,40 @@ const GroupTableHeader: React.FC = (prop) => {
       >
         动态
       </div>
+      <div
+        className="view-tab"
+        onClick={() => {
+          chooseMemberHeader(8);
+        }}
+        style={
+          memberHeaderIndex === 8
+            ? {
+                background: 'rgba(255,255,255,0.24)',
+                minWidth: '100px',
+              }
+            : { minWidth: '100px' }
+        }
+      >
+        活力( {groupInfo && groupInfo.energyValueTotal} )
+      </div>
+      <Tooltip title="群聊天">
+        <div className="header-chat">
+          <img
+            src={chatPng}
+            alt=""
+            style={{
+              width: '27px',
+              height: '25px',
+              marginRight: '10px',
+              cursor: 'pointer',
+            }}
+            onClick={() => {
+              goChat();
+            }}
+          />
+          聊天
+        </div>
+      </Tooltip>
       <Dialog
         visible={outGroupVisible}
         onClose={() => {

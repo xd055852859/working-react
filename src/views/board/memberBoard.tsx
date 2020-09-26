@@ -10,6 +10,8 @@ import _ from 'lodash';
 import Avatar from '@material-ui/core/Avatar';
 import DropMenu from '../../components/common/dropMenu';
 import downArrowPng from '../../assets/img/downArrow.png';
+import noneBoardPng from '../../assets/img/noneBoard.png';
+import uncarePng from '../../assets/img/uncare.png';
 import Loading from '../../components/common/loading';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -99,7 +101,7 @@ const ProjectBoardItem: React.FC<ProjectBoardItemProps> = (props) => {
     return dom;
   };
   return (
-    <div>
+    <React.Fragment>
       <div className="memberBoard-group-item">
         <img
           src={projectItem.groupObj.groupLogo}
@@ -108,7 +110,7 @@ const ProjectBoardItem: React.FC<ProjectBoardItemProps> = (props) => {
         {projectItem.groupObj.groupName}
       </div>
       {getProjectBoardTask()}
-    </div>
+    </React.Fragment>
   );
 };
 const MemberBoard: React.FC = () => {
@@ -265,7 +267,7 @@ const MemberBoard: React.FC = () => {
           setBoardVisible(true);
         }}
       >
-        协作看板
+        {boardIndex === 0 ? '关注队友看板' : '关注项目看板'}
         <img
           src={downArrowPng}
           alt=""
@@ -303,14 +305,28 @@ const MemberBoard: React.FC = () => {
       </div>
       {boardIndex === 0 ? (
         <div className="memberBoard-item">
-          {memberGroupArray.map((memberItem: any, memberIndex: number) => {
-            return (
-              <MemberBoardItem
-                memberItem={memberItem}
-                key={'memberGroup' + memberIndex}
-              />
-            );
-          })}
+          {memberGroupArray.length > 0 ? (
+            memberGroupArray.map((memberItem: any, memberIndex: number) => {
+              return (
+                <MemberBoardItem
+                  memberItem={memberItem}
+                  key={'memberGroup' + memberIndex}
+                />
+              );
+            })
+          ) : (
+            <React.Fragment>
+              <img src={noneBoardPng} className="memberBoard-item-img" />
+              <div className="memberBoard-item-title">
+                点击项目和队友右侧的 
+                <img
+                  style={{ width: '17px', height: '15px',margin:'0px 5px' }}
+                  src={uncarePng}
+                />
+                 关注
+              </div>
+            </React.Fragment>
+          )}
         </div>
       ) : null}
       {boardIndex === 1 ? (

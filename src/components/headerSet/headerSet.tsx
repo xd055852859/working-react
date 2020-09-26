@@ -338,6 +338,8 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           onClose={() => {
             setContentSetVisilble(false);
             setAvatarShow(false);
+            setBgVisible(false);
+            setUserVisible(false);
           }}
         >
           <div className="contentHeader-set-title">
@@ -348,31 +350,6 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
               }}
             >
               <img src={avatar} alt="" />
-            </div>
-          </div>
-          <div
-            className="contentHeader-set-item"
-            onClick={() => {
-              setBgVisible(true);
-            }}
-          >
-            <div className="contentHeader-set-item-title contentHeader-set-item-bg">
-              <div className="contentHeader-set-item-bg-info">
-                <img
-                  src={bgImg}
-                  alt=""
-                  style={{ width: '15px', height: '17px', marginRight: '10px' }}
-                />
-                <div>壁纸设置</div>
-              </div>
-              <div
-                className="bg-item"
-                style={
-                  theme.backgroundImg
-                    ? { backgroundImage: 'url(' + theme.backgroundImg + ')' }
-                    : { backgroundColor: theme.backgroundColor }
-                }
-              ></div>
             </div>
           </div>
           <div className="contentHeader-set-item">
@@ -475,6 +452,38 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
               <div>退出登录</div>
             </div>
           </div>
+          <div
+            className="contentHeader-set-item"
+            onClick={() => {
+              setBgVisible(true);
+            }}
+            style={bgVisible ? { backgroundColor: '#f0f0f0' } : {}}
+          >
+            <div className="contentHeader-set-item-title contentHeader-set-item-bg">
+              <div className="contentHeader-set-item-bg-info">
+                <img
+                  src={bgImg}
+                  alt=""
+                  style={{ width: '15px', height: '17px', marginRight: '10px' }}
+                />
+                <div>壁纸设置</div>
+              </div>
+              <div
+                className="bg-item"
+                style={
+                  theme.backgroundImg
+                    ? {
+                        backgroundImage: 'url(' + theme.backgroundImg + ')',
+                        marginBottom: '0px',
+                      }
+                    : {
+                        backgroundColor: theme.backgroundColor,
+                        marginBottom: '0px',
+                      }
+                }
+              ></div>
+            </div>
+          </div>
           <Dialog
             visible={userVisible}
             footer={false}
@@ -497,6 +506,79 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                 setUserVisible(false);
               }}
             />
+          </Dialog>
+          <Dialog
+            visible={bgVisible}
+            onClose={() => {
+              setBgVisible(false);
+            }}
+            dialogStyle={{
+              position: 'fixed',
+              top: '505px',
+              right: '5px',
+              width: '260px',
+              height: 'calc(100% - 505px)',
+            }}
+            footer={false}
+            showMask={false}
+          >
+            <div className="bg">
+              <div className="bg-title">颜色</div>
+              <div className="bg-container">
+                {color1.map((color1Item: any, color1Index: number) => {
+                  return (
+                    <div
+                      style={{
+                        backgroundColor: color1Item,
+                        border:
+                          theme.backgroundColor === color1Item
+                            ? '3px solid #87B940'
+                            : 'transparent',
+                      }}
+                      key={'color1' + color1Index}
+                      className="bg-item"
+                      onClick={() => {
+                        changeBg('backgroundColor', color1Item);
+                      }}
+                    >
+                      {theme.backgroundColor === color1Item ? (
+                        <div className="bg-point"></div>
+                      ) : null}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="bg-title">壁纸</div>
+              <div className="bg-container">
+                {imgBigArr2.map(
+                  (imgBigArr2Item: any, imgBigArr2Index: number) => {
+                    return (
+                      <div
+                        style={{
+                          backgroundImage:
+                            'url(' +
+                            imgBigArr2Item +
+                            '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg)',
+                          border:
+                            theme.backgroundImg === imgBigArr2Item
+                              ? '2px solid #87B940'
+                              : 'transparent',
+                        }}
+                        key={'imgBigArr2' + imgBigArr2Index}
+                        className="bg-item"
+                        onClick={() => {
+                          changeBg('backgroundImg', imgBigArr2Item);
+                        }}
+                      >
+                        {theme.backgroundImg === imgBigArr2Item ? (
+                          <div className="bg-point"></div>
+                        ) : null}
+                      </div>
+                    );
+                  }
+                )}
+              </div>
+            </div>
           </Dialog>
         </DropMenu>
       </div>
@@ -691,60 +773,6 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           {searchTaskList.map((taskItem: any, taskIndex: number) => {
             return <Task taskItem={taskItem} showGroupName={true} />;
           })}
-        </div>
-      </Dialog>
-      <Dialog
-        visible={bgVisible}
-        onClose={() => {
-          setBgVisible(false);
-        }}
-        title={'背景设置'}
-        dialogStyle={{
-          // position: 'fixed',
-          // top: '65px',
-          // right: '10px',
-          width: '435px',
-          // overflow: 'visible',
-        }}
-        footer={false}
-        // showMask={false}
-      >
-        <div className="bg">
-          <div className="bg-title">颜色</div>
-          <div className="bg-container">
-            {color1.map((color1Item: any, color1Index: number) => {
-              return (
-                <div
-                  style={{ backgroundColor: color1Item }}
-                  key={'color1' + color1Index}
-                  className="bg-item"
-                  onClick={() => {
-                    changeBg('backgroundColor', color1Item);
-                  }}
-                ></div>
-              );
-            })}
-          </div>
-          <div className="bg-title">壁纸</div>
-          <div className="bg-container">
-            {imgBigArr2.map((imgBigArr2Item: any, imgBigArr2Index: number) => {
-              return (
-                <div
-                  style={{
-                    backgroundImage:
-                      'url(' +
-                      imgBigArr2Item +
-                      '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg)',
-                  }}
-                  key={'imgBigArr2' + imgBigArr2Index}
-                  className="bg-item"
-                  onClick={() => {
-                    changeBg('backgroundImg', imgBigArr2Item);
-                  }}
-                ></div>
-              );
-            })}
-          </div>
         </div>
       </Dialog>
     </React.Fragment>

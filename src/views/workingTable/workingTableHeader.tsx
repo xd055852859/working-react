@@ -14,9 +14,8 @@ import _ from 'lodash';
 import tablePng from '../../assets/img/table.png';
 import './workingTableHeader.css';
 import DropMenu from '../../components/common/dropMenu';
-import Dialog from '../../components/common/dialog';
 import HeaderFilter from '../../components/headerFilter/headerFilter';
-import Vitality from '../../components/vitality/vitality';
+import Contact from '../../views/contact/contact';
 import VitalityIcon from '../../components/vitalityIcon/vitalityIcon';
 import labelPng from '../../assets/img/label.png';
 import labelTabPng from '../../assets/img/labelTab.png';
@@ -32,6 +31,8 @@ import groupTabbPng from '../../assets/img/groupTabb.png';
 import gridTimebPng from '../../assets/img/gridTimeb.png';
 import gridPersonbPng from '../../assets/img/gridPersonb.png';
 import calendarbPng from '../../assets/img/calendarb.png';
+import downArrowPng from '../../assets/img/downArrow.png';
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import filterPng from '../../assets/img/filter.png';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -53,6 +54,7 @@ const WorkingTableHeader: React.FC = (prop) => {
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const memberArray = useTypedSelector((state) => state.member.memberArray);
   const userKey = useTypedSelector((state) => state.auth.userKey);
+  const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const targetUserKey = useTypedSelector((state) => state.auth.targetUserKey);
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const theme = useTypedSelector((state) => state.auth.theme);
@@ -96,7 +98,8 @@ const WorkingTableHeader: React.FC = (prop) => {
   ];
   const [viewVisible, setViewVisible] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
-  const [vitalityVisible, setVitalityVisible] = useState(false);
+  // const [vitalityVisible, setVitalityVisible] = useState(false);
+  const [memberVisible, setMemberVisible] = useState(false);
   const [filterCheckedArray, setFilterCheckedArray] = useState<any>([
     true,
     true,
@@ -203,7 +206,7 @@ const WorkingTableHeader: React.FC = (prop) => {
         工作台
       </div>
       <div className="workingTableHeader-line">|</div>
-      <div
+      {/* <div
         className="workingTableHeader-vitalityNum"
         onClick={() => {
           setVitalityVisible(true);
@@ -215,8 +218,52 @@ const WorkingTableHeader: React.FC = (prop) => {
           vitalityDirection={'vertical'}
           vitalityStyle={{ marginLeft: '5px', color: '#fff' }}
         />
-      </div>
+      </div> */}
+      {headerIndex === 2 ? (
+        <div className="groupTableHeader-name">
+          <div className="groupTableHeader-logo">
+            <img
+              src={
+                targetUserInfo && targetUserInfo.profile.avatar
+                  ? targetUserInfo.profile.avatar
+                  : defaultPersonPng
+              }
+              alt=""
+            />
+          </div>
 
+          <div
+            className="groupTableHeader-name-title"
+            onClick={() => {
+              setMemberVisible(true);
+            }}
+          >
+            {targetUserInfo && targetUserInfo.profile.nickName}
+            <img
+              src={downArrowPng}
+              alt=""
+              className="groupTableHeader-name-title-logo"
+            />
+            <DropMenu
+              visible={memberVisible}
+              dropStyle={{
+                width: '250px',
+                height: '500px',
+                top: '40px',
+                left: '-40px',
+                color: '#333',
+                overflow: 'visible',
+              }}
+              onClose={() => {
+                setMemberVisible(false);
+              }}
+              title={'联系人列表'}
+            >
+              <Contact contactIndex={1} contactType={true} />
+            </DropMenu>
+          </div>
+        </div>
+      ) : null}
       <div className="view-container">
         {memberHeaderIndex !== 7 ? (
           <React.Fragment>
@@ -351,7 +398,7 @@ const WorkingTableHeader: React.FC = (prop) => {
             >
               <HeaderFilter />
               <div className="filter-info">
-                <div className="filter-title">状态</div>
+                <div className="filter-title">状态 :</div>
                 <div className="filter-menu">
                   {checkedTitle.map((item: any, index: number) => {
                     return (
@@ -402,24 +449,22 @@ const WorkingTableHeader: React.FC = (prop) => {
       >
         日报
       </div>
-      <Dialog
-        visible={vitalityVisible}
-        onClose={() => {
-          setVitalityVisible(false);
+      <div
+        className="view-tab"
+        onClick={() => {
+          chooseMemberHeader(8);
         }}
-        footer={false}
-        // title={'搜索中心'}
-        dialogStyle={{
-          width: 'calc(100% - 330px)',
-          height: 'calc(100% - 20px)',
-          marginLeft: '330px',
-        }}
+        style={
+          memberHeaderIndex === 8
+            ? {
+                background: 'rgba(255,255,255,0.24)',
+                minWidth: '100px',
+              }
+            : { minWidth: '100px' }
+        }
       >
-        <Vitality
-          vitalityType={2}
-          vitalityKey={headerIndex == 1 ? userKey : targetUserKey}
-        />
-      </Dialog>
+        活力( {energyValueTotal} )
+      </div>
     </div>
   );
 };

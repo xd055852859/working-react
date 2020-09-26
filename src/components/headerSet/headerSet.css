@@ -38,7 +38,7 @@
 }
 .contentHeader-set-item {
   width: 100%;
-  height: 38px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -74,6 +74,7 @@
   width: 100%;
   height: 100%;
   padding: 8px 0px;
+  overflow: auto;
 }
 .bg-title {
   width: 100%;
@@ -86,17 +87,29 @@
 .bg-container {
   display: flex;
   flex-wrap: wrap;
+  justify-content: space-around;
 }
 .bg-item {
   width: 66px;
-  height: 40px;
+  height: 38px;
   background: #46558c;
   border-radius: 8px;
   margin-right: 10px;
   margin-bottom: 10px;
   background-size: cover;
   cursor: pointer;
+  padding:2px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   /* background-attachment: fixed; */
+}
+.bg-point{
+  width:10px;
+  height:10px;
+  border-radius: 50%;
+  background-color: #fff;
 }
 .contentHeader-set-item-bg {
   width: 100%;

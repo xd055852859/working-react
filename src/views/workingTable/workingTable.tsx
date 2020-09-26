@@ -14,6 +14,7 @@ import WorkingCalendar from './workingCalendar';
 import WorkingReport from './workingReport';
 import Grid from '../../components/grid/grid';
 import Loading from '../../components/common/loading';
+import Vitality from '../../components/vitality/vitality';
 import taskAddPng from '../../assets/img/taskAdd.png';
 interface WorkingTableProps {}
 
@@ -23,8 +24,10 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
   const memberHeaderIndex = useTypedSelector(
     (state) => state.member.memberHeaderIndex
   );
+  const userKey = useTypedSelector((state) => state.auth.userKey);
+  const targetUserKey = useTypedSelector((state) => state.auth.targetUserKey);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
-  const groupKey = useTypedSelector((state) => state.group.groupKey);
+  // const groupKey = useTypedSelector((state) => state.group.groupKey);
   const moveState = useTypedSelector((state) => state.common.moveState);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const workingTaskArray = useTypedSelector(
@@ -101,6 +104,11 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
         {memberHeaderIndex === 5 ? <Grid gridState={false} /> : null}
         {memberHeaderIndex === 6 ? <WorkingCalendar /> : null}
         {memberHeaderIndex === 7 ? <WorkingReport /> : null}
+        {memberHeaderIndex === 8 ?  <Vitality
+          vitalityType={2}
+          vitalityKey={headerIndex == 1 ? userKey : targetUserKey}
+        /> : null}
+       
       </div>
       {headerIndex === 1 ? (
         <React.Fragment>

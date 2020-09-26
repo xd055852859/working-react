@@ -228,7 +228,7 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
                 visible={calendarColorVisible}
                 dropStyle={{
                   width: '180px',
-                  height: '80px',
+                  height: '68px',
                   top: '40px',
                   left: '0px',
                   color: '#333',
