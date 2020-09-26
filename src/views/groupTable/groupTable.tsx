@@ -11,6 +11,7 @@ import WorkingCalendar from '../workingTable/workingCalendar';
 import WorkingReport from '../workingTable/workingReport';
 import Grid from '../../components/grid/grid';
 import GroupTableDocument from './groupTableDocument';
+import Vitality from '../../components/vitality/vitality';
 interface GroupTableProps {}
 
 const GroupTable: React.FC<GroupTableProps> = (prop) => {
@@ -62,6 +63,9 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
         {memberHeaderIndex === 7 ? <WorkingReport /> : null}
         {memberHeaderIndex === 8 ? <GroupTableData /> : null}
         {memberHeaderIndex === 9 ? <GroupTableDocument /> : null}
+        {memberHeaderIndex === 10 ? (
+          <Vitality vitalityType={headerIndex} vitalityKey={groupKey} />
+        ) : null}
       </div>
 
       {/* <div

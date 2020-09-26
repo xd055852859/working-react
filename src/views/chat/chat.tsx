@@ -35,10 +35,10 @@ const Chat: React.FC<ChatProps> = (prop) => {
           : chatState
           ? {
               width: '650px',
-              height: '500px',
+              height: 'calc(100% - 65px)',
               opacity: 1,
-              left: '390px',
-              top: '60px',
+              left: 'calc(100% - 650px)',
+              top: '65px',
               zIndex: 15,
             }
           : { opacity: 0 }

@@ -624,10 +624,10 @@ const GroupTableHeader: React.FC = (prop) => {
       <div
         className="view-tab"
         onClick={() => {
-          chooseMemberHeader(8);
+          chooseMemberHeader(10);
         }}
         style={
-          memberHeaderIndex === 8
+          memberHeaderIndex === 10
             ? {
                 background: 'rgba(255,255,255,0.24)',
                 minWidth: '100px',
@@ -726,7 +726,7 @@ const GroupTableHeader: React.FC = (prop) => {
           }}
         />
       </Dialog>
-      <Dialog
+      {/* <Dialog
         visible={vitalityVisible}
         onClose={() => {
           setVitalityVisible(false);
@@ -740,7 +740,7 @@ const GroupTableHeader: React.FC = (prop) => {
         }}
       >
         <Vitality vitalityType={3} vitalityKey={groupKey} />
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 };
