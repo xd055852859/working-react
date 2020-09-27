@@ -61,4 +61,6 @@
 .dialog-onlyTitle {
   display: flex;
   align-items: center;
+  padding:0px 17px;
+  box-sizing: border-box;
 }

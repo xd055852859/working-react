@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 // import './userCenter.css';
+import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 
 interface ModelProps {

@@ -305,6 +305,8 @@
   height: 30px;
   display: flex;
   align-items: center;
+  line-height: 30px;
+  cursor: pointer;
 }
 .diary-container {
   width: 70%;
@@ -324,6 +326,11 @@
   height: 35px;
   overflow: hidden;
   border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 5px;
+  cursor: pointer;
 }
 .diary-avatar img {
   width: 100%;
@@ -352,4 +359,67 @@
   right: 20px;
   z-index: 10;
   color: #fff;
+}
+.diary a {
+  color: #333;
+  display: block;
+  text-decoration: none;
+}
+
+/*正常的未被访问过的链接*/
+.diary a:link {
+  color: #333;
+  text-decoration: none;
+}
+/*已经访问过的链接*/
+.diary a:visited {
+  color: #333;
+  text-decoration: none;
+}
+/*鼠标划过(停留)的链接*/
+.diary a:hover {
+  color: #333;
+  text-decoration: none;
+  background-color: #f0f0f0;
+}
+/* 正在点击的链接，鼠标在元素上按下还没有松开*/
+.diary a:active {
+  color: #333;
+  text-decoration: none;
+}
+/* 获得焦点的时候 鼠标松开时显示的颜色*/
+.diary a:focus {
+  color: #333;
+  text-decoration: none;
+}
+
+.diaryall-title {
+  width: 100%;
+  height: 39px;
+  background: #f1f1f1;
+  border-radius: 4px;
+  line-height: 39px;
+}
+.diary .diaryall-subtitle {
+  width: 100%;
+  height: 30px;
+  font-size: 14px;
+  font-family: PingFangSC-Medium, PingFang SC;
+  font-weight: 500;
+  line-height: 30px;
+  margin: 13px 0px;
+  display: flex;
+  align-items: center;
+}
+.diaryall-subtitle-img {
+  width: 24px;
+  height: 24px;
+  overflow: hidden;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+.diaryall-subtitle-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }

@@ -15,6 +15,7 @@ import likePng from '../../assets/img/like.png';
 import unlikePng from '../../assets/img/unlike.png';
 import clickNumberPng from '../../assets/img/clickNumber.png';
 import DropMenu from '../../components/common/dropMenu';
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import Editor from '../../components/common/Editor';
 import Task from '../../components/task/task';
 
@@ -80,7 +81,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
   const [contentKey, setContentKey] = useState(0);
   const [isLike, setIsLike] = useState(false);
   const [personObj, setPersonObj] = useState<any>({});
-  const [personArray, setPersonArray] = useState<any>([]);
+  const [personArray, setPersonArray] = useState<any>([{}]);
   const [personIndex, setPersonIndex] = useState(0);
   const commentLimit = 10;
 
@@ -160,9 +161,9 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       if (chooseDiaryKey) {
         setDiaryKey(chooseDiaryKey);
         newDiaryKey = chooseDiaryKey;
-      } else if (newPersonArray[0]) {
-        setDiaryKey(newPersonArray[0].key);
-        newDiaryKey = newPersonArray[0].key;
+      } else {
+        setDiaryKey('全部');
+        newDiaryKey = '全部';
       }
     } else if (headerIndex == 1) {
       setDiaryKey(user._key);
@@ -181,10 +182,13 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       taskArray.forEach((taskItem: any, taskIndex: number) => {
         if (
           taskItem.taskEndDate >= item.start &&
-          taskItem.taskEndDate <= item.end &&
-          newDiaryKey == taskItem.executorKey
+          taskItem.taskEndDate <= item.end
         ) {
-          newDateArray[index].arr.push(taskItem);
+          if (newDiaryKey == '全部') {
+            newDateArray[index].arr.push(taskItem);
+          } else if (newDiaryKey == taskItem.executorKey) {
+            newDateArray[index].arr.push(taskItem);
+          }
         }
       });
     });
@@ -193,6 +197,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     newDateArray = newDateArray.filter((item: any, index: number) => {
       return item.arr.length > 0;
     });
+    // if (newDiaryKey != '全部') {
     newDateArray.forEach((item: any, index: number) => {
       newDayCanlendarArray[index] = {};
       item.arr.forEach((taskItem: any, taskIndex: number) => {
@@ -217,9 +222,12 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     //   moment().subtract(1, 'days').endOf('day').valueOf()
     // );
     console.log(newDateArray);
+    console.log(newDayCanlendarArray);
+    console.log(newPersonArray);
     getDiaryNote(moment().subtract(1, 'days').startOf('day').valueOf());
     setDateArray(newDateArray);
     setDayCanlendarArray(newDayCanlendarArray);
+    newPersonArray.unshift({ key: '全部', avatar: '', name: '全部' });
     setPersonArray(newPersonArray);
   };
   const getDiaryNote = async (startTime: number) => {
@@ -293,7 +301,44 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       getCommentList(commentPage);
     }
   };
-
+  const getAllReport = (dayCanlendarItem: any, dayCanlendarIndex: number) => {
+    let dom: any = [];
+    for (let dayKey in dayCanlendarItem) {
+      dom.push(
+        <React.Fragment>
+          <a className="diaryall-subtitle" id={'diaryall' + dayCanlendarIndex}>
+            <div className="diaryall-subtitle-img">
+              <img
+                src={
+                  dayCanlendarItem[dayKey][0].executorAvatar
+                    ? dayCanlendarItem[dayKey][0].executorAvatar +
+                      '?imageMogr2/auto-orient/thumbnail/50x50/format/jpg'
+                    : defaultPersonPng
+                }
+                alt=""
+              />
+            </div>
+            <div>{dayCanlendarItem[dayKey][0].executorName}</div>
+          </a>
+          {dayCanlendarItem[dayKey].map((item: any, index: number) => {
+            return (
+              <div
+                key={'allDate' + index}
+                className="diary-container-item"
+                onClick={() => {
+                  setDiaryIndex(diaryIndex);
+                }}
+                style={{ paddingLeft: '5px', boxSizing: 'border-box' }}
+              >
+                <Task taskItem={item} />
+              </div>
+            );
+          })}
+        </React.Fragment>
+      );
+    }
+    return dom;
+  };
   const likeDiary = async (num: number) => {
     // let res = await api.task.likeClockIn({
     //   clockInKey: this.contentItem._key,
@@ -380,37 +425,57 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
   };
   return (
     <div className="diary">
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => {
-          saveNote();
-        }}
-        className="save-button"
-      >
-        保存
-      </Button>
+      {headerIndex === 1 ? (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            saveNote();
+          }}
+          className="save-button"
+        >
+          保存
+        </Button>
+      ) : null}
       <div className="diary-bg">
         <div className="diary-menu">
           <div className="diary-menu-title">目录</div>
           <div className="diary-menu-container">
             {dateArray.map((item: any, index: number) => {
               return (
-                <div
-                  key={'date' + index}
-                  className="diary-menu-item"
-                  onClick={() => {
-                    chooseDiary(index);
-                  }}
-                  style={{
-                    backgroundColor:
-                      diaryIndex == index ? 'rgb(229, 231, 234)' : '',
-                  }}
-                >
-                  <span style={{ marginRight: '10px' }}>{item.date[0]}</span>
-                  <span>{item.date[1]}</span>
-                  <span>({item.arr.length})</span>
-                </div>
+                <React.Fragment>
+                  {diaryKey !== '全部' ? (
+                    <div
+                      key={'date' + index}
+                      className="diary-menu-item"
+                      onClick={() => {
+                        chooseDiary(index);
+                      }}
+                      style={{
+                        backgroundColor:
+                          diaryIndex == index ? 'rgb(229, 231, 234)' : '',
+                      }}
+                    >
+                      <span style={{ marginRight: '10px' }}>
+                        {item.date[0]}
+                      </span>
+                      <span>{item.date[1]}</span>
+                      <span>({item.arr.length})</span>
+                    </div>
+                  ) : (
+                    <a
+                      href={'#diaryall' + index}
+                      key={'date' + index}
+                      className="diary-menu-item"
+                    >
+                      <span style={{ marginRight: '10px' }}>
+                        {item.date[0]}
+                      </span>
+                      <span>{item.date[1]}</span>
+                      <span>({item.arr.length})</span>
+                    </a>
+                  )}
+                </React.Fragment>
               );
             })}
           </div>
@@ -418,21 +483,41 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
         {dayCanlendarArray.length > 0 ? (
           <div className="diary-container">
             <h2>一、今日任务</h2>
-            {dayCanlendarArray[diaryIndex][diaryKey].map(
-              (taskItem: any, taskIndex: number) => {
-                return (
-                  <div
-                    key={'date' + taskIndex}
-                    className="diary-container-item"
-                    onClick={() => {
-                      setDiaryIndex(diaryIndex);
-                    }}
-                  >
-                    <Task taskItem={taskItem} />
-                  </div>
-                );
-              }
+            {diaryKey !== '全部' ? (
+              dayCanlendarArray[diaryIndex][diaryKey].map(
+                (taskItem: any, taskIndex: number) => {
+                  return (
+                    <div
+                      key={'date' + taskIndex}
+                      className="diary-container-item"
+                      onClick={() => {
+                        setDiaryIndex(diaryIndex);
+                      }}
+                    >
+                      <Task taskItem={taskItem} />
+                    </div>
+                  );
+                }
+              )
+            ) : (
+              <React.Fragment>
+                {dayCanlendarArray.map(
+                  (dayCanlendarItem: any, dayCanlendarIndex: number) => {
+                    return (
+                      <div>
+                        <div className="diaryall-title">
+                          {moment(dateArray[dayCanlendarIndex].start).format(
+                            'YYYY年MM月DD日'
+                          )}
+                        </div>
+                        {getAllReport(dayCanlendarItem, dayCanlendarIndex)}
+                      </div>
+                    );
+                  }
+                )}
+              </React.Fragment>
             )}
+
             {headerIndex == 1 ? (
               <React.Fragment>
                 <h2>二、PN</h2>
@@ -588,22 +673,44 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
             <React.Fragment>
               {personArray.map((item: any, index: number) => {
                 return (
-                  <div
-                    className="diary-avatar"
-                    onClick={() => {
-                      choosePerson(item.key, index);
-                    }}
-                    key={'person' + index}
-                    style={
-                      item.key === diaryKey
-                        ? {
-                            backgroundColor: '#f0f0f0',
-                          }
-                        : {}
-                    }
-                  >
-                    <img src={item.avatar} alt="" />
-                  </div>
+                  <React.Fragment>
+                    {index == 0 ? (
+                      <div
+                        className="diary-avatar"
+                        onClick={() => {
+                          choosePerson(item.key, index);
+                        }}
+                        key={'person' + index}
+                        style={
+                          item.key === diaryKey
+                            ? {
+                                backgroundColor: '#17B881',
+                                color: '#fff',
+                              }
+                            : {}
+                        }
+                      >
+                        全部
+                      </div>
+                    ) : (
+                      <div
+                        className="diary-avatar"
+                        onClick={() => {
+                          choosePerson(item.key, index);
+                        }}
+                        key={'person' + index}
+                        style={
+                          item.key === diaryKey
+                            ? {
+                                border: '2px solid #17B881',
+                              }
+                            : {}
+                        }
+                      >
+                        <img src={item.avatar} alt="" />
+                      </div>
+                    )}
+                  </React.Fragment>
                 );
               })}
             </React.Fragment>

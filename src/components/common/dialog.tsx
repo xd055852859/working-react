@@ -41,7 +41,12 @@ const Dialog: React.FC<dialogProp> = (prop) => {
       <div className="dialog" style={dialogStyle}>
         {title ? <div className="dialog-title">{title}</div> : null}
         {showMask ? (
-          <img src={closePng} className="dialog-close" onClick={onClose} />
+          <img
+            src={closePng}
+            className="dialog-close"
+            onClick={onClose}
+            style={title ? { top: '17px' } : {}}
+          />
         ) : null}
         <div className="dialog-info" style={!title ? { height: '100%' } : {}}>
           <div
@@ -76,7 +81,9 @@ const Dialog: React.FC<dialogProp> = (prop) => {
         showMask ? (
           <div className="mask">{dialog()}</div>
         ) : (
-          <ClickAwayListener  onClickAway={onClose}>{dialog()}</ClickAwayListener>
+          <ClickAwayListener onClickAway={onClose}>
+            {dialog()}
+          </ClickAwayListener>
         )
       ) : null}
     </React.Fragment>

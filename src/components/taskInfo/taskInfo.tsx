@@ -166,6 +166,9 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   };
   const getCommentList = async (page: number, taskInfo: any) => {
     let newCommentArray = _.cloneDeep(taskCommentArray);
+    if (page == 1) {
+      newCommentArray = [];
+    }
     let commentRes: any = await api.task.getTaskComment(
       taskInfo._key,
       page,
@@ -182,6 +185,9 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
 
   const getHistoryList = async (page: number, taskInfo: any) => {
     let newHistoryArray = _.cloneDeep(taskHistoryArray);
+    if (page == 1) {
+      newHistoryArray = [];
+    }
     let historyRes: any = await api.task.getTaskHistory(
       taskInfo._key,
       page,

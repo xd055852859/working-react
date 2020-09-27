@@ -9,13 +9,21 @@ import {
   FormControlLabel,
 } from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
+import { getGroup } from '../../redux/actions/groupActions';
 import { useTypedSelector } from '../../redux/reducer/RootState';
+import api from '../../services/api';
 import copy from 'copy-to-clipboard';
-import { setMessage } from '../../redux/actions/commonActions';
+import {
+  setCommonHeaderIndex,
+  setMessage,
+  setMoveState,
+} from '../../redux/actions/commonActions';
 import DropMenu from '../../components/common/dropMenu';
 import plusPng from '../../assets/img/contact-plus.png';
+import logoutPng from '../../assets/img/logout.png';
 import _ from 'lodash';
 import uploadFile from '../../components/common/upload';
+import Dialog from '../../components/common/dialog';
 import './groupSet.css';
 interface GroupSetProps {
   saveGroupSet: any;
@@ -66,6 +74,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
   const [isLinkJoin, setIsLinkJoin] = useState(false);
   const [defaultPower, setDefaultPower] = useState(5);
   const [defaultPowerVisible, setDefaultPowerVisible] = useState(false);
+  const [outGroupVisible, setOutGroupVisible] = useState(false);
   const roleArray = [
     {
       name: '管理员',
@@ -198,15 +207,34 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
     obj[type] = value;
     saveGroupSet(obj);
   };
-  const shareGroup = ()=>{
+  const shareGroup = () => {
     const redirect = `${window.location.protocol}//${window.location.host}`;
     copy(redirect + '/?groupKey=' + groupKey);
     dispatch(setMessage(true, '复制链接群成功', 'success'));
-  }
+  };
+  const outGroup = async () => {
+    let memberRes: any = await api.group.outGroup(groupKey);
+    if (memberRes.msg === 'OK') {
+      dispatch(setMessage(true, '退出群组成功', 'success'));
+      dispatch(getGroup(3, null, 2));
+      dispatch(setCommonHeaderIndex(1));
+      dispatch(setMoveState('out'));
+    } else {
+      dispatch(setMessage(true, memberRes.msg, 'error'));
+    }
+  };
   return (
     <div className="contact-dialog-content">
       <div className="contact-dialog-info">
         <div className="contact-dialog-container">
+          <img
+            src={logoutPng}
+            alt=""
+            className="contact-dialog-out"
+            onClick={() => {
+              setOutGroupVisible(true);
+            }}
+          />
           <div className="contact-name-content" style={{ width: '70%' }}>
             <div className="contact-name-title">群名</div>
             <TextField
@@ -359,7 +387,9 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
                 color="primary"
                 className={classes.button}
                 style={{ marginLeft: '10px' }}
-                onClick={()=>{shareGroup()}}
+                onClick={() => {
+                  shareGroup();
+                }}
               >
                 拷贝
               </Button>
@@ -421,6 +451,19 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
           </div>
         </div>
       </div>
+      <Dialog
+        visible={outGroupVisible}
+        onClose={() => {
+          setOutGroupVisible(false);
+        }}
+        onOK={() => {
+          outGroup();
+        }}
+        title={'退出群组'}
+        dialogStyle={{ width: '400px', height: '200px' }}
+      >
+        <div className="dialog-onlyTitle">是否退出该群</div>
+      </Dialog>
     </div>
   );
 };

@@ -98,7 +98,6 @@ const GroupTableHeader: React.FC = (prop) => {
   const [groupMemberVisible, setGroupMemberVisible] = useState(false);
   const [sonGroupVisible, setSonGroupVisible] = useState(false);
   const [dismissVisible, setDismissVisible] = useState(false);
-  const [outGroupVisible, setOutGroupVisible] = useState(false);
   const [groupMember, setGroupMember] = useState<any>([]);
   const [groupObj, setGroupObj] = React.useState<any>(null);
   const [filterCheckedArray, setFilterCheckedArray] = useState<any>([
@@ -218,17 +217,7 @@ const GroupTableHeader: React.FC = (prop) => {
     // }
     dispatch(setFilterObject(newFilterObject));
   };
-  const outGroup = async () => {
-    let memberRes: any = await api.group.outGroup(groupKey);
-    if (memberRes.msg === 'OK') {
-      dispatch(setMessage(true, '退出群组成功', 'success'));
-      dispatch(getGroup(3, null, 2));
-      dispatch(setCommonHeaderIndex(1));
-      dispatch(setMoveState('out'));
-    } else {
-      dispatch(setMessage(true, memberRes.msg, 'error'));
-    }
-  };
+  
   const dismissGroup = async () => {
     let groupRes: any = await api.group.dismissGroup(groupKey);
     if (groupRes.msg === 'OK') {
@@ -381,14 +370,14 @@ const GroupTableHeader: React.FC = (prop) => {
               >
                 <img /> 分享群组
               </div>
-              <div
+              {/* <div
                 className="groupTableHeader-info-item"
                 onClick={() => {
                   setOutGroupVisible(true);
                 }}
               >
                 <img /> 退出群组
-              </div>
+              </div> */}
               {groupInfo && groupInfo.role == 1 ? (
                 <div
                   className="groupTableHeader-info-item"
@@ -403,13 +392,13 @@ const GroupTableHeader: React.FC = (prop) => {
           </DropMenu>
         </div>
       </Tooltip>
-      <Tooltip title="群文件">
+      {/* <Tooltip title="群文件">
         <img
           src={filePng}
           alt=""
           style={{ width: '30px', height: '25px', marginRight: '30px' }}
         />
-      </Tooltip>
+      </Tooltip> */}
       <div className="view-container">
         <div
           className="workingTableHeader-logo"
@@ -655,19 +644,6 @@ const GroupTableHeader: React.FC = (prop) => {
           聊天
         </div>
       </Tooltip>
-      <Dialog
-        visible={outGroupVisible}
-        onClose={() => {
-          setOutGroupVisible(false);
-        }}
-        onOK={() => {
-          outGroup();
-        }}
-        title={'退出群组'}
-        dialogStyle={{ width: '400px', height: '200px' }}
-      >
-        <div className="dialog-onlyTitle">是否退出该群</div>
-      </Dialog>
 
       <Dialog
         visible={dismissVisible}

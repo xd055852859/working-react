@@ -52,6 +52,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const memberArray = useTypedSelector((state) => state.member.memberArray);
+  const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const groupMemberArray = useTypedSelector(
     (state) => state.member.groupMemberArray
   );
@@ -62,6 +63,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
   const [joinMemberList, setJoinMemberList] = useState<any>([]);
   const [memberList, setMemberList] = useState<any>([]);
   const [searchInput, setSearchInput] = useState('');
+  const [searchType, setSearchType] = useState(false);
   const [roleVisible, setRoleVisible] = useState(false);
   const [chooseIndex, setChooseIndex] = useState(0);
   const [roleIndex, setRoleIndex] = useState<any>(null);
@@ -105,6 +107,12 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       getJoinGroupList();
     }
   }, [user, groupKey, memberArray, groupMemberArray, searchInput]);
+  useEffect(() => {
+    if (searchInput) {
+      setSearchType(false);
+    }
+  }, [searchInput]);
+
   const getJoinGroupList = async () => {
     let res: any = await api.group.applyJoinGroupList(groupKey);
     if (res.msg === 'OK') {
@@ -187,6 +195,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       setSearchMemberList(newSearchMemberList);
       setGroupMemberList(newSearchMemberList);
       setTotal(res.totalNumber);
+      setSearchType(true);
     } else {
       dispatch(setMessage(true, res.msg, 'error'));
     }
@@ -318,6 +327,27 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }
   };
+  const addMember = async (addItem: any, addIndex: number) => {
+    let newSearchMemberList = _.cloneDeep(searchMemberList);
+    let memberRes: any = await api.group.addGroupMember(mainGroupKey, [
+      {
+        userKey: addItem.userId,
+        nickName: addItem.nickName,
+        avatar: addItem.avatar,
+        gender: 0,
+        role: 5,
+      },
+    ]);
+    if (memberRes.msg === 'OK') {
+      dispatch(setMessage(true, '添加好友成功', 'success'));
+      newSearchMemberList[addIndex].isMyMainGroupMember = true;
+      setSearchMemberList(newSearchMemberList);
+      setGroupMemberList(newSearchMemberList);
+      dispatch(getMember(mainGroupKey, 2));
+    } else {
+      dispatch(setMessage(true, memberRes.msg, 'error'));
+    }
+  };
   return (
     <div className="group-member">
       <div className="group-member-person">
@@ -399,6 +429,16 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                         </div>
                         <div className="group-member-name">
                           {mainItem.nickName}
+                          {searchType && !mainItem.isMyMainGroupMember ? (
+                            <div
+                              className="group-member-add"
+                              onClick={() => {
+                                addMember(mainItem, mainIndex);
+                              }}
+                            >
+                              + 好友
+                            </div>
+                          ) : null}
                         </div>
                       </div>
                       <Checkbox

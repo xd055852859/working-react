@@ -70,6 +70,8 @@
   height: 40px;
   line-height: 40px;
   margin-left: 15px;
+  display: flex;
+  align-items: center;
 }
 .group-member-item .contact-time {
   height: 40px;
@@ -127,4 +129,20 @@
 .contact-team-container {
   padding-right: 12px;
   box-sizing: border-box;
+}
+.group-member-add {
+  /* width: 41px; */
+  /* height: 17px; */
+  font-size: 12px;
+  font-family: PingFangSC-Regular, PingFang SC;
+  font-weight: 400;
+  color: #17b881;
+  line-height: 17px;
+  border: 1px solid #17b881;
+  margin-left: 5px;
+  border-radius: 9px;
+  padding: 2px 3px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 }

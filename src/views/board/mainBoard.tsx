@@ -113,7 +113,7 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
               'finishPercent',
             ]);
           }
-          if (item.finishPercent === 1 && item.creatorKey === user._key) {
+          if (item.finishPercent === 1) {
             finishNum++;
           }
         }

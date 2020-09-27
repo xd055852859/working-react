@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import './groupTable.css';
-import { getGroupMember } from '../../redux/actions/memberActions';
+import {
+  getGroupMember,
+  setHeaderIndex,
+} from '../../redux/actions/memberActions';
 import api from '../../services/api';
 import GroupTableHeader from './groupTableHeader';
 import GroupTableGroup from './groupTableGroup';
@@ -34,6 +37,11 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
   const handleInputChange = (e: any) => {
     setInputValue(e.target.value);
   };
+  useEffect(() => {
+    if (groupKey) {
+      dispatch(setHeaderIndex(0));
+    }
+  }, [groupKey]);
   // const handleInputConfirm = async () => {
   //   setInputVisible(false);
   //   if (inputValue !== '') {
