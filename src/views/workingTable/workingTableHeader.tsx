@@ -4,18 +4,22 @@ import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
 import { setFilterObject } from '../../redux/actions/taskActions';
-import { setTheme } from '../../redux/actions/authActions';
+import { getMainGroupKey, setTheme } from '../../redux/actions/authActions';
+import { setMessage } from '../../redux/actions/commonActions';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import {
   setCommonHeaderIndex,
   setMoveState,
+  setChatState,
 } from '../../redux/actions/commonActions';
+import api from '../../services/api';
 import _ from 'lodash';
 import tablePng from '../../assets/img/table.png';
 import './workingTableHeader.css';
 import DropMenu from '../../components/common/dropMenu';
 import HeaderFilter from '../../components/headerFilter/headerFilter';
 import Contact from '../../views/contact/contact';
+import Tooltip from '../../components/common/tooltip';
 import VitalityIcon from '../../components/vitalityIcon/vitalityIcon';
 import labelPng from '../../assets/img/label.png';
 import labelTabPng from '../../assets/img/labelTab.png';
@@ -33,6 +37,7 @@ import gridPersonbPng from '../../assets/img/gridPersonb.png';
 import calendarbPng from '../../assets/img/calendarb.png';
 import downArrowPng from '../../assets/img/downArrow.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
+import chatPng from '../../assets/img/chat.png';
 import filterPng from '../../assets/img/filter.png';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -52,6 +57,7 @@ const WorkingTableHeader: React.FC = (prop) => {
     (state) => state.member.memberHeaderIndex
   );
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const memberArray = useTypedSelector((state) => state.member.memberArray);
   const userKey = useTypedSelector((state) => state.auth.userKey);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
@@ -122,7 +128,7 @@ const WorkingTableHeader: React.FC = (prop) => {
         key = targetUserKey;
       }
       console.log('userKey', key);
-      if (key) {
+      if (key && _.findIndex(memberArray, { userId: key }) != -1) {
         setEnergyValueTotal(
           memberArray[_.findIndex(memberArray, { userId: key })]
             .energyValueTotal
@@ -192,6 +198,39 @@ const WorkingTableHeader: React.FC = (prop) => {
     newTheme.filterObject = newFilterObject;
     dispatch(setTheme(newTheme));
     dispatch(setFilterObject(newFilterObject));
+  };
+  const goChat = async () => {
+    const dom: any = document.querySelector('iframe');
+    const privatePerson =
+      memberArray[_.findIndex(memberArray, { userId: targetUserKey })];
+    const privateChatRId = privatePerson.privateChatRId;
+    if (privateChatRId) {
+      dom.contentWindow.postMessage(
+        {
+          externalCommand: 'go',
+          path: '/direct/' + privateChatRId,
+        },
+        '*'
+      );
+      dispatch(setChatState(true));
+    } else {
+      let chatRes: any = await api.member.getPrivateChatRId(
+        mainGroupKey,
+        targetUserKey
+      );
+      if (chatRes.msg === 'OK') {
+        dom.contentWindow.postMessage(
+          {
+            externalCommand: 'go',
+            path: '/direct/' + chatRes.result,
+          },
+          '*'
+        );
+        dispatch(setChatState(true));
+      } else {
+        dispatch(setMessage(true, chatRes.msg, 'error'));
+      }
+    }
   };
   return (
     <div className="workingTableHeader">
@@ -465,6 +504,24 @@ const WorkingTableHeader: React.FC = (prop) => {
       >
         活力( {energyValueTotal} )
       </div>
+      <Tooltip title="群聊天">
+        <div className="header-chat">
+          <img
+            src={chatPng}
+            alt=""
+            style={{
+              width: '27px',
+              height: '25px',
+              marginRight: '10px',
+              cursor: 'pointer',
+            }}
+            onClick={() => {
+              goChat();
+            }}
+          />
+          聊天
+        </div>
+      </Tooltip>
     </div>
   );
 };

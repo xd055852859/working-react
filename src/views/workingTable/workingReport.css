@@ -423,3 +423,8 @@
   height: 100%;
   object-fit: cover;
 }
+.diary-comment-input {
+  width: 90%;
+  height: 36px;
+  border-radius: 6px;
+}

@@ -522,6 +522,13 @@ const member = {
       config: config,
     });
   },
+  getPrivateChatRId(groupKey: string, targetUKey: string) {
+    return request.post(HOME_URL + '/groupmember/getPrivateChatRId', {
+      token: auth_token,
+      groupKey: groupKey,
+      targetUKey: targetUKey,
+    });
+  },
 };
 const group = {
   getGroup(

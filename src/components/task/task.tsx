@@ -449,7 +449,6 @@ const Task: React.FC<TaskProps> = (props) => {
                         onChange={changeTitle}
                         style={{ height: textHeight + 'px' }}
                         id={'taskDetailText' + taskDetail._key}
-                        // autoFocus
                       />
                     ) : (
                       <div

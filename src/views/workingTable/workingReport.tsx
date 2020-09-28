@@ -102,22 +102,17 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       }
     }
   }, [user, workingTaskArray, taskArray, targetUserInfo]);
-  useEffect(() => {
-    if (diaryIndex) {
-      if (headerIndex != 3) {
-        getCommentList(1);
-      }
-    }
-  }, [diaryIndex]);
   const chooseDiary = async (index: number) => {
     setDiaryIndex(index);
-    // setContentKey()
+    setContentKey(dateArray[index]._key);
     setPositive('');
     setNegative('');
     setNote('');
     setCommentPage(1);
-
+    setCommentList([]);
+    setComment('');
     getDiaryNote(dateArray[index].start);
+    getCommentList(1, dateArray[index]._key);
   };
   const choosePerson = (key: string, index: number) => {
     setDiaryKey(key);
@@ -264,14 +259,18 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       if (res.result.length > 0) {
         setContentKey(res.result[0]._key);
       }
+      getCommentList(1, res.result[0]._key);
       getData(_.flatten(workingTaskArray), res.result);
     } else {
       dispatch(setMessage(true, res.msg, 'error'));
     }
   };
-  const getCommentList = async (page: number) => {
+  const getCommentList = async (page: number, contentKey: number | string) => {
     let newCommentList = _.cloneDeep(commentList);
     setCommentPage(page);
+    if (page == 1) {
+      newCommentList = [];
+    }
     let res: any = await api.auth.getClockInCommentList(
       contentKey,
       page,
@@ -298,7 +297,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       commentList.length < commentTotal
     ) {
       newCommentPage = newCommentPage + 1;
-      getCommentList(commentPage);
+      getCommentList(commentPage, contentKey);
     }
   };
   const getAllReport = (dayCanlendarItem: any, dayCanlendarIndex: number) => {
@@ -377,8 +376,8 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     let res: any = await api.auth.addClockInComment(contentKey, comment);
     if (res.msg === 'OK') {
       dispatch(setMessage(true, '评论成功', 'success'));
-      newCommentList.unshift(res.result);
       setComment('');
+      newCommentList.unshift(res.result);
       setCommentList(newCommentList);
     } else {
       dispatch(setMessage(true, res.msg, 'error'));
@@ -634,6 +633,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                     onChange={(e: any) => {
                       setComment(e.target.value);
                     }}
+                    value={comment}
                   />
                   <Button
                     variant="contained"
@@ -673,14 +673,13 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
             <React.Fragment>
               {personArray.map((item: any, index: number) => {
                 return (
-                  <React.Fragment>
+                  <React.Fragment key={'person' + index}>
                     {index == 0 ? (
                       <div
                         className="diary-avatar"
                         onClick={() => {
                           choosePerson(item.key, index);
                         }}
-                        key={'person' + index}
                         style={
                           item.key === diaryKey
                             ? {
@@ -698,7 +697,6 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                         onClick={() => {
                           choosePerson(item.key, index);
                         }}
-                        key={'person' + index}
                         style={
                           item.key === diaryKey
                             ? {
