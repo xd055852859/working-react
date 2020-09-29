@@ -119,7 +119,7 @@ const GridTree: React.FC<GridTreeProps> = (props) => {
                       chooseTask(dateIndex);
                     }}
                     style={
-                      dateItem ? { backgroundColor: 'rgba(59,82,107,0.8)' } : {}
+                      dateItem ? { backgroundColor: 'rgba(59,82,107,0.6)' } : {}
                     }
                   >
                     {dateItem}

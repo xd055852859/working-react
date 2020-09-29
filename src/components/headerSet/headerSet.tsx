@@ -72,7 +72,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const [addVisible, setAddVisible] = useState(false);
   const [avatarShow, setAvatarShow] = useState(false);
   const [searchInput, setSearchInput] = useState('');
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [searchTaskList, setSearchTaskList] = useState([]);
   const [groupIndex, setGroupIndex] = useState(0);
@@ -137,6 +137,13 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       getLabelArray(groupArray[0]._key);
     }
   }, [groupArray]);
+  useEffect(() => {
+    if (searchInput == '') {
+      setSearchTaskList([]);
+      setPage(1);
+    }
+  }, [searchInput]);
+
   const changeBoard = (type: string) => {
     let newTheme = _.cloneDeep(theme);
     newTheme[type] = newTheme[type] ? false : true;
@@ -235,7 +242,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   return (
     <React.Fragment>
       <div className="contentHeader-set">
-        <Tooltip title="跨群添加">
+        <Tooltip title="新建任务">
           <img
             src={addPng}
             alt=""
@@ -281,21 +288,6 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             }}
           />
         </Tooltip>
-        <DropMenu
-          visible={clockInVisible}
-          dropStyle={{
-            width: '400px',
-            maxHeight: '600px',
-            top: '65px',
-            left: '-180px',
-          }}
-          onClose={() => {
-            setClockInVisible(false);
-          }}
-          title={'打卡中心'}
-        >
-          <ClockIn />
-        </DropMenu>
         <Tooltip title="用户中心">
           <div
             className="contentHeader-avatar-info"
@@ -432,26 +424,6 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
               />
             </div>
           </div>
-          <div className="contentHeader-set-item">
-            <div
-              className="contentHeader-set-item-title"
-              onClick={() => {
-                logout();
-              }}
-              style={{ cursor: 'pointer' }}
-            >
-              <img
-                src={logoutPng}
-                alt=""
-                style={{
-                  width: '16px',
-                  height: '15px',
-                  marginRight: '5px',
-                }}
-              />
-              <div>退出登录</div>
-            </div>
-          </div>
           <div
             className="contentHeader-set-item"
             onClick={() => {
@@ -470,18 +442,38 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
               </div>
               <div
                 className="bg-item"
-                style={
-                  theme.backgroundImg
-                    ? {
-                        backgroundImage: 'url(' + theme.backgroundImg + ')',
-                        marginBottom: '0px',
-                      }
-                    : {
-                        backgroundColor: theme.backgroundColor,
-                        marginBottom: '0px',
-                      }
-                }
+                style={{
+                  backgroundImage: theme.backgroundImg
+                    ? 'url(' + theme.backgroundImg + ')'
+                    : '',
+                  backgroundColor: !theme.backgroundImg
+                    ? theme.backgroundColor
+                    : '',
+                  marginBottom: '0px',
+                  width: '44px',
+                  height: '25px',
+                }}
               ></div>
+            </div>
+          </div>
+          <div className="contentHeader-set-item">
+            <div
+              className="contentHeader-set-item-title"
+              onClick={() => {
+                logout();
+              }}
+              style={{ cursor: 'pointer' }}
+            >
+              <img
+                src={logoutPng}
+                alt=""
+                style={{
+                  width: '16px',
+                  height: '15px',
+                  marginRight: '5px',
+                }}
+              />
+              <div>退出登录</div>
             </div>
           </div>
           <Dialog
@@ -514,10 +506,10 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             }}
             dialogStyle={{
               position: 'fixed',
-              top: '505px',
+              top: '455px',
               right: '5px',
               width: '260px',
-              height: 'calc(100% - 505px)',
+              height: 'calc(100% - 455px)',
             }}
             footer={false}
             showMask={false}
@@ -590,7 +582,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
         onOK={() => {
           addLabelTask();
         }}
-        title={'跨群添加'}
+        title={'新建任务'}
         dialogStyle={{
           position: 'fixed',
           top: '65px',
@@ -753,8 +745,15 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             className={classes.input}
             style={{ width: '70%' }}
             value={searchInput}
+            autoComplete="off"
             onChange={(e) => {
               setSearchInput(e.target.value);
+            }}
+            onKeyPress={(e: any) => {
+              console.log('xxxxx', e.keyCode);
+              if (e.keyCode === 13) {
+                searchTask();
+              }
             }}
           />
           <Button
@@ -774,6 +773,24 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             return <Task taskItem={taskItem} showGroupName={true} />;
           })}
         </div>
+      </Dialog>
+      <Dialog
+        visible={clockInVisible}
+        dialogStyle={{
+          position: 'fixed',
+          width: '400px',
+          height: 'calc(100% - 68px)',
+          top: '68px',
+          right: '10px',
+        }}
+        footer={false}
+        onClose={() => {
+          setClockInVisible(false);
+        }}
+        showMask={false}
+        title={'打卡中心'}
+      >
+        <ClockIn />
       </Dialog>
     </React.Fragment>
   );

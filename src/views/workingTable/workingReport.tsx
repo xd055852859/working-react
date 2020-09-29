@@ -232,7 +232,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       setNegative(noteRes.result.negative);
       setNote(noteRes.result.note);
     } else {
-      if (noteRes.msg == '无该成就/风险/随记') {
+      if (noteRes.msg == '无该成就/审视/随记') {
         await api.auth.setNote({
           startTime: moment().startOf('day').valueOf(),
           type: 2,
@@ -305,7 +305,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     for (let dayKey in dayCanlendarItem) {
       dom.push(
         <React.Fragment>
-          <a className="diaryall-subtitle" id={'diaryall' + dayCanlendarIndex}>
+          <div className="diaryall-subtitle">
             <div className="diaryall-subtitle-img">
               <img
                 src={
@@ -318,7 +318,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
               />
             </div>
             <div>{dayCanlendarItem[dayKey][0].executorName}</div>
-          </a>
+          </div>
           {dayCanlendarItem[dayKey].map((item: any, index: number) => {
             return (
               <div
@@ -481,7 +481,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
         </div>
         {dayCanlendarArray.length > 0 ? (
           <div className="diary-container">
-            <h2>一、今日任务</h2>
+            <h2>一、任务看板</h2>
             {diaryKey !== '全部' ? (
               dayCanlendarArray[diaryIndex][diaryKey].map(
                 (taskItem: any, taskIndex: number) => {
@@ -504,6 +504,10 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                   (dayCanlendarItem: any, dayCanlendarIndex: number) => {
                     return (
                       <div>
+                        <a
+                          id={'diaryall' + dayCanlendarIndex}
+                          className="diaryall-a"
+                        ></a>
                         <div className="diaryall-title">
                           {moment(dateArray[dayCanlendarIndex].start).format(
                             'YYYY年MM月DD日'
@@ -519,16 +523,16 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
 
             {headerIndex == 1 ? (
               <React.Fragment>
-                <h2>二、PN</h2>
+                <h2>二、工作日志</h2>
                 <div className="diary-content-pn">
                   <div className="diary-content-tab">
-                    <div>正面：利好、收获</div>
-                    <div>负正：利空、风险、压力</div>
+                    <div>成绩,收获,价值创造</div>
+                    <div>负正：利空、审视、压力</div>
                   </div>
                   <div className="diary-content-info">
                     <textarea
                       value={positive}
-                      placeholder="正面：利好、收获"
+                      placeholder="成绩,收获,价值创造"
                       className="diary-content-textarea"
                       onChange={(e) => {
                         setPositive(e.target.value);
@@ -536,7 +540,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                     />
                     <textarea
                       value={negative}
-                      placeholder="负面：利空、风险、压力"
+                      placeholder="困难，挑战，潜在问题"
                       className="diary-content-textarea"
                       onChange={(e) => {
                         setNegative(e.target.value);

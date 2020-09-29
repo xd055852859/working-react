@@ -266,10 +266,10 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     let newMainSearchList = _.cloneDeep(mainSearchList);
     let memberRes: any = await api.group.outGroup(groupKey);
     if (memberRes.msg === 'OK') {
-      dispatch(setMessage(true, '退出群组成功', 'success'));
+      dispatch(setMessage(true, '退出项目成功', 'success'));
       newMainSearchList.splice(searchIndex, 1);
       setMainSearchList(newMainSearchList);
-      dispatch(getGroup(3, null, 2));
+      dispatch(getGroup(3));
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }
@@ -300,10 +300,10 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             role: newGroupInfo.defaultPower,
           },
         ]);
-        dispatch(setMessage(true, '加入群组成功', 'success'));
+        dispatch(setMessage(true, '加入项目成功', 'success'));
         newSearchList.splice(searchIndex, 1);
         setSearchList(newSearchList);
-        dispatch(getGroup(3, null, theme.groupSortType));
+        dispatch(getGroup(3));
       }
     } else {
       dispatch(setMessage(true, groupRes.msg, 'error'));
@@ -328,7 +328,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       dispatch(setMessage(true, '口令加群成功', 'success'));
       newSearchList.splice(searchIndex, 1);
       setSearchList(newSearchList);
-      dispatch(getGroup(3, null, theme.groupSortType));
+      dispatch(getGroup(3));
       setInviteVisible(false);
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
@@ -360,7 +360,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       dispatch(getGroupInfo(groupRes.result._key));
       dispatch(setCommonHeaderIndex(3));
       dispatch(setMoveState('in'));
-      dispatch(getGroup(3, null, theme.groupSortType));
+      dispatch(getGroup(3));
       setAddVisible(false);
     } else {
       dispatch(setMessage(true, groupRes.msg, 'error'));
@@ -652,7 +652,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                             // addMember(item)
                           }
                         >
-                          {/* <div>退出群组</div> */}
+                          {/* <div>退出项目</div> */}
                         </div>
                       )}
                     </div>
@@ -738,7 +738,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                                     // addMember(item)
                                   }
                                 >
-                                  <div>加入群组</div>
+                                  <div>加入项目</div>
                                 </div>
                               )}
                             </div>

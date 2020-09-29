@@ -29,15 +29,15 @@
   position: relative;
 }
 .bootpage-image {
-  width: 522px;
-  height: 85px;
-  margin-bottom: 2.2%;
+  width: 500px;
+  /* height: 71px; */
+  margin-bottom: 30px;
 }
 .bootpage-image img {
   width: 100%;
 }
 .bootpage-title {
-  width: 100%;
+  width: 500px;
   display: flex;
   align-items: center;
   margin-bottom: 3.7%;
@@ -50,12 +50,11 @@
 .bootpage-button {
   width: 200px;
   height: 60px;
-  line-height: 60px;
-  text-align: center;
   font-size: 18px;
   color: #ffffff;
   background-color: #1aca8e;
   border-radius: 30px;
+  cursor: pointer;
 }
 .bootpage-video {
   position: fixed;

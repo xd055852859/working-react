@@ -51,7 +51,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     hourInput: {
-      width: '100px',
+      width: '150px',
       color: '#fff',
       marginTop: '24px',
       marginLeft: '10px',
@@ -92,7 +92,7 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
   const userKey = useTypedSelector((state) => state.auth.userKey);
   const classes = useStyles();
   const dispatch = useDispatch();
-  const [calendarInput, setCalendarInput] = useState('');
+  const [calendarInput, setCalendarInput] = useState('新日程');
   const [calendarDay, setCalendarDay] = useState(moment());
   const [calendarHour, setCalendarHour] = useState(moment().format('HH:mm'));
   const [calendarCheck, setCalendarCheck] = useState(false);
@@ -130,7 +130,7 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
         editTask({ key: newTaskItem._key, ...newTaskItem }, headerIndex)
       );
       dispatch(getCalendarList(userKey, calendarStartTime, calendarEndTime));
-      setCalendarInput('');
+      setCalendarInput('新日程');
       onClose();
     } else {
       let res: any = await api.task.addTask(
@@ -148,7 +148,7 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
       if (res.msg == 'OK') {
         await dispatch(setMessage(true, '新增日程成功', 'success'));
         dispatch(getCalendarList(userKey, calendarStartTime, calendarEndTime));
-        setCalendarInput('');
+        setCalendarInput('新日程');
         onClose();
       } else {
         dispatch(setMessage(true, res.msg, 'error'));

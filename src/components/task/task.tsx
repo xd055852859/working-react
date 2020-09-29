@@ -11,7 +11,7 @@ import {
   getWorkingTableTask,
   getGroupTask,
   setChooseKey,
-  changeTaskInfoVisible
+  changeTaskInfoVisible,
 } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import moment from 'moment';
@@ -91,6 +91,9 @@ const Task: React.FC<TaskProps> = (props) => {
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const memberHeaderIndex = useTypedSelector(
+    (state) => state.member.memberHeaderIndex
+  );
   const dispatch = useDispatch();
   const classes = useStyles();
   const [endtime, setEndtime] = useState(0);
@@ -481,7 +484,7 @@ const Task: React.FC<TaskProps> = (props) => {
                           </span>
                         ) : (
                           <span style={{ flexShrink: 0 }}>
-                            {taskDetail.groupName}
+                            {taskDetail.groupName.split('_')[0]}
                           </span>
                         )}
                         <span style={{ flexShrink: 0 }}>
@@ -592,7 +595,7 @@ const Task: React.FC<TaskProps> = (props) => {
                             taskDetail.content !== '' ? { display: 'flex' } : {}
                           }
                           onClick={() => {
-                            dispatch(changeTaskInfoVisible(true))
+                            dispatch(changeTaskInfoVisible(true));
                           }}
                         >
                           <img src={ellipsisbPng} alt="详情" />
@@ -608,7 +611,10 @@ const Task: React.FC<TaskProps> = (props) => {
               </div>
             </React.Fragment>
           </div>
-          {chooseKey === taskDetail._key && editRole && headerIndex === 3 ? (
+          {chooseKey === taskDetail._key &&
+          editRole &&
+          headerIndex === 3 &&
+          memberHeaderIndex === 0 ? (
             !addTaskVisible ? (
               <div
                 className="taskItem-plus"
@@ -675,7 +681,7 @@ const Task: React.FC<TaskProps> = (props) => {
         dialogStyle={{ width: '400px', height: '200px' }}
       >
         <div className="dialog-onlyTitle">是否删除该任务</div>
-      </Dialog>    
+      </Dialog>
     </React.Fragment>
   );
 };

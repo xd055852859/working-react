@@ -9,6 +9,7 @@ import Loading from '../common/loading';
 import './grid.css';
 import api from '../../services/api';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
+import Tooltip from '../common/tooltip';
 interface GridProps {
   gridState: boolean;
 }
@@ -455,27 +456,29 @@ const Grid: React.FC<GridProps> = (prop) => {
                 {gridState ? (
                   <React.Fragment>{dateItem}</React.Fragment>
                 ) : (
-                  <div
-                    className="grid-label-td-avatar"
-                    style={{
-                      height: '35px',
-                      borderRight:
-                        dateIndex != taskNavDate.length - 1
-                          ? '1px solid transparent'
-                          : '0px',
-                    }}
-                  >
-                    {/* <div slot="title">{dateItem.nickName}</div> */}
-                    <img
-                      src={
-                        dateItem.avatar
-                          ? dateItem.avatar +
-                            '?imageMogr2/auto-orient/thumbnail/50x50/format/jpg'
-                          : defaultPersonPng
-                      }
-                      alt=""
-                    />
-                  </div>
+                  <Tooltip title={dateItem.nickName}>
+                    <div
+                      className="grid-label-td-avatar"
+                      style={{
+                        height: '35px',
+                        borderRight:
+                          dateIndex != taskNavDate.length - 1
+                            ? '1px solid transparent'
+                            : '0px',
+                      }}
+                    >
+                      {/* <div slot="title">{dateItem.nickName}</div> */}
+                      <img
+                        src={
+                          dateItem.avatar
+                            ? dateItem.avatar +
+                              '?imageMogr2/auto-orient/thumbnail/50x50/format/jpg'
+                            : defaultPersonPng
+                        }
+                        alt=""
+                      />
+                    </div>
+                  </Tooltip>
                 )}
               </div>
             );

@@ -12,6 +12,7 @@ import './taskNav.css';
 import plusPng from '../../assets/img/plus.png';
 import unDragPng from '../../assets/img/undrag.png';
 import ellipsisPng from '../../assets/img/ellipsis.png';
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import { getGroupTask } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
 
@@ -204,8 +205,8 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                     avatarVisible
                   }
                   dropStyle={{
-                    width: '150px',
-                    height: '200px',
+                    width: '80%',
+                    height: '350px',
                     top: '45px',
                     color: '#333',
                   }}
@@ -231,7 +232,15 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                                 }}
                               >
                                 <div className="defaultExecutor-info-avatar">
-                                  <img src={groupMemberItem.avatar} alt="" />
+                                  <img
+                                    src={
+                                      groupMemberItem.avatar
+                                        ? groupMemberItem.avatar +
+                                          '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
+                                        : defaultPersonPng
+                                    }
+                                    alt=""
+                                  />
                                 </div>
                                 {groupMemberItem.nickName}
                               </div>
@@ -252,8 +261,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                   }
                 }}
               >
-                {labelName}
-                {}
+                {labelName.split('_')[0]}
               </div>
             ) : (
               <TextField

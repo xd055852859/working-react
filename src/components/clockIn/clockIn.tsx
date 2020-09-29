@@ -103,7 +103,7 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
       setNegative(noteRes.result.negative);
       setNote(noteRes.result.note);
     } else {
-      if (noteRes.msg === '无该成就/风险/随记') {
+      if (noteRes.msg === '无该成就/审视/随记') {
         await api.auth.setNote({
           startTime: moment().startOf('day').valueOf(),
           type: 2,
@@ -128,7 +128,7 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
       note: note,
     });
     if (noteRes.msg === 'OK') {
-      dispatch(setMessage(true, '随记保存成功', 'success'));
+      // dispatch(setMessage(true, '随记保存成功', 'success'));
     } else {
       dispatch(setMessage(true, noteRes.msg, 'error'));
     }
@@ -137,6 +137,7 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
   const clockIn = async () => {
     const startTime = moment().startOf('day').valueOf();
     const timeStr = moment().format('YYYY/MM/DD HH:mm:ss');
+    saveNote();
     let obj: any = {
       startTime: startTime,
       type: nowTime ? 2 : 1,
@@ -183,7 +184,7 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
             setGroupVisible(true);
           }}
         >
-          默认打卡群:
+          打卡群:
           <div className="clockIn-title-logo">
             <img
               src={
@@ -236,74 +237,41 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
           </DropMenu>
         </div>
       ) : null}
-      <Accordion
-        expanded={expanded === 'panel1'}
-        onChange={handleChange('panel1')}
-      >
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel1a-content"
-          id="panel1a-header"
-        >
-          <Typography>随记</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <textarea
-            value={note}
-            placeholder="随记"
-            className="clockIn-textarea"
-            onChange={(e) => {
-              setNote(e.target.value);
-            }}
-          />
-        </AccordionDetails>
-      </Accordion>
-      <Accordion
-        expanded={expanded === 'panel2'}
-        onChange={handleChange('panel2')}
-      >
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel1a-content"
-          id="panel1a-header"
-        >
-          <Typography>成就</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <textarea
-            value={positive}
-            placeholder="正面：利好、收获"
-            className="clockIn-textarea"
-            onChange={(e) => {
-              setPositive(e.target.value);
-            }}
-          />
-        </AccordionDetails>
-      </Accordion>
-      <Accordion
-        expanded={expanded === 'panel3'}
-        onChange={handleChange('panel3')}
-      >
-        <AccordionSummary
-          expandIcon={<ExpandMoreIcon />}
-          aria-controls="panel1a-content"
-          id="panel1a-header"
-        >
-          <Typography>风险</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <textarea
-            value={negative}
-            placeholder="负面：利空、风险、压力"
-            className="clockIn-textarea"
-            onChange={(e) => {
-              setNegative(e.target.value);
-            }}
-          />
-        </AccordionDetails>
-      </Accordion>
+      <div className="clockIn-info">
+        <div className="clockIn-info-title">随记</div>
+        <textarea
+          value={note}
+          placeholder="随记"
+          className="clockIn-textarea"
+          onChange={(e) => {
+            setNote(e.target.value);
+          }}
+        />
+      </div>
+      <div className="clockIn-info">
+        <div className="clockIn-info-title">成就</div>
+        <textarea
+          value={positive}
+          placeholder="成绩,收获,价值创造"
+          className="clockIn-textarea"
+          onChange={(e) => {
+            setPositive(e.target.value);
+          }}
+        />
+      </div>
+      <div className="clockIn-info">
+        <div className="clockIn-info-title">审视</div>
+        <textarea
+          value={negative}
+          placeholder="困难，挑战，潜在问题"
+          className="clockIn-textarea"
+          onChange={(e) => {
+            setNegative(e.target.value);
+          }}
+        />
+      </div>
       <div className="clockIn-button">
-        <Button
+        {/* <Button
           variant="contained"
           color="primary"
           onClick={() => {
@@ -312,14 +280,15 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
           className={classes.saveButton}
         >
           保存
-        </Button>
+        </Button> */}
         <Button
           variant="contained"
           color="primary"
           onClick={() => {
             clockIn();
           }}
-          className={classes.clockInButton}
+          style={{ color: '#fff' }}
+          // className={classes.clockInButton}
         >
           {nowTime ? '下班打卡' : '上班打卡'}
         </Button>

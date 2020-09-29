@@ -54,3 +54,10 @@
 .filter-menu-info:hover {
   background: #f0f0f0;
 }
+.filter-menu-icon{
+  position: absolute;
+  width:14px;
+  height:8.4px;
+  top:14px;
+  right:18px;
+}

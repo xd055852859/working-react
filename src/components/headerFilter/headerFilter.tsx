@@ -247,16 +247,16 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
     <React.Fragment>
       {headerIndex !== 3 ? (
         <Filter
-          title={'群组'}
+          title={'项目'}
           visible={groupFilterVisible}
           filterType={'groupKey'}
           filterArray={groupFilterArray}
           filterItemStyle={{
             width: '228px',
             minHeight: '300px',
-            top: '38px',
+            top: '38px',         
           }}
-          filterStyle={{ padding: '0px 18px' }}
+          filterStyle={{ padding: '0px 18px',marginTop:'10px' }}
           filterIndex={groupIndex}
           onOpen={() => {
             setGroupFilterVisible(true);

@@ -5,6 +5,7 @@ import Avatar from '@material-ui/core/Avatar';
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
+import downArrowbPng from '../../assets/img/downArrowb.png';
 interface FilterProps {
   visible: boolean;
   title?: any;
@@ -63,6 +64,7 @@ const Filter: React.FC<FilterProps> = (prop) => {
               className={classes.avatar}
             />
             <div>{filterArray[filterIndex][filterItem[0]]}</div>
+            <img className="filter-menu-icon" src={downArrowbPng} alt=""/>
           </div>
         ) : null}
         <DropMenu

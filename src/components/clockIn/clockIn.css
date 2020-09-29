@@ -1,6 +1,6 @@
 .clockIn {
   width: 100%;
-  overflow: auto;
+  height:100%;
 }
 .clockIn-button {
   height: 53px;
@@ -12,7 +12,8 @@
 }
 .clockIn-textarea {
   width: 100%;
-  height: 200px;
+  /* height: 200px; */
+  height: calc(100% - 30px);
   border-radius: 5px;
 }
 .clockIn-logo {
@@ -28,6 +29,16 @@
   box-sizing: border-box;
   display: flex;
   align-items: center;
+}
+.clockIn-info {
+  height: calc((100% - 41px) / 3);
+  padding: 0px 16px;
+  box-sizing: border-box;
+}
+.clockIn-info-title {
+  width: 100%;
+  height: 30px;
+  line-height: 30px;
 }
 .clockIn-title-logo,
 .clockInGroup-item-logo {

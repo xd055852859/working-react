@@ -215,8 +215,8 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
   const outGroup = async () => {
     let memberRes: any = await api.group.outGroup(groupKey);
     if (memberRes.msg === 'OK') {
-      dispatch(setMessage(true, '退出群组成功', 'success'));
-      dispatch(getGroup(3, null, 2));
+      dispatch(setMessage(true, '退出项目成功', 'success'));
+      dispatch(getGroup(3));
       dispatch(setCommonHeaderIndex(1));
       dispatch(setMoveState('out'));
     } else {
@@ -459,7 +459,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
         onOK={() => {
           outGroup();
         }}
-        title={'退出群组'}
+        title={'退出项目'}
         dialogStyle={{ width: '400px', height: '200px' }}
       >
         <div className="dialog-onlyTitle">是否退出该群</div>

@@ -13,7 +13,7 @@ const ContentHeader: React.FC<ContentHeaderProps> = (prop) => {
   const user = useTypedSelector((state) => state.auth.user);
   return (
     <div className="contentHeader">
-      <img src={boardPng} alt="" className="contentHeader-logo" />
+      {/* <img src={boardPng} alt="" className="contentHeader-logo" /> */}
       <HeaderSet />
     </div>
   );

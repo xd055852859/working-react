@@ -94,14 +94,14 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
       {loading ? <Loading /> : null}
       <WorkingTableHeader />
       <div className="workingTableContent">
-        {memberHeaderIndex === 0 || memberHeaderIndex === 2 ? (
+        {memberHeaderIndex === 0 || memberHeaderIndex === 4 ? (
           <WorkingTableLabel />
         ) : null}
-        {memberHeaderIndex === 1 || memberHeaderIndex === 3 ? (
+        {memberHeaderIndex === 1 || memberHeaderIndex === 5 ? (
           <WorkingTableGroup />
         ) : null}
-        {memberHeaderIndex === 4 ? <Grid gridState={true} /> : null}
-        {memberHeaderIndex === 5 ? <Grid gridState={false} /> : null}
+        {memberHeaderIndex === 2 ? <Grid gridState={true} /> : null}
+        {memberHeaderIndex === 3 ? <Grid gridState={false} /> : null}
         {memberHeaderIndex === 6 ? <WorkingCalendar /> : null}
         {memberHeaderIndex === 7 ? <WorkingReport /> : null}
         {memberHeaderIndex === 8 ?  <Vitality

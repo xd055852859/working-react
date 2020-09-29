@@ -596,7 +596,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
               </div>
             </div>
             <div className="taskInfo-item">
-              <div className="taskInfo-item-title">标签</div>
+              <div className="taskInfo-item-title">类型</div>
               <div
                 className="taskInfo-item-suggest"
                 onClick={() => {
@@ -706,7 +706,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                           key={'history' + historyIndex}
                           className="taskInfo-comment-historyLog"
                         >
-                          {historyItem.log}
+                          <div className="point"></div> {historyItem.log}
                         </div>
                       );
                     }

@@ -58,9 +58,9 @@ const Contact: React.FC<ContactProps> = (props) => {
   useEffect(() => {
     if (user && user._key) {
       if (!groupArray && contactIndex === 0) {
-        dispatch(getGroup(3, 1, 2));
+        dispatch(getGroup(3, 1));
         setTimeout(() => {
-          dispatch(getGroup(3, null, 2));
+          dispatch(getGroup(3));
         }, 2000);
         dispatch(getMember(mainGroupKey, 2));
       }
@@ -71,14 +71,16 @@ const Contact: React.FC<ContactProps> = (props) => {
       }
     }
   }, [groupArray, user, contactIndex]);
-  const toTargetGroup = (groupKey: string, index: number) => {
+  const toTargetGroup = async (groupKey: string, index: number) => {
     dispatch(setGroupKey(groupKey));
     dispatch(getGroupInfo(groupKey));
     dispatch(setCommonHeaderIndex(3));
     setSelectedIndex(index);
     dispatch(setMoveState('in'));
+    await api.group.visitGroupOrFriend(2, groupKey);
+    dispatch(getGroup(3));
   };
-  const toTargetUser = (targetUserKey: string, index: number) => {
+  const toTargetUser = async (targetUserKey: string, index: number) => {
     console.log(targetUserKey);
     // dispatch(setTargetUserKey(targetUserKey));
     // dispatch(userKeyToGroupKey(targetUserKey));
@@ -86,6 +88,8 @@ const Contact: React.FC<ContactProps> = (props) => {
     dispatch(setCommonHeaderIndex(2));
     setSelectedIndex(index);
     dispatch(setMoveState('in'));
+    await api.group.visitGroupOrFriend(1, targetUserKey);
+    dispatch(getMember(mainGroupKey, 2));
   };
   const changeCare = (
     e: any,

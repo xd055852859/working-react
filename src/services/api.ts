@@ -679,6 +679,13 @@ const group = {
       applyJoinGroupKey: applyJoinGroupKey,
     });
   },
+  visitGroupOrFriend(type: number, targetUGKey: string) {
+    return request.post(HOME_URL + '/group/visitGroupOrFriend', {
+      token: auth_token,
+      type: type,
+      targetUGKey: targetUGKey,
+    });
+  },
 };
 export default {
   auth,

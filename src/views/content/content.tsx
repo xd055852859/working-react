@@ -24,7 +24,7 @@ const Content: React.FC<ContentProps> = (props) => {
     if (user && headerIndex === 0) {
       formatTime();
       getPrompt();
-      interval = setInterval(formatTime, 600000);
+      interval = setInterval(formatTime, 60000);
       // getSocket();
     }
     return () => {
@@ -46,7 +46,7 @@ const Content: React.FC<ContentProps> = (props) => {
     } else {
       nowTime[0] = '晚上';
     }
-    // nowTime[1] = moment().format('HH:mm');
+    nowTime[1] = moment().format('HH:mm');
     console.log(new Date());
     setNowTime(nowTime);
   };
@@ -71,10 +71,10 @@ const Content: React.FC<ContentProps> = (props) => {
           <div className="content-mainTitle">
             {nowTime[0]}好,亲爱的{user && user.profile.nickName}
           </div>
-          <div className="content-timeTitle">创新力 {createNum}</div>
-          <div className="content-timeTitle">执行力 {finishNum}</div>
-          {/* <div className="content-timeTitle">{nowTime[1]}</div> */}
-          {/* <div className="content-subTitle">{prompt}</div> */}
+          {/* <div className="content-timeTitle">创新力 {createNum}</div>
+          <div className="content-timeTitle">执行力 {finishNum}</div> */}
+          <div className="content-timeTitle">{nowTime[1]}</div>
+          <div className="content-subTitle">{prompt}</div>
         </div>
         {theme && theme.memberVisible ? <MemberBoard /> : null}
         {theme && theme.mainVisible ? <MainBoard getNum={getNum} /> : null}

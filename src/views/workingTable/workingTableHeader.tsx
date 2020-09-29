@@ -66,30 +66,30 @@ const WorkingTableHeader: React.FC = (prop) => {
   const theme = useTypedSelector((state) => state.auth.theme);
   const dispatch = useDispatch();
   const viewArray: string[] = [
-    '频道',
-    '项目',
-    '频道卡',
-    '项目卡',
+    '分频道',
+    '分项目',
     '时间表',
     '执行表',
+    '频道流',
+    '项目流',
     '日历',
   ];
   const viewImg: string[] = [
     labelPng,
     groupPng,
-    labelTabPng,
-    groupTabPng,
     gridTimePng,
     gridPersonPng,
+    labelTabPng,
+    groupTabPng,
     calendarPng,
   ];
   const viewImgb: string[] = [
     labelbPng,
     groupbPng,
-    labelTabbPng,
-    groupTabbPng,
     gridTimebPng,
     gridPersonbPng,
+    labelTabbPng,
+    groupTabbPng,
     calendarbPng,
   ];
   const checkedTitle = [
@@ -314,7 +314,11 @@ const WorkingTableHeader: React.FC = (prop) => {
               }}
             >
               <img src={viewImg[memberHeaderIndex]} alt=""></img>
-              {viewArray[memberHeaderIndex]}
+              <Chip
+                size="small"
+                label={viewArray[memberHeaderIndex]}
+                className={classes.chip}
+              />
             </div>
             <DropMenu
               visible={viewVisible}
@@ -464,7 +468,7 @@ const WorkingTableHeader: React.FC = (prop) => {
           chooseMemberHeader(0);
         }}
         style={
-          memberHeaderIndex !== 7
+          memberHeaderIndex < 7
             ? {
                 background: 'rgba(255,255,255,0.24)',
               }
@@ -497,31 +501,29 @@ const WorkingTableHeader: React.FC = (prop) => {
           memberHeaderIndex === 8
             ? {
                 background: 'rgba(255,255,255,0.24)',
-                minWidth: '100px',
               }
-            : { minWidth: '100px' }
+            : {}
         }
       >
-        活力( {energyValueTotal} )
+        活力
       </div>
-      <Tooltip title="群聊天">
-        <div className="header-chat">
+      {headerIndex === 2 ? (
+        <Tooltip title="群聊天">
           <img
             src={chatPng}
             alt=""
             style={{
               width: '27px',
               height: '25px',
-              marginRight: '10px',
+              marginLeft: '10px',
               cursor: 'pointer',
             }}
             onClick={() => {
               goChat();
             }}
           />
-          聊天
-        </div>
-      </Tooltip>
+        </Tooltip>
+      ) : null}
     </div>
   );
 };

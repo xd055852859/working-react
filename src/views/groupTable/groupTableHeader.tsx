@@ -161,7 +161,8 @@ const GroupTableHeader: React.FC = (prop) => {
   const setGroup = () => {
     dispatch(changeGroupInfo(groupKey, groupObj));
     setGroupSetVisible(false);
-    dispatch(getGroup(3, null, theme.groupSortType));
+    // dispatch(getGroup(3, null, theme.groupSortType));
+    dispatch(getGroup(3));
   };
   const setMember = (groupMember: any) => {
     console.log('groupMember', groupMember);
@@ -217,12 +218,12 @@ const GroupTableHeader: React.FC = (prop) => {
     // }
     dispatch(setFilterObject(newFilterObject));
   };
-  
+
   const dismissGroup = async () => {
     let groupRes: any = await api.group.dismissGroup(groupKey);
     if (groupRes.msg === 'OK') {
       dispatch(setMessage(true, '解散群组成功', 'success'));
-      dispatch(getGroup(3, null, 2));
+      dispatch(getGroup(3));
       dispatch(setCommonHeaderIndex(1));
       dispatch(setMoveState('out'));
     } else {
@@ -289,14 +290,14 @@ const GroupTableHeader: React.FC = (prop) => {
               top: '40px',
               left: '-40px',
               color: '#333',
-              overflow:'visible'
+              overflow: 'visible',
             }}
             onClose={() => {
               setGroupVisible(false);
             }}
             title={'群列表'}
           >
-            <Contact contactIndex={0} contactType={true}/>
+            <Contact contactIndex={0} contactType={true} />
           </DropMenu>
         </div>
       </div>
@@ -399,157 +400,167 @@ const GroupTableHeader: React.FC = (prop) => {
           style={{ width: '30px', height: '25px', marginRight: '30px' }}
         />
       </Tooltip> */}
+
       <div className="view-container">
-        <div
-          className="workingTableHeader-logo"
-          style={{ width: '108px' }}
-          onClick={() => {
-            setViewVisible(true);
-          }}
-        >
-          <img src={viewImg[memberHeaderIndex]} alt=""></img>
-          {viewArray[memberHeaderIndex]}
-        </div>
-        <DropMenu
-          visible={viewVisible}
-          dropStyle={{
-            width: '180px',
-            top: '60px',
-            color: '#333',
-          }}
-          onClose={() => {
-            setViewVisible(false);
-          }}
-          title={'视图切换'}
-        >
-          {viewArray.map((viewItem, viewIndex) => {
-            return (
-              <div
-                className="viewTableHeader-logo"
-                onClick={() => {
-                  chooseMemberHeader(viewIndex);
-                }}
-                key={'viewTable' + viewIndex}
-              >
-                <img src={viewImgb[viewIndex]} alt=""></img>
-                {viewItem}
-              </div>
-            );
-          })}
-        </DropMenu>
-        <div
-          className="workingTableHeader-logo"
-          onClick={() => {
-            setFilterVisible(true);
-          }}
-          style={{ width: '40px' }}
-        >
-          <img src={filterPng} alt="" />
-        </div>
-        {filterObject.groupKey ? (
-          <Chip
-            size="small"
-            avatar={
-              <Avatar
-                alt=""
-                src={
-                  filterObject.groupLogo +
-                  '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
-                }
+        {memberHeaderIndex === 0 ? (
+          <React.Fragment>
+            <div
+              className="workingTableHeader-logo"
+              style={{ width: '108px' }}
+              onClick={() => {
+                setViewVisible(true);
+              }}
+            >
+              <img src={viewImg[memberHeaderIndex]} alt=""></img>
+              <Chip
+                size="small"
+                label={viewArray[memberHeaderIndex]}
+                className={classes.chip}
               />
-            }
-            label={filterObject.groupName}
-            onClick={() => {
-              setFilterVisible(true);
-            }}
-            onDelete={() => deleteFilter('groupKey')}
-            className={classes.chip}
-          />
-        ) : null}
-        {filterObject.creatorKey ? (
-          <Chip
-            size="small"
-            avatar={
-              <Avatar
-                alt=""
-                src={
-                  filterObject.creatorAvatar +
-                  '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
-                }
-              />
-            }
-            label={'创建人: ' + filterObject.creatorName}
-            onClick={() => {
-              setFilterVisible(true);
-            }}
-            onDelete={() => deleteFilter('creatorKey')}
-            className={classes.chip}
-          />
-        ) : null}
-        {filterObject.executorKey ? (
-          <Chip
-            size="small"
-            avatar={
-              <Avatar
-                alt=""
-                src={
-                  filterObject.executorAvatar +
-                  '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
-                }
-              />
-            }
-            label={'执行人: ' + filterObject.executorName}
-            onClick={() => {
-              setFilterVisible(true);
-            }}
-            onDelete={() => deleteFilter('executorKey')}
-            className={classes.chip}
-          />
-        ) : null}
-        {filterObject.filterType.length > 0 ? (
-          <Chip
-            size="small"
-            label={filterObject.filterType.join(' / ')}
-            className={classes.chip}
-            onClick={() => {
-              setFilterVisible(true);
-            }}
-          />
-        ) : null}
-        <DropMenu
-          visible={filterVisible}
-          dropStyle={{
-            width: '328px',
-            top: '60px',
-            left: '108px',
-            color: '#333',
-          }}
-          onClose={() => {
-            setFilterVisible(false);
-          }}
-          title={'过滤器'}
-        >
-          <HeaderFilter />
-          <div className="filter-info">
-            <div className="filter-title">状态 :</div>
-            <div className="filter-menu">
-              {checkedTitle.map((item: any, index: number) => {
+            </div>
+            <DropMenu
+              visible={viewVisible}
+              dropStyle={{
+                width: '180px',
+                top: '60px',
+                color: '#333',
+              }}
+              onClose={() => {
+                setViewVisible(false);
+              }}
+              title={'视图切换'}
+            >
+              {viewArray.map((viewItem, viewIndex) => {
                 return (
-                  <div key={'filter' + item} className="filter-menu-item">
-                    <Checkbox
-                      checked={filterCheckedArray[index]}
-                      onChange={() => {
-                        changeFilterCheck(item);
-                      }}
-                    />
-                    {item}
+                  <div
+                    className="viewTableHeader-logo"
+                    onClick={() => {
+                      chooseMemberHeader(viewIndex);
+                    }}
+                    key={'viewTable' + viewIndex}
+                  >
+                    <img src={viewImgb[viewIndex]} alt=""></img>
+                    {viewItem}
                   </div>
                 );
               })}
+            </DropMenu>
+            <div
+              className="workingTableHeader-logo"
+              onClick={() => {
+                setFilterVisible(true);
+              }}
+              style={{ width: '40px' }}
+            >
+              <img src={filterPng} alt="" />
             </div>
-          </div>
-        </DropMenu>
+            {filterObject.groupKey ? (
+              <Chip
+                size="small"
+                avatar={
+                  <Avatar
+                    alt=""
+                    src={
+                      filterObject.groupLogo +
+                      '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
+                    }
+                  />
+                }
+                label={filterObject.groupName}
+                onClick={() => {
+                  setFilterVisible(true);
+                }}
+                onDelete={() => deleteFilter('groupKey')}
+                className={classes.chip}
+              />
+            ) : null}
+            {filterObject.creatorKey ? (
+              <Chip
+                size="small"
+                avatar={
+                  <Avatar
+                    alt=""
+                    src={
+                      filterObject.creatorAvatar +
+                      '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
+                    }
+                  />
+                }
+                label={'创建人: ' + filterObject.creatorName}
+                onClick={() => {
+                  setFilterVisible(true);
+                }}
+                onDelete={() => deleteFilter('creatorKey')}
+                className={classes.chip}
+              />
+            ) : null}
+            {filterObject.executorKey ? (
+              <Chip
+                size="small"
+                avatar={
+                  <Avatar
+                    alt=""
+                    src={
+                      filterObject.executorAvatar +
+                      '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
+                    }
+                  />
+                }
+                label={'执行人: ' + filterObject.executorName}
+                onClick={() => {
+                  setFilterVisible(true);
+                }}
+                onDelete={() => deleteFilter('executorKey')}
+                className={classes.chip}
+              />
+            ) : null}
+            {filterObject.filterType.length > 0 ? (
+              <Chip
+                size="small"
+                label={filterObject.filterType.join(' / ')}
+                className={classes.chip}
+                onClick={() => {
+                  setFilterVisible(true);
+                }}
+              />
+            ) : null}
+            <DropMenu
+              visible={filterVisible}
+              dropStyle={{
+                width: '328px',
+                top: '60px',
+                left: '108px',
+                color: '#333',
+              }}
+              onClose={() => {
+                setFilterVisible(false);
+              }}
+              title={'过滤器'}
+            >
+              <HeaderFilter />
+              <div className="filter-info">
+                <div className="filter-title">状态 :</div>
+                <div className="filter-menu">
+                  {checkedTitle.map((item: any, index: number) => {
+                    return (
+                      <div key={'filter' + item} className="filter-menu-item">
+                        <Checkbox
+                          checked={filterCheckedArray[index]}
+                          onChange={() => {
+                            changeFilterCheck(item);
+                          }}
+                        />
+                        {item}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </DropMenu>
+          </React.Fragment>
+        ) : null}
       </div>
+
       <div
         className="view-tab"
         onClick={() => {
@@ -619,30 +630,28 @@ const GroupTableHeader: React.FC = (prop) => {
           memberHeaderIndex === 10
             ? {
                 background: 'rgba(255,255,255,0.24)',
-                minWidth: '100px',
               }
-            : { minWidth: '100px' }
+            : {}
         }
       >
-        活力( {groupInfo && groupInfo.energyValueTotal} )
+        活力
       </div>
       <Tooltip title="群聊天">
-        <div className="header-chat">
-          <img
-            src={chatPng}
-            alt=""
-            style={{
-              width: '27px',
-              height: '25px',
-              marginRight: '10px',
-              cursor: 'pointer',
-            }}
-            onClick={() => {
-              goChat();
-            }}
-          />
-          聊天
-        </div>
+        {/* <div className="header-chat"> */}
+        <img
+          src={chatPng}
+          alt=""
+          style={{
+            width: '27px',
+            height: '25px',
+            marginRight: '10px',
+            cursor: 'pointer',
+          }}
+          onClick={() => {
+            goChat();
+          }}
+        />
+        {/* </div> */}
       </Tooltip>
 
       <Dialog

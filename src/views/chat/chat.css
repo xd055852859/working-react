@@ -4,10 +4,14 @@
   position: fixed;
 }
 .chat-close {
-  width:25px;
-  height:25px;
+  width: 25px;
+  height: 25px;
   position: absolute;
   top: 20px;
   right: 3px;
   z-index: 3;
+}
+iframe {
+  border: 0px;
+  box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.5);
 }

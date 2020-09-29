@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './bootpage.css';
 import bootpage from '../../assets/img/bootpage.png';
 import boottitle from '../../assets/img/boottitle.png';
+import { Button } from '@material-ui/core';
 import _ from 'lodash';
 const Bootpage: React.FC = () => {
   const bootpageRef: React.RefObject<any> = useRef();
@@ -39,21 +40,23 @@ const Bootpage: React.FC = () => {
         <div className="bootpage-title">
           <img src={boottitle} alt="" />
         </div>
-        <div
+        <Button
           className="bootpage-button"
+          variant="contained"
+          color="primary"
           onClick={() => {
             toLogin();
           }}
         >
-          开始工作
-        </div>
+          去工作
+        </Button>
       </div>
       {/* v-show="videoState"  */}
       <div
         className="bootpage-video"
         style={{
           width: clientHeight,
-          height: clientHeight,
+          height: '100%',
           left: clientWidth - clientHeight / 2,
         }}
       >

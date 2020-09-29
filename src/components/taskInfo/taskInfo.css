@@ -70,7 +70,7 @@
 }
 .taskInfo-title {
   width: 100%;
-  margin-bottom: 25px;
+  margin: 15px 0px 20px 0px;
   border: 0px;
   font-size: 18px;
 }
@@ -119,7 +119,7 @@
 .taskInfo-item-countdown {
   width: 45%;
   height: 36px;
-  background: #17b881;
+  background: #999;
   border-radius: 4px;
   color: #fff;
   display: flex;
@@ -128,9 +128,6 @@
   font-size: 14px;
   position: relative;
   cursor: pointer;
-}
-.taskInfo-item-countdown {
-  background: #f5a623;
 }
 .taskInfo-item-hour img,
 .taskInfo-item-countdown img {
@@ -189,10 +186,19 @@
   color: #8091a0;
   margin-bottom: 10px;
   line-height: 20px;
+  display: flex;
+  align-items: center;
 }
 .taskInfo-comment-input {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+}
+.point{
+  width:5px;
+  height:5px;
+  border-radius: 50%;
+  background-color: #8091a0;
+  margin-right:5px
 }

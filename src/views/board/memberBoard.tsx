@@ -51,7 +51,7 @@ const MemberBoardItem: React.FC<MemberBoardItemProps> = (props) => {
       </div>
       {memberItem.map((item: any, index: number) => {
         return (
-          <div key={'memberItem' + index}>
+          <div key={'memberItem' + index}  style={{ width: '100%' }}>
             <div className="memberBoard-group" style={{ marginTop: '5px' }}>
               <Avatar
                 alt="群头像"

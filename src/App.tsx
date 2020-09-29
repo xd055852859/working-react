@@ -129,6 +129,9 @@ const App: React.FC = () => {
       } else {
         history.push('/bootpage');
       }
+      if (getSearchParamValue(location.search, 'token')) {
+        window.location.href = window.location.origin + '/';
+      }
       const groupKey = getSearchParamValue(location.search, 'groupKey');
       if (groupKey) {
         localStorage.setItem('groupKey', groupKey);
@@ -138,6 +141,12 @@ const App: React.FC = () => {
       if (shareKey) {
         localStorage.setItem('shareKey', shareKey);
         window.location.href = window.location.origin + '/';
+      }
+      let url = window.location.href;
+      // 自动切换为https
+      if (url.indexOf('http://localhost') == -1 && url.indexOf('https') < 0) {
+        url = url.replace('http:', 'https:');
+        window.location.replace(url);
       }
     }
   }, [history, dispatch, location.search, user, token]);

@@ -66,7 +66,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
     } else {
       dispatch(setMessage(true, res.msg, 'error'));
     }
-    let groupRes: any = await api.group.getGroup(4, null, 2, groupKey);
+    let groupRes: any = await api.group.getGroup(4, null, undefined, groupKey);
     if (groupRes.msg == 'OK') {
       setMyGroupList(groupRes.result);
     } else {

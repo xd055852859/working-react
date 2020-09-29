@@ -137,7 +137,7 @@ const WorkingTableGroup: React.FC = (prop) => {
   }, [workingTableRef.current]);
   useEffect(() => {
     let groupArray = [];
-    if (memberHeaderIndex === 3 && mainGroupArray.length > 0) {
+    if (memberHeaderIndex === 5 && mainGroupArray.length > 0) {
       console.log('mainGroupArray', mainGroupArray);
       groupArray = mainGroupArray.filter((item: any, index: number) => {
         if (item.arrlength > 0) {

@@ -143,7 +143,7 @@ const WorkingTableLabel: React.FC = (prop) => {
   useEffect(() => {
     let labelArray = [];
     console.log(memberHeaderIndex);
-    if (memberHeaderIndex === 2 && mainLabelArray.length > 0) {
+    if (memberHeaderIndex === 4 && mainLabelArray.length > 0) {
       labelArray = mainLabelArray.filter((item: any, index: number) => {
         if (item.arrlength > 0) {
           item.position = render(index);
