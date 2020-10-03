@@ -5,6 +5,7 @@ import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { TextField, Button } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import { setMessage } from '../../redux/actions/commonActions';
+import { getWorkingTableTask } from '../../redux/actions/taskActions';
 import _ from 'lodash';
 import api from '../../services/api';
 import moment from 'moment';
@@ -58,8 +59,10 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
   const dispatch = useDispatch();
   const classes = useStyles();
   const user = useTypedSelector((state) => state.auth.user);
+  const theme = useTypedSelector((state) => state.auth.theme);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const taskArray = useTypedSelector((state) => state.task.taskArray);
   const workingTaskArray = useTypedSelector(
     (state) => state.task.workingTaskArray
@@ -111,8 +114,10 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     setCommentPage(1);
     setCommentList([]);
     setComment('');
-    getDiaryNote(dateArray[index].start);
-    getCommentList(1, dateArray[index]._key);
+    if (headerIndex != 3) {
+      getDiaryNote(dateArray[index].start);
+      getCommentList(1, dateArray[index]._key);
+    }
   };
   const choosePerson = (key: string, index: number) => {
     setDiaryKey(key);
@@ -169,7 +174,8 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     }
     arr.forEach((item: any, index: number) => {
       newDateArray[index] = {
-        arr: [],
+        creatorArr: [],
+        executorArr: [],
         date: formatTime(item.start),
         start: item.start,
         end: item.end,
@@ -180,9 +186,14 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
           taskItem.taskEndDate <= item.end
         ) {
           if (newDiaryKey == '全部') {
-            newDateArray[index].arr.push(taskItem);
+            newDateArray[index].executorArr.push(taskItem);
           } else if (newDiaryKey == taskItem.executorKey) {
-            newDateArray[index].arr.push(taskItem);
+            newDateArray[index].executorArr.push(taskItem);
+          } else if (
+            newDiaryKey == taskItem.creatorKey &&
+            taskItem.executorKey != taskItem.creatorKey
+          ) {
+            newDateArray[index].creatorArr.push(taskItem);
           }
         }
       });
@@ -190,17 +201,41 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     // this.dateArray.forEach((item, index) => {});
     newDateArray = newDateArray.reverse();
     newDateArray = newDateArray.filter((item: any, index: number) => {
-      return item.arr.length > 0;
+      return item.executorArr.length > 0;
     });
     // if (newDiaryKey != '全部') {
     newDateArray.forEach((item: any, index: number) => {
       newDayCanlendarArray[index] = {};
-      item.arr.forEach((taskItem: any, taskIndex: number) => {
+      item.executorArr.forEach((taskItem: any, taskIndex: number) => {
         if (taskItem.executorKey) {
           if (!newDayCanlendarArray[index][taskItem.executorKey]) {
-            newDayCanlendarArray[index][taskItem.executorKey] = [];
+            newDayCanlendarArray[index][taskItem.executorKey] = {};
           }
-          newDayCanlendarArray[index][taskItem.executorKey].push(taskItem);
+          if (
+            newDayCanlendarArray[index][taskItem.executorKey] &&
+            !newDayCanlendarArray[index][taskItem.executorKey].executorArr
+          ) {
+            newDayCanlendarArray[index][taskItem.executorKey].executorArr = [];
+          }
+          newDayCanlendarArray[index][taskItem.executorKey].executorArr.push(
+            taskItem
+          );
+        }
+      });
+      item.creatorArr.forEach((taskItem: any, taskIndex: number) => {
+        if (taskItem.creatorKey) {
+          if (!newDayCanlendarArray[index][taskItem.creatorKey]) {
+            newDayCanlendarArray[index][taskItem.creatorKey] = {};
+          }
+          if (
+            newDayCanlendarArray[index][taskItem.creatorKey] &&
+            !newDayCanlendarArray[index][taskItem.creatorKey].creatorArr
+          ) {
+            newDayCanlendarArray[index][taskItem.creatorKey].creatorArr = [];
+          }
+          newDayCanlendarArray[index][taskItem.creatorKey].creatorArr.push(
+            taskItem
+          );
         }
       });
       if (headerIndex !== 3) {
@@ -226,25 +261,27 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     setPersonArray(newPersonArray);
   };
   const getDiaryNote = async (startTime: number) => {
-    let noteRes: any = await api.auth.getNote(diaryKey, startTime);
-    if (noteRes.msg == 'OK') {
-      setPositive(noteRes.result.positive);
-      setNegative(noteRes.result.negative);
-      setNote(noteRes.result.note);
-    } else {
-      if (noteRes.msg == '无该成就/审视/随记') {
-        await api.auth.setNote({
-          startTime: moment().startOf('day').valueOf(),
-          type: 2,
-          positive: '',
-          negative: '',
-          note: '',
-          positiveClose: '',
-          negativeClose: '',
-          noteClose: '',
-        });
+    if (diaryKey) {
+      let noteRes: any = await api.auth.getNote(diaryKey, startTime);
+      if (noteRes.msg == 'OK') {
+        setPositive(noteRes.result.positive);
+        setNegative(noteRes.result.negative);
+        setNote(noteRes.result.note);
       } else {
-        dispatch(setMessage(true, noteRes.msg, 'error'));
+        if (noteRes.msg == '无该成就/风险/随记') {
+          await api.auth.setNote({
+            startTime: moment().startOf('day').valueOf(),
+            type: 2,
+            positive: '',
+            negative: '',
+            note: '',
+            positiveClose: '',
+            negativeClose: '',
+            noteClose: '',
+          });
+        } else {
+          dispatch(setMessage(true, noteRes.msg, 'error'));
+        }
       }
     }
   };
@@ -309,30 +346,51 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
             <div className="diaryall-subtitle-img">
               <img
                 src={
-                  dayCanlendarItem[dayKey][0].executorAvatar
-                    ? dayCanlendarItem[dayKey][0].executorAvatar +
+                  dayCanlendarItem[dayKey].executorArr[0].executorAvatar
+                    ? dayCanlendarItem[dayKey].executorArr[0].executorAvatar +
                       '?imageMogr2/auto-orient/thumbnail/50x50/format/jpg'
                     : defaultPersonPng
                 }
                 alt=""
               />
             </div>
-            <div>{dayCanlendarItem[dayKey][0].executorName}</div>
+            <div>{dayCanlendarItem[dayKey].executorArr[0].executorName}</div>
           </div>
-          {dayCanlendarItem[dayKey].map((item: any, index: number) => {
-            return (
-              <div
-                key={'allDate' + index}
-                className="diary-container-item"
-                onClick={() => {
-                  setDiaryIndex(diaryIndex);
-                }}
-                style={{ paddingLeft: '5px', boxSizing: 'border-box' }}
-              >
-                <Task taskItem={item} />
-              </div>
-            );
-          })}
+          <div className="diary-container-title">1. 执行任务</div>
+          {dayCanlendarItem[dayKey].executorArr.map(
+            (item: any, index: number) => {
+              return (
+                <div
+                  key={'allDate' + index}
+                  className="diary-container-item"
+                  // onClick={() => {
+                  //   setDiaryIndex(diaryIndex);
+                  // }}
+                >
+                  <Task taskItem={item} />
+                </div>
+              );
+            }
+          )}
+          <div className="diary-container-title">2. 创建任务</div>
+          {dayCanlendarItem[dayKey].creatorArr &&
+          dayCanlendarItem[dayKey].creatorArr.length > 0
+            ? dayCanlendarItem[dayKey].creatorArr.map(
+                (item: any, index: number) => {
+                  return (
+                    <div
+                      key={'allDate' + index}
+                      className="diary-container-item"
+                      // onClick={() => {
+                      //   setDiaryIndex(diaryIndex);
+                      // }}
+                    >
+                      <Task taskItem={item} />
+                    </div>
+                  );
+                }
+              )
+            : null}
         </React.Fragment>
       );
     }
@@ -422,19 +480,52 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     }
     return [timeStr, moment(time).format('M.DD')];
   };
+  const addTask = async () => {
+    let addTaskRes: any = await api.task.addTask(
+      mainGroupKey,
+      1,
+      null,
+      user._key,
+      '',
+      0,
+      2,
+      0,
+      0,
+      dateArray[diaryIndex].end
+    );
+    if (addTaskRes.msg === 'OK') {
+      dispatch(setMessage(true, '新增任务成功', 'success'));
+      dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2], theme.fileDay));
+    } else {
+      dispatch(setMessage(true, addTaskRes.msg, 'error'));
+    }
+  };
   return (
     <div className="diary">
       {headerIndex === 1 ? (
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            saveNote();
-          }}
-          className="save-button"
-        >
-          保存
-        </Button>
+        <React.Fragment>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              saveNote();
+            }}
+            className="save-button"
+          >
+            保存
+          </Button>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              addTask();
+            }}
+            className="save-button"
+            style={{ right: '70px' }}
+          >
+            添加任务
+          </Button>
+        </React.Fragment>
       ) : null}
       <div className="diary-bg">
         <div className="diary-menu">
@@ -442,10 +533,9 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
           <div className="diary-menu-container">
             {dateArray.map((item: any, index: number) => {
               return (
-                <React.Fragment>
+                <React.Fragment key={'date' + index}>
                   {diaryKey !== '全部' ? (
                     <div
-                      key={'date' + index}
                       className="diary-menu-item"
                       onClick={() => {
                         chooseDiary(index);
@@ -459,19 +549,15 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                         {item.date[0]}
                       </span>
                       <span>{item.date[1]}</span>
-                      <span>({item.arr.length})</span>
+                      <span>({item.executorArr.length})</span>
                     </div>
                   ) : (
-                    <a
-                      href={'#diaryall' + index}
-                      key={'date' + index}
-                      className="diary-menu-item"
-                    >
+                    <a href={'#diaryall' + index} className="diary-menu-item">
                       <span style={{ marginRight: '10px' }}>
                         {item.date[0]}
                       </span>
                       <span>{item.date[1]}</span>
-                      <span>({item.arr.length})</span>
+                      <span>({item.executorArr.length})</span>
                     </a>
                   )}
                 </React.Fragment>
@@ -483,21 +569,48 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
           <div className="diary-container">
             <h2>一、任务看板</h2>
             {diaryKey !== '全部' ? (
-              dayCanlendarArray[diaryIndex][diaryKey].map(
-                (taskItem: any, taskIndex: number) => {
-                  return (
-                    <div
-                      key={'date' + taskIndex}
-                      className="diary-container-item"
-                      onClick={() => {
-                        setDiaryIndex(diaryIndex);
-                      }}
-                    >
-                      <Task taskItem={taskItem} />
-                    </div>
-                  );
-                }
-              )
+              <React.Fragment>
+                <div className="diary-container-title">1. 执行任务</div>
+                {dayCanlendarArray[diaryIndex][diaryKey] &&
+                dayCanlendarArray[diaryIndex][diaryKey].executorArr &&
+                dayCanlendarArray[diaryIndex][diaryKey].executorArr.length > 0
+                  ? dayCanlendarArray[diaryIndex][diaryKey].executorArr.map(
+                      (taskItem: any, taskIndex: number) => {
+                        return (
+                          <div
+                            key={'date' + taskIndex}
+                            className="diary-container-item"
+                            // onClick={() => {
+                            //   setDiaryIndex(diaryIndex);
+                            // }}
+                          >
+                            <Task taskItem={taskItem} />
+                          </div>
+                        );
+                      }
+                    )
+                  : null}
+                <div className="diary-container-title">2. 创建任务</div>
+                {dayCanlendarArray[diaryIndex][diaryKey] &&
+                dayCanlendarArray[diaryIndex][diaryKey].creatorArr &&
+                dayCanlendarArray[diaryIndex][diaryKey].creatorArr.length > 0
+                  ? dayCanlendarArray[diaryIndex][diaryKey].creatorArr.map(
+                      (taskItem: any, taskIndex: number) => {
+                        return (
+                          <div
+                            key={'date' + taskIndex}
+                            className="diary-container-item"
+                            // onClick={() => {
+                            //   setDiaryIndex(diaryIndex);
+                            // }}
+                          >
+                            <Task taskItem={taskItem} />
+                          </div>
+                        );
+                      }
+                    )
+                  : null}
+              </React.Fragment>
             ) : (
               <React.Fragment>
                 {dayCanlendarArray.map(
@@ -521,42 +634,54 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
               </React.Fragment>
             )}
 
-            {headerIndex == 1 ? (
+            {headerIndex != 3 ? (
               <React.Fragment>
                 <h2>二、工作日志</h2>
                 <div className="diary-content-pn">
                   <div className="diary-content-tab">
-                    <div>成绩,收获,价值创造</div>
-                    <div>负正：利空、审视、压力</div>
+                    <div>成绩</div>
+                    <div>审视</div>
                   </div>
                   <div className="diary-content-info">
-                    <textarea
-                      value={positive}
-                      placeholder="成绩,收获,价值创造"
-                      className="diary-content-textarea"
-                      onChange={(e) => {
-                        setPositive(e.target.value);
-                      }}
-                    />
-                    <textarea
-                      value={negative}
-                      placeholder="困难，挑战，潜在问题"
-                      className="diary-content-textarea"
-                      onChange={(e) => {
-                        setNegative(e.target.value);
-                      }}
-                    />
+                    {headerIndex == 1 ? (
+                      <textarea
+                        value={positive}
+                        placeholder="成绩,收获,价值创造"
+                        className="diary-content-textarea"
+                        onChange={(e) => {
+                          setPositive(e.target.value);
+                        }}
+                      />
+                    ) : (
+                      <div className="diary-content-textarea">{positive}</div>
+                    )}
+                    {headerIndex == 1 ? (
+                      <textarea
+                        value={negative}
+                        placeholder="困难，挑战，潜在问题"
+                        className="diary-content-textarea"
+                        onChange={(e) => {
+                          setNegative(e.target.value);
+                        }}
+                      />
+                    ) : (
+                      <div className="diary-content-textarea">{negative}</div>
+                    )}
                   </div>
                 </div>
                 <h2>三、随记</h2>
-                <textarea
-                  value={note}
-                  placeholder="随记"
-                  className="diary-textarea"
-                  onChange={(e) => {
-                    setNote(e.target.value);
-                  }}
-                />
+                {headerIndex == 1 ? (
+                  <textarea
+                    value={note}
+                    placeholder="随记"
+                    className="diary-textarea"
+                    onChange={(e) => {
+                      setNote(e.target.value);
+                    }}
+                  />
+                ) : (
+                  <div className="diary-textarea">{note}</div>
+                )}
                 <div className="diary-comment">
                   <div className="diary-comment-title">
                     <div className="diary-comment-icon">
@@ -638,6 +763,11 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                       setComment(e.target.value);
                     }}
                     value={comment}
+                    onKeyDown={(e: any) => {
+                      if (e.keyCode === 13) {
+                        addComment();
+                      }
+                    }}
                   />
                   <Button
                     variant="contained"

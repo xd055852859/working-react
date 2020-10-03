@@ -29,7 +29,7 @@ const defaultState: AuthType = {
     mainVisible: true,
     messageVisible: false,
     memberVisible: false,
-    calendarVisible:true,
+    calendarVisible: true,
     groupSortType: 1,
     personSortType: 1,
     filterObject: {
@@ -43,6 +43,7 @@ const defaultState: AuthType = {
       executorAvatar: '',
       executorName: '',
       filterType: ['过期', '今天', '已完成'],
+      fileDay: 0,
     },
   },
   nowTime: 0,
@@ -109,6 +110,8 @@ export const auth = (state = defaultState, action: any) => {
             executorName: '',
             filterType: ['过期', '今天', '已完成'],
           };
+      action.data.fileDay =
+        !action.data.fileDay? 7 : action.data.fileDay;
       return {
         ...state,
         theme: action.data,

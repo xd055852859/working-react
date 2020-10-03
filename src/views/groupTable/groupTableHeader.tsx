@@ -549,8 +549,14 @@ const GroupTableHeader: React.FC = (prop) => {
                           onChange={() => {
                             changeFilterCheck(item);
                           }}
+                          color="primary"
                         />
                         {item}
+                        {item == '已归档' ? (
+                          <div style={{ marginLeft: '8px', cursor: 'pointer' }}>
+                            ( 近7天 )
+                          </div>
+                        ) : null}
                       </div>
                     );
                   })}

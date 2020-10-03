@@ -10,6 +10,7 @@ import {
   Button,
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import moment from 'moment';
 import _ from 'lodash';
 import './clockIn.css';
@@ -18,7 +19,10 @@ import { setMessage } from '../../redux/actions/commonActions';
 import downArrowbPng from '../../assets/img/downArrowb.png';
 import DropMenu from '../common/dropMenu';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
-interface ChatProps {}
+interface ClockInProps {
+  visible: boolean;
+  onClose: any;
+}
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     saveButton: {
@@ -32,7 +36,8 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   })
 );
-const ClockIn: React.FC<ChatProps> = (prop) => {
+const ClockIn: React.FC<ClockInProps> = (prop) => {
+  const { visible, onClose } = prop;
   const classes = useStyles();
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
@@ -49,11 +54,11 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
   useEffect(() => {
     if (user && user._key) {
       getClockIn();
+      getGroupList();
     }
   }, [user]);
   useEffect(() => {
     if (selfTaskArray) {
-      let newGroupObj: any = {};
       let newGroupList: any = [];
       let newTaskNumber = 0;
       const startTime = moment().startOf('day').valueOf();
@@ -70,29 +75,45 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
           item.title !== '' &&
           item.taskEndDate
         ) {
-          if (!newGroupObj[item.groupKey]) {
-            newGroupObj[item.groupKey] = {
-              groupLogo: item.groupLogo,
-              groupName: item.groupName,
-              groupKey: item.groupKey,
-              taskNumber: 1,
-            };
-          } else {
-            newGroupObj[item.groupKey].taskNumber =
-              newGroupObj[item.groupKey].taskNumber + 1;
-          }
+          // if (!newGroupObj[item.groupKey]) {
+          //   newGroupObj[item.groupKey] = {
+          //     groupLogo: item.groupLogo,
+          //     groupName: item.groupName,
+          //     groupKey: item.groupKey,
+          //     taskNumber: 1,
+          //   };
+          // } else {
+          //   newGroupObj[item.groupKey].taskNumber =
+          //     newGroupObj[item.groupKey].taskNumber + 1;
+          // }
           if (item.finishPercent === 1) {
             newTaskNumber = newTaskNumber + 1;
           }
         }
       });
-      newGroupList = _.sortBy(Object.values(newGroupObj), [
-        'taskNumber',
-      ]).reverse();
-      setGroupList(newGroupList);
+      // newGroupList = _.sortBy(Object.values(newGroupObj), [
+      //   'taskNumber',
+      // ]).reverse();
+
       setTaskNumber(newTaskNumber);
     }
   }, [selfTaskArray]);
+  const getGroupList = async () => {
+    let newGroupList: any = [];
+    let groupRes: any = await api.group.getGroup(3, null, 4);
+    if (groupRes.msg === 'OK') {
+      groupRes.result = groupRes.result.filter(
+        (groupItem: any, groupIndex: number) => {
+          if (groupItem.groupName.indexOf('主群') == -1) {
+            newGroupList.push(groupItem);
+          }
+        }
+      );
+      setGroupList(newGroupList);
+    } else {
+      dispatch(setMessage(true, groupRes.msg, 'error'));
+    }
+  };
   const getClockIn = async () => {
     let noteRes: any = await api.auth.getNote(
       user._key,
@@ -103,7 +124,7 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
       setNegative(noteRes.result.negative);
       setNote(noteRes.result.note);
     } else {
-      if (noteRes.msg === '无该成就/审视/随记') {
+      if (noteRes.msg === '无该成就/风险/随记') {
         await api.auth.setNote({
           startTime: moment().startOf('day').valueOf(),
           type: 2,
@@ -141,7 +162,7 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
     let obj: any = {
       startTime: startTime,
       type: nowTime ? 2 : 1,
-      groupKey: groupList[clockInIndex].groupKey,
+      groupKey: groupList[clockInIndex]._key,
       clockInDateStr: timeStr,
       isAuto: 2,
     };
@@ -176,102 +197,113 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
     setExpanded(isExpanded ? panel : false);
   };
   return (
-    <div className="clockIn">
-      {groupList.length > 0 ? (
-        <div
-          className="clockIn-title"
-          onClick={() => {
-            setGroupVisible(true);
+    <React.Fragment>
+      {visible ? (
+        <ClickAwayListener
+          onClickAway={() => {
+            onClose();
+            saveNote();
           }}
         >
-          打卡群:
-          <div className="clockIn-title-logo">
-            <img
-              src={
-                groupList[clockInIndex].groupLogo
-                  ? groupList[clockInIndex].groupLogo
-                  : defaultGroupPng
-              }
-              alt=""
-            />
-          </div>
-          {groupList[clockInIndex].groupName}
-          <img src={downArrowbPng} alt="" className="clockIn-logo" />
-          <DropMenu
-            visible={groupVisible}
-            dropStyle={{
-              width: '200px',
-              top: '40px',
-              left: '95px',
-              color: '#333',
-            }}
-            onClose={() => {
-              setGroupVisible(false);
-            }}
-          >
-            <React.Fragment>
-              {groupList.map((groupItem: any, groupIndex: number) => {
-                return (
-                  <div
-                    key={'clockInGroup' + groupIndex}
-                    onClick={() => {
-                      setClockInIndex(groupIndex);
-                    }}
-                    className="clockInGroup-item"
-                  >
-                    <div className="clockInGroup-item-logo">
-                      <img
-                        src={
-                          groupItem.groupLogo
-                            ? groupItem.groupLogo
-                            : defaultGroupPng
-                        }
-                        alt=""
-                      />
-                    </div>
-                    {groupItem.groupName}
-                  </div>
-                );
-              })}
-            </React.Fragment>
-          </DropMenu>
-        </div>
-      ) : null}
-      <div className="clockIn-info">
-        <div className="clockIn-info-title">随记</div>
-        <textarea
-          value={note}
-          placeholder="随记"
-          className="clockIn-textarea"
-          onChange={(e) => {
-            setNote(e.target.value);
-          }}
-        />
-      </div>
-      <div className="clockIn-info">
-        <div className="clockIn-info-title">成就</div>
-        <textarea
-          value={positive}
-          placeholder="成绩,收获,价值创造"
-          className="clockIn-textarea"
-          onChange={(e) => {
-            setPositive(e.target.value);
-          }}
-        />
-      </div>
-      <div className="clockIn-info">
-        <div className="clockIn-info-title">审视</div>
-        <textarea
-          value={negative}
-          placeholder="困难，挑战，潜在问题"
-          className="clockIn-textarea"
-          onChange={(e) => {
-            setNegative(e.target.value);
-          }}
-        />
-      </div>
-      <div className="clockIn-button">
-        {/* <Button
+          <div className="clockIn">
+            <div className="clockIn-mainTitle">打卡中心</div>
+            {groupList.length > 0 ? (
+              <div
+                className="clockIn-title"
+                onClick={() => {
+                  setGroupVisible(true);
+                }}
+              >
+                打卡群:
+                <div className="clockIn-title-logo">
+                  <img
+                    src={
+                      groupList[clockInIndex].groupLogo
+                        ? groupList[clockInIndex].groupLogo
+                        : defaultGroupPng
+                    }
+                    alt=""
+                  />
+                </div>
+                {groupList[clockInIndex].groupName}
+                <img src={downArrowbPng} alt="" className="clockIn-logo" />
+                <DropMenu
+                  visible={groupVisible}
+                  dropStyle={{
+                    width: '200px',
+                    height: '500px',
+                    top: '40px',
+                    left: '95px',
+                    color: '#333',
+                    overflow: 'auto',
+                  }}
+                  onClose={() => {
+                    setGroupVisible(false);
+                  }}
+                >
+                  <React.Fragment>
+                    {groupList.map((groupItem: any, groupIndex: number) => {
+                      return (
+                        <div
+                          key={'clockInGroup' + groupIndex}
+                          onClick={() => {
+                            setClockInIndex(groupIndex);
+                          }}
+                          className="clockInGroup-item"
+                        >
+                          <div className="clockInGroup-item-logo">
+                            <img
+                              src={
+                                groupItem.groupLogo
+                                  ? groupItem.groupLogo
+                                  : defaultGroupPng
+                              }
+                              alt=""
+                            />
+                          </div>
+                          {groupItem.groupName}
+                        </div>
+                      );
+                    })}
+                  </React.Fragment>
+                </DropMenu>
+              </div>
+            ) : null}
+            <div className="clockIn-info">
+              <div className="clockIn-info-title">随记</div>
+              <textarea
+                value={note}
+                placeholder="随记"
+                className="clockIn-textarea"
+                onChange={(e) => {
+                  setNote(e.target.value);
+                }}
+              />
+            </div>
+            <div className="clockIn-info">
+              <div className="clockIn-info-title">成就</div>
+              <textarea
+                value={positive}
+                placeholder="成绩,收获,价值创造"
+                className="clockIn-textarea"
+                onChange={(e) => {
+                  setPositive(e.target.value);
+                }}
+              />
+            </div>
+            <div className="clockIn-info">
+              <div className="clockIn-info-title">审视</div>
+              <textarea
+                value={negative}
+                placeholder="困难，挑战，潜在问题"
+                className="clockIn-textarea"
+                onChange={(e) => {
+                  setNegative(e.target.value);
+                }}
+              />
+            </div>
+            <div className="clockIn-button">
+              {/* <Button
           variant="contained"
           color="primary"
           onClick={() => {
@@ -281,19 +313,22 @@ const ClockIn: React.FC<ChatProps> = (prop) => {
         >
           保存
         </Button> */}
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            clockIn();
-          }}
-          style={{ color: '#fff' }}
-          // className={classes.clockInButton}
-        >
-          {nowTime ? '下班打卡' : '上班打卡'}
-        </Button>
-      </div>
-    </div>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={() => {
+                  clockIn();
+                }}
+                style={{ color: '#fff' }}
+                // className={classes.clockInButton}
+              >
+                {nowTime ? '下班打卡' : '上班打卡'}
+              </Button>
+            </div>
+          </div>
+        </ClickAwayListener>
+      ) : null}
+    </React.Fragment>
   );
 };
 export default ClockIn;

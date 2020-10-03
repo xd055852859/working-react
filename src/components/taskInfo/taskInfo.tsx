@@ -18,10 +18,12 @@ import hourPng from '../../assets/img/hour.png';
 import playPng from '../../assets/img/play.png';
 import stopPng from '../../assets/img/stop.png';
 import unExecutorPng from '../../assets/img/unExecutor.png';
-import taskFinishPng from '../../assets/img/taskFinish.png';
+// import taskFinishPng from '../../assets/img/taskFinish.png';
+import taskFinishPng from '../../assets/img/finishb.png';
 import taskUnfinishPng from '../../assets/img/taskUnfinish.png';
 import taskClosePng from '../../assets/img/taskClose.png';
 import ellipsisbPng from '../../assets/img/ellipsisb.png';
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import api from '../../services/api';
 import { setMessage } from '../../redux/actions/commonActions';
 import {
@@ -150,7 +152,9 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
         }
       });
       setTaskItem(taskInfo);
-      setCountDownTime(taskInfo.countDownTime);
+      if (taskInfo.countDownTime != taskInfo.hour * 3600000) {
+        setCountDownTime(taskInfo.countDownTime);
+      }
       getTaskMemberArray(taskInfo.groupKey);
     } else {
       dispatch(setMessage(true, taskItemRes.msg, 'error'));
@@ -312,14 +316,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     setCountDownState(true);
     clearInterval(countInterval);
     newCountInterval = setInterval(() => {
-      if (newCountDownTime == 0) {
-        clearInterval(countInterval);
-        //任务状态变为完成
-        newTaskItem['finishPercent'] = 1;
-        newTaskItem['countDownTime'] = newCountDownTime;
-        setTaskItem(newTaskItem);
-      }
-      newCountDownTime = newCountDownTime - 1000;
+      newCountDownTime = newCountDownTime + 1000;
       setCountDownTime(newCountDownTime);
       newTaskItem['countDownTime'] = newCountDownTime;
       setTaskItem(newTaskItem);
@@ -400,7 +397,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                   visible={executorVisible}
                   dropStyle={{
                     width: '180px',
-                    height: '290px',
+                    height: '350px',
                     top: '60px',
                     left: '0px',
                   }}
@@ -430,7 +427,14 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                             }}
                           >
                             <div className="task-executor-dropMenu-img">
-                              <img src={taskMemberItem.avatar} />
+                              <img
+                                src={
+                                  taskMemberItem.avatar
+                                    ? taskMemberItem.avatar +
+                                      '?imageMogr2/auto-orient/thumbnail/50x50/format/jpg'
+                                    : defaultPersonPng
+                                }
+                              />
                             </div>
                             <div>{taskMemberItem.nickName}</div>
                           </div>
@@ -521,7 +525,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     format="yyyy-MM-DD"
                     margin="normal"
                     id="date-picker-inline"
-                    label="开始日期"
+                    // label="开始日期"
                     value={startDate}
                     onChange={(date) => {
                       handleDateChange(date, 'start');
@@ -544,7 +548,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     format="yyyy-MM-DD"
                     margin="normal"
                     id="date-picker-inline"
-                    label="截止日期"
+                    // label="截止日期"
                     value={endDate}
                     onChange={(date) => {
                       handleDateChange(date, 'end');
@@ -723,6 +727,11 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                 className={classes.input}
                 onChange={changeInput}
                 value={commentInput}
+                onKeyDown={(e: any) => {
+                  if (e.keyCode === 13) {
+                    saveCommentMsg();
+                  }
+                }}
               />
               <Button
                 variant="contained"

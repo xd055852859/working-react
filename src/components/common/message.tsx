@@ -12,7 +12,6 @@ function Alert(props: AlertProps) {
 export default function Message() {
   const dispatch = useDispatch();
   const message = useTypedSelector((state) => state.common.message);
-
   return (
     <Snackbar
       open={message.visible}

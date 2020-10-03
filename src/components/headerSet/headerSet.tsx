@@ -287,6 +287,12 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
               setClockInVisible(true);
             }}
           />
+          <ClockIn
+            visible={clockInVisible}
+            onClose={() => {
+              setClockInVisible(false);
+            }}
+          />
         </Tooltip>
         <Tooltip title="用户中心">
           <div
@@ -632,7 +638,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                   visible={groupVisible}
                   dropStyle={{
                     width: '300px',
-                    height: '250px',
+                    height: '350px',
                     top: '50px',
                     overflow: 'auto',
                   }}
@@ -685,7 +691,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                   visible={labelVisible}
                   dropStyle={{
                     width: '100%',
-                    height: '250px',
+                    height: '350px',
                     top: '50px',
                     overflow: 'auto',
                   }}
@@ -749,8 +755,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             onChange={(e) => {
               setSearchInput(e.target.value);
             }}
-            onKeyPress={(e: any) => {
-              console.log('xxxxx', e.keyCode);
+            onKeyDown ={(e: any) => {
               if (e.keyCode === 13) {
                 searchTask();
               }
@@ -770,27 +775,9 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
         </div>
         <div className="headerSet-search-info" onScroll={scrollSearchLoading}>
           {searchTaskList.map((taskItem: any, taskIndex: number) => {
-            return <Task taskItem={taskItem} showGroupName={true} />;
+            return <Task key={'search'+taskIndex} taskItem={taskItem} showGroupName={true} />;
           })}
         </div>
-      </Dialog>
-      <Dialog
-        visible={clockInVisible}
-        dialogStyle={{
-          position: 'fixed',
-          width: '400px',
-          height: 'calc(100% - 68px)',
-          top: '68px',
-          right: '10px',
-        }}
-        footer={false}
-        onClose={() => {
-          setClockInVisible(false);
-        }}
-        showMask={false}
-        title={'打卡中心'}
-      >
-        <ClockIn />
       </Dialog>
     </React.Fragment>
   );

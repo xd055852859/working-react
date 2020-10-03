@@ -10,6 +10,7 @@ import './grid.css';
 import api from '../../services/api';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import Tooltip from '../common/tooltip';
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
 interface GridProps {
   gridState: boolean;
 }
@@ -499,6 +500,21 @@ const Grid: React.FC<GridProps> = (prop) => {
                       >
                         <div className="grid-grouptitle">
                           {/* <div className="point-group"></div> */}
+                          <div
+                            className="grid-groupLogo"
+                            style={{ border: '0px', color: '#000' }}
+                          >
+                            {/* <div className="point-label"></div> */}
+                            <img
+                              src={
+                                item.groupObj.groupLogo
+                                  ? item.groupObj.groupLogo +
+                                    '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
+                                  : defaultGroupPng
+                              }
+                              alt=""
+                            />
+                          </div>
                           {item.groupObj.groupName}
                         </div>
                       </div>

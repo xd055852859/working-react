@@ -175,7 +175,7 @@ export const task = (state = defaultState, action: any) => {
         taskInfoVisible: action.taskInfoVisible,
       };
     case actionTypes.SET_TASK_ACTION:
-      console.log("???????????",action.taskAction)
+      console.log('???????????', action.taskAction);
       return {
         ...state,
         taskAction: action.taskAction,
@@ -185,7 +185,8 @@ export const task = (state = defaultState, action: any) => {
       action.data.forEach((item: any) => {
         if (
           item.taskEndDate >= moment().startOf('day').valueOf() &&
-          item.taskEndDate <= moment().endOf('day').valueOf()
+          item.taskEndDate <= moment().endOf('day').valueOf() &&
+          item.taskEndDate >= moment().valueOf()
         ) {
           taskActionArray.push(item);
         }

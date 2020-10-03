@@ -263,6 +263,7 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
                 onChange={(e) => {
                   setCalendarCheck(e.target.checked);
                 }}
+                color="primary"
               />
               提醒
             </div>

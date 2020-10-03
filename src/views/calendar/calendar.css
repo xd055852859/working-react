@@ -109,6 +109,9 @@
   padding-left: 8px;
   box-sizing: border-box;
   cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .calendar-choose {
   width: 100px;
@@ -124,3 +127,9 @@
   cursor: pointer;
 }
 /* border-left: 1px solid #e1e1e1; */
+.calendar-choose-check {
+  margin-left: 10px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+}

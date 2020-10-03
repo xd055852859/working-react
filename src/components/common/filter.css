@@ -44,6 +44,8 @@
   width: 100%;
   height: 36px;
   margin-bottom: 6px;
+  display: flex;
+  align-items: center;
 }
 .filter-menu-info {
   height: 40px;
@@ -54,10 +56,10 @@
 .filter-menu-info:hover {
   background: #f0f0f0;
 }
-.filter-menu-icon{
+.filter-menu-icon {
   position: absolute;
-  width:14px;
-  height:8.4px;
-  top:14px;
-  right:18px;
+  width: 14px;
+  height: 8.4px;
+  top: 14px;
+  right: 18px;
 }

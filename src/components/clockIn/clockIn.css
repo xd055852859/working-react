@@ -1,6 +1,23 @@
 .clockIn {
+  position: fixed;
+  width: 400px;
+  height: calc(100% - 68px);
+  top: 68px;
+  right: 10px;
+  padding: 0px 16px;
+  box-sizing: border-box;
+  background-color: #fff;
+  box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  z-index: 20;
+}
+.clockIn-mainTitle {
   width: 100%;
-  height:100%;
+  height: 53px;
+  line-height: 53px;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0px 16px;
+  box-sizing: border-box;
 }
 .clockIn-button {
   height: 53px;
@@ -31,7 +48,7 @@
   align-items: center;
 }
 .clockIn-info {
-  height: calc((100% - 41px) / 3);
+  height: calc((100% - 98px) / 3);
   padding: 0px 16px;
   box-sizing: border-box;
 }

@@ -33,6 +33,7 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
   const workingTaskArray = useTypedSelector(
     (state) => state.task.workingTaskArray
   );
+  const theme = useTypedSelector((state) => state.auth.theme);
   const dispatch = useDispatch();
   const [inputVisible, setInputVisible] = useState(false);
   const [inputValue, setInputValue] = useState('');
@@ -43,15 +44,22 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
     setInputValue(e.target.value);
   };
   useEffect(() => {
-    if (user && user._key && headerIndex === 1) {
+    if (user && user._key && headerIndex === 1 && theme.fileDay) {
       setLoading(true);
-      dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
+      dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2], theme.fileDay));
     }
-    if (targetUserInfo && targetUserInfo._key && headerIndex === 2) {
+    if (
+      targetUserInfo &&
+      targetUserInfo._key &&
+      headerIndex === 2 &&
+      theme.fileDay
+    ) {
       setLoading(true);
-      dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
+      dispatch(
+        getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2], theme.fileDay)
+      );
     }
-  }, [user, targetUserInfo, headerIndex]);
+  }, [user, targetUserInfo, headerIndex, theme.fileDay]);
   useEffect(() => {
     setLoading(false);
     dispatch(setHeaderIndex(0));
@@ -104,11 +112,12 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
         {memberHeaderIndex === 3 ? <Grid gridState={false} /> : null}
         {memberHeaderIndex === 6 ? <WorkingCalendar /> : null}
         {memberHeaderIndex === 7 ? <WorkingReport /> : null}
-        {memberHeaderIndex === 8 ?  <Vitality
-          vitalityType={2}
-          vitalityKey={headerIndex == 1 ? userKey : targetUserKey}
-        /> : null}
-       
+        {memberHeaderIndex === 8 ? (
+          <Vitality
+            vitalityType={2}
+            vitalityKey={headerIndex == 1 ? userKey : targetUserKey}
+          />
+        ) : null}
       </div>
       {headerIndex === 1 ? (
         <React.Fragment>

@@ -4,13 +4,13 @@ import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
 import { setFilterObject } from '../../redux/actions/taskActions';
-import { getMainGroupKey, setTheme } from '../../redux/actions/authActions';
-import { setMessage } from '../../redux/actions/commonActions';
+import { setTheme } from '../../redux/actions/authActions';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import {
   setCommonHeaderIndex,
   setMoveState,
   setChatState,
+  setMessage,
 } from '../../redux/actions/commonActions';
 import api from '../../services/api';
 import _ from 'lodash';
@@ -115,6 +115,9 @@ const WorkingTableHeader: React.FC = (prop) => {
     false,
   ]);
   const [energyValueTotal, setEnergyValueTotal] = useState(0);
+  const [fileState, setFileState] = useState(true);
+  const [fileInput, setFileInput] = useState('7');
+
   const chooseMemberHeader = (headIndex: number) => {
     dispatch(setHeaderIndex(headIndex));
     setViewVisible(false);
@@ -144,6 +147,7 @@ const WorkingTableHeader: React.FC = (prop) => {
         return theme.filterObject.filterType.indexOf(item) !== -1;
       });
     }
+    setFileInput(theme.fileDay);
     setFilterCheckedArray(filterCheckedArray);
   }, [theme]);
   useEffect(() => {
@@ -198,6 +202,12 @@ const WorkingTableHeader: React.FC = (prop) => {
     newTheme.filterObject = newFilterObject;
     dispatch(setTheme(newTheme));
     dispatch(setFilterObject(newFilterObject));
+  };
+  const changeFileDay = (fileDay: number) => {
+    let newTheme = _.cloneDeep(theme);
+    newTheme.fileDay = fileDay;
+    dispatch(setTheme(newTheme));
+    setFileState(true);
   };
   const goChat = async () => {
     const dom: any = document.querySelector('iframe');
@@ -451,8 +461,39 @@ const WorkingTableHeader: React.FC = (prop) => {
                           onChange={() => {
                             changeFilterCheck(item);
                           }}
+                          color="primary"
                         />
                         {item}
+                        {item == '已归档' ? (
+                          <React.Fragment>
+                            {fileState ? (
+                              <div
+                                onClick={() => {
+                                  setFileState(false);
+                                }}
+                                style={{ marginLeft: '8px', cursor: 'pointer' }}
+                              >
+                                ( 近{fileInput}天 )
+                              </div>
+                            ) : (
+                              <div style={{ marginLeft: '8px' }}>
+                                ( 近
+                                <input
+                                  type="number"
+                                  value={fileInput}
+                                  onChange={(e) => {
+                                    setFileInput(e.target.value);
+                                  }}
+                                  onBlur={(e) => {
+                                    changeFileDay(parseInt(e.target.value));
+                                  }}
+                                  className="fileday"
+                                />
+                                天 )
+                              </div>
+                            )}
+                          </React.Fragment>
+                        ) : null}
                       </div>
                     );
                   })}

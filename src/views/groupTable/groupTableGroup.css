@@ -14,11 +14,7 @@
   position: relative;
 }
 .task-container-taskName-logo {
-  width: 22px;
-  height: 22px;
   position: absolute;
-  right: 5px;
-  top: 20px;
   z-index: 3;
 }
 .task-container-profile,

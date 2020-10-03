@@ -155,8 +155,11 @@ const App: React.FC = () => {
       clearInterval(intervalTime);
       let newIntervalTime: any = 0;
       formatAction();
-      newIntervalTime = setInterval(formatAction, 10000);
+      newIntervalTime = setInterval(formatAction, 1000);
       setIntervalTime(newIntervalTime);
+    }
+    if (taskActionArray.length == 0) {
+      clearInterval(intervalTime);
     }
   }, [taskActionArray]);
   useEffect(() => {
@@ -167,8 +170,8 @@ const App: React.FC = () => {
     const nowTime = moment().valueOf();
     taskActionArray.forEach((item: any, index: number) => {
       if (
-        item.taskEndDate <= nowTime + 10000 &&
-        item.taskEndDate >= nowTime &&
+        item.taskEndDate < nowTime + 1000 &&
+        item.taskEndDate > nowTime - 1000 &&
         item.importantStatus
       ) {
         setPlayAction(item);

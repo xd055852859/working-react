@@ -1,18 +1,29 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './calendar.css';
+import { Checkbox } from '@material-ui/core';
 import CalendarItem from './calendarItem';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import traditionalDate from '../../components/common/date';
 import { setMessage } from '../../redux/actions/commonActions';
-import { getCalendarList, editTask } from '../../redux/actions/taskActions';
+import {
+  setTaskKey,
+  setChooseKey,
+  getCalendarList,
+  editTask,
+  getWorkingTableTask,
+  changeTaskInfoVisible,
+} from '../../redux/actions/taskActions';
 import CalendarHeader from './calendarHeader';
+import Loading from '../../components/common/loading';
 import moment from 'moment';
 import _ from 'lodash';
 import api from '../../services/api';
 import Dialog from '../../components/common/dialog';
 import rightArrowPng from '../../assets/img/rightArrow.png';
 import leftArrowPng from '../../assets/img/leftArrow.png';
+import unfinishPng from '../../assets/img/timeSet2.png';
+import finishPng from '../../assets/img/timeSet3.png';
 interface CalendarProps {}
 
 const Calendar: React.FC<CalendarProps> = (props) => {
@@ -21,6 +32,11 @@ const Calendar: React.FC<CalendarProps> = (props) => {
   const calendarList = useTypedSelector((state) => state.task.calendarList);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const userKey = useTypedSelector((state) => state.auth.userKey);
+  const user = useTypedSelector((state) => state.auth.user);
+  const workingTaskArray = useTypedSelector(
+    (state) => state.task.workingTaskArray
+  );
+  const theme = useTypedSelector((state) => state.auth.theme);
   const [calendarDate, setCalendarDate] = useState<any>([]);
   const [calendarDay, setCalendarDay] = useState(moment());
   const [positionList, setPositionList] = useState<any>([]);
@@ -33,9 +49,11 @@ const Calendar: React.FC<CalendarProps> = (props) => {
   const [calendarStartTime, setCalendarStartTime] = useState(
     moment().startOf('month').startOf('day').valueOf()
   );
+  const [loading, setLoading] = useState(false);
   const [calendarEndTime, setCalendarEndTime] = useState(
     moment().endOf('month').endOf('day').valueOf()
   );
+  const [calendarCheck, setCalendarCheck] = useState(false);
   const weekArr = [
     '星期一',
     '星期二',
@@ -59,9 +77,18 @@ const Calendar: React.FC<CalendarProps> = (props) => {
   ];
   const calendarRef: React.RefObject<any> = useRef();
   useEffect(() => {
-    if (calendarList) {
+    if (calendarCheck && !workingTaskArray) {
+      setLoading(true);
+      dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2], theme.fileDay));
+    } else if (workingTaskArray) {
+      setLoading(false);
       getCalendar(moment(calendarStartTime), calendarList);
-      console.log(calendarStartTime, calendarEndTime);
+    }
+  }, [calendarCheck, workingTaskArray]);
+  useEffect(() => {
+    if (calendarList) {
+      // setLoading(false);
+      getCalendar(moment(calendarStartTime), calendarList);
       setTargetMonth(
         moment(calendarStartTime).format('YYYY') +
           '年' +
@@ -207,6 +234,18 @@ const Calendar: React.FC<CalendarProps> = (props) => {
           newTaskList[dateIndex].push(taskItem);
         }
       });
+      if (calendarCheck) {
+        _.flatten(_.cloneDeep(workingTaskArray)).forEach(
+          (taskItem: any, taskIndex: number) => {
+            if (
+              taskItem.taskEndDate >= dateItem.startTime &&
+              taskItem.taskEndDate <= dateItem.endTime
+            ) {
+              newTaskList[dateIndex].push(taskItem);
+            }
+          }
+        );
+      }
       newTaskList[dateIndex] = _.sortBy(newTaskList[dateIndex], [
         'taskEndDate',
       ]);
@@ -308,10 +347,44 @@ const Calendar: React.FC<CalendarProps> = (props) => {
     }
     setCalendarStartTime(newCalendarStartTime);
     setCalendarEndTime(newCalendarEndTime);
-    dispatch(getCalendarList(userKey, newCalendarStartTime, newCalendarEndTime));
+    dispatch(
+      getCalendarList(userKey, newCalendarStartTime, newCalendarEndTime)
+    );
+  };
+  const clickTask = (e: any, taskItem: any, calendarIndex: number) => {
+    if (taskItem.type == 5) {
+      setItemVisible(true);
+      setTaskItem(taskItem);
+      getMousePos(e, calendarIndex);
+    } else if (taskItem.type == 2) {
+      dispatch(setTaskKey(taskItem._key));
+      dispatch(setChooseKey(taskItem._key));
+      dispatch(changeTaskInfoVisible(true));
+    }
+    e.stopPropagation();
+  };
+  const changeFinishPercent = (taskItem: any) => {
+    let newTaskItem = _.cloneDeep(taskItem);
+    // taskDetail.finishPercent = finishPercent !== 0 ? 0 : 1;
+    newTaskItem.finishPercent = newTaskItem.finishPercent === 0 ? 1 : 0;
+    if (newTaskItem.finishPercent === 1) {
+      newTaskItem.todayTaskTime = moment().valueOf();
+    } else if (newTaskItem.finishPercent === 0) {
+      newTaskItem.todayTaskTime = 0;
+    }
+    dispatch(
+      editTask(
+        {
+          key: newTaskItem._key,
+          ...newTaskItem,
+        },
+        1
+      )
+    );
   };
   return (
     <div className="calendar">
+      {loading ? <Loading /> : null}
       <CalendarHeader />
       <div className="calendar-container">
         <div className="calendar-title">
@@ -330,6 +403,16 @@ const Calendar: React.FC<CalendarProps> = (props) => {
               changeMonth(1);
             }}
           />
+          <div className="calendar-choose-check">
+            <Checkbox
+              checked={calendarCheck}
+              onChange={(e) => {
+                setCalendarCheck(e.target.checked);
+              }}
+              color="primary"
+            />
+            任务
+          </div>
         </div>
         <div className="calendar-week">
           {weekArr.map((weekItem: any, weekIndex: number) => {
@@ -387,21 +470,39 @@ const Calendar: React.FC<CalendarProps> = (props) => {
                           style={{
                             borderLeft:
                               '2px solid ' + calendarColor[taskItem.taskType],
+                            textDecoration:
+                              taskItem.finishPercent === 2
+                                ? 'line-through'
+                                : '',
                           }}
                           onDragEnd={(e: any) => {
                             dragTask(e, calendarIndex, taskIndex);
                           }}
                           draggable="true"
                           onClick={(e: any) => {
-                            setItemVisible(true);
-                            setTaskItem(taskItem);
-                            getMousePos(e, calendarIndex);
-                            e.stopPropagation();
+                            clickTask(e, taskItem, calendarIndex);
                           }}
                           tabIndex={taskItem._key}
                           onKeyDown={taskKeyDown}
                         >
-                          {moment(taskItem.taskEndDate).format('HH:mm') + ' '}
+                          {taskItem.type == 5 ? (
+                            <React.Fragment>
+                              {moment(taskItem.taskEndDate).format('HH:mm') +
+                                ' '}
+                            </React.Fragment>
+                          ) : taskItem.type == 2 ? (
+                            <img
+                              src={
+                                taskItem.finishPercent ? finishPng : unfinishPng
+                              }
+                              style={{
+                                width: '12px',
+                                height: '12px',
+                                marginRight: '5px',
+                              }}
+                              onClick={() => {}}
+                            />
+                          ) : null}
                           {taskItem.title}
                         </div>
                       );

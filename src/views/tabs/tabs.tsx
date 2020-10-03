@@ -659,12 +659,14 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                   );
                 }
               )}
-              <hr
-                style={{
-                  background: '#F0F0F0',
-                  margin: '5px 0px',
-                }}
-              />
+              {mainSearchList.length > 0 ? (
+                <hr
+                  style={{
+                    background: '#F0F0F0',
+                    margin: '5px 0px',
+                  }}
+                />
+              ) : null}
               {!searchAllVisible ? (
                 <div
                   className="search-all-icon"

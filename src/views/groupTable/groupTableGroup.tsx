@@ -56,6 +56,7 @@ const GroupTableGroup: React.FC = (prop) => {
   // const [batchLabelKey, setBatchLabelKey] = useState<string | null>('');
   // const [batchGroupKey, setBatchGroupKey] = useState<string | null>('');
   const [chooseLabelKey, setChooseLabelKey] = useState('');
+  const [addVisible, setAddVisible] = useState<any>(null);
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const dispatch = useDispatch();
   useEffect(() => {
@@ -438,16 +439,15 @@ const GroupTableGroup: React.FC = (prop) => {
                           // style={{ marginRight: '15px' }}
                           onMouseEnter={() => {
                             setLabelIndex(taskNameindex);
-                            setLabelLogoVisible(true);
+                            setAddVisible('out');
                           }}
                           onMouseLeave={() => {
-                            setLabelLogoVisible(false);
+                            setAddVisible('in');
                           }}
                           className="task-container-taskName-item"
                         >
                           <React.Fragment>
                             {labelIndex === taskNameindex &&
-                            labelLogoVisible &&
                             groupInfo &&
                             groupInfo.role < 4 &&
                             groupInfo.role > 0 ? (
@@ -457,6 +457,30 @@ const GroupTableGroup: React.FC = (prop) => {
                                   setLabelVisible(true);
                                 }}
                                 className="task-container-taskName-logo"
+                                style={
+                                  addVisible === 'in'
+                                    ? {
+                                        animation: 'navIn 200ms',
+                                        width: '0px',
+                                        height: '0px',
+                                        right: '10px',
+                                        top: '30px',
+                                      }
+                                    : addVisible === 'out'
+                                    ? {
+                                        animation: 'navOut 200ms',
+                                        width: '22px',
+                                        height: '22px',
+                                        right: '5px',
+                                        top: '20px',
+                                      }
+                                    : {
+                                        width: '0px',
+                                        height: '0px',
+                                        right: '20px',
+                                        top: '30px',
+                                      }
+                                }
                               />
                             ) : null}
 

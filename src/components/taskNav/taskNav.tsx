@@ -78,6 +78,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
   const [batchAddVisible, setBatchAddVisible] = useState(false);
   const [batchAddText, setBatchAddText] = useState('');
   const [deleteVisible, setDeleteVisible] = useState(false);
+  
 
   useEffect(() => {
     if (name) {

@@ -107,11 +107,11 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
             groupObj[item.groupKey].push(item);
             // this.showTabObj[item.groupKey] = true;
             groupObj[item.groupKey] = _.sortBy(groupObj[item.groupKey], [
-              'taskEndDate',
-            ]).reverse();
-            groupObj[item.groupKey] = _.sortBy(groupObj[item.groupKey], [
-              'finishPercent',
+              'serialNumber',
             ]);
+            // groupObj[item.groupKey] = _.sortBy(groupObj[item.groupKey], [
+            //   'finishPercent',
+            // ]);
           }
           if (item.finishPercent === 1) {
             finishNum++;

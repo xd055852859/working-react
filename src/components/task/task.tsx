@@ -30,7 +30,8 @@ import defaultPerson from '../../assets/img/defaultPerson.png';
 import importantPng from '../../assets/img/important.png';
 import unimportantPng from '../../assets/img/unimportant.png';
 import ellipsisbPng from '../../assets/img/ellipsisb.png';
-import taskAddPng from '../../assets/img/contact-add.png';
+import taskAddPng from '../../assets/img/contact-plus.png';
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
 interface TaskProps {
   taskItem: any;
   executorKey?: number | string;
@@ -47,31 +48,7 @@ const useStyles = makeStyles((theme: Theme) =>
       height: '500px',
     },
     button: {
-      backgroundColor: '#17B881',
-      padding: '6px 16px',
-      color: '#fff',
-    },
-    input: {
-      width: '100%',
-      marginRight: '10px',
-      minWidth: '200px',
-      '& .MuiInputBase-root': {
-        border: '1px solid #fff',
-        borderRadius: '5px',
-      },
-      '& .MuiInput-formControl': {
-        marginTop: '0px',
-      },
-      '& .MuiOutlinedInput-input': {
-        padding: '10px 14px',
-        border: '1px solid #fff',
-        borderRadius: '5px',
-        color: '#fff',
-      },
-      '& .MuiInputLabel-formControl': {
-        marginTop: '-10px',
-        color: '#fff',
-      },
+      // padding: '6px 16px',
     },
   })
 );
@@ -345,6 +322,10 @@ const Task: React.FC<TaskProps> = (props) => {
                   taskDetail.finishPercent === 10
                 ? 'rgb(255,255,255)'
                 : 'rgba(255,255,255,0.66)',
+              boxShadow:
+                !bottomtype && taskItem._key === taskKey
+                  ? '0 0 7px 0 rgba(0, 0, 0, 0.26)'
+                  : '',
             }}
           >
             <React.Fragment>
@@ -515,7 +496,7 @@ const Task: React.FC<TaskProps> = (props) => {
                           visible={taskExecutorShow}
                           dropStyle={{
                             width: '180px',
-                            height: '290px',
+                            height: '350px',
                             top: '18px',
                             left: '-30px',
                           }}
@@ -549,7 +530,14 @@ const Task: React.FC<TaskProps> = (props) => {
                                     }}
                                   >
                                     <div className="task-executor-dropMenu-img">
-                                      <img src={taskMemberItem.avatar} />
+                                      <img
+                                        src={
+                                          taskMemberItem.avatar
+                                            ? taskMemberItem.avatar +
+                                              '?imageMogr2/auto-orient/thumbnail/50x50/format/jpg'
+                                            : defaultPersonPng
+                                        }
+                                      />
                                     </div>
                                     <div>{taskMemberItem.nickName}</div>
                                   </div>
@@ -560,15 +548,29 @@ const Task: React.FC<TaskProps> = (props) => {
                         </DropMenu>
                       </div>
                     </div>
-                    <div
-                      style={{
-                        maxWidth: '64px',
-                        display: 'flex',
-                        height: '100%',
-                      }}
-                    >
-                      <div className="taskItem-check-icon">
-                        {taskDetail.importantStatus ? (
+
+                    <div className="taskItem-icon-group">
+                      {editRole &&
+                      headerIndex === 3 &&
+                      memberHeaderIndex === 0 ? (
+                        <div
+                          className="taskItem-check-icon"
+                          onClick={() => {
+                            setAddTaskVisible(true);
+                          }}
+                        >
+                          <img
+                            src={taskAddPng}
+                            alt=""
+                            style={{ height: '18px', width: '18px' }}
+                          />
+                        </div>
+                      ) : null}
+                      {taskDetail.importantStatus ? (
+                        <div
+                          className="taskItem-check-icon"
+                          style={{ display: 'flex' }}
+                        >
                           <img
                             src={importantPng}
                             alt="重要"
@@ -577,7 +579,9 @@ const Task: React.FC<TaskProps> = (props) => {
                             }}
                             style={{ height: '18px', width: '19px' }}
                           />
-                        ) : (
+                        </div>
+                      ) : (
+                        <div className="taskItem-check-icon">
                           <img
                             src={unimportantPng}
                             alt="不重要"
@@ -586,8 +590,8 @@ const Task: React.FC<TaskProps> = (props) => {
                             }}
                             style={{ height: '18px', width: '19px' }}
                           />
-                        )}
-                      </div>
+                        </div>
+                      )}
                       {editRole ? (
                         <div
                           className="taskItem-check-icon"
@@ -598,7 +602,11 @@ const Task: React.FC<TaskProps> = (props) => {
                             dispatch(changeTaskInfoVisible(true));
                           }}
                         >
-                          <img src={ellipsisbPng} alt="详情" />
+                          <img
+                            src={ellipsisbPng}
+                            alt="详情"
+                            style={{ height: '2px', width: '12px' }}
+                          />
                         </div>
                       ) : null}
                     </div>
@@ -611,61 +619,43 @@ const Task: React.FC<TaskProps> = (props) => {
               </div>
             </React.Fragment>
           </div>
-          {chooseKey === taskDetail._key &&
-          editRole &&
-          headerIndex === 3 &&
-          memberHeaderIndex === 0 ? (
-            !addTaskVisible ? (
-              <div
-                className="taskItem-plus"
-                onClick={() => {
-                  setAddTaskVisible(true);
-                }}
-              >
-                <img src={taskAddPng} alt="" />
+          {addTaskVisible ? (
+            <div className="taskItem-plus-title">
+              <div className="taskItem-plus-input">
+                <input
+                  // required
+                  placeholder="任务标题"
+                  value={addInput}
+                  autoComplete="off"
+                  onChange={(e) => {
+                    setAddInput(e.target.value);
+                  }}
+                />
               </div>
-            ) : (
-              <div className="taskItem-plus-title">
-                <div className="taskItem-plus-input">
-                  <TextField
-                    // required
-                    id="outlined-basic"
-                    variant="outlined"
-                    label="任务标题"
-                    className={classes.input}
-                    value={addInput}
-                    autoComplete="off"
-                    onChange={(e) => {
-                      setAddInput(e.target.value);
-                    }}
-                  />
-                </div>
-                <div className="taskItem-plus-button">
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => {
-                      plusTask();
-                    }}
-                    style={{ marginRight: '10px' }}
-                    className={classes.button}
-                  >
-                    确定
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => {
-                      setAddTaskVisible(false);
-                      setAddInput('');
-                    }}
-                    className={classes.button}
-                  >
-                    取消
-                  </Button>
-                </div>
+              <div className="taskItem-plus-button">
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => {
+                    plusTask();
+                  }}
+                  style={{ marginRight: '10px', color: '#fff' }}
+                  className={classes.button}
+                >
+                  确定
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setAddTaskVisible(false);
+                    setAddInput('');
+                  }}
+                  className={classes.button}
+                >
+                  取消
+                </Button>
               </div>
-            )
+            </div>
           ) : null}
         </div>
       ) : null}

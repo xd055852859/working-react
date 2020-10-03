@@ -322,7 +322,7 @@ const task = {
   addTask(
     groupKey: number | string,
     groupRole: number | string,
-    labelKey: number | string,
+    labelKey: any,
     executorKey?: number | string,
     title?: string,
     cardIndex?: number,
