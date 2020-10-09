@@ -24,6 +24,7 @@
   border-radius: 50%;
   overflow: hidden;
   margin-right: 5px;
+  flex-shrink: 0;
 }
 .contact-avatar img {
   width: 100%;
@@ -48,6 +49,7 @@
 
 .contact-left {
   height: 100%;
+  width: calc(100% - 30px);
   display: flex;
   align-items: center;
 }
@@ -103,4 +105,5 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex-shrink: 0;
 }

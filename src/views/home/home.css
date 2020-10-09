@@ -34,6 +34,7 @@
   width: 176px;
   height: 52px;
   margin-bottom: 8px;
+  cursor: pointer;
 }
 .home-header-logo img {
   width: 100%;

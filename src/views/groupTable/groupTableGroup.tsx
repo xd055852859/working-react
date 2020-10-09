@@ -410,7 +410,7 @@ const GroupTableGroup: React.FC = (prop) => {
     <div
       className="task"
       onClick={(e: any) => {
-        dispatch(setChooseKey('0'));
+        dispatch(setChooseKey(''));
       }}
     >
       {loading ? <Loading /> : null}
@@ -546,7 +546,15 @@ const GroupTableGroup: React.FC = (prop) => {
                               className="task-item-item"
                               // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
                             >
-                              {item.show ? <Task taskItem={item} /> : null}
+                              {item.show ? (
+                                <Task
+                                  taskItem={item}
+                                  // timeSetStatus={
+                                  //   taskInfoitem.length > 4 &&
+                                  //   index > taskInfoitem.length - 3
+                                  // }
+                                />
+                              ) : null}
                             </div>
                           )}
                         </Draggable>

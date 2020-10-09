@@ -259,7 +259,12 @@ const GroupTableHeader: React.FC = (prop) => {
         <img src={boardPng} alt="" />
       </div>
       <div className="workingTableHeader-line">|</div>
-      <div className="groupTableHeader-name">
+      <div
+        className="groupTableHeader-name"
+        onClick={() => {
+          setGroupVisible(true);
+        }}
+      >
         <div className="groupTableHeader-logo">
           <img
             src={
@@ -270,36 +275,31 @@ const GroupTableHeader: React.FC = (prop) => {
             alt=""
           />
         </div>
-        <div
-          className="groupTableHeader-name-title"
-          onClick={() => {
-            setGroupVisible(true);
-          }}
-        >
+        <div className="groupTableHeader-name-title">
           {groupInfo && groupInfo.groupName}
-          <img
-            src={downArrowPng}
-            alt=""
-            className="groupTableHeader-name-title-logo"
-          />
-          <DropMenu
-            visible={groupVisible}
-            dropStyle={{
-              width: '250px',
-              height: '500px',
-              top: '40px',
-              left: '-40px',
-              color: '#333',
-              overflow: 'visible',
-            }}
-            onClose={() => {
-              setGroupVisible(false);
-            }}
-            title={'群列表'}
-          >
-            <Contact contactIndex={0} contactType={true} />
-          </DropMenu>
         </div>
+        <img
+          src={downArrowPng}
+          alt=""
+          className="groupTableHeader-name-title-logo"
+        />
+        <DropMenu
+          visible={groupVisible}
+          dropStyle={{
+            width: '250px',
+            height: '500px',
+            top: '55px',
+            left: '0px',
+            color: '#333',
+            overflow: 'visible',
+          }}
+          onClose={() => {
+            setGroupVisible(false);
+          }}
+          title={'群列表'}
+        >
+          <Contact contactIndex={0} contactType={true} />
+        </DropMenu>
       </div>
       {/* <div
         className="groupTableHeader-vitalityNum"

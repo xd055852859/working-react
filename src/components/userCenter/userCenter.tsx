@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './userCenter.css';
 import { useDispatch } from 'react-redux';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
@@ -13,7 +13,10 @@ import { setMessage } from '../../redux/actions/commonActions';
 import { TextField, Button } from '@material-ui/core';
 import moment from 'moment';
 import uploadFile from '../../components/common/upload';
+import Dialog from '../common/dialog';
 import api from '../../services/api';
+import Cropper from 'react-cropper';
+import 'cropperjs/dist/cropper.css';
 interface UserCenterProps {
   onClose: any;
 }
@@ -52,6 +55,10 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
   const uploadToken = useTypedSelector((state) => state.auth.uploadToken);
   const token = useTypedSelector((state) => state.auth.token);
   const [avatar, setAvatar] = useState('');
+  const [upImg, setUpImg] = useState<any>(null);
+  const [cropper, setCropper] = useState<any>(null);
+  const [photoVisible, setPhotoVisible] = useState<any>(false);
+
   const [slogan, setSlogan] = useState('');
   const [trueName, setTrueName] = useState('');
   const [nickName, setNickName] = useState('');
@@ -62,6 +69,7 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
   // onChange(date, dateString) {
   //   this.birthday = date;
   // },
+  const cropperRef = useRef<HTMLImageElement>(null);
   useEffect(() => {
     if (user) {
       getData(user);
@@ -98,25 +106,27 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
       dispatch(setMessage(true, res.msg, 'error'));
     }
   };
-  const uploadImg = (e: any) => {
+  const uploadImg = () => {
     let mimeType = ['image/png', 'image/jpeg'];
-    let item = {};
-    let file = e.target.files[0];
-    let reader = new FileReader();
-    if (file) {
-      reader.readAsDataURL(file);
-      reader.onload = function (theFile: any) {
-        let image = new Image();
-        image.src = theFile.target.result;
-        image.onload = function () {
-          uploadFile.uploadImg(file, uploadToken, mimeType, function (
-            url: string
-          ) {
-            setAvatar(url);
-          });
-        };
-      };
-    }
+    const imageElement: any = cropperRef?.current;
+    const cropper: any = imageElement?.cropper;
+    const croppedCanvas = cropper.getCroppedCanvas({
+      minWidth: 100,
+      minHeight: 200,
+      width: 400,
+      height: 800,
+      maxWidth: 800,
+      maxHeight: 800,
+    });
+    let dataURL = croppedCanvas.toDataURL('image/png');
+    let imgFile = dataURLtoFile(dataURL);
+
+    uploadFile.uploadImg(imgFile, uploadToken, mimeType, function (
+      url: string
+    ) {
+      dispatch(setMessage(true, '图片上传成功', 'success'));
+      setAvatar(url);
+    });
   };
   const handleDateChange = (date: any) => {
     setBirthday(date);
@@ -124,6 +134,29 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
   // toContact() {
   //   this.$router.push("/").catch((data) => {});
   // },
+  const dataURLtoFile = (dataurl: string, filename = 'file') => {
+    let arr: any = dataurl.split(',');
+    let mime = arr[0].match(/:(.*?);/)[1];
+    let suffix = mime.split('/')[1];
+    let bstr = atob(arr[1]);
+    let n = bstr.length;
+    let u8arr = new Uint8Array(n);
+    while (n--) {
+      u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], `${filename}.${suffix}`, {
+      type: mime,
+    });
+  };
+  const chooseImg = (e: any) => {
+    const fileReader = new FileReader();
+    setPhotoVisible(true);
+    fileReader.onload = (e: any) => {
+      const dataURL = e.target.result;
+      setUpImg(dataURL);
+    };
+    fileReader.readAsDataURL(e.target.files[0]);
+  };
   return (
     <div className="user-home-content">
       <div className="user-home-avatar">
@@ -132,9 +165,7 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
           <input
             type="file"
             accept="image/*"
-            onChange={(e) => {
-              uploadImg(e);
-            }}
+            onChange={chooseImg}
             className="upload-img"
           />
           <img src={avatar} alt="" />
@@ -232,6 +263,37 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
           取消
         </Button>
       </div>
+      <Dialog
+        visible={photoVisible}
+        onClose={() => {
+          setPhotoVisible(false);
+        }}
+        onOK={() => {
+          uploadImg();
+          setPhotoVisible(false);
+        }}
+        title={'选择图片'}
+        dialogStyle={{
+          // position: 'fixed',
+          // top: '65px',
+          // right: '10px',
+          width: '600px',
+          height: '700px',
+          // maxHeight: 'calc(100% - 66px)',
+          // overflow: 'auto',
+        }}
+        // showMask={false}
+      >
+        <Cropper
+          style={{ width: '100%', height: '95%' }}
+          // preview=".uploadCrop"
+          guides={true}
+          src={upImg}
+          ref={cropperRef}
+          // aspectRatio={16 / 9}
+          preview=".img-preview"
+        />
+      </Dialog>
     </div>
   );
 };

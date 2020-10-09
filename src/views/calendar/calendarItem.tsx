@@ -110,6 +110,11 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
       setCalendarCheck(taskItem.importantStatus ? true : false);
       setCalendarHour(moment(taskItem.taskEndDate).format('HH:mm'));
       setCalendarIndex(taskItem.taskType);
+    } else {
+      setCalendarInput('新日程');
+      setCalendarCheck(false);
+      setCalendarHour(moment().format('HH:mm'));
+      setCalendarIndex(0);
     }
   }, [taskItem]);
   const handleDateChange = (date: any) => {
@@ -155,15 +160,11 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
       }
     }
   };
-  
+
   return (
     <React.Fragment>
       {visible ? (
-        <div
-          className="calendarItem"
-          style={calendarStyle}
-        
-        >
+        <div className="calendarItem" style={calendarStyle}>
           <div className="calendarItem-title">
             <TextField
               // required
@@ -228,7 +229,7 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
                 visible={calendarColorVisible}
                 dropStyle={{
                   width: '180px',
-                  height: '68px',
+                  height: '75px',
                   top: '40px',
                   left: '0px',
                   color: '#333',

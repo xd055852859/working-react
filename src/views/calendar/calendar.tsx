@@ -13,6 +13,7 @@ import {
   editTask,
   getWorkingTableTask,
   changeTaskInfoVisible,
+  setTaskInfo
 } from '../../redux/actions/taskActions';
 import CalendarHeader from './calendarHeader';
 import Loading from '../../components/common/loading';
@@ -53,7 +54,9 @@ const Calendar: React.FC<CalendarProps> = (props) => {
   const [calendarEndTime, setCalendarEndTime] = useState(
     moment().endOf('month').endOf('day').valueOf()
   );
-  const [calendarCheck, setCalendarCheck] = useState(false);
+  const [executorCheck, setExecutorCheck] = useState(false);
+  const [creatorCheck, setCreatorCheck] = useState(false);
+
   const weekArr = [
     '星期一',
     '星期二',
@@ -77,14 +80,14 @@ const Calendar: React.FC<CalendarProps> = (props) => {
   ];
   const calendarRef: React.RefObject<any> = useRef();
   useEffect(() => {
-    if (calendarCheck && !workingTaskArray) {
+    if ((executorCheck || creatorCheck) && !workingTaskArray) {
       setLoading(true);
       dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2], theme.fileDay));
     } else if (workingTaskArray) {
       setLoading(false);
       getCalendar(moment(calendarStartTime), calendarList);
     }
-  }, [calendarCheck, workingTaskArray]);
+  }, [executorCheck, creatorCheck, workingTaskArray]);
   useEffect(() => {
     if (calendarList) {
       // setLoading(false);
@@ -234,12 +237,27 @@ const Calendar: React.FC<CalendarProps> = (props) => {
           newTaskList[dateIndex].push(taskItem);
         }
       });
-      if (calendarCheck) {
+      if (executorCheck) {
         _.flatten(_.cloneDeep(workingTaskArray)).forEach(
           (taskItem: any, taskIndex: number) => {
             if (
               taskItem.taskEndDate >= dateItem.startTime &&
-              taskItem.taskEndDate <= dateItem.endTime
+              taskItem.taskEndDate <= dateItem.endTime &&
+              taskItem.executorKey == userKey
+            ) {
+              newTaskList[dateIndex].push(taskItem);
+            }
+          }
+        );
+      }
+      if (creatorCheck) {
+        _.flatten(_.cloneDeep(workingTaskArray)).forEach(
+          (taskItem: any, taskIndex: number) => {
+            if (
+              taskItem.taskEndDate >= dateItem.startTime &&
+              taskItem.taskEndDate <= dateItem.endTime &&
+              taskItem.creatorKey == userKey &&
+              taskItem.executorKey != userKey
             ) {
               newTaskList[dateIndex].push(taskItem);
             }
@@ -298,6 +316,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
     setTaskList(newTaskList);
     dispatch(editTask({ key: newTaskItem._key, ...newTaskItem }, headerIndex));
     // console.log(e.clientX, e.clientY);
+    dispatch(setTaskInfo(newTaskItem))
   };
   const taskKeyDown = (e: any) => {
     if (e.keyCode === 46) {
@@ -381,6 +400,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
         1
       )
     );
+    dispatch(setTaskInfo(newTaskItem))
   };
   return (
     <div className="calendar">
@@ -405,13 +425,23 @@ const Calendar: React.FC<CalendarProps> = (props) => {
           />
           <div className="calendar-choose-check">
             <Checkbox
-              checked={calendarCheck}
+              checked={executorCheck}
               onChange={(e) => {
-                setCalendarCheck(e.target.checked);
+                setExecutorCheck(e.target.checked);
               }}
               color="primary"
             />
             任务
+          </div>
+          <div className="calendar-choose-check">
+            <Checkbox
+              checked={creatorCheck}
+              onChange={(e) => {
+                setCreatorCheck(e.target.checked);
+              }}
+              color="primary"
+            />
+            指派
           </div>
         </div>
         <div className="calendar-week">

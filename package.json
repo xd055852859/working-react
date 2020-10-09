@@ -23,6 +23,7 @@
     "qiniu-js": "^3.1.1",
     "react": "^16.13.1",
     "react-beautiful-dnd": "^13.0.0",
+    "react-cropper": "^2.1.4",
     "react-document-title": "^2.0.3",
     "react-dom": "^16.13.1",
     "react-froala-wysiwyg": "^3.2.1-1",

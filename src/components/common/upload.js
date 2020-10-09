@@ -40,7 +40,7 @@ const uploadFile = {
     // 上传
     let observable = qiniu.upload(
       file,
-      new Date().getTime() + '_' + file.name,
+      new Date().getTime() + '_workingVip',
       uptoken,
       putExtra,
       config
@@ -49,7 +49,13 @@ const uploadFile = {
     observable.subscribe(observer);
   },
   qiniuUpload(uptoken, target, file, isVideo) {
-    let mimeType = ['image/png', 'image/jpeg', 'image/svg+xml', 'video/mp4',"audio/mpeg"];
+    let mimeType = [
+      'image/png',
+      'image/jpeg',
+      'image/svg+xml',
+      'video/mp4',
+      'audio/mpeg',
+    ];
     const domain = 'https://cdn-icare.qingtime.cn/';
     let putExtra = {
       // 文件原文件名
@@ -82,13 +88,11 @@ const uploadFile = {
         return target;
       },
     };
-    console.log("file",file);
+    console.log('file', file);
     // 上传
     let observable = qiniu.upload(
       file,
-      `${this.guid(8, 16)}${
-        file.name ? file.name.substr(file.name.lastIndexOf('.')) : '.jpg'
-      }`,
+      new Date().getTime() + '_workingVip',
       uptoken,
       putExtra,
       config
@@ -132,7 +136,7 @@ const uploadFile = {
       img = new Image();
     // img.crossOrigin = 'Anonymous';
     img.setAttribute('crossOrigin', 'anonymous');
-    img.onload = function() {
+    img.onload = function () {
       canvas.height = img.height;
       canvas.width = img.width;
       ctx.drawImage(img, 0, 0);

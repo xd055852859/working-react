@@ -43,6 +43,7 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
   const user = useTypedSelector((state) => state.auth.user);
   const selfTaskArray = useTypedSelector((state) => state.task.selfTaskArray);
   const nowTime = useTypedSelector((state) => state.auth.nowTime);
+  const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const [note, setNote] = useState('');
   const [positive, setPositive] = useState('');
   const [negative, setNegative] = useState('');
@@ -73,7 +74,8 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
           ((item.finishPercent === 0 && item.taskEndDate <= endTime) ||
             finishState) &&
           item.title !== '' &&
-          item.taskEndDate
+          item.taskEndDate &&
+          item.groupKey != mainGroupKey
         ) {
           // if (!newGroupObj[item.groupKey]) {
           //   newGroupObj[item.groupKey] = {

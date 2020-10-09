@@ -14,6 +14,7 @@ export const actionTypes = {
   ADD_WORKING_TABLE_TASK: 'CREATE_WORKING_TABLE_TASK',
   ADD_WORKING_TABLE_TASK_SUCCESS: 'CREATE_WORKING_TABLE_TASK_SUCCESS',
   SET_TASK_KEY: 'SET_TASK_KEY',
+  SET_TASK_INFO: 'SET_TASK_INFO',
   SET_CHOOSE_KEY: 'SET_CHOOSE_KEY',
   EDIT_TASK: 'EDIT_TASK',
   EDIT_TASK_SUCCESS: 'EDIT_TASK_SUCCESS',
@@ -117,6 +118,9 @@ export function setTaskKey(taskKey: string | number) {
 }
 export function setChooseKey(chooseKey: string | number) {
   return { type: actionTypes.SET_CHOOSE_KEY, chooseKey };
+}
+export function setTaskInfo(taskInfo: any) {
+  return { type: actionTypes.SET_TASK_INFO, taskInfo };
 }
 
 export function editTask(data: any, headerIndex: number) {

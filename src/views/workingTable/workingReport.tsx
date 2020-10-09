@@ -115,8 +115,10 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     setCommentList([]);
     setComment('');
     if (headerIndex != 3) {
-      getDiaryNote(dateArray[index].start);
-      getCommentList(1, dateArray[index]._key);
+      getDiaryNote(dateArray[index].start, diaryKey);
+      if (dateArray[index]._key) {
+        getCommentList(1, dateArray[index]._key);
+      }
     }
   };
   const choosePerson = (key: string, index: number) => {
@@ -254,13 +256,16 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     console.log(newDateArray);
     console.log(newDayCanlendarArray);
     console.log(newPersonArray);
-    getDiaryNote(moment().subtract(1, 'days').startOf('day').valueOf());
+    getDiaryNote(
+      moment().subtract(1, 'days').startOf('day').valueOf(),
+      newDiaryKey
+    );
     setDateArray(newDateArray);
     setDayCanlendarArray(newDayCanlendarArray);
     newPersonArray.unshift({ key: '全部', avatar: '', name: '全部' });
     setPersonArray(newPersonArray);
   };
-  const getDiaryNote = async (startTime: number) => {
+  const getDiaryNote = async (startTime: number, diaryKey: any) => {
     if (diaryKey) {
       let noteRes: any = await api.auth.getNote(diaryKey, startTime);
       if (noteRes.msg == 'OK') {
@@ -294,9 +299,11 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     if (res.msg == 'OK') {
       setDiaryList(res.result);
       if (res.result.length > 0) {
-        setContentKey(res.result[0]._key);
+        if (res.result[0]._key) {
+          setContentKey(res.result[0]._key);
+          getCommentList(1, res.result[0]._key);
+        }
       }
-      getCommentList(1, res.result[0]._key);
       getData(_.flatten(workingTaskArray), res.result);
     } else {
       dispatch(setMessage(true, res.msg, 'error'));
@@ -367,7 +374,12 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                   //   setDiaryIndex(diaryIndex);
                   // }}
                 >
-                  <Task taskItem={item} />
+                  <Task
+                    taskItem={item}
+                    timeSetStatus={
+                      index > dayCanlendarItem[dayKey].executorArr.length - 3
+                    }
+                  />
                 </div>
               );
             }
@@ -385,7 +397,12 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                       //   setDiaryIndex(diaryIndex);
                       // }}
                     >
-                      <Task taskItem={item} />
+                      <Task
+                        taskItem={item}
+                        timeSetStatus={
+                          index > dayCanlendarItem[dayKey].creatorArr.length - 3
+                        }
+                      />
                     </div>
                   );
                 }
@@ -567,7 +584,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
         </div>
         {dayCanlendarArray.length > 0 ? (
           <div className="diary-container">
-            <h2>一、任务看板</h2>
+            {headerIndex != 3 ? <h2>一、任务看板</h2> : null}
             {diaryKey !== '全部' ? (
               <React.Fragment>
                 <div className="diary-container-title">1. 执行任务</div>
@@ -584,7 +601,15 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                             //   setDiaryIndex(diaryIndex);
                             // }}
                           >
-                            <Task taskItem={taskItem} />
+                            <Task
+                              taskItem={taskItem}
+                              timeSetStatus={
+                                taskIndex >
+                                dayCanlendarArray[diaryIndex][diaryKey]
+                                  .executorArr.length -
+                                  3
+                              }
+                            />
                           </div>
                         );
                       }
@@ -604,7 +629,15 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                             //   setDiaryIndex(diaryIndex);
                             // }}
                           >
-                            <Task taskItem={taskItem} />
+                            <Task
+                              taskItem={taskItem}
+                              timeSetStatus={
+                                taskIndex >
+                                dayCanlendarArray[diaryIndex][diaryKey]
+                                  .creatorArr.length -
+                                  3
+                              }
+                            />
                           </div>
                         );
                       }
@@ -682,13 +715,16 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                 ) : (
                   <div className="diary-textarea">{note}</div>
                 )}
-                <div className="diary-comment">
-                  <div className="diary-comment-title">
-                    <div className="diary-comment-icon">
-                      <img src={commentPng} alt="" />
-                      评论
-                    </div>
-                    {/* <div className="diary-comment-like">
+                {/* 可能不存在打卡key */}
+                {contentKey ? (
+                  <React.Fragment>
+                    <div className="diary-comment">
+                      <div className="diary-comment-title">
+                        <div className="diary-comment-icon">
+                          <img src={commentPng} alt="" />
+                          评论
+                        </div>
+                        {/* <div className="diary-comment-like">
                       {contentItem.isLike ? (
                         <img
                           src={likePng}
@@ -708,79 +744,84 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                       )}
                       点赞 {contentItem.likeNumber}
                     </div> */}
-                  </div>
-                  {commentList.length > 0 ? (
-                    <div
-                      className="diary-comment-info"
-                      onScroll={scrollCommentLoading}
-                    >
-                      {commentList.map(
-                        (commentItem: any, commentIndex: number) => {
-                          return (
-                            <div
-                              className="diary-comment-item"
-                              key={commentIndex}
-                            >
-                              <div className="diary-comment-item-avatar">
-                                <img src={commentItem.avatar} alt="" />
-                              </div>
-                              <div className="diary-comment-item-info">
-                                <div className="diary-comment-item-nickName">
-                                  {commentItem.nickName}
-                                </div>
-                                <div className="diary-comment-item-content">
-                                  {commentItem.content}
-                                </div>
-                              </div>
-                              {commentItem.userKey == user._key ? (
+                      </div>
+                      {commentList.length > 0 ? (
+                        <div
+                          className="diary-comment-info"
+                          onScroll={scrollCommentLoading}
+                        >
+                          {commentList.map(
+                            (commentItem: any, commentIndex: number) => {
+                              return (
                                 <div
-                                  className="diary-comment-item-reply"
-                                  onClick={() => {
-                                    deleteComment(commentItem, commentIndex);
-                                  }}
+                                  className="diary-comment-item"
+                                  key={commentIndex}
                                 >
-                                  <div className="diary-comment-delete-icon">
-                                    <img src={deletePng} alt="" />
+                                  <div className="diary-comment-item-avatar">
+                                    <img src={commentItem.avatar} alt="" />
                                   </div>
-                                  <div className="diary-comment-reply-title">
-                                    删除
+                                  <div className="diary-comment-item-info">
+                                    <div className="diary-comment-item-nickName">
+                                      {commentItem.nickName}
+                                    </div>
+                                    <div className="diary-comment-item-content">
+                                      {commentItem.content}
+                                    </div>
                                   </div>
+                                  {commentItem.userKey == user._key ? (
+                                    <div
+                                      className="diary-comment-item-reply"
+                                      onClick={() => {
+                                        deleteComment(
+                                          commentItem,
+                                          commentIndex
+                                        );
+                                      }}
+                                    >
+                                      <div className="diary-comment-delete-icon">
+                                        <img src={deletePng} alt="" />
+                                      </div>
+                                      <div className="diary-comment-reply-title">
+                                        删除
+                                      </div>
+                                    </div>
+                                  ) : null}
                                 </div>
-                              ) : null}
-                            </div>
-                          );
-                        }
-                      )}
+                              );
+                            }
+                          )}
+                        </div>
+                      ) : null}
                     </div>
-                  ) : null}
-                </div>
 
-                <div className="diary-comment-button">
-                  <TextField
-                    placeholder="我要评论......"
-                    style={{ width: '90%' }}
-                    onChange={(e: any) => {
-                      setComment(e.target.value);
-                    }}
-                    value={comment}
-                    onKeyDown={(e: any) => {
-                      if (e.keyCode === 13) {
-                        addComment();
-                      }
-                    }}
-                  />
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    style={{ marginRight: '10px' }}
-                    className={classes.button}
-                    onClick={() => {
-                      addComment();
-                    }}
-                  >
-                    发送
-                  </Button>
-                </div>
+                    <div className="diary-comment-button">
+                      <TextField
+                        placeholder="我要评论......"
+                        style={{ width: '90%' }}
+                        onChange={(e: any) => {
+                          setComment(e.target.value);
+                        }}
+                        value={comment}
+                        onKeyDown={(e: any) => {
+                          if (e.keyCode === 13) {
+                            addComment();
+                          }
+                        }}
+                      />
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        style={{ marginRight: '10px' }}
+                        className={classes.button}
+                        onClick={() => {
+                          addComment();
+                        }}
+                      >
+                        发送
+                      </Button>
+                    </div>
+                  </React.Fragment>
+                ) : null}
               </React.Fragment>
             ) : null}
           </div>

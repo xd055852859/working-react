@@ -14,7 +14,7 @@ const Tooltip: React.FC<TooltipProp> = (prop) => {
   const showTitle = () => {
     setPos([
       tooltipRef.current.offsetHeight + tooltipRef.current.offsetTop + 5,
-      tooltipRef.current.offsetLeft - 18,
+      tooltipRef.current.offsetLeft - 2,
     ]);
     setTitleVisible(true);
   };
@@ -29,13 +29,13 @@ const Tooltip: React.FC<TooltipProp> = (prop) => {
       ref={tooltipRef}
     >
       {children}
-      {titleVisible ? (
+      {titleVisible && title ? (
         <div
           className="tooltip-title"
           style={{
             top: pos[0] + 'px',
             left: pos[1] + 'px',
-            width: title.length * 20 + 'px',
+            width: title.length * 16 + 'px',
           }}
         >
           {title}

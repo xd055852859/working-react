@@ -47,7 +47,13 @@ const Home: React.FC<HomeProps> = (props) => {
         }
       ></div>
       <div className="home-header">
-        <div className="home-header-logo">
+        <div
+          className="home-header-logo"
+          onClick={() => {
+            const redirect = `${window.location.protocol}//${window.location.host}`;
+            window.location.href = `${redirect}/bootpage`;
+          }}
+        >
           <img src={logoPng} alt="" />
         </div>
         <div
@@ -81,7 +87,7 @@ const Home: React.FC<HomeProps> = (props) => {
             onClick={() => dispatch(setCommonHeaderIndex(5))}
           >
             <img src={calendarPng} alt="" className="home-header-item-logo" />
-            日程
+            我的日程
           </div>
         ) : null}
         <div

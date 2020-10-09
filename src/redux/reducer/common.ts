@@ -37,7 +37,8 @@ export const common = (state = defaultState, action: any) => {
     case commonActionTypes.FAILED:
       if (action.error.statusCode === '701') {
         const redirect = `${window.location.protocol}//${window.location.host}`;
-        window.location.href = `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`;
+        // window.location.href = `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`;
+        window.location.href = `${redirect}/bootpage`;
       }
       console.log('action.error.msg,', action.error.msg);
       return {

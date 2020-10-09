@@ -16,6 +16,7 @@ export interface TaskType {
   calendarList: any;
   taskActionArray: any;
   taskAction: any;
+  taskInfo: any;
 }
 
 const defaultState: TaskType = {
@@ -44,6 +45,7 @@ const defaultState: TaskType = {
   calendarList: null,
   taskActionArray: [],
   taskAction: {},
+  taskInfo: null,
 };
 
 export const task = (state = defaultState, action: any) => {
@@ -113,6 +115,11 @@ export const task = (state = defaultState, action: any) => {
       return {
         ...state,
         chooseKey: action.chooseKey,
+      };
+    case actionTypes.SET_TASK_INFO:
+      return {
+        ...state,
+        taskInfo: action.taskInfo,
       };
     case actionTypes.EDIT_TASK_SUCCESS:
       console.log('编辑成功');

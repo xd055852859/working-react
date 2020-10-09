@@ -56,8 +56,8 @@ const Bootpage: React.FC = () => {
         className="bootpage-video"
         style={{
           width: clientHeight,
-          height: '100%',
           left: clientWidth - clientHeight / 2,
+          overflow: 'hidden'
         }}
       >
         <video

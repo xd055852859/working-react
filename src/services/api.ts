@@ -6,7 +6,7 @@ const HOME_URL = 'https://workingdata.qingtime.cn/sgbh';
 const ROCKET_CHAT_URL = 'https://chat.qingtime.cn';
 // const SOCKET_URL = 'http://192.168.0.101:9033';
 const SOCKET_URL = 'https://workingdata.qingtime.cn';
-
+const PNG_URL = 'https://timeosdata.qingtime.cn';
 // const API_URL = "http://192.168.1.108:8529/_db/timeOS/myOs"; let token:
 // string | null = localStorage.getItem('auth_token');
 let auth_token: string | null = null;
@@ -259,6 +259,11 @@ const auth = {
     return request.patch(AUTH_URL + '/account', {
       token: auth_token,
       ...param,
+    });
+  },
+  getWallPapers() {
+    return request.get(PNG_URL + '/wallPaper', {
+      token: auth_token,
     });
   },
 };

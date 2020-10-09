@@ -65,7 +65,7 @@ const MemberBoardItem: React.FC<MemberBoardItemProps> = (props) => {
             </div>
             <div className="memberBoard-info">
               {item.map((taskItem: any, taskIndex: number) => {
-                return <Task taskItem={taskItem} key={'task' + taskIndex} />;
+                return <Task taskItem={taskItem} key={'task' + taskIndex} timeSetStatus={taskIndex > item.length - 3}/>;
               })}
             </div>
           </div>
@@ -92,7 +92,9 @@ const ProjectBoardItem: React.FC<ProjectBoardItemProps> = (props) => {
                 : '无标题'}
             </div>
             {projectItem[key].arr.map((taskItem: any, taskIndex: number) => {
-              return <Task taskItem={taskItem} key={'task' + taskIndex} />;
+              return <Task taskItem={taskItem} key={'task' + taskIndex}  
+              // timeSetStatus={taskIndex > projectItem[key].arr.length - 3}
+              />;
             })}
           </React.Fragment>
         );

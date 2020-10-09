@@ -64,6 +64,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
   const classes = useStyles();
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const user = useTypedSelector((state) => state.auth.user);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const groupMemberArray = useTypedSelector(
@@ -78,7 +79,6 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
   const [batchAddVisible, setBatchAddVisible] = useState(false);
   const [batchAddText, setBatchAddText] = useState('');
   const [deleteVisible, setDeleteVisible] = useState(false);
-  
 
   useEffect(() => {
     if (name) {
@@ -97,6 +97,9 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
   ];
   const taskNavBgColor = colorIndex % 5;
   const addTask = async (groupInfo: any, labelInfo: any) => {
+    if (mainGroupKey == groupInfo._key) {
+      labelInfo.executorKey = user._key;
+    }
     let addTaskRes: any = await api.task.addTask(
       groupInfo._key,
       groupInfo.groupRole,

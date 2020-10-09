@@ -10,6 +10,7 @@ import Dialog from '../common/dialog';
 import DropMenu from '../common/dropMenu';
 import Tooltip from '../common/tooltip';
 import ClockIn from '../clockIn/clockIn';
+
 import Task from '../task/task';
 import UserCenter from '../userCenter/userCenter';
 import { setTheme } from '../../redux/actions/authActions';
@@ -130,6 +131,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   useEffect(() => {
     if (user) {
       setAvatar(user.profile.avatar);
+      // getPng();
     }
   }, [user]);
   useEffect(() => {
@@ -143,7 +145,14 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       setPage(1);
     }
   }, [searchInput]);
-
+  const getPng = async () => {
+    let res: any = await api.auth.getWallPapers();
+    if (res.msg === 'OK') {
+      console.log(res);
+    } else {
+      dispatch(setMessage(true, res.msg, 'error'));
+    }
+  };
   const changeBoard = (type: string) => {
     let newTheme = _.cloneDeep(theme);
     newTheme[type] = newTheme[type] ? false : true;
@@ -190,8 +199,10 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     let scrollTop = e.target.scrollTop;
     //窗口可视范围高度
     let clientHeight = e.target.clientHeight;
+    console.log(clientHeight + scrollTop);
+    console.log(scrollHeight);
     if (
-      clientHeight + scrollTop >= scrollHeight &&
+      clientHeight + scrollTop >= scrollHeight - 1 &&
       searchTaskList.length < total
     ) {
       newPage = newPage + 1;
@@ -737,7 +748,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           top: '65px',
           right: '10px',
           width: '370px',
-          maxHeight: 'calc(100% - 66px)',
+          height: 'calc(100% - 66px)',
           overflow: 'auto',
         }}
         showMask={false}
@@ -755,7 +766,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             onChange={(e) => {
               setSearchInput(e.target.value);
             }}
-            onKeyDown ={(e: any) => {
+            onKeyDown={(e: any) => {
               if (e.keyCode === 13) {
                 searchTask();
               }
@@ -775,7 +786,13 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
         </div>
         <div className="headerSet-search-info" onScroll={scrollSearchLoading}>
           {searchTaskList.map((taskItem: any, taskIndex: number) => {
-            return <Task key={'search'+taskIndex} taskItem={taskItem} showGroupName={true} />;
+            return (
+              <Task
+                key={'search' + taskIndex}
+                taskItem={taskItem}
+                showGroupName={true}
+              />
+            );
           })}
         </div>
       </Dialog>

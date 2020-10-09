@@ -12,6 +12,7 @@ import {
   getGroupTask,
   setChooseKey,
   changeTaskInfoVisible,
+  setTaskInfo,
 } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import moment from 'moment';
@@ -21,7 +22,6 @@ import api from '../../services/api';
 import Dialog from '../common/dialog';
 import DropMenu from '../common/dropMenu';
 import TimeSet from '../common/timeSet';
-import TaskInfo from '../taskInfo/taskInfo';
 import unfinishPng from '../../assets/img/unfinish.png';
 import finishPng from '../../assets/img/finish.png';
 import unfinishbPng from '../../assets/img/unfinishb.png';
@@ -40,6 +40,8 @@ interface TaskProps {
   taskInfoIndex?: number;
   showGroupName?: boolean;
   bottomtype?: string;
+  timeSetStatus?: boolean;
+  myState?: boolean;
 }
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -60,6 +62,8 @@ const Task: React.FC<TaskProps> = (props) => {
     taskInfoIndex,
     showGroupName,
     bottomtype,
+    timeSetStatus,
+    myState,
   } = props;
   const taskKey = useTypedSelector((state) => state.task.taskKey);
   const chooseKey = useTypedSelector((state) => state.task.chooseKey);
@@ -182,6 +186,8 @@ const Task: React.FC<TaskProps> = (props) => {
         );
         setEditState(false);
         setTaskExecutorShow(false);
+        console.log('????????', newTaskDetail);
+        dispatch(setTaskInfo(newTaskDetail));
       }
       if (changeTask) {
         changeTask(newTaskDetail);
@@ -329,7 +335,7 @@ const Task: React.FC<TaskProps> = (props) => {
             }}
           >
             <React.Fragment>
-              {!bottomtype ? (
+              {!bottomtype && !myState ? (
                 <div
                   className="taskItem-taskType"
                   style={{
@@ -370,33 +376,35 @@ const Task: React.FC<TaskProps> = (props) => {
               ) : null}
               <div className="taskItem-container">
                 <div className="taskItem-info">
-                  <div
-                    className="taskItem-day"
-                    style={taskDayColor}
-                    onClick={() => {
-                      changeTime();
-                    }}
-                  >
+                  {!myState ? (
                     <div
-                      className="taskItem-time-day"
-                      style={{ left: endtime < 10 ? '5px' : '0px' }}
+                      className="taskItem-day"
+                      style={taskDayColor}
+                      onClick={() => {
+                        changeTime();
+                      }}
                     >
-                      {endtime}
+                      <div
+                        className="taskItem-time-day"
+                        style={{ left: endtime < 10 ? '5px' : '0px' }}
+                      >
+                        {endtime}
+                      </div>
+                      <div className="taskItem-time"></div>
+                      <div
+                        className="taskItem-time-hour"
+                        style={{ right: taskDetail.hour < 1 ? '5px' : '0px' }}
+                      >
+                        {taskDetail.hour}
+                      </div>
                     </div>
-                    <div className="taskItem-time"></div>
-                    <div
-                      className="taskItem-time-hour"
-                      style={{ right: taskDetail.hour < 1 ? '5px' : '0px' }}
-                    >
-                      {taskDetail.hour}
-                    </div>
-                  </div>
+                  ) : null}
                   <DropMenu
                     visible={timeSetShow}
                     dropStyle={{
                       width: '318px',
                       height: '245px',
-                      top: '28px',
+                      top: !timeSetStatus ? '28px' : '-245px',
                       left: '-25px',
                     }}
                     onClose={() => {
@@ -453,7 +461,7 @@ const Task: React.FC<TaskProps> = (props) => {
                     )}
                   </div>
                 </div>
-                {!bottomtype ? (
+                {!bottomtype && !myState ? (
                   <div className="taskItem-footer">
                     <div className="taskItem-footer-left">
                       <div className="taskItem-name">
@@ -600,6 +608,8 @@ const Task: React.FC<TaskProps> = (props) => {
                           }
                           onClick={() => {
                             dispatch(changeTaskInfoVisible(true));
+                            dispatch(setTaskInfo(taskDetail));
+                            dispatch(setChooseKey(taskDetail._key));
                           }}
                         >
                           <img

@@ -314,7 +314,7 @@ const WorkingTableHeader: React.FC = (prop) => {
         </div>
       ) : null}
       <div className="view-container">
-        {memberHeaderIndex !== 7 ? (
+        {memberHeaderIndex < 7 ? (
           <React.Fragment>
             <div
               className="workingTableHeader-logo"

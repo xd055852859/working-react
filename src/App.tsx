@@ -39,6 +39,7 @@ const App: React.FC = () => {
   const user = useTypedSelector((state) => state.auth.user);
   const token = useTypedSelector((state) => state.auth.token);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const taskInfo = useTypedSelector((state) => state.task.taskInfo);
   const taskInfoVisible = useTypedSelector(
     (state) => state.task.taskInfoVisible
   );

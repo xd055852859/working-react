@@ -19,6 +19,7 @@ const WorkingTableLabel: React.FC = (prop) => {
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const userKey = useTypedSelector((state) => state.auth.userKey);
   const targetUserKey = useTypedSelector((state) => state.auth.targetUserKey);
+  const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const memberHeaderIndex = useTypedSelector(
@@ -126,7 +127,7 @@ const WorkingTableLabel: React.FC = (prop) => {
         setMainLabelArray(labelArray);
       }
     }
-  }, [workingTaskArray,workingGroupArray,filterObject]);
+  }, [workingTaskArray, workingGroupArray, filterObject]);
   useEffect(() => {
     let clientWidth = workingTableRef.current.clientWidth;
     if (clientWidth < 600) {
@@ -353,6 +354,8 @@ const WorkingTableLabel: React.FC = (prop) => {
                               taskItem={taskItem}
                               taskIndex={taskIndex}
                               taskInfoIndex={labelIndex}
+                              // timeSetStatus={taskIndex > labelItem.arr.length - 3}
+                              myState={labelItem.groupObj._key == mainGroupKey}
                             />
                           </React.Fragment>
                         ) : null}

@@ -4,7 +4,8 @@ import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { setMessage } from '../../redux/actions/commonActions';
 import api from '../../services/api';
-import chart from '../../components/common/chart';
+import chart from '../common/chart';
+import Tooltip from '../common/tooltip';
 import moment from 'moment';
 import _ from 'lodash';
 import VitalityIcon from '../vitalityIcon/vitalityIcon';
@@ -447,20 +448,22 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                               key={'vitality' + index + dayIndex}
                             >
                               {/* <template slot="title">分值: {{dayItem.value}} 分</template> */}
-                              <div
-                                className="vitality-month-item-day"
-                                style={{
-                                  backgroundColor: dayItem.color,
-                                  border: dayItem.date
-                                    ? '1px solid rgba(151, 151, 151, 1)'
-                                    : 0,
-                                }}
-                                onClick={() => {
-                                  if (headerIndex !== 2) {
-                                    getTargetLog(dayItem.startTime);
-                                  }
-                                }}
-                              ></div>
+                              <Tooltip title={dayItem.value}>
+                                <div
+                                  className="vitality-month-item-day"
+                                  style={{
+                                    backgroundColor: dayItem.color,
+                                    border: dayItem.date
+                                      ? '1px solid rgba(151, 151, 151, 1)'
+                                      : 0,
+                                  }}
+                                  onClick={() => {
+                                    if (headerIndex !== 2) {
+                                      getTargetLog(dayItem.startTime);
+                                    }
+                                  }}
+                                ></div>
+                              </Tooltip>
                             </div>
                           );
                         })}

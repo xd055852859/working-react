@@ -81,6 +81,7 @@
   margin-bottom: 15px;
   display: flex;
   align-items: center;
+  position: relative;
 }
 .taskInfo-item-title {
   width: 30px;
@@ -195,10 +196,19 @@
   align-items: center;
   margin-bottom: 10px;
 }
-.point{
-  width:5px;
-  height:5px;
+.point {
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background-color: #8091a0;
-  margin-right:5px
+  margin-right: 5px;
 }
+.editor-button {
+  background-color: #17b881;
+  color: #fff;
+  position: absolute;
+  bottom: -105px;
+  right: 0px;
+  z-index: 30;
+}
+.taskInfo [contenteditable]:focus{outline: none;}

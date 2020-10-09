@@ -26,21 +26,25 @@ interface MainBoardItemProps {
   mainItem: any;
 }
 const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
+  const user = useTypedSelector((state) => state.auth.user);
   const { mainItem } = props;
   const classes = useStyles();
+  const myState = mainItem[0].groupName == user.profile.nickName + '的主群';
   return (
     <React.Fragment>
       <div>
         <div className="mainBoard-title">
-          <Avatar
-            alt="群头像"
-            src={
-              mainItem[0].groupLogo +
-              '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
-            }
-            className={classes.avatar}
-          />
-          {mainItem[0].groupName}
+          {!myState ? (
+            <Avatar
+              alt="群头像"
+              src={
+                mainItem[0].groupLogo +
+                '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
+              }
+              className={classes.avatar}
+            />
+          ) : null}
+          {myState ? '我的清单' : mainItem[0].groupName}
         </div>
       </div>
       <React.Fragment
@@ -50,7 +54,12 @@ const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
         {mainItem.map((taskItem: any, taskIndex: number) => {
           return (
             // <div className="countdown-right-task">
-            <Task taskItem={taskItem} key={'task' + taskIndex} />
+            <Task
+              taskItem={taskItem}
+              key={'task' + taskIndex}
+              myState={myState}
+              // timeSetStatus={taskIndex > mainItem.length - 3}
+            />
             // </div>
           );
         })}

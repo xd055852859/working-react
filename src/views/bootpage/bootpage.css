@@ -59,14 +59,15 @@
 .bootpage-video {
   position: fixed;
   width: 760px;
+  height: 100%;
   top: 0px;
   right: -420px;
-  overflow: hidden;
   border-radius: 50%;
   box-shadow: -11px 0 0 50px hsla(0, 0%, 100%, 0.09),
     -3px 0 0 20px hsla(0, 0%, 100%, 0.13), 0 0 0 9px hsla(0, 0%, 100%, 0.09),
     9px 9px 50px 20px rgba(95, 95, 132, 0.88),
     -102px 110px 100px 17px rgba(44, 44, 75, 0.3);
+  z-index: 20;
 }
 .bootpage-footer {
   width: 100%;

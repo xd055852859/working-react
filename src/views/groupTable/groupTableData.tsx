@@ -398,7 +398,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
                   className="countdown-right-task"
                   key={'taskItem' + taskIndex}
                 >
-                  <Task taskItem={taskItem} />
+                  <Task taskItem={taskItem} timeSetStatus={taskIndex > personItem.length - 3}/>
                 </div>
               );
             })}

@@ -3,11 +3,13 @@
   height: 68px;
 }
 .groupTableHeader-name {
+  width: 250px;
   height: 100%;
   display: flex;
   align-items: center;
   margin-right: 20px;
   flex-shrink: 0;
+  position: relative;
 }
 .groupTableHeader-logo {
   width: 34px;
@@ -18,9 +20,11 @@
   flex-shrink: 0;
 }
 .groupTableHeader-name-title {
-  min-width: 80px;
+  max-width: 160px;
   flex-shrink: 0;
-  position: relative;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .groupTableHeader-name-title-logo {
   width: 12px;

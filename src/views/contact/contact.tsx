@@ -114,10 +114,12 @@ const Contact: React.FC<ContactProps> = (props) => {
             let name = contactIndex ? item.nickName : item.groupName;
             let avatar = contactIndex
               ? item.avatar
-                ? item.avatar
+                ? item.avatar +
+                  '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
                 : defaultPersonPng
               : item.groupLogo
-              ? item.groupLogo
+              ? item.groupLogo +
+                '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
               : defaultGroupPng;
             let key = contactIndex ? item.userId : item._key;
             return (
@@ -133,15 +135,16 @@ const Contact: React.FC<ContactProps> = (props) => {
               >
                 <div className="contact-left">
                   <div className="contact-avatar">
-                    <img
-                      alt={name}
-                      src={
-                        avatar +
-                        '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
-                      }
-                    />
+                    <img alt={name} src={avatar} />
                   </div>
-                  <div className="contact-left-title">{name}</div>
+                  <div
+                    className="contact-left-title"
+                    style={
+                      contactType ? { maxWidth: '90%' } : { maxWidth: '75%' }
+                    }
+                  >
+                    {name}
+                  </div>
                   {!contactType ? (
                     item.isCare ? (
                       <img

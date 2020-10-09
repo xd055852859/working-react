@@ -40,7 +40,7 @@ import uploadFile from './upload';
 interface EditorProps {
   data: string;
   editable: boolean;
-  onChange: Function;
+  onChange?: Function;
   editorHeight?: string;
   editorState?: boolean;
   setInit?: any;

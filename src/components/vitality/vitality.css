@@ -113,7 +113,9 @@
   flex-wrap: wrap;
   overflow: auto;
 }
-
+.vitality-log-container{
+  align-content: flex-start;
+}
 .vitality-month-info {
   width: 100%;
   display: flex;
@@ -172,7 +174,7 @@
   color: rgba(51, 51, 51, 1);
   line-height: 26px;
   display: flex;
-  align-items: center;
+  /* align-items: center; */
 }
 .vitality-msg > div {
   margin-right: 5px;

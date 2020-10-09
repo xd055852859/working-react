@@ -19,6 +19,9 @@ export const group = (state = defaultState, action: any) => {
   switch (action.type) {
     case actionTypes.GET_GROUP_SUCCESS:
       let groupArray = action.data.filter((item: any, index: number) => {
+        if (item.groupLogo&&item.groupLogo.indexOf('https') === -1) {
+          item.groupLogo = item.groupLogo.replace('http', 'https');
+        }
         return item.groupName.indexOf('主群') === -1;
       });
       return {
@@ -26,7 +29,7 @@ export const group = (state = defaultState, action: any) => {
         groupArray: groupArray,
       };
     case actionTypes.SET_GROUP_KEY:
-      localStorage.setItem('groupKey',action.groupKey)
+      localStorage.setItem('groupKey', action.groupKey);
       return {
         ...state,
         groupKey: action.groupKey,

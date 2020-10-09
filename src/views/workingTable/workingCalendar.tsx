@@ -146,7 +146,7 @@ const WorkingCanlendar: React.FC<WorkingCanlendarProps> = (prop) => {
                   className="dayCanlendar-info-item"
                   key={'taskItem' + taskIndex}
                 >
-                  {taskItem.show ? <Task taskItem={taskItem} /> : null}
+                  {taskItem.show ? <Task taskItem={taskItem} timeSetStatus={taskIndex > item[key].length - 3}/> : null}
                 </div>
               );
             })}

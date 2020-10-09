@@ -10,7 +10,7 @@ interface CommentProps {
 const Comment: React.FC<CommentProps> = (prop) => {
   const { commentItem,commentClick,commentIndex} = prop;
 
-  const time = moment(commentItem.newTime).format('MM-DD hh:mm');
+  const time = moment(commentItem.createTime).format('MM-DD hh:mm');
   return (
     <div className="commentItem">
       <div className="commentItem-avatar">

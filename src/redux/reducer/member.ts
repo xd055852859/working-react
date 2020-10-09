@@ -17,6 +17,11 @@ const defaultState: MemberType = {
 export const member = (state = defaultState, action: any) => {
   switch (action.type) {
     case actionTypes.GET_MEMBER_SUCCESS:
+      action.data.forEach((item: any) => {
+        if (item.avatar && item.avatar.indexOf('https') === -1) {
+          item.avatar = item.avatar.replace('http', 'https');
+        }
+      });
       return {
         ...state,
         memberArray: action.data,
@@ -28,9 +33,14 @@ export const member = (state = defaultState, action: any) => {
       };
     case actionTypes.GET_GROUP_MEMBER_SUCCESS:
       let userIndex = _.findIndex(action.data, {
-        userId:localStorage.getItem('userKey')
+        userId: localStorage.getItem('userKey'),
       });
       let groupMemberItem = action.data[userIndex];
+      action.data.forEach((item: any) => {
+        if (item.avatar && item.avatar.indexOf('https') === -1) {
+          item.avatar = item.avatar.replace('http', 'https');
+        }
+      });
       if (!groupMemberItem.config) {
         groupMemberItem.config = {
           groupKey: null,

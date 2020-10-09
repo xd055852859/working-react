@@ -29,6 +29,7 @@ const WorkingTableGroup: React.FC = (prop) => {
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const filterObject = useTypedSelector((state) => state.task.filterObject);
+  const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const [mainGroupArray, setMainGroupArray] = useState<any>([]);
   const [batchTaskVisible, setBatchTaskVisible] = useState(false);
   const [batchLabelKey, setBatchLabelKey] = useState<string | null>('');
@@ -223,7 +224,13 @@ const WorkingTableGroup: React.FC = (prop) => {
                     {groupItem.arr.map((taskItem: any, taskIndex: number) => {
                       return (
                         <React.Fragment key={'task' + taskIndex}>
-                          {taskItem.show ? <Task taskItem={taskItem} /> : null}
+                          {taskItem.show ? (
+                            <Task
+                              taskItem={taskItem}
+                              // timeSetStatus={taskIndex > groupItem.arr.length - 3}
+                              myState={item.groupObj._key == mainGroupKey}
+                            />
+                          ) : null}
                         </React.Fragment>
                       );
                     })}
