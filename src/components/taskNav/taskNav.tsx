@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { getWorkingTableTask } from '../../redux/actions/taskActions';
-import { TextField } from '@material-ui/core';
+import { TextField, Button } from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import moment from 'moment';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import api from '../../services/api';
 import DropMenu from '../common/dropMenu';
 import Dialog from '../common/dialog';
+import Loading from '../common/loading';
 import './taskNav.css';
 import plusPng from '../../assets/img/plus.png';
 import unDragPng from '../../assets/img/undrag.png';
 import ellipsisPng from '../../assets/img/ellipsis.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
-import { getGroupTask } from '../../redux/actions/taskActions';
+import { getGroupTask, setChooseKey } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
 
 interface TaskNavProps {
@@ -79,7 +80,9 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
   const [batchAddVisible, setBatchAddVisible] = useState(false);
   const [batchAddText, setBatchAddText] = useState('');
   const [deleteVisible, setDeleteVisible] = useState(false);
-
+  const [loading, setLoading] = useState(false);
+  const [addTaskVisible, setAddTaskVisible] = useState(false);
+  const [addInput, setAddInput] = useState('');
   useEffect(() => {
     if (name) {
       setLabelName(name);
@@ -97,17 +100,24 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
   ];
   const taskNavBgColor = colorIndex % 5;
   const addTask = async (groupInfo: any, labelInfo: any) => {
+    if (addInput == '') {
+      setAddTaskVisible(false);
+      return;
+    }
     if (mainGroupKey == groupInfo._key) {
       labelInfo.executorKey = user._key;
     }
+    setLoading(true);
     let addTaskRes: any = await api.task.addTask(
       groupInfo._key,
       groupInfo.groupRole,
       labelInfo._key,
-      labelInfo.executorKey
+      labelInfo.executorKey,
+      addInput
     );
     if (addTaskRes.msg === 'OK') {
       dispatch(setMessage(true, '新增任务成功', 'success'));
+      dispatch(setChooseKey(addTaskRes.result._key));
       if (headerIndex === 1) {
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
       } else if (headerIndex === 2) {
@@ -115,7 +125,10 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       } else if (headerIndex === 3) {
         dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
       }
+      setAddTaskVisible(false);
+      setLoading(false);
     } else {
+      setLoading(false);
       dispatch(setMessage(true, addTaskRes.msg, 'error'));
     }
   };
@@ -186,6 +199,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
             marginRight: headerIndex === 3 ? '15px' : '0px',
           }}
         >
+          {loading ? <Loading /> : null}
           <div className="taskNav-name-info">
             {avatar ? (
               <div
@@ -297,7 +311,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
               <div
                 className="icon-container"
                 onClick={() => {
-                  addTask(taskNavArray[0], taskNavArray[1]);
+                  setAddTaskVisible(true);
                 }}
               >
                 <img src={plusPng} className="taskNav-name-plus" />
@@ -353,6 +367,58 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                       删除频道
                     </div>
                   ) : null}
+                </div>
+              </DropMenu>
+              <DropMenu
+                visible={addTaskVisible}
+                dropStyle={{
+                  width: '100%',
+                  top: '60px',
+                  left: '0px',
+                  color: '#333',
+                }}
+                onClose={() => {
+                  setAddTaskVisible(false);
+                  setAddInput('');
+                }}
+                title={'新增任务'}
+              >
+                <div className="taskItem-plus-title taskNav-plus-title">
+                  <div className="taskItem-plus-input">
+                    <input
+                      // required
+                      placeholder="任务标题"
+                      value={addInput}
+                      autoComplete="off"
+                      onChange={(e) => {
+                        setAddInput(e.target.value);
+                      }}
+                    />
+                  </div>
+                  <div
+                    className="taskItem-plus-button"
+                    style={{ marginTop: '10px' }}
+                  >
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        addTask(taskNavArray[0], taskNavArray[1]);
+                      }}
+                      style={{ marginRight: '10px', color: '#fff' }}
+                    >
+                      确定
+                    </Button>
+                    <Button
+                      variant="contained"
+                      onClick={() => {
+                        setAddTaskVisible(false);
+                        setAddInput('');
+                      }}
+                    >
+                      取消
+                    </Button>
+                  </div>
                 </div>
               </DropMenu>
             </div>

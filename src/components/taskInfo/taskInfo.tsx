@@ -689,8 +689,8 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                           headerIndex
                         )
                       );
-                      dispatch(setMessage(true, '编辑成功', 'success'));
-                      dispatch(changeTaskInfoVisible(false));
+                      dispatch(setMessage(true, '备注保存成功', 'success'));
+                      // dispatch(changeTaskInfoVisible(false));
                     }}
                   >
                     保存
@@ -760,23 +760,51 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                   </div>
                 </div>
                 {commentIndex === 0 ? (
-                  <div
-                    className="taskInfo-comment-tab"
-                    onScroll={scrollCommentLoading}
-                  >
-                    {taskCommentArray.map(
-                      (commentItem: any, commentIndex: number) => {
-                        return (
-                          <Comment
-                            commentItem={commentItem}
-                            commentIndex={commentIndex}
-                            key={'comment' + commentIndex}
-                            commentClick={deleteCommentMsg}
-                          />
-                        );
-                      }
-                    )}
-                  </div>
+                  <React.Fragment>
+                    <div
+                      className="taskInfo-comment-tab"
+                      onScroll={scrollCommentLoading}
+                    >
+                      {taskCommentArray.map(
+                        (commentItem: any, commentIndex: number) => {
+                          return (
+                            <Comment
+                              commentItem={commentItem}
+                              commentIndex={commentIndex}
+                              key={'comment' + commentIndex}
+                              commentClick={deleteCommentMsg}
+                            />
+                          );
+                        }
+                      )}
+                    </div>
+                    <div className="taskInfo-comment-input">
+                      <TextField
+                        required
+                        id="outlined-basic"
+                        variant="outlined"
+                        label="评论"
+                        className={classes.input}
+                        onChange={changeInput}
+                        value={commentInput}
+                        onKeyDown={(e: any) => {
+                          if (e.keyCode === 13) {
+                            saveCommentMsg();
+                          }
+                        }}
+                      />
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        className={classes.button}
+                        onClick={() => {
+                          saveCommentMsg();
+                        }}
+                      >
+                        发布
+                      </Button>
+                    </div>
+                  </React.Fragment>
                 ) : (
                   <div
                     className="taskInfo-comment-tab"
@@ -796,32 +824,6 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     )}
                   </div>
                 )}
-              </div>
-              <div className="taskInfo-comment-input">
-                <TextField
-                  required
-                  id="outlined-basic"
-                  variant="outlined"
-                  label="评论"
-                  className={classes.input}
-                  onChange={changeInput}
-                  value={commentInput}
-                  onKeyDown={(e: any) => {
-                    if (e.keyCode === 13) {
-                      saveCommentMsg();
-                    }
-                  }}
-                />
-                <Button
-                  variant="contained"
-                  color="primary"
-                  className={classes.button}
-                  onClick={() => {
-                    saveCommentMsg();
-                  }}
-                >
-                  发布
-                </Button>
               </div>
             </div>
           </React.Fragment>

@@ -262,9 +262,7 @@ const auth = {
     });
   },
   getWallPapers() {
-    return request.get(PNG_URL + '/wallPaper', {
-      token: auth_token,
-    });
+    return request.get(PNG_URL + '/wallPaper');
   },
 };
 const task = {

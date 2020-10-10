@@ -21,6 +21,7 @@ import {
   changeTaskInfoVisible,
   getCalendarList,
   setTaskAction,
+  setTaskKey
 } from './redux/actions/taskActions';
 import Home from './views/home/home';
 import Content from './views/content/content';
@@ -173,7 +174,7 @@ const App: React.FC = () => {
       if (
         item.taskEndDate < nowTime + 1000 &&
         item.taskEndDate > nowTime - 1000 &&
-        item.importantStatus
+        item.finishPercent
       ) {
         setPlayAction(item);
         setPlayState(true);
@@ -188,6 +189,9 @@ const App: React.FC = () => {
           ? { backgroundImage: 'url(' + theme.backgroundImg + ')' }
           : { backgroundColor: theme.backgroundColor }
       }
+      onClick={()=>{
+        dispatch(setTaskKey(''));
+      }}
     >
       <Home />
       {headerIndex === 0 ? <Content /> : null}

@@ -6,7 +6,11 @@ import { useTypedSelector } from '../../redux/reducer/RootState';
 import { TextField } from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux';
-import { getGroupTask, setChooseKey } from '../../redux/actions/taskActions';
+import {
+  getGroupTask,
+  setChooseKey,
+  setTaskKey,
+} from '../../redux/actions/taskActions';
 import { getGroupInfo } from '../../redux/actions/groupActions';
 import { getTheme } from '../../redux/actions/authActions';
 import { setMessage } from '../../redux/actions/commonActions';
@@ -41,7 +45,7 @@ const GroupTableGroup: React.FC = (prop) => {
   const taskArray = useTypedSelector((state) => state.task.taskArray);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
-
+  const chooseKey = useTypedSelector((state) => state.task.chooseKey);
   // const [memberObj, setMemberObj] = useState<any>({});
   const [taskInfo, setTaskInfo] = useState<any>([]);
   const [taskNameArr, setTaskNameArr] = useState<any>([]);
@@ -73,7 +77,12 @@ const GroupTableGroup: React.FC = (prop) => {
       getData(labelArray, taskArray, filterObject);
     }
   }, [taskArray, filterObject, labelArray]);
-
+  useEffect(() => {
+    if (chooseKey) {
+      dispatch(setTaskKey(chooseKey));
+      dispatch(setChooseKey(''));
+    }
+  }, [chooseKey]);
   const getData = (labelArray: any, taskArray: any, filterObject: any) => {
     let taskNameArr: any = [];
     let labelExecutorArray: any = [];
@@ -409,9 +418,9 @@ const GroupTableGroup: React.FC = (prop) => {
   return (
     <div
       className="task"
-      onClick={(e: any) => {
-        dispatch(setChooseKey(''));
-      }}
+      // onClick={(e: any) => {
+      //   dispatch(setChooseKey(''));
+      // }}
     >
       {loading ? <Loading /> : null}
       <div className="task-container-profile">

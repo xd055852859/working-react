@@ -402,7 +402,7 @@ const GroupTableHeader: React.FC = (prop) => {
       </Tooltip> */}
 
       <div className="view-container">
-        {memberHeaderIndex === 0 ? (
+        {memberHeaderIndex < 3 ? (
           <React.Fragment>
             <div
               className="workingTableHeader-logo"
@@ -445,84 +445,88 @@ const GroupTableHeader: React.FC = (prop) => {
                 );
               })}
             </DropMenu>
-            <div
-              className="workingTableHeader-logo"
-              onClick={() => {
-                setFilterVisible(true);
-              }}
-              style={{ width: '40px' }}
-            >
-              <img src={filterPng} alt="" />
-            </div>
-            {filterObject.groupKey ? (
-              <Chip
-                size="small"
-                avatar={
-                  <Avatar
-                    alt=""
-                    src={
-                      filterObject.groupLogo +
-                      '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
+            {memberHeaderIndex == 0 ? (
+              <React.Fragment>
+                <div
+                  className="workingTableHeader-logo"
+                  onClick={() => {
+                    setFilterVisible(true);
+                  }}
+                  style={{ width: '40px' }}
+                >
+                  <img src={filterPng} alt="" />
+                </div>
+                {filterObject.groupKey ? (
+                  <Chip
+                    size="small"
+                    avatar={
+                      <Avatar
+                        alt=""
+                        src={
+                          filterObject.groupLogo +
+                          '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
+                        }
+                      />
                     }
+                    label={filterObject.groupName}
+                    onClick={() => {
+                      setFilterVisible(true);
+                    }}
+                    onDelete={() => deleteFilter('groupKey')}
+                    className={classes.chip}
                   />
-                }
-                label={filterObject.groupName}
-                onClick={() => {
-                  setFilterVisible(true);
-                }}
-                onDelete={() => deleteFilter('groupKey')}
-                className={classes.chip}
-              />
-            ) : null}
-            {filterObject.creatorKey ? (
-              <Chip
-                size="small"
-                avatar={
-                  <Avatar
-                    alt=""
-                    src={
-                      filterObject.creatorAvatar +
-                      '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
+                ) : null}
+                {filterObject.creatorKey ? (
+                  <Chip
+                    size="small"
+                    avatar={
+                      <Avatar
+                        alt=""
+                        src={
+                          filterObject.creatorAvatar +
+                          '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
+                        }
+                      />
                     }
+                    label={'创建人: ' + filterObject.creatorName}
+                    onClick={() => {
+                      setFilterVisible(true);
+                    }}
+                    onDelete={() => deleteFilter('creatorKey')}
+                    className={classes.chip}
                   />
-                }
-                label={'创建人: ' + filterObject.creatorName}
-                onClick={() => {
-                  setFilterVisible(true);
-                }}
-                onDelete={() => deleteFilter('creatorKey')}
-                className={classes.chip}
-              />
-            ) : null}
-            {filterObject.executorKey ? (
-              <Chip
-                size="small"
-                avatar={
-                  <Avatar
-                    alt=""
-                    src={
-                      filterObject.executorAvatar +
-                      '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
+                ) : null}
+                {filterObject.executorKey ? (
+                  <Chip
+                    size="small"
+                    avatar={
+                      <Avatar
+                        alt=""
+                        src={
+                          filterObject.executorAvatar +
+                          '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
+                        }
+                      />
                     }
+                    label={'执行人: ' + filterObject.executorName}
+                    onClick={() => {
+                      setFilterVisible(true);
+                    }}
+                    onDelete={() => deleteFilter('executorKey')}
+                    className={classes.chip}
                   />
-                }
-                label={'执行人: ' + filterObject.executorName}
-                onClick={() => {
-                  setFilterVisible(true);
-                }}
-                onDelete={() => deleteFilter('executorKey')}
-                className={classes.chip}
-              />
-            ) : null}
-            {filterObject.filterType.length > 0 ? (
-              <Chip
-                size="small"
-                label={filterObject.filterType.join(' / ')}
-                className={classes.chip}
-                onClick={() => {
-                  setFilterVisible(true);
-                }}
-              />
+                ) : null}
+                {filterObject.filterType.length > 0 ? (
+                  <Chip
+                    size="small"
+                    label={filterObject.filterType.join(' / ')}
+                    className={classes.chip}
+                    onClick={() => {
+                      setFilterVisible(true);
+                    }}
+                  />
+                ) : null}
+              </React.Fragment>
             ) : null}
             <DropMenu
               visible={filterVisible}

@@ -37,7 +37,7 @@ const GridTree: React.FC<GridTreeProps> = (props) => {
   const lineTaskLeft = lineLeft + 15;
   useEffect(() => {
     if (taskItem) {
-      console.log(taskNavDay);
+      console.log('xxxxxxxxxxxxxxxxxxxxx', taskItem);
       setGridTaskItem(_.cloneDeep(taskItem));
       setGridTaskNavDay(_.cloneDeep(taskNavDay));
     }
@@ -91,7 +91,7 @@ const GridTree: React.FC<GridTreeProps> = (props) => {
   };
   return (
     <React.Fragment>
-      {gridTaskItem ? (
+      {gridTaskItem? (
         <React.Fragment>
           <div
             className="grid-title"
@@ -128,7 +128,7 @@ const GridTree: React.FC<GridTreeProps> = (props) => {
               })}
             </div>
           </div>
-          {gridTaskItem.children.map((child: any, index: number) => {
+          {/* {gridTaskItem.children.map((child: any, index: number) => {
             return (
               <React.Fragment>
                 {child ? (
@@ -150,7 +150,7 @@ const GridTree: React.FC<GridTreeProps> = (props) => {
                 ) : null}
               </React.Fragment>
             );
-          })}
+          })} */}
         </React.Fragment>
       ) : null}
     </React.Fragment>

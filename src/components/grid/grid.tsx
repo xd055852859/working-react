@@ -8,6 +8,7 @@ import moment from 'moment';
 import Loading from '../common/loading';
 import './grid.css';
 import api from '../../services/api';
+import format from '../../components/common/format';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import Tooltip from '../common/tooltip';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
@@ -25,8 +26,11 @@ const Grid: React.FC<GridProps> = (prop) => {
   );
   const targetUserKey = useTypedSelector((state) => state.auth.targetUserKey);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
+  const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const memberArray = useTypedSelector((state) => state.member.memberArray);
+  const taskArray = useTypedSelector((state) => state.task.taskArray);
+  const labelArray = useTypedSelector((state) => state.task.labelArray);
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const [gridGroupArray, setGridGroupArray] = useState<any>([]);
   const [allGridGroupArray, setAllGridGroupArray] = useState<any>(null);
@@ -41,11 +45,20 @@ const Grid: React.FC<GridProps> = (prop) => {
   const [loading, setLoading] = useState(false);
   const labelRef: React.RefObject<any> = useRef();
   useEffect(() => {
-    if (user && user._key) {
+    if (headerIndex == 3 && groupInfo && labelArray && taskArray) {
+      let groupArray: any = _.cloneDeep([groupInfo]);
+      groupArray[0].labelArray = _.cloneDeep(labelArray);
+      let cardArray: any = _.cloneDeep([taskArray]).map((item: any) => {
+        item.children = [];
+        // return _.cloneDeep(format.formatFilter(item, filterObject));
+        return item
+      });
+      getGroupData(groupArray, cardArray);
+    } else {
       setLoading(true);
       getGridData();
     }
-  }, [user, targetUserInfo, headerIndex]);
+  }, [headerIndex, groupInfo, labelArray, taskArray, filterObject]);
   useEffect(() => {
     if (labelRef.current) {
       let clientWidth = labelRef.current.clientWidth;
@@ -53,13 +66,13 @@ const Grid: React.FC<GridProps> = (prop) => {
     }
   }, [labelRef.current]);
   useEffect(() => {
-    if (taskNavDate.length > 0 && allGridTaskArray) {
+    if (allGridTaskArray) {
       getGroupData(
         _.cloneDeep(allGridGroupArray),
         _.cloneDeep(allGridTaskArray)
       );
     }
-  }, [taskNavDate, allGridTaskArray]);
+  }, [allGridTaskArray]);
 
   const getGridData = async () => {
     let obj: any = {
@@ -76,7 +89,7 @@ const Grid: React.FC<GridProps> = (prop) => {
     }
     let gridRes: any = await api.task.allGridGroupTask(obj);
     if (gridRes.msg === 'OK') {
-      let gridObj = _.cloneDeep(gridRes.result);
+      let gridObj: any = _.cloneDeep(gridRes.result);
       let newAllGridChildArray: any = [];
       let newAllGridTaskArray: any = [];
       let newAllGridGroupArray: any = [];
@@ -124,7 +137,6 @@ const Grid: React.FC<GridProps> = (prop) => {
     }
   };
   const formatDate = () => {
-    console.log('');
     let newTaskNavDate: any = [];
     let newTaskNavDay: any = [];
     let newTaskNavWeek: any = [];
@@ -141,6 +153,7 @@ const Grid: React.FC<GridProps> = (prop) => {
     setTaskNavDay(newTaskNavDay);
     setTaskNavDate(newTaskNavDate);
     setTaskNavWeek(newTaskNavWeek);
+    return [newTaskNavDay, newTaskNavDate, newTaskNavWeek];
   };
   const formatPerson = () => {
     let newTaskNavDate: any = [];
@@ -162,7 +175,7 @@ const Grid: React.FC<GridProps> = (prop) => {
     });
     setTaskNavDay(newTaskNavDay);
     setTaskNavDate(newTaskNavDate);
-
+    return [newTaskNavDay, newTaskNavDate];
     // this.$nextTick(() => {
     //   avatarHeight = document.querySelectorAll(
     //     ".grid-label-td"
@@ -171,7 +184,13 @@ const Grid: React.FC<GridProps> = (prop) => {
   };
   const getGroupData = (groupArray: any, taskArray: any) => {
     let arr: any = [];
-    let newTaskNavDay = _.cloneDeep(taskNavDay);
+    let newTaskNavDay: any = [];
+    if (taskNavDay) {
+      newTaskNavDay = _.cloneDeep(taskNavDay);
+    } else {
+      newTaskNavDay = formatData()[0];
+    }
+    console.log('XXXXXXXXXXXXXXX', newTaskNavDay);
     let newGridGroupArray: any = [];
     if (groupArray.length > 0 && taskArray.length > 0) {
       taskArray.forEach((item: any, index: number) => {
@@ -180,6 +199,7 @@ const Grid: React.FC<GridProps> = (prop) => {
           tabShow: true,
         };
         item.forEach((groupItem: any, groupIndex: number) => {
+          console.log('22222222222', groupItem);
           if (groupItem.labelKey) {
             if (!arr[index][groupItem.labelKey]) {
               let labelIndex = _.findIndex(groupArray[index].labelArray, {
@@ -319,7 +339,7 @@ const Grid: React.FC<GridProps> = (prop) => {
     setTaskNavDay(newTaskNavDay);
   };
   const formatData = () => {
-    gridState ? formatDate() : formatPerson();
+    return gridState ? formatDate() : formatPerson();
   };
   // playTreeAudio() {
   //   console.log("????????", this.$refs.treeAudio);

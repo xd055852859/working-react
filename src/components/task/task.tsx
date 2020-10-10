@@ -66,7 +66,8 @@ const Task: React.FC<TaskProps> = (props) => {
     myState,
   } = props;
   const taskKey = useTypedSelector((state) => state.task.taskKey);
-  const chooseKey = useTypedSelector((state) => state.task.chooseKey);
+  // const addKey = useTypedSelector((state) => state.task.addKey);
+
   const user = useTypedSelector((state) => state.auth.user);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
@@ -148,9 +149,27 @@ const Task: React.FC<TaskProps> = (props) => {
     }
   }, [taskItem]);
   useEffect(() => {
-    dispatch(setTaskKey('0'));
+    // dispatch(setTaskKey('0'));
     // dispatch(setChooseKey('0'));
   }, [headerIndex, groupKey]);
+  useEffect(() => {
+    console.log(titleRef);
+    if (titleRef.current) {
+      if (titleRef.current.setSelectionRange) {
+        titleRef.current.setSelectionRange(
+          titleRef.current.value.length,
+          titleRef.current.value.length
+        );
+      } else {
+        let range = titleRef.current.createTextRange();
+        range.moveStart('character', titleRef.current.value.length);
+        range.moveEnd('character', titleRef.current.value.length);
+        range.select();
+      }
+      titleRef.current.focus();
+    }
+    // dispatch(setChooseKey('0'));
+  }, [titleRef, taskKey, taskDetail]);
 
   useEffect(() => {
     if (taskDetail && document.getElementById('taskDetail' + taskDetail._key)) {
@@ -167,7 +186,7 @@ const Task: React.FC<TaskProps> = (props) => {
   };
   const chooseTask = (e: React.MouseEvent) => {
     dispatch(setTaskKey(taskItem._key));
-    dispatch(setChooseKey(taskItem._key));
+    // dispatch(setChooseKey(taskItem._key));
     // let dom: any = document.getElementById('taskDetailText' + taskItem._key);
     // dom.focus()
   };
@@ -186,13 +205,12 @@ const Task: React.FC<TaskProps> = (props) => {
         );
         setEditState(false);
         setTaskExecutorShow(false);
-        console.log('????????', newTaskDetail);
         dispatch(setTaskInfo(newTaskDetail));
       }
       if (changeTask) {
         changeTask(newTaskDetail);
       }
-      dispatch(setTaskKey(''));
+      // dispatch(setTaskKey(''));
       setTaskExecutorShow(false);
       setTimeSetShow(false);
       // setAddTaskVisible(false);
@@ -211,9 +229,15 @@ const Task: React.FC<TaskProps> = (props) => {
     setNewDetail(newTaskDetail);
   };
   const changeTitle = (e: any) => {
-    taskDetail.title = e.target.value;
+    let newTaskDetail = _.cloneDeep(taskDetail);
+    newTaskDetail.title = e.target.value;
     setEditState(true);
-    setNewDetail(taskDetail);
+    setNewDetail(newTaskDetail);
+  };
+  const changeTextArea = (e: any) => {
+    if (e.keyCode === 13) {
+      setTextHeight(textHeight + 17);
+    }
   };
   const changeImportant = (importantStatus: number) => {
     taskDetail.importantStatus = importantStatus;
@@ -300,6 +324,7 @@ const Task: React.FC<TaskProps> = (props) => {
     if (addTaskRes.msg === 'OK') {
       setAddTaskVisible(false);
       setAddInput('');
+      setChooseKey(addTaskRes.result._key);
       dispatch(setMessage(true, '新增成功', 'success'));
       dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
     } else {
@@ -439,8 +464,17 @@ const Task: React.FC<TaskProps> = (props) => {
                       <textarea
                         value={taskDetail.title}
                         onChange={changeTitle}
-                        style={{ height: textHeight + 'px' }}
+                        onKeyDown={changeTextArea}
+                        style={{
+                          height: textHeight + 'px',
+                          textDecoration:
+                            taskDetail.finishPercent === 2
+                              ? 'line-through'
+                              : '',
+                        }}
+                        // style={{ height: textHeight + 'px' }}
                         id={'taskDetailText' + taskDetail._key}
+                        ref={titleRef}
                       />
                     ) : (
                       <div

@@ -2,7 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import './workingTableLabel.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
-import { getWorkingTableTask } from '../../redux/actions/taskActions';
+import {
+  getWorkingTableTask,
+  setTaskKey,
+  setChooseKey,
+} from '../../redux/actions/taskActions';
 import TaskNav from '../../components/taskNav/taskNav';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
 import { setMessage } from '../../redux/actions/commonActions';
@@ -19,6 +23,7 @@ const WorkingTableLabel: React.FC = (prop) => {
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const userKey = useTypedSelector((state) => state.auth.userKey);
   const targetUserKey = useTypedSelector((state) => state.auth.targetUserKey);
+  const chooseKey = useTypedSelector((state) => state.task.chooseKey);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const filterObject = useTypedSelector((state) => state.task.filterObject);
@@ -154,6 +159,12 @@ const WorkingTableLabel: React.FC = (prop) => {
       setMainLabelArray(labelArray);
     }
   }, [memberHeaderIndex, mainLabelArray.length]);
+  useEffect(() => {
+    if (chooseKey) {
+      dispatch(setTaskKey(chooseKey));
+      dispatch(setChooseKey(''));
+    }
+  }, [chooseKey]);
   const sortArr = (arr: object[], item: any) => {
     arr.push(item);
     arr = _.sortBy(arr, ['taskEndDate']).reverse();

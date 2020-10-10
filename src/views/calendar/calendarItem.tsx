@@ -95,7 +95,7 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
   const [calendarInput, setCalendarInput] = useState('新日程');
   const [calendarDay, setCalendarDay] = useState(moment());
   const [calendarHour, setCalendarHour] = useState(moment().format('HH:mm'));
-  const [calendarCheck, setCalendarCheck] = useState(false);
+  const [calendarCheck, setCalendarCheck] = useState(true);
   const [calendarIndex, setCalendarIndex] = useState(0);
   const [calendarColorVisible, setCalendarColorVisible] = useState(false);
 
@@ -107,12 +107,12 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
   useEffect(() => {
     if (taskItem) {
       setCalendarInput(taskItem.title);
-      setCalendarCheck(taskItem.importantStatus ? true : false);
+      setCalendarCheck(taskItem.finishPercent ? true : false);
       setCalendarHour(moment(taskItem.taskEndDate).format('HH:mm'));
       setCalendarIndex(taskItem.taskType);
     } else {
       setCalendarInput('新日程');
-      setCalendarCheck(false);
+      setCalendarCheck(true);
       setCalendarHour(moment().format('HH:mm'));
       setCalendarIndex(0);
     }
@@ -128,7 +128,7 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
     if (newTaskItem) {
       dispatch(setMessage(true, '编辑日程成功', 'success'));
       newTaskItem.title = calendarInput;
-      newTaskItem.importantStatus = calendarCheck ? 1 : 0;
+      newTaskItem.finishPercent = calendarCheck ? 1 : 0;
       newTaskItem.taskEndDate = calendarTime;
       newTaskItem.taskType = calendarIndex;
       await dispatch(

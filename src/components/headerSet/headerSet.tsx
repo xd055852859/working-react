@@ -83,7 +83,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const [labelArray, setLabelArray] = useState<any>([]);
   const [addInput, setAddInput] = useState('');
   const [userVisible, setUserVisible] = useState(false);
-
+  const [imgBigArr2, setImgBigArr2] = useState<any>([]);
   const color1 = [
     '#46558C',
     '#9C5D9E',
@@ -104,34 +104,34 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     '#D2F1F1',
     '#E7ECF0',
   ];
-  const imgBigArr2 = [
-    'https://cdn-icare.qingtime.cn/1596679428976_8Big@1x.png',
-    'https://cdn-icare.qingtime.cn/1596679446272_9Big@1x.png',
-    'https://cdn-icare.qingtime.cn/1596679461595_10Big@1x.png',
+  // const imgBigArr2 = [
+    // 'https://cdn-icare.qingtime.cn/1596679428976_8Big@1x.png',
+    // 'https://cdn-icare.qingtime.cn/1596679446272_9Big@1x.png',
+    // 'https://cdn-icare.qingtime.cn/1596679461595_10Big@1x.png',
     // "https://cdn-icare.qingtime.cn/1596679637933_11Big@1x.png",
-    'https://cdn-icare.qingtime.cn/1596679674511_12Big@1x.png',
-    'https://cdn-icare.qingtime.cn/1596679728933_画板.jpg',
-    'https://cdn-icare.qingtime.cn/1596679825925_画板备份2.jpg',
-    'https://cdn-icare.qingtime.cn/1596679850655_画板备份3.jpg',
-    'https://cdn-icare.qingtime.cn/1596679867626_画板备份4.jpg',
-    'https://cdn-icare.qingtime.cn/1596679885918_画板备份5.jpg',
-    'https://cdn-icare.qingtime.cn/1596679903471_画板备份6.jpg',
-    'https://cdn-icare.qingtime.cn/1596679925993_画板备份7.jpg',
-    'https://cdn-icare.qingtime.cn/1596679943102_画板备份8.jpg',
+    // 'https://cdn-icare.qingtime.cn/1596679674511_12Big@1x.png',
+    // 'https://cdn-icare.qingtime.cn/1596679728933_画板.jpg',
+    // 'https://cdn-icare.qingtime.cn/1596679825925_画板备份2.jpg',
+    // 'https://cdn-icare.qingtime.cn/1596679850655_画板备份3.jpg',
+    // 'https://cdn-icare.qingtime.cn/1596679867626_画板备份4.jpg',
+    // 'https://cdn-icare.qingtime.cn/1596679885918_画板备份5.jpg',
+    // 'https://cdn-icare.qingtime.cn/1596679903471_画板备份6.jpg',
+    // 'https://cdn-icare.qingtime.cn/1596679925993_画板备份7.jpg',
+    // 'https://cdn-icare.qingtime.cn/1596679943102_画板备份8.jpg',
     // "https://cdn-icare.qingtime.cn/1596679963941_画板备份9.jpg",
-    'https://cdn-icare.qingtime.cn/1596679987203_画板备份10.jpg',
-    'https://cdn-icare.qingtime.cn/1596680027535_画板备份11.jpg',
-    'https://cdn-icare.qingtime.cn/1596680077694_画板备份12.jpg',
-    'https://cdn-icare.qingtime.cn/1596680095898_画板备份13.jpg',
-    'https://cdn-icare.qingtime.cn/1596680119545_画板备份14.jpg',
-    'https://cdn-icare.qingtime.cn/1596679772476_画板备份.jpg',
+    // 'https://cdn-icare.qingtime.cn/1596679987203_画板备份10.jpg',
+    // 'https://cdn-icare.qingtime.cn/1596680027535_画板备份11.jpg',
+    // 'https://cdn-icare.qingtime.cn/1596680077694_画板备份12.jpg',
+    // 'https://cdn-icare.qingtime.cn/1596680095898_画板备份13.jpg',
+    // 'https://cdn-icare.qingtime.cn/1596680119545_画板备份14.jpg',
+    // 'https://cdn-icare.qingtime.cn/1596679772476_画板备份.jpg',
     // imgBig26
-  ];
+  // ];
   const limit = 10;
   useEffect(() => {
     if (user) {
       setAvatar(user.profile.avatar);
-      // getPng();
+      getPng();
     }
   }, [user]);
   useEffect(() => {
@@ -146,9 +146,14 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     }
   }, [searchInput]);
   const getPng = async () => {
+    let newImgBigArr2: any = [];
     let res: any = await api.auth.getWallPapers();
     if (res.msg === 'OK') {
       console.log(res);
+      res.data.forEach((item: any) => {
+        newImgBigArr2.push(item.url);
+      });
+      setImgBigArr2(newImgBigArr2);
     } else {
       dispatch(setMessage(true, res.msg, 'error'));
     }
