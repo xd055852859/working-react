@@ -25,6 +25,8 @@ import taskUnfinishPng from '../../assets/img/taskUnfinish.png';
 import taskClosePng from '../../assets/img/taskClose.png';
 import ellipsisbPng from '../../assets/img/ellipsisb.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
+import downArrowbPng from '../../assets/img/downArrowb.png';
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import api from '../../services/api';
 import { setMessage } from '../../redux/actions/commonActions';
 import {
@@ -33,6 +35,7 @@ import {
   setChooseKey,
 } from '../../redux/actions/taskActions';
 import DropMenu from '../common/dropMenu';
+import Dialog from '../common/dialog';
 import TimeSet from '../common/timeSet';
 import Editor from '../common/Editor';
 interface TaskInfoProps {}
@@ -82,7 +85,8 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     (state) => state.task.taskInfoVisible
   );
   const user = useTypedSelector((state) => state.auth.user);
-
+  const groupArray = useTypedSelector((state) => state.group.groupArray);
+  const [labelArray, setLabelArray] = useState<any>([]);
   const [taskItem, setTaskItem] = useState<any>(null);
   const [startDate, setStartDate] = React.useState<Date | null>(new Date());
   const [endDate, setEndDate] = React.useState<Date | null>(new Date());
@@ -100,13 +104,17 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   const [hourVisible, setHourVisible] = useState(false);
   const [executorVisible, setExecutorVisible] = useState(false);
   const [ellipsisVisible, setEllipsisVisible] = useState(false);
+  const [moveTaskVisible, setMoveTaskVisible] = useState(false);
   const [taskTypeIndex, setTaskTypeIndex] = useState(0);
   const [taskMemberArray, setTaskMemberArray] = useState<any>([]);
   const [countDownTime, setCountDownTime] = useState(0);
   const [countDownState, setCountDownState] = useState(false);
   const [countInterval, setCountInterval] = useState<any>(null);
   const [editable, setEditable] = useState(false);
-
+  const [groupIndex, setGroupIndex] = useState(0);
+  const [groupVisible, setGroupVisible] = useState(false);
+  const [labelIndex, setLabelIndex] = useState(0);
+  const [labelVisible, setLabelVisible] = useState(false);
   const color = [
     '#6FD29A',
     '#21ABE4',
@@ -137,7 +145,6 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       if (taskInfoVisible && !taskInfo) {
         getTaskItem();
       } else if (taskInfo) {
-        console.log(taskInfo);
         changeTaskInfo(taskInfo);
       }
     }
@@ -146,7 +153,11 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     };
   }, [chooseKey, taskInfoVisible, taskInfo]);
   useEffect(() => {
-    console.log('?????????', editState);
+    if (groupArray && groupArray.length > 0) {
+      getLabelArray(groupArray[0]._key);
+    }
+  }, [groupArray]);
+  useEffect(() => {
     if (editState) {
       let newTaskItem: any = stopCountdown();
       dispatch(
@@ -387,11 +398,24 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     copy(redirect + '/?shareKey=' + chooseKey);
     dispatch(setMessage(true, '复制链接任务成功', 'success'));
   };
+  const getLabelArray = async (groupKey: string) => {
+    let newLabelArray = [
+      { _key: null, cardLabelName: 'ToDo', executorKey: user._key },
+    ];
+    let labelRes: any = await api.group.getLabelInfo(groupKey);
+    if (labelRes.msg === 'OK') {
+      newLabelArray.push(...labelRes.result);
+      setLabelArray(newLabelArray);
+    } else {
+      dispatch(setMessage(true, labelRes.msg, 'error'));
+    }
+  };
   return (
     // changeTaskInfoVisible
     <ClickAwayListener
       onClickAway={() => {
         // dispatch(changeTaskInfoVisible(false));
+        dispatch(editTask({ key: taskItem._key, ...taskItem }, headerIndex));
       }}
     >
       <div className="taskInfo">
@@ -520,6 +544,167 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                       }}
                     >
                       分享任务
+                    </div>
+                    <div
+                      className="dropMenu-item"
+                      onClick={() => {
+                        setMoveTaskVisible(true);
+                      }}
+                    >
+                      移动任务
+                      <Dialog
+                        visible={moveTaskVisible}
+                        dialogStyle={{
+                          width: '320px',
+                          height: '150px',
+                          position: 'fixed',
+                          top: '129px',
+                          right: '158px',
+                          overflow: 'visible',
+                        }}
+                        onClose={() => {
+                          setMoveTaskVisible(false);
+                        }}
+                        showMask={false}
+                        footer={false}
+                      >
+                        {labelArray && labelArray.length > 0 ? (
+                          <div className="addTask-container">
+                            <div
+                              className="addTask-item"
+                              onClick={() => {
+                                setGroupVisible(true);
+                              }}
+                            >
+                              <div className="addTask-avatar">
+                                <img
+                                  src={
+                                    groupArray[groupIndex].groupLogo
+                                      ? groupArray[groupIndex].groupLogo
+                                      : defaultGroupPng
+                                  }
+                                  alt=""
+                                />
+                              </div>
+                              <div>{groupArray[groupIndex].groupName}</div>
+                              <img
+                                src={downArrowbPng}
+                                alt=""
+                                className="addTask-logo"
+                              />
+                              {groupVisible ? (
+                                <DropMenu
+                                  visible={groupVisible}
+                                  dropStyle={{
+                                    width: '300px',
+                                    height: '350px',
+                                    top: '50px',
+                                    overflow: 'auto',
+                                  }}
+                                  onClose={() => {
+                                    setGroupVisible(false);
+                                  }}
+                                  title={'选择项目'}
+                                >
+                                  <React.Fragment>
+                                    {groupArray.map(
+                                      (item: any, index: number) => {
+                                        return (
+                                          <div
+                                            className="chooseItem"
+                                            onClick={(e: any) => {
+                                              setGroupIndex(index);
+                                              getLabelArray(item._key);
+                                              setGroupVisible(false);
+                                              e.stopPropagation();
+                                              changeTaskItem(
+                                                'groupKey',
+                                                item._key
+                                              );
+                                            }}
+                                            key={'group' + index}
+                                          >
+                                            <div className="addTask-avatar">
+                                              <img
+                                                src={
+                                                  item.groupLogo
+                                                    ? item.groupLogo
+                                                    : defaultGroupPng
+                                                }
+                                                alt=""
+                                              />
+                                            </div>
+                                            <div>{item.groupName}</div>
+                                          </div>
+                                        );
+                                      }
+                                    )}
+                                  </React.Fragment>
+                                </DropMenu>
+                              ) : null}
+                            </div>
+                            <div
+                              className="addTask-item"
+                              onClick={() => {
+                                setLabelVisible(true);
+                              }}
+                            >
+                              <div>{labelArray[labelIndex].cardLabelName}</div>
+                              <img
+                                src={downArrowbPng}
+                                alt=""
+                                className="addTask-logo"
+                              />
+                              {labelVisible ? (
+                                <DropMenu
+                                  visible={labelVisible}
+                                  dropStyle={{
+                                    width: '100%',
+                                    height: '350px',
+                                    top: '50px',
+                                    overflow: 'auto',
+                                  }}
+                                  onClose={() => {
+                                    setLabelVisible(false);
+                                  }}
+                                  title={'选择频道'}
+                                >
+                                  <React.Fragment>
+                                    {labelArray.map(
+                                      (item: any, index: number) => {
+                                        return (
+                                          <div
+                                            className="chooseItem"
+                                            onClick={(e: any) => {
+                                              setLabelIndex(index);
+                                              setLabelVisible(false);
+                                              e.stopPropagation();
+                                              changeTaskItem(
+                                                'labelKey',
+                                                item._key
+                                              );
+                                            }}
+                                            key={'label' + index}
+                                          >
+                                            <div
+                                              style={{
+                                                textAlign: 'center',
+                                                width: '100%',
+                                              }}
+                                            >
+                                              {item.cardLabelName}
+                                            </div>
+                                          </div>
+                                        );
+                                      }
+                                    )}
+                                  </React.Fragment>
+                                </DropMenu>
+                              ) : null}
+                            </div>
+                          </div>
+                        ) : null}
+                      </Dialog>
                     </div>
                   </DropMenu>
                 </div>

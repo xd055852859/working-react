@@ -10,11 +10,15 @@ import searchPng from '../../assets/img/search.png';
 import searchbPng from '../../assets/img/searchb.png';
 import sortPng from '../../assets/img/contact-sort.png';
 import addPng from '../../assets/img/contact-add.png';
+import addGroup1Png from '../../assets/img/addGroup1.png';
+import addGroup2Png from '../../assets/img/addGroup2.png';
+import addGroup3Png from '../../assets/img/addGroup3.png';
 import addPersonPng from '../../assets/img/addPerson.png';
 import downArrowbPng from '../../assets/img/downArrowb.png';
 import Contact from '../contact/contact';
 import Dialog from '../../components/common/dialog';
 import GroupSet from './groupSet';
+import GroupModel from './groupModel';
 import DropMenu from '../../components/common/dropMenu';
 import api from '../../services/api';
 import {
@@ -97,6 +101,8 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   const [memberSortVisible, setMemberSortVisible] = React.useState(false);
   const [groupSortVisible, setGroupSortVisible] = React.useState(false);
   const [addVisible, setAddVisible] = React.useState(false);
+  const [addGroupVisible, setAddGroupVisible] = React.useState(false);
+  const [addModelVisible, setAddModelVisible] = React.useState(false);
   const [searchList, setSearchList] = React.useState<any>([]);
   const [mainSearchList, setMainSearchList] = React.useState<any>([]);
   const [searchInput, setSearchInput] = React.useState('');
@@ -104,6 +110,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   const [joinType, setJoinType] = React.useState('');
   const [searchIndex, setSearchIndex] = React.useState(0);
   const [searchItem, setSearchItem] = React.useState<any>(null);
+  const [templateKey, setTemplateKey] = React.useState<any>(null);
   const [isHasPassword, setIsHasPassword] = React.useState(false);
   const [inviteVisible, setInviteVisible] = React.useState(false);
   const [page, setPage] = React.useState(1);
@@ -350,6 +357,9 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   };
 
   const saveGroupSet = (obj: any) => {
+    if (!isNaN(templateKey)) {
+      obj.templateKey = templateKey;
+    }
     setGroupObj(obj);
   };
   const addGroup = async () => {
@@ -522,7 +532,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
               alt=""
               className="add-icon"
               onClick={() => {
-                setAddVisible(true);
+                setAddGroupVisible(true);
               }}
             />
           ) : null}
@@ -536,7 +546,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                 setSearchList([]);
               }}
             />
-          ) : null} */}
+          ) : null} 
           <DropMenu
             visible={memberSortVisible || groupSortVisible}
             dropStyle={{
@@ -578,7 +588,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                 活力值排序
               </div>
             </div>
-          </DropMenu>
+          </DropMenu>*/}
           <DropMenu
             visible={searchVisible}
             onClose={() => {
@@ -753,6 +763,55 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
               )}
             </div>
           </DropMenu>
+          <DropMenu
+            visible={addGroupVisible}
+            onClose={() => {
+              setAddGroupVisible(false);
+            }}
+            dropStyle={{
+              width: 'calc(100% - 20px)',
+              height: '255px',
+              top: '40px',
+              left: '10px',
+              color: '#333',
+              zIndex: '10',
+              borderRadius: '8px',
+            }}
+            title={'新建项目'}
+          >
+            <div className="addGroup-container">
+              <div
+                onClick={() => {
+                  setAddVisible(true);
+                }}
+                className="addGroup-item"
+              >
+                <img className="addGroup-item-img" src={addGroup1Png} alt="" />
+                <div className="addGroup-item-title">
+                  <div>空白模板</div>
+                  <div>
+                    创建一个全新的项目。项目的成员、频道、属性可以创建以后自行调整。
+                  </div>
+                </div>
+              </div>
+
+              <div
+                onClick={() => {
+                  setAddModelVisible(true);
+                }}
+                className="addGroup-item"
+              >
+                <img className="addGroup-item-img" src={addGroup2Png} alt="" />
+                <div className="addGroup-item-title">
+                  <div>通过模板</div>
+                  <div>
+                    通过模板创建一个项目。项目的成员、频道、属性可以创建以后自行调整。
+                  </div>
+                </div>
+              </div>
+              {/* <div><img src={addGroup3Png} alt=""/><div><div></div><div></div></div></div> */}
+            </div>
+          </DropMenu>
           <Dialog
             visible={inviteVisible}
             onClose={() => {
@@ -824,6 +883,23 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             dialogStyle={{ width: '750px', height: '700px' }}
           >
             <GroupSet saveGroupSet={saveGroupSet} type={'创建'} />
+          </Dialog>
+          <Dialog
+            visible={addModelVisible}
+            onClose={() => {
+              setAddModelVisible(false);
+            }}
+            title={'模板创群'}
+            dialogStyle={{ width: '70%', height: '80%' }}
+            footer={false}
+          >
+            <GroupModel
+              toGroupSet={(key: string) => {
+                setAddVisible(true);
+                setAddModelVisible(false);
+                setTemplateKey(key);
+              }}
+            />
           </Dialog>
         </div>
       </ClickAwayListener>

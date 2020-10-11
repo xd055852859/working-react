@@ -126,6 +126,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
         dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
       }
       setAddTaskVisible(false);
+      setAddInput('');
       setLoading(false);
     } else {
       setLoading(false);

@@ -211,4 +211,10 @@
   right: 0px;
   z-index: 30;
 }
-.taskInfo [contenteditable]:focus{outline: none;}
+.taskInfo [contenteditable]:focus {
+  outline: none;
+}
+.taskInfo .addTask-item {
+  width: 100%;
+  justify-content: space-between;
+}

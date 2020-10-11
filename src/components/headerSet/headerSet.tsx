@@ -85,6 +85,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const [userVisible, setUserVisible] = useState(false);
   const [imgBigArr2, setImgBigArr2] = useState<any>([]);
   const color1 = [
+    '#3C3C3C',
     '#46558C',
     '#9C5D9E',
     '#C14C6B',

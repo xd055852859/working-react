@@ -51,6 +51,8 @@
   display: flex;
   flex-wrap: wrap;
   align-content: space-between;
+  padding:0px 17px;
+  box-sizing: border-box;
 }
 .contact-name-title {
   width: 100px;

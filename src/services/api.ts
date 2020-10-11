@@ -689,6 +689,20 @@ const group = {
       targetUGKey: targetUGKey,
     });
   },
+  //获取创群模板
+  getTemplateTypeList() {
+    return request.post(HOME_URL + '/group/getTemplateTypeList', {
+      token: auth_token,
+    });
+  },
+  getTemplateListAccordingType(type: string, curPage: number) {
+    return request.post(HOME_URL + '/group/getTemplateListAccordingType', {
+      token: auth_token,
+      type: type,
+      curPage: curPage,
+      perPage: 8,
+    });
+  },
 };
 export default {
   auth,

@@ -24,7 +24,7 @@ const defaultState: AuthType = {
   token: null,
   uploadToken: null,
   theme: {
-    backgroundColor: '#46558C',
+    backgroundColor: '#3C3C3C',
     backgroundImg: '',
     mainVisible: true,
     messageVisible: false,
@@ -92,7 +92,7 @@ export const auth = (state = defaultState, action: any) => {
       };
     case actionTypes.GET_THEME_SUCCESS:
       if (!action.data.backgroundColor && !action.data.backgroundImg) {
-        action.data.backgroundColor = '#46558C';
+        action.data.backgroundColor = '#3C3C3C';
       }
       action.data.mainVisible =
         action.data.mainVisible === undefined ? true : action.data.mainVisible;
