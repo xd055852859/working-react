@@ -37,7 +37,6 @@ const GridTree: React.FC<GridTreeProps> = (props) => {
   const lineTaskLeft = lineLeft + 15;
   useEffect(() => {
     if (taskItem) {
-      console.log('xxxxxxxxxxxxxxxxxxxxx', taskItem);
       setGridTaskItem(_.cloneDeep(taskItem));
       setGridTaskNavDay(_.cloneDeep(taskNavDay));
     }
@@ -47,7 +46,6 @@ const GridTree: React.FC<GridTreeProps> = (props) => {
     // this.$emit("playTreeAudio");
     let newGridTaskItem = _.cloneDeep(gridTaskItem);
     let newGridTaskNavDay = _.cloneDeep(gridTaskNavDay);
-    console.log(newGridTaskItem);
     let taskNavIndex = _.findIndex(newGridTaskItem.dayArr, (item: any) => {
       return item !== '';
     });

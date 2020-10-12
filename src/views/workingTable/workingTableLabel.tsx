@@ -8,21 +8,18 @@ import {
   setChooseKey,
 } from '../../redux/actions/taskActions';
 import TaskNav from '../../components/taskNav/taskNav';
-import { setHeaderIndex } from '../../redux/actions/memberActions';
+// import { setHeaderIndex } from '../../redux/actions/memberActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import format from '../../components/common/format';
 import Task from '../../components/task/task';
-import DropMenu from '../../components/common/dropMenu';
+// import DropMenu from '../../components/common/dropMenu';
 import _ from 'lodash';
 import api from '../../services/api';
 // import defaultPersonPng from '../../assets/img/defaultPerson.png'
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
-import ellipsisPng from '../../assets/img/ellipsis.png';
 const WorkingTableLabel: React.FC = (prop) => {
   const user = useTypedSelector((state) => state.auth.user);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
-  const userKey = useTypedSelector((state) => state.auth.userKey);
-  const targetUserKey = useTypedSelector((state) => state.auth.targetUserKey);
   const chooseKey = useTypedSelector((state) => state.task.chooseKey);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
@@ -42,10 +39,6 @@ const WorkingTableLabel: React.FC = (prop) => {
   const [colNumbers, setColNumbers] = useState(4);
   const [colHeight, setColHeight] = useState<any>([]);
 
-  const [batchTaskVisible, setBatchTaskVisible] = useState(false);
-  const [batchLabelKey, setBatchLabelKey] = useState<string | null>('');
-  const [batchGroupKey, setBatchGroupKey] = useState<string | null>('');
-  const [batchTaskIndex, setBatchTaskIndex] = useState(0);
   const [chooseLabelKey, setChooseLabelKey] = useState('');
   const workingTableRef: React.RefObject<any> = useRef();
   const dispatch = useDispatch();
@@ -128,7 +121,6 @@ const WorkingTableLabel: React.FC = (prop) => {
           return Object.values(item);
         });
         labelArray = _.sortBy(_.flatten(labelArray), ['arrlength']).reverse();
-        console.log('labelArray', labelArray);
         setMainLabelArray(labelArray);
       }
     }
@@ -148,7 +140,6 @@ const WorkingTableLabel: React.FC = (prop) => {
   }, [workingTableRef.current]);
   useEffect(() => {
     let labelArray = [];
-    console.log(memberHeaderIndex);
     if (memberHeaderIndex === 4 && mainLabelArray.length > 0) {
       labelArray = mainLabelArray.filter((item: any, index: number) => {
         if (item.arrlength > 0) {
@@ -178,7 +169,6 @@ const WorkingTableLabel: React.FC = (prop) => {
       top: 0,
     };
     let dom: any = document.getElementById('workingTableLabel' + index);
-    console.log(dom);
     if (dom) {
       let height = dom.offsetHeight;
       let width = dom.offsetWidth;
@@ -220,43 +210,7 @@ const WorkingTableLabel: React.FC = (prop) => {
       dispatch(setMessage(true, batchRes.msg, 'error'));
     }
   };
-  const chooseBatchLabel = (
-    labelKey: string | null,
-    groupKey: string | null,
-    index: number
-  ) => {
-    setBatchGroupKey(groupKey);
-    setBatchTaskVisible(true);
-    setBatchTaskIndex(index - 1);
-  };
-  const changeTask = (
-    taskItem: any,
-    taskIndex: number,
-    taskInfoIndex: number
-  ) => {
-    let newMainLabelArray = _.cloneDeep(mainLabelArray);
-    newMainLabelArray[taskInfoIndex].arr[taskIndex] = taskItem;
-    setMainLabelArray(newMainLabelArray);
-  };
-  // const batchTaskCard=  async ()=> {
-  //   let obj = {
-  //     type: 2,
-  //     batchTitle: this.batchTitle,
-  //     groupKey: this.groupKey,
-  //     labelKey: this.batchLabelKey
-  //   };
-  //   await this.batchCard(obj);
-  //   if (batchRes.msg === 'OK') {
-  //     dispatch(setMessage(true, '保存成功', 'success'));
-  //     if (headerIndex === 1) {
-  //       dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
-  //     } else if (headerIndex === 2) {
-  //       dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
-  //     }
-  //   } else {
-  //     dispatch(setMessage(true, batchRes.msg, 'error'));
-  //   }
-  // }
+
   return (
     <div
       className="workingTableLabel-container"
@@ -326,30 +280,6 @@ const WorkingTableLabel: React.FC = (prop) => {
                     batchTaskArray(labelItem.arr);
                   }}
                 />
-                {/* <div className="workingTableLabel-info-labelName"> */}
-                {/*onClick={toGroup(labelItem.groupObj)} */}
-                {/* <div className="workingTableLabel-info-groupLogo">
-                    <img src={} />
-                  </div>
-                  <div></div> */}
-
-                {/* <a-menu slot="overlay">
-                        <a-menu-item>
-                          <div @click="batchTaskArray(taskInfo[index])">归档全部已完成任务</div>
-                  </a-menu-item>
-                      <a-menu-item>
-                        <div
-                      @click="chooseBatchLabel(labelArray[index]._key,taskInfo[index].length)"
-                    >批量导入</div>
-                  </a-menu-item>
-                    <a-menu-item
-                      v-if="!eyeState&&taskInfo[index].length===0&&labelArray[index]._key!==null"
-                    >
-                      <div @click="deleteLabel(index,labelArray[index]._key)">删除栏目</div>
-                  </a-menu-item>
-                </a-menu>
-              </div> */}
-                {/* </div> */}
                 <div
                   style={{
                     overflowY: 'auto',
@@ -366,7 +296,7 @@ const WorkingTableLabel: React.FC = (prop) => {
                               taskIndex={taskIndex}
                               taskInfoIndex={labelIndex}
                               // timeSetStatus={taskIndex > labelItem.arr.length - 3}
-                              myState={labelItem.groupObj._key == mainGroupKey}
+                              myState={labelItem.groupObj._key === mainGroupKey}
                             />
                           </React.Fragment>
                         ) : null}

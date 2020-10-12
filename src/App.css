@@ -86,6 +86,9 @@ body > div[role] {
 .MuiAlert-filledSuccess {
   background-color: #17b881 !important;
 }
+textarea {
+  padding: 0;
+}
 @keyframes moveIn {
   from {
     width: 320px;

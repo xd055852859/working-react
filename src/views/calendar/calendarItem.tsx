@@ -150,7 +150,7 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
         calendarCheck ? 1 : 0,
         calendarTime
       );
-      if (res.msg == 'OK') {
+      if (res.msg === 'OK') {
         await dispatch(setMessage(true, '新增日程成功', 'success'));
         dispatch(getCalendarList(userKey, calendarStartTime, calendarEndTime));
         setCalendarInput('新日程');

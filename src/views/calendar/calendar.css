@@ -3,11 +3,12 @@
   width: calc(100% - 320px);
   position: relative;
   z-index: 3;
+  color: #fff;
 }
 .calendar-container {
   height: calc(100% - 68px);
   width: 100%;
-  background-color: #fff;
+  /* background-color: #fff; */
   padding: 12px 23px;
   box-sizing: border-box;
 }
@@ -86,7 +87,7 @@
   font-size: 12px;
   font-family: PingFangSC-Regular, PingFang SC;
   font-weight: 400;
-  color: #666666;
+  /* color: #666666; */
   line-height: 17px;
 }
 .calendar-day-item-container {

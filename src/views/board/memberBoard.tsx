@@ -222,7 +222,6 @@ const MemberBoard: React.FC = () => {
           }
         });
       });
-      console.log('arr', arr);
       setProjectGroupArray(arr);
     }
   }, [projectTaskArray, user]);

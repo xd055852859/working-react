@@ -40,7 +40,6 @@ export const common = (state = defaultState, action: any) => {
         // window.location.href = `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`;
         window.location.href = `${redirect}/bootpage`;
       }
-      console.log('action.error.msg,', action.error.msg);
       return {
         ...state,
         loading: false,
@@ -85,13 +84,11 @@ export const common = (state = defaultState, action: any) => {
         headerIndex: action.headerIndex,
       };
     case commonActionTypes.SET_MOVESTATE:
-      console.log(action.moveState);
       return {
         ...state,
         moveState: action.moveState,
       };
     case commonActionTypes.LOADING:
-      console.log(action.loading);
       return {
         ...state,
         loading: action.loading,

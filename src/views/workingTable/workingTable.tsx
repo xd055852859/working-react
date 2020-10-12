@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import './workingTable.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
+import api from '../../services/api';
+
 import { setHeaderIndex } from '../../redux/actions/memberActions';
 import { getWorkingTableTask } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
-import './workingTable.css';
-import api from '../../services/api';
 
 import WorkingTableHeader from './workingTableHeader';
 import WorkingTableLabel from './workingTableLabel';
@@ -15,6 +16,7 @@ import WorkingReport from './workingReport';
 import Grid from '../../components/grid/grid';
 import Loading from '../../components/common/loading';
 import Vitality from '../../components/vitality/vitality';
+
 import taskAddPng from '../../assets/img/taskAdd.png';
 interface WorkingTableProps {}
 
@@ -35,7 +37,6 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
   );
   const theme = useTypedSelector((state) => state.auth.theme);
   const dispatch = useDispatch();
-  const [inputVisible, setInputVisible] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [addLabelInputState, setAddLabelInputState] = useState<any>(null);
@@ -70,7 +71,7 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
     }
   }, [workingTaskArray]);
   const handleInputConfirm = async () => {
-    if (addLabelInputState == 'out') {
+    if (addLabelInputState === 'out') {
       setAddLabelInputState('in');
       if (inputValue !== '') {
         let addLabelRes: any = await api.task.addTaskLabel(
@@ -115,7 +116,7 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
         {memberHeaderIndex === 8 ? (
           <Vitality
             vitalityType={2}
-            vitalityKey={headerIndex == 1 ? userKey : targetUserKey}
+            vitalityKey={headerIndex === 1 ? userKey : targetUserKey}
           />
         ) : null}
       </div>

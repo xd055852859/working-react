@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './calendar.css';
 import { Checkbox } from '@material-ui/core';
 import CalendarItem from './calendarItem';
+import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import traditionalDate from '../../components/common/date';
@@ -13,7 +14,7 @@ import {
   editTask,
   getWorkingTableTask,
   changeTaskInfoVisible,
-  setTaskInfo
+  setTaskInfo,
 } from '../../redux/actions/taskActions';
 import CalendarHeader from './calendarHeader';
 import Loading from '../../components/common/loading';
@@ -21,15 +22,22 @@ import moment from 'moment';
 import _ from 'lodash';
 import api from '../../services/api';
 import Dialog from '../../components/common/dialog';
-import rightArrowPng from '../../assets/img/rightArrow.png';
-import leftArrowPng from '../../assets/img/leftArrow.png';
+import rightArrowPng from '../../assets/img/rightArroww.png';
+import leftArrowPng from '../../assets/img/leftArroww.png';
 import unfinishPng from '../../assets/img/timeSet2.png';
 import finishPng from '../../assets/img/timeSet3.png';
 interface CalendarProps {}
-
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      color: '#fff',
+    },
+  })
+);
 const Calendar: React.FC<CalendarProps> = (props) => {
   const {} = props;
   const dispatch = useDispatch();
+  const classes = useStyles();
   const calendarList = useTypedSelector((state) => state.task.calendarList);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const userKey = useTypedSelector((state) => state.auth.userKey);
@@ -104,7 +112,6 @@ const Calendar: React.FC<CalendarProps> = (props) => {
     if (positionList.length == 0) {
       let newPositionList: any = [];
       const dom: any = document.querySelectorAll('.calendar-day-item');
-      console.log(dom);
       if (dom.length > 0) {
         Array.from(dom).forEach((item: any, index: number) => {
           const startTop = item.offsetTop;
@@ -120,8 +127,6 @@ const Calendar: React.FC<CalendarProps> = (props) => {
         });
         setPositionList(newPositionList);
       }
-      // console.log(dom[0].offsetTop, dom[0].offsetLeft);
-      // console.log(dom[0].offsetHeight, dom[0].offsetWidth);
     }
   });
   // const getData = async (startTime: number, endTime: number) => {
@@ -145,10 +150,6 @@ const Calendar: React.FC<CalendarProps> = (props) => {
     let curDays = getMonthDays(targetDate); // 当前天数
     let curWeek = getWeekDays(targetDate.clone()); // 当前月第一天的星期(索引值)
     let upDays = getMonthDays(targetDate.clone().subtract(1, 'month')); // 上月的天数
-    // console.log(curDays, curWeek, upDays);
-    // console.log(
-    //   moment(targetDate.subtract(1, 'month').month() + 1 + '-' + upDays)
-    // );
     // 生成的结构
     let strDate: any = [];
     // 下个月的起始日期
@@ -276,9 +277,6 @@ const Calendar: React.FC<CalendarProps> = (props) => {
     //alert('x: ' + x + '\ny: ' + y);
 
     // const calendarWidth = calendarRef.current.offsetWidth * 0.148;
-    // console.log(calendarWidth);
-    // console.log(e.pageX, e.pageY);
-    // console.log(index % 7);
     let pageX = e.pageX;
     let pageY = e.pageY;
     if ((index + 1) % 7 === 0 && index !== 0) {
@@ -315,8 +313,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
 
     setTaskList(newTaskList);
     dispatch(editTask({ key: newTaskItem._key, ...newTaskItem }, headerIndex));
-    // console.log(e.clientX, e.clientY);
-    dispatch(setTaskInfo(newTaskItem))
+    dispatch(setTaskInfo(newTaskItem));
   };
   const taskKeyDown = (e: any) => {
     if (e.keyCode === 46) {
@@ -400,7 +397,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
         1
       )
     );
-    dispatch(setTaskInfo(newTaskItem))
+    dispatch(setTaskInfo(newTaskItem));
   };
   return (
     <div className="calendar">
@@ -430,6 +427,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
                 setExecutorCheck(e.target.checked);
               }}
               color="primary"
+              className={classes.root}
             />
             任务
           </div>
@@ -440,6 +438,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
                 setCreatorCheck(e.target.checked);
               }}
               color="primary"
+              className={classes.root}
             />
             指派
           </div>
@@ -466,12 +465,12 @@ const Calendar: React.FC<CalendarProps> = (props) => {
                   setCalendarDay(moment(calendarItem.startTime));
                 }}
                 style={{
-                  backgroundColor:
-                    ((calendarIndex + 2) % 7 === 0 ||
-                      (calendarIndex + 1) % 7 === 0) &&
-                    calendarIndex !== 0
-                      ? '#F9F9F9'
-                      : '',
+                  // backgroundColor:
+                  //   ((calendarIndex + 2) % 7 === 0 ||
+                  //     (calendarIndex + 1) % 7 === 0) &&
+                  //   calendarIndex !== 0
+                  //     ? '#F9F9F9'
+                  //     : '',
                   border: calendarItem.targetDay ? '2px solid #17B881' : '',
                 }}
               >

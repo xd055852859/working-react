@@ -156,7 +156,6 @@ const GroupTableHeader: React.FC = (prop) => {
   };
   const saveGroupSet = (obj: any) => {
     setGroupObj(obj);
-    console.log(obj);
   };
   const setGroup = () => {
     dispatch(changeGroupInfo(groupKey, groupObj));
@@ -165,7 +164,7 @@ const GroupTableHeader: React.FC = (prop) => {
     dispatch(getGroup(3));
   };
   const setMember = (groupMember: any) => {
-    console.log('groupMember', groupMember);
+
     setGroupMember(groupMember);
   };
   const saveGroupMember = () => {
@@ -184,7 +183,6 @@ const GroupTableHeader: React.FC = (prop) => {
       });
       // }
     });
-    console.log(newGroupMember);
     api.group.addGroupMember(groupKey, newGroupMember);
     // api.group.addAllGroupMember(groupKey, newGroupMember);
     dispatch(setMessage(true, '修改群成员成功', 'success'));
@@ -209,13 +207,7 @@ const GroupTableHeader: React.FC = (prop) => {
         newFilterObject.executorAvatar = '';
         newFilterObject.executorName = '';
     }
-    // let res: any =
     await api.member.setConfig(groupMemberItem._key, newFilterObject);
-    // if (res.msg === 'OK') {
-    //   console.log('设置成功');
-    // } else {
-    //   dispatch(setMessage(true, res.msg, 'error'));
-    // }
     dispatch(setFilterObject(newFilterObject));
   };
 

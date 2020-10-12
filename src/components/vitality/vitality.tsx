@@ -162,7 +162,6 @@ const Vitality: React.FC<VitalityProps> = (props) => {
         newMonthTitleArr.unshift(moment(item[0].startTime).format('M') + '月');
         item = formatMonth(item[0].startTime, item);
       });
-      console.log('newMonthTitleArr', newMonthTitleArr);
       newMonthData.reverse();
     } else {
       dispatch(setMessage(true, monthRes.msg, 'error'));
@@ -232,7 +231,6 @@ const Vitality: React.FC<VitalityProps> = (props) => {
     }
   };
   const getTargetLog = (startTime: number) => {
-    console.log('startTime', startTime);
     vitalityLogRef.current.scrollTop = 0;
     setStartTime(startTime);
     setEndTime(moment(startTime).endOf('day').valueOf());
@@ -322,8 +320,6 @@ const Vitality: React.FC<VitalityProps> = (props) => {
     let scrollTop = e.target.scrollTop;
     //窗口可视范围高度
     let clientHeight = e.target.clientHeight;
-    console.log(clientHeight + scrollTop);
-    console.log(scrollHeight);
     if (
       clientHeight + scrollTop >= scrollHeight - 1 &&
       logList.length < logtotal

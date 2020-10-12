@@ -156,7 +156,6 @@ const GroupTableGroup: React.FC = (prop) => {
         }
       }
     });
-    console.log(finishPercentArray1);
     taskInfo.forEach((item: any, index: number) => {
       if (finishPercentArray1[index]) {
         item.push(...finishPercentArray1[index]);
@@ -171,10 +170,8 @@ const GroupTableGroup: React.FC = (prop) => {
     taskInfo = taskInfo.map((item: any) => {
       return _.cloneDeep(format.formatFilter(item, filterObject));
     });
-    console.log(taskInfo);
+
     setTaskInfo(taskInfo);
-    console.log('taskNameArr', taskNameArr);
-    console.log('labelExecutorArray', labelExecutorArray);
     setTaskNameArr(taskNameArr);
     setLabelExecutorArray(labelExecutorArray);
   };
@@ -193,7 +190,7 @@ const GroupTableGroup: React.FC = (prop) => {
     taskNewNameArr = _.cloneDeep(taskNameArr);
     taskNewNameArr[index].name = e.target.value;
     setTaskNameArr(taskNewNameArr);
-    // console.log(index);
+
   };
   const saveLabel = async (key: string) => {
     let labelRes: any = await api.task.changeTaskLabelName(key, labelName);
@@ -230,7 +227,6 @@ const GroupTableGroup: React.FC = (prop) => {
     const result: any = {};
     result[droppableSource.droppableId] = sourceClone;
     result[droppableDestination.droppableId] = destClone;
-    console.log('????????', result);
     return result;
   };
 
@@ -256,7 +252,7 @@ const GroupTableGroup: React.FC = (prop) => {
       cardOrder1 = items.map((item: any) => {
         return item._key;
       });
-      console.log(items);
+
       labelObject = {
         groupKey: groupKey,
         labelObject1: {
@@ -294,28 +290,24 @@ const GroupTableGroup: React.FC = (prop) => {
     }
 
     setTaskInfo(newTaskInfo);
-    console.log(source.droppableId, source.index);
     let taskRes: any = await api.task.changeTaskLabel(
       groupKey,
       taskInfo[parseInt(source.droppableId)][source.index]._key,
       labelArray[parseInt(destination.droppableId)]._key
     );
     if (taskRes.msg === 'OK') {
-      console.log('切换频道成功');
       dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
     } else {
       dispatch(setMessage(true, taskRes.msg, 'error'));
     }
     let labelRes: any = await api.task.setLabelCardOrder(labelObject);
     if (labelRes.msg === 'OK') {
-      console.log('拖拽成功');
       dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
     } else {
       dispatch(setMessage(true, labelRes.msg, 'error'));
     }
   };
   const onDragNameEnd = async (result: any) => {
-    console.log('result', result);
     if (!result.destination) {
       result.destination = {
         index: taskNameArr.length - 1,
@@ -391,7 +383,6 @@ const GroupTableGroup: React.FC = (prop) => {
           name: addLabelInput,
           key: labelRes.result._key,
         });
-        console.log('newLabelIndex', newLabelIndex);
         let labelOrder = newTaskNameArr.map(
           (labelItem: any, labelIndex: number) => {
             return labelItem.key ? labelItem.key : 'null';

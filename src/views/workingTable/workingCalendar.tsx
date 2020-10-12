@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-
+import './workingCalendar.css';
+import { useTypedSelector } from '../../redux/reducer/RootState';
 import moment from 'moment';
 import _ from 'lodash';
-import './workingCalendar.css';
 import format from '../../components/common/format';
+
 import Task from '../../components/task/task';
-import { useTypedSelector } from '../../redux/reducer/RootState';
+
 interface WorkingCanlendarProps {}
 
 const WorkingCanlendar: React.FC<WorkingCanlendarProps> = (prop) => {
@@ -28,7 +29,6 @@ const WorkingCanlendar: React.FC<WorkingCanlendarProps> = (prop) => {
   useEffect(() => {
     if (canlendarRef.current) {
       let clientWidth = canlendarRef.current.clientWidth;
-      console.log(canlendarRef.current);
       let colWidth = 0;
       let size = 13;
       if (clientWidth <= 900) {
@@ -92,8 +92,6 @@ const WorkingCanlendar: React.FC<WorkingCanlendarProps> = (prop) => {
         }
       });
     });
-    console.log(dayCanlendarArray);
-    console.log(dateArray);
     setDayCanlendarArray(dayCanlendarArray);
     setDateArray(dateArray);
   };

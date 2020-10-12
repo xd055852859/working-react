@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import './filter.css';
 import DropMenu from './dropMenu';
 import Avatar from '@material-ui/core/Avatar';

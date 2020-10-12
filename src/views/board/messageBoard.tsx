@@ -17,11 +17,15 @@ import messageType8Png from '../../assets/img/messageType8.png';
 import messageType9Png from '../../assets/img/messageType9.png';
 import messageType10Png from '../../assets/img/messageType10.png';
 import Loading from '../../components/common/loading';
-interface MessageBoardProps {}
+interface MessageBoardProps {
+  type?: string;
+}
 
 const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
+  const { type } = prop;
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
+  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const socket = useTypedSelector((state) => state.auth.socket);
   const [messagePage, setMessagePage] = useState(1);
   const [messageTotal, setMessageTotal] = useState(0);
@@ -48,7 +52,6 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
   }, [user]);
   useEffect(() => {
     if (socket) {
-      console.log(socket);
       socket.on('notice', (data: any) => {
         setSocketObj({ data: JSON.parse(data) });
       });
@@ -99,8 +102,16 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
   return (
     <div className="messageBoard">
       {loading ? <Loading /> : null}
-      <div className="messageBoard-maintitle">提醒</div>
-      <div className="messageBoard-item" onScroll={scrollMessageLoading}>
+      {!type ? <div className="messageBoard-maintitle">提醒</div> : null}
+      <div
+        className="messageBoard-item"
+        onScroll={scrollMessageLoading}
+        style={
+          type
+            ? { height: 'calc(100% - 10px)', marginTop: '10px' }
+            : { height: ' calc(100% - 50px)' }
+        }
+      >
         {messageArray.map((messageItem: any, messageIndex: number) => {
           return (
             <React.Fragment key={'message' + messageIndex}>

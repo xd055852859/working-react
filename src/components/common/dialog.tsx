@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Button } from '@material-ui/core';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import closePng from '../../assets/img/close.png';

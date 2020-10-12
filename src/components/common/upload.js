@@ -88,7 +88,6 @@ const uploadFile = {
         return target;
       },
     };
-    console.log('file', file);
     // 上传
     let observable = qiniu.upload(
       file,

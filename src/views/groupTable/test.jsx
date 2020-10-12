@@ -20,7 +20,6 @@ const reorder = (list, startIndex, endIndex) => {
  * Moves an item from one list to another list.
  */
 const move = (source, destination, droppableSource, droppableDestination) => {
-    console.log(source, destination, droppableSource, droppableDestination)
     const sourceClone = Array.from(source);
     const destClone = Array.from(destination);
     const [removed] = sourceClone.splice(droppableSource.index, 1);
@@ -30,7 +29,6 @@ const move = (source, destination, droppableSource, droppableDestination) => {
     const result = {};
     result[droppableSource.droppableId] = sourceClone;
     result[droppableDestination.droppableId] = destClone;
-    console.log(result)
     return result;
 };
 
@@ -70,16 +68,13 @@ class Test extends Component {
     getList = id => this.props.taskInfo[id];
 
     onDragEnd = result => {
-        console.log(result);
         const {source, destination} = result;
-        console.log(source, destination)
         // dropped outside the list
         if (!destination) {
             return;
         }
         if (source.droppableId === destination.droppableId) {
             const items = reorder(this.getList(source.droppableId), source.index, destination.index);
-            console.log(items);
         } else {
             const result = move(this.getList(source.droppableId, source.index), this.getList(destination.droppableId, destination.index), source, destination);
             this.props.taskInfo[source.droppableId] = result.droppable;

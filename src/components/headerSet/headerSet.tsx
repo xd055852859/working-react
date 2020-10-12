@@ -13,6 +13,7 @@ import ClockIn from '../clockIn/clockIn';
 
 import Task from '../task/task';
 import UserCenter from '../userCenter/userCenter';
+import MessageBoard from '../../views/board/messageBoard';
 import { setTheme } from '../../redux/actions/authActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import { getSelfTask } from '../../redux/actions/taskActions';
@@ -27,6 +28,7 @@ import bgImg from '../../assets/img/bgImg.png';
 import clockInPng from '../../assets/img/clockIn.png';
 import searchPng from '../../assets/img/headerSearch.png';
 import addPng from '../../assets/img/taskAdd.png';
+import messagePng from '../../assets/img/headerMessage.png';
 import downArrowbPng from '../../assets/img/downArrowb.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 
@@ -70,6 +72,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const [bgVisible, setBgVisible] = useState(false);
   const [clockInVisible, setClockInVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
+  const [messageVisible, setMessageVisible] = useState(false);
   const [addVisible, setAddVisible] = useState(false);
   const [avatarShow, setAvatarShow] = useState(false);
   const [searchInput, setSearchInput] = useState('');
@@ -106,27 +109,27 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     '#E7ECF0',
   ];
   // const imgBigArr2 = [
-    // 'https://cdn-icare.qingtime.cn/1596679428976_8Big@1x.png',
-    // 'https://cdn-icare.qingtime.cn/1596679446272_9Big@1x.png',
-    // 'https://cdn-icare.qingtime.cn/1596679461595_10Big@1x.png',
-    // "https://cdn-icare.qingtime.cn/1596679637933_11Big@1x.png",
-    // 'https://cdn-icare.qingtime.cn/1596679674511_12Big@1x.png',
-    // 'https://cdn-icare.qingtime.cn/1596679728933_画板.jpg',
-    // 'https://cdn-icare.qingtime.cn/1596679825925_画板备份2.jpg',
-    // 'https://cdn-icare.qingtime.cn/1596679850655_画板备份3.jpg',
-    // 'https://cdn-icare.qingtime.cn/1596679867626_画板备份4.jpg',
-    // 'https://cdn-icare.qingtime.cn/1596679885918_画板备份5.jpg',
-    // 'https://cdn-icare.qingtime.cn/1596679903471_画板备份6.jpg',
-    // 'https://cdn-icare.qingtime.cn/1596679925993_画板备份7.jpg',
-    // 'https://cdn-icare.qingtime.cn/1596679943102_画板备份8.jpg',
-    // "https://cdn-icare.qingtime.cn/1596679963941_画板备份9.jpg",
-    // 'https://cdn-icare.qingtime.cn/1596679987203_画板备份10.jpg',
-    // 'https://cdn-icare.qingtime.cn/1596680027535_画板备份11.jpg',
-    // 'https://cdn-icare.qingtime.cn/1596680077694_画板备份12.jpg',
-    // 'https://cdn-icare.qingtime.cn/1596680095898_画板备份13.jpg',
-    // 'https://cdn-icare.qingtime.cn/1596680119545_画板备份14.jpg',
-    // 'https://cdn-icare.qingtime.cn/1596679772476_画板备份.jpg',
-    // imgBig26
+  // 'https://cdn-icare.qingtime.cn/1596679428976_8Big@1x.png',
+  // 'https://cdn-icare.qingtime.cn/1596679446272_9Big@1x.png',
+  // 'https://cdn-icare.qingtime.cn/1596679461595_10Big@1x.png',
+  // "https://cdn-icare.qingtime.cn/1596679637933_11Big@1x.png",
+  // 'https://cdn-icare.qingtime.cn/1596679674511_12Big@1x.png',
+  // 'https://cdn-icare.qingtime.cn/1596679728933_画板.jpg',
+  // 'https://cdn-icare.qingtime.cn/1596679825925_画板备份2.jpg',
+  // 'https://cdn-icare.qingtime.cn/1596679850655_画板备份3.jpg',
+  // 'https://cdn-icare.qingtime.cn/1596679867626_画板备份4.jpg',
+  // 'https://cdn-icare.qingtime.cn/1596679885918_画板备份5.jpg',
+  // 'https://cdn-icare.qingtime.cn/1596679903471_画板备份6.jpg',
+  // 'https://cdn-icare.qingtime.cn/1596679925993_画板备份7.jpg',
+  // 'https://cdn-icare.qingtime.cn/1596679943102_画板备份8.jpg',
+  // "https://cdn-icare.qingtime.cn/1596679963941_画板备份9.jpg",
+  // 'https://cdn-icare.qingtime.cn/1596679987203_画板备份10.jpg',
+  // 'https://cdn-icare.qingtime.cn/1596680027535_画板备份11.jpg',
+  // 'https://cdn-icare.qingtime.cn/1596680077694_画板备份12.jpg',
+  // 'https://cdn-icare.qingtime.cn/1596680095898_画板备份13.jpg',
+  // 'https://cdn-icare.qingtime.cn/1596680119545_画板备份14.jpg',
+  // 'https://cdn-icare.qingtime.cn/1596679772476_画板备份.jpg',
+  // imgBig26
   // ];
   const limit = 10;
   useEffect(() => {
@@ -150,7 +153,6 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     let newImgBigArr2: any = [];
     let res: any = await api.auth.getWallPapers();
     if (res.msg === 'OK') {
-      console.log(res);
       res.data.forEach((item: any) => {
         newImgBigArr2.push(item.url);
       });
@@ -205,8 +207,6 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     let scrollTop = e.target.scrollTop;
     //窗口可视范围高度
     let clientHeight = e.target.clientHeight;
-    console.log(clientHeight + scrollTop);
-    console.log(scrollHeight);
     if (
       clientHeight + scrollTop >= scrollHeight - 1 &&
       searchTaskList.length < total
@@ -311,6 +311,21 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             }}
           />
         </Tooltip>
+        <Tooltip title="消息中心">
+          <img
+            src={messagePng}
+            alt=""
+            style={{
+              width: '40px',
+              height: '40px',
+              marginRight: '15px',
+              cursor: 'pointer',
+            }}
+            onClick={() => {
+              setMessageVisible(true);
+            }}
+          />
+        </Tooltip>
         <Tooltip title="用户中心">
           <div
             className="contentHeader-avatar-info"
@@ -348,7 +363,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             width: '260px',
             height: '450px',
             top: '65px',
-            left: '-35px',
+            right: '21px',
           }}
           onClose={() => {
             setContentSetVisilble(false);
@@ -801,6 +816,25 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             );
           })}
         </div>
+      </Dialog>
+      <Dialog
+        visible={messageVisible}
+        onClose={() => {
+          setMessageVisible(false);
+        }}
+        footer={false}
+        title={'消息中心'}
+        dialogStyle={{
+          position: 'fixed',
+          top: '65px',
+          right: '10px',
+          width: '370px',
+          height: 'calc(100% - 66px)',
+          overflow: 'auto',
+        }}
+        showMask={false}
+      >
+        <MessageBoard type={'header'} />
       </Dialog>
     </React.Fragment>
   );

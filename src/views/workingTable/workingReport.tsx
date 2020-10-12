@@ -9,15 +9,15 @@ import { getWorkingTableTask } from '../../redux/actions/taskActions';
 import _ from 'lodash';
 import api from '../../services/api';
 import moment from 'moment';
-import replyPng from '../../assets/img/replyDiary.png';
+// import replyPng from '../../assets/img/replyDiary.png';
 import deletePng from '../../assets/img/deleteDiary.png';
 import commentPng from '../../assets/img/comment.png';
-import likePng from '../../assets/img/like.png';
-import unlikePng from '../../assets/img/unlike.png';
-import clickNumberPng from '../../assets/img/clickNumber.png';
+// import likePng from '../../assets/img/like.png';
+// import unlikePng from '../../assets/img/unlike.png';
+// import clickNumberPng from '../../assets/img/clickNumber.png';
 import DropMenu from '../../components/common/dropMenu';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
-import Editor from '../../components/common/Editor';
+// import Editor from '../../components/common/Editor';
 import Task from '../../components/task/task';
 
 export interface WorkingReportProps {}
@@ -253,9 +253,6 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     //   moment().subtract(1, 'days').startOf('day').valueOf(),
     //   moment().subtract(1, 'days').endOf('day').valueOf()
     // );
-    console.log(newDateArray);
-    console.log(newDayCanlendarArray);
-    console.log(newPersonArray);
     getDiaryNote(
       moment().subtract(1, 'days').startOf('day').valueOf(),
       newDiaryKey

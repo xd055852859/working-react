@@ -19,6 +19,7 @@ import moment from 'moment';
 import _ from 'lodash';
 import './task.css';
 import api from '../../services/api';
+import TaskInfo from '../taskInfo/taskInfo';
 import Dialog from '../common/dialog';
 import DropMenu from '../common/dropMenu';
 import TimeSet from '../common/timeSet';
@@ -153,7 +154,6 @@ const Task: React.FC<TaskProps> = (props) => {
     // dispatch(setChooseKey('0'));
   }, [headerIndex, groupKey]);
   useEffect(() => {
-    console.log(titleRef);
     if (titleRef.current) {
       if (titleRef.current.setSelectionRange) {
         titleRef.current.setSelectionRange(
@@ -330,6 +330,9 @@ const Task: React.FC<TaskProps> = (props) => {
     } else {
       dispatch(setMessage(true, addTaskRes.msg, 'error'));
     }
+  };
+  const changeInputHeight = (e: any) => {
+    e.target.style.height = e.target.scrollHeight + 'px';
   };
   return (
     <React.Fragment>
@@ -641,8 +644,9 @@ const Task: React.FC<TaskProps> = (props) => {
                             taskDetail.content !== '' ? { display: 'flex' } : {}
                           }
                           onClick={() => {
-                            dispatch(changeTaskInfoVisible(true));
-                            dispatch(setTaskInfo(taskDetail));
+                            // dispatch(changeTaskInfoVisible(true));
+                            setTaskInfoDialogShow(true);
+                            // dispatch(setTaskInfo(taskDetail));
                             dispatch(setChooseKey(taskDetail._key));
                           }}
                         >
@@ -700,6 +704,14 @@ const Task: React.FC<TaskProps> = (props) => {
                 </Button>
               </div>
             </div>
+          ) : null}
+          {taskInfoDialogShow ? (
+            <TaskInfo
+              fatherTaskItem={taskDetail}
+              onClose={() => {
+                setTaskInfoDialogShow(false);
+              }}
+            />
           ) : null}
         </div>
       ) : null}

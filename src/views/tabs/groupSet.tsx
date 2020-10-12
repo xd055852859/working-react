@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './groupSet.css';
 import { useDispatch } from 'react-redux';
 import {
   Checkbox,
@@ -9,22 +10,25 @@ import {
   FormControlLabel,
 } from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
-import { getGroup } from '../../redux/actions/groupActions';
-import { useTypedSelector } from '../../redux/reducer/RootState';
+import _ from 'lodash';
 import api from '../../services/api';
 import copy from 'copy-to-clipboard';
+import uploadFile from '../../components/common/upload';
+
 import {
   setCommonHeaderIndex,
   setMessage,
   setMoveState,
 } from '../../redux/actions/commonActions';
+import { getGroup } from '../../redux/actions/groupActions';
+import { useTypedSelector } from '../../redux/reducer/RootState';
+
 import DropMenu from '../../components/common/dropMenu';
+import Dialog from '../../components/common/dialog';
+
 import plusPng from '../../assets/img/contact-plus.png';
 import logoutPng from '../../assets/img/logout.png';
-import _ from 'lodash';
-import uploadFile from '../../components/common/upload';
-import Dialog from '../../components/common/dialog';
-import './groupSet.css';
+
 interface GroupSetProps {
   saveGroupSet: any;
   type: string;

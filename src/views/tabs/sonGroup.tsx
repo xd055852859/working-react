@@ -4,11 +4,13 @@ import './sonGroup.css';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { Button } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
-import { setGroupKey, getGroupInfo } from '../../redux/actions/groupActions';
-import { setMessage, setMoveState } from '../../redux/actions/commonActions';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import _ from 'lodash';
 import api from '../../services/api';
+
+import { setGroupKey, getGroupInfo } from '../../redux/actions/groupActions';
+import { setMessage, setMoveState } from '../../redux/actions/commonActions';
+
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import closePng from '../../assets/img/taskClose.png';
 export interface SonGroupProps {
@@ -44,12 +46,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
-  const memberArray = useTypedSelector((state) => state.member.memberArray);
-  const groupMemberArray = useTypedSelector(
-    (state) => state.member.groupMemberArray
-  );
   const groupKey = useTypedSelector((state) => state.group.groupKey);
-  const groupRole = useTypedSelector((state) => state.group.groupRole);
   const [sonGroupList, setSonGroupList] = useState<any>([]);
   const [myGroupList, setMyGroupList] = useState<any>([]);
 
@@ -61,13 +58,13 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
   }, [user]);
   const getData = async () => {
     let res: any = await api.group.getSonGroupList(groupKey);
-    if (res.msg == 'OK') {
+    if (res.msg === 'OK') {
       setSonGroupList(res.result);
     } else {
       dispatch(setMessage(true, res.msg, 'error'));
     }
     let groupRes: any = await api.group.getGroup(4, null, undefined, groupKey);
-    if (groupRes.msg == 'OK') {
+    if (groupRes.msg === 'OK') {
       setMyGroupList(groupRes.result);
     } else {
       dispatch(setMessage(true, res.msg, 'error'));
@@ -83,7 +80,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
     let newSonGroupList = _.cloneDeep(sonGroupList);
     let newMyGroupList = _.cloneDeep(myGroupList);
     let res: any = await api.group.setSonGroup(groupKey, sonGroupKey);
-    if (res.msg == 'OK') {
+    if (res.msg === 'OK') {
       dispatch(setMessage(true, '添加子群成功', 'success'));
       newSonGroupList.push(item);
       newMyGroupList.splice(
@@ -102,7 +99,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
     let newSonGroupList = _.cloneDeep(sonGroupList);
     let newMyGroupList = _.cloneDeep(myGroupList);
     let res: any = await api.group.deleteFSGroup(groupKey, sonGroupKey);
-    if (res.msg == 'OK') {
+    if (res.msg === 'OK') {
       dispatch(setMessage(true, '删除子群成功', 'success'));
       let childItem = newSonGroupList.splice(index, 1);
       newMyGroupList.push(...childItem);

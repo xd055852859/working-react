@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
@@ -38,7 +38,10 @@ import DropMenu from '../common/dropMenu';
 import Dialog from '../common/dialog';
 import TimeSet from '../common/timeSet';
 import Editor from '../common/Editor';
-interface TaskInfoProps {}
+interface TaskInfoProps {
+  fatherTaskItem?: any;
+  onClose?: any;
+}
 // pick a date util library
 moment.locale('zh-cn');
 const useStyles = makeStyles((theme: Theme) =>
@@ -76,10 +79,13 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
+  const { fatherTaskItem, onClose } = prop;
   const classes = useStyles();
   const dispatch = useDispatch();
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const chooseKey = useTypedSelector((state) => state.task.chooseKey);
+  const taskKey = useTypedSelector((state) => state.task.taskKey);
+  const titleRef: React.RefObject<any> = useRef();
   const taskInfo = useTypedSelector((state) => state.task.taskInfo);
   const taskInfoVisible = useTypedSelector(
     (state) => state.task.taskInfoVisible
@@ -144,6 +150,8 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     if (chooseKey) {
       if (taskInfoVisible && !taskInfo) {
         getTaskItem();
+      } else if (fatherTaskItem) {
+        changeTaskInfo(fatherTaskItem);
       } else if (taskInfo) {
         changeTaskInfo(taskInfo);
       }
@@ -151,25 +159,40 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     return () => {
       clearInterval(countInterval);
     };
-  }, [chooseKey, taskInfoVisible, taskInfo]);
+  }, [chooseKey, taskInfoVisible, taskInfo, fatherTaskItem]);
+  useEffect(() => {
+    return () => {
+      if (editState) {
+        let newTaskItem: any = stopCountdown();
+        dispatch(
+          editTask(
+            { key: newTaskItem._key, ...newTaskItem },
+            headerIndex == 5 ? 1 : headerIndex
+          )
+        );
+        // setTaskItem(null);
+        // setEditState(false);
+      }
+    };
+  }, [editState]);
   useEffect(() => {
     if (groupArray && groupArray.length > 0) {
       getLabelArray(groupArray[0]._key);
     }
   }, [groupArray]);
-  useEffect(() => {
-    if (editState) {
-      let newTaskItem: any = stopCountdown();
-      dispatch(
-        editTask(
-          { key: newTaskItem._key, ...newTaskItem },
-          headerIndex == 5 ? 1 : headerIndex
-        )
-      );
-      // setTaskItem(null);
-      // setEditState(false);
-    }
-  }, [chooseKey]);
+  // useEffect(() => {
+  //   if (editState) {
+  //     let newTaskItem: any = stopCountdown();
+  //     dispatch(
+  //       editTask(
+  //         { key: newTaskItem._key, ...newTaskItem },
+  //         headerIndex == 5 ? 1 : headerIndex
+  //       )
+  //     );
+  //     // setTaskItem(null);
+  //     // setEditState(false);
+  //   }
+  // }, [chooseKey]);
   const getTaskItem = async () => {
     let taskItemRes: any = await api.task.getTaskInfo(chooseKey);
     if (taskItemRes.msg === 'OK') {
@@ -243,7 +266,6 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       taskLimit
     );
     if (historyRes.msg === 'OK') {
-      console.log(historyRes);
       newHistoryArray.push(...historyRes.result);
       setTaskHistoryArray(newHistoryArray);
       setTaskHistoryTotal(historyRes.totalNumber);
@@ -263,7 +285,6 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   };
   //滚动加载
   const scrollCommentLoading = async (e: any) => {
-    // console.log(e);
     let page = taskCommentPage;
     //文档内容实际高度（包括超出视窗的溢出部分）
     let scrollHeight = e.target.scrollHeight;
@@ -303,7 +324,6 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   };
   const changeTaskContent = (value: string) => {
     changeTaskItem('content', value);
-    setEditState(true);
   };
   const changeTimeSet = (type: string, hour: number) => {
     changeTaskItem(type, hour);
@@ -394,7 +414,6 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   };
   const shareTask = () => {
     const redirect = `${window.location.protocol}//${window.location.host}`;
-    console.log(chooseKey);
     copy(redirect + '/?shareKey=' + chooseKey);
     dispatch(setMessage(true, '复制链接任务成功', 'success'));
   };
@@ -414,8 +433,14 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     // changeTaskInfoVisible
     <ClickAwayListener
       onClickAway={() => {
-        // dispatch(changeTaskInfoVisible(false));
-        dispatch(editTask({ key: taskItem._key, ...taskItem }, headerIndex));
+        dispatch(changeTaskInfoVisible(false));
+        if (onClose) {
+          onClose();
+        }
+        // if (editState) {
+        // dispatch(editTask({ key: taskItem._key, ...taskItem }, headerIndex));
+        // dispatch(setMessage(true, '保存成功', 'success'));
+        // }
       }}
     >
       <div className="taskInfo">
@@ -552,160 +577,181 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                       }}
                     >
                       移动任务
-                      <Dialog
-                        visible={moveTaskVisible}
-                        dialogStyle={{
-                          width: '320px',
-                          height: '150px',
-                          position: 'fixed',
-                          top: '129px',
-                          right: '158px',
-                          overflow: 'visible',
-                        }}
-                        onClose={() => {
-                          setMoveTaskVisible(false);
-                        }}
-                        showMask={false}
-                        footer={false}
-                      >
-                        {labelArray && labelArray.length > 0 ? (
-                          <div className="addTask-container">
-                            <div
-                              className="addTask-item"
-                              onClick={() => {
-                                setGroupVisible(true);
-                              }}
-                            >
-                              <div className="addTask-avatar">
-                                <img
-                                  src={
-                                    groupArray[groupIndex].groupLogo
-                                      ? groupArray[groupIndex].groupLogo
-                                      : defaultGroupPng
-                                  }
-                                  alt=""
-                                />
-                              </div>
-                              <div>{groupArray[groupIndex].groupName}</div>
-                              <img
-                                src={downArrowbPng}
-                                alt=""
-                                className="addTask-logo"
-                              />
-                              {groupVisible ? (
-                                <DropMenu
-                                  visible={groupVisible}
-                                  dropStyle={{
-                                    width: '300px',
-                                    height: '350px',
-                                    top: '50px',
-                                    overflow: 'auto',
-                                  }}
-                                  onClose={() => {
-                                    setGroupVisible(false);
-                                  }}
-                                  title={'选择项目'}
-                                >
-                                  <React.Fragment>
-                                    {groupArray.map(
-                                      (item: any, index: number) => {
-                                        return (
-                                          <div
-                                            className="chooseItem"
-                                            onClick={(e: any) => {
-                                              setGroupIndex(index);
-                                              getLabelArray(item._key);
-                                              setGroupVisible(false);
-                                              e.stopPropagation();
-                                              changeTaskItem(
-                                                'groupKey',
-                                                item._key
-                                              );
-                                            }}
-                                            key={'group' + index}
-                                          >
-                                            <div className="addTask-avatar">
-                                              <img
-                                                src={
-                                                  item.groupLogo
-                                                    ? item.groupLogo
-                                                    : defaultGroupPng
-                                                }
-                                                alt=""
-                                              />
-                                            </div>
-                                            <div>{item.groupName}</div>
-                                          </div>
-                                        );
-                                      }
-                                    )}
-                                  </React.Fragment>
-                                </DropMenu>
-                              ) : null}
-                            </div>
-                            <div
-                              className="addTask-item"
-                              onClick={() => {
-                                setLabelVisible(true);
-                              }}
-                            >
-                              <div>{labelArray[labelIndex].cardLabelName}</div>
-                              <img
-                                src={downArrowbPng}
-                                alt=""
-                                className="addTask-logo"
-                              />
-                              {labelVisible ? (
-                                <DropMenu
-                                  visible={labelVisible}
-                                  dropStyle={{
-                                    width: '100%',
-                                    height: '350px',
-                                    top: '50px',
-                                    overflow: 'auto',
-                                  }}
-                                  onClose={() => {
-                                    setLabelVisible(false);
-                                  }}
-                                  title={'选择频道'}
-                                >
-                                  <React.Fragment>
-                                    {labelArray.map(
-                                      (item: any, index: number) => {
-                                        return (
-                                          <div
-                                            className="chooseItem"
-                                            onClick={(e: any) => {
-                                              setLabelIndex(index);
-                                              setLabelVisible(false);
-                                              e.stopPropagation();
-                                              changeTaskItem(
-                                                'labelKey',
-                                                item._key
-                                              );
-                                            }}
-                                            key={'label' + index}
-                                          >
-                                            <div
-                                              style={{
-                                                textAlign: 'center',
-                                                width: '100%',
-                                              }}
-                                            >
-                                              {item.cardLabelName}
-                                            </div>
-                                          </div>
-                                        );
-                                      }
-                                    )}
-                                  </React.Fragment>
-                                </DropMenu>
-                              ) : null}
-                            </div>
-                          </div>
-                        ) : null}
-                      </Dialog>
                     </div>
+                    <div
+                      className="dropMenu-item"
+                      onClick={() => {
+                        changeTaskItem('finishPercent', 2);
+                      }}
+                    >
+                      {taskItem.finishPercent < 2 ? '归档' : '取消归档'}
+                    </div>
+                    <div
+                      className="dropMenu-item"
+                      onClick={() => {
+                        changeTaskItem(
+                          'importantStatus',
+                          taskItem.importantStatus ? 0 : 1
+                        );
+                      }}
+                    >
+                      {!taskItem.importantStatus ? '设为重要' : '取消重要'}
+                    </div>
+                    <Dialog
+                      visible={moveTaskVisible}
+                      dialogStyle={{
+                        width: '320px',
+                        height: '160px',
+                        position: 'fixed',
+                        top: '129px',
+                        right: '158px',
+                        overflow: 'visible',
+                      }}
+                      onOK={() => {
+                        setMoveTaskVisible(false);
+                      }}
+                      onClose={() => {
+                        setMoveTaskVisible(false);
+                      }}
+                      showMask={false}
+                    >
+                      {labelArray && labelArray.length > 0 ? (
+                        <div className="addTask-container">
+                          <div
+                            className="addTask-item"
+                            onClick={() => {
+                              setGroupVisible(true);
+                            }}
+                          >
+                            <div className="addTask-avatar">
+                              <img
+                                src={
+                                  groupArray[groupIndex].groupLogo
+                                    ? groupArray[groupIndex].groupLogo
+                                    : defaultGroupPng
+                                }
+                                alt=""
+                              />
+                            </div>
+                            <div>{groupArray[groupIndex].groupName}</div>
+                            <img
+                              src={downArrowbPng}
+                              alt=""
+                              className="addTask-logo"
+                            />
+                            {groupVisible ? (
+                              <DropMenu
+                                visible={groupVisible}
+                                dropStyle={{
+                                  width: '300px',
+                                  height: '350px',
+                                  top: '50px',
+                                  overflow: 'auto',
+                                }}
+                                onClose={() => {
+                                  setGroupVisible(false);
+                                }}
+                                title={'选择项目'}
+                              >
+                                <React.Fragment>
+                                  {groupArray.map(
+                                    (item: any, index: number) => {
+                                      return (
+                                        <div
+                                          className="chooseItem"
+                                          onClick={(e: any) => {
+                                            setGroupIndex(index);
+                                            getLabelArray(item._key);
+                                            setGroupVisible(false);
+                                            e.stopPropagation();
+                                            changeTaskItem(
+                                              'groupKey',
+                                              item._key
+                                            );
+                                          }}
+                                          key={'group' + index}
+                                        >
+                                          <div className="addTask-avatar">
+                                            <img
+                                              src={
+                                                item.groupLogo
+                                                  ? item.groupLogo
+                                                  : defaultGroupPng
+                                              }
+                                              alt=""
+                                            />
+                                          </div>
+                                          <div>{item.groupName}</div>
+                                        </div>
+                                      );
+                                    }
+                                  )}
+                                </React.Fragment>
+                              </DropMenu>
+                            ) : null}
+                          </div>
+                          <div
+                            className="addTask-item"
+                            onClick={() => {
+                              setLabelVisible(true);
+                            }}
+                          >
+                            <div>{labelArray[labelIndex].cardLabelName}</div>
+                            <img
+                              src={downArrowbPng}
+                              alt=""
+                              className="addTask-logo"
+                            />
+                            {labelVisible ? (
+                              <DropMenu
+                                visible={labelVisible}
+                                dropStyle={{
+                                  width: '100%',
+                                  height: '350px',
+                                  top: '50px',
+                                  overflow: 'auto',
+                                }}
+                                onClose={() => {
+                                  setLabelVisible(false);
+                                }}
+                                title={'选择频道'}
+                              >
+                                <React.Fragment>
+                                  {labelArray.map(
+                                    (item: any, index: number) => {
+                                      return (
+                                        <div
+                                          className="chooseItem"
+                                          onClick={(e: any) => {
+                                            setLabelIndex(index);
+                                            setLabelVisible(false);
+                                            e.stopPropagation();
+                                            changeTaskItem(
+                                              'labelKey',
+                                              item._key
+                                            );
+                                          }}
+                                          key={'label' + index}
+                                        >
+                                          <div
+                                            style={{
+                                              textAlign: 'center',
+                                              width: '100%',
+                                            }}
+                                          >
+                                            {item.cardLabelName}
+                                          </div>
+                                        </div>
+                                      );
+                                    }
+                                  )}
+                                </React.Fragment>
+                              </DropMenu>
+                            ) : null}
+                          </div>
+                        </div>
+                      ) : null}
+                    </Dialog>
                   </DropMenu>
                 </div>
                 <div className="taskInfo-mainTitle-right-icon">
@@ -716,6 +762,9 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     onClick={() => {
                       dispatch(changeTaskInfoVisible(false));
                       dispatch(setChooseKey(''));
+                      if (onClose) {
+                        onClose();
+                      }
                     }}
                   />
                 </div>
@@ -724,11 +773,24 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
             <div className="taskInfo-container">
               <div
                 className="taskInfo-title"
-                onChange={(e: any) => {
-                  changeTaskItem('title', e.target.value);
-                }}
+                // onChange={(e: any) => {
+                //   setEditState(true);
+                //   changeTaskItem('title', e.target.value);
+                // }}
                 contentEditable
                 suppressContentEditableWarning
+                // onKeyUp={(e: any) => {
+                //   if (e.target.innerText != taskItem.title) {
+                //     setEditState(true);
+                //   }
+                // }}
+                onBlur={(e: any) => {
+                  if (e.target.innerText != taskItem.title) {
+                    changeTaskItem('title', e.target.innerText);
+                  }
+                  // setEditState(true);
+                }}
+                ref={titleRef}
               >
                 {taskItem.title}
               </div>
@@ -1018,6 +1080,6 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   );
 };
 TaskInfo.defaultProps = {
-  taskInfo: null,
+  fatherTaskItem: null,
 };
 export default TaskInfo;

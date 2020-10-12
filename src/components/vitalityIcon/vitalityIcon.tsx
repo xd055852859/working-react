@@ -8,7 +8,7 @@ import crowngPng from '../../assets/img/crowng.png';
 import sungPng from '../../assets/img/sung.png';
 import moongPng from '../../assets/img/moong.png';
 import stargPng from '../../assets/img/starg.png';
-import { useDispatch } from 'react-redux';
+// import { useDispatch } from 'react-redux';
 
 interface VitalityProps {
   vitalityDirection: string;

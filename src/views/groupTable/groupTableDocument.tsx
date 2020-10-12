@@ -62,16 +62,11 @@ const GroupTableDocument: React.FC<GroupTableProps> = (prop) => {
     return styleObj;
   };
   const toTop = (top: any) => {
-    console.log(top);
-    // console.log(
     documentRef.current.scrollTo(0, top);
-    // );
-    // documentRef.current.querySelectorAll(".fr-wrapper")[0].scrollTo(0, top);
   };
   const formatHtml = (wrapper: any) => {
     let arr = [];
     let nodeList = wrapper.getElementsByTagName('*');
-    console.log(nodeList);
     for (let i = 0, len = nodeList.length; i < len; i++) {
       let node = nodeList[i];
       let nodeName = nodeList[i].nodeName;

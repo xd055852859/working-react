@@ -1,26 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useDispatch } from 'react-redux';
 import './tabs.css';
+import { useDispatch } from 'react-redux';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import { Button, TextField } from '@material-ui/core';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import _ from 'lodash';
-import searchPng from '../../assets/img/search.png';
-import searchbPng from '../../assets/img/searchb.png';
-import sortPng from '../../assets/img/contact-sort.png';
-import addPng from '../../assets/img/contact-add.png';
-import addGroup1Png from '../../assets/img/addGroup1.png';
-import addGroup2Png from '../../assets/img/addGroup2.png';
-import addGroup3Png from '../../assets/img/addGroup3.png';
-import addPersonPng from '../../assets/img/addPerson.png';
-import downArrowbPng from '../../assets/img/downArrowb.png';
-import Contact from '../contact/contact';
-import Dialog from '../../components/common/dialog';
-import GroupSet from './groupSet';
-import GroupModel from './groupModel';
-import DropMenu from '../../components/common/dropMenu';
 import api from '../../services/api';
+
 import {
   setMessage,
   setCommonHeaderIndex,
@@ -35,18 +22,23 @@ import {
   getGroupInfo,
   setGroupKey,
 } from '../../redux/actions/groupActions';
+import { getMember } from '../../redux/actions/memberActions'
+;
+import Contact from '../contact/contact';
+import Dialog from '../../components/common/dialog';
+import GroupSet from './groupSet';
+import GroupModel from './groupModel';
+import DropMenu from '../../components/common/dropMenu';
 
-import { setTheme } from '../../redux/actions/authActions';
-import { getMember } from '../../redux/actions/memberActions';
-
-// import { Theme, makeStyles } from '@material-ui/core/styles';
+import searchPng from '../../assets/img/search.png';
+import searchbPng from '../../assets/img/searchb.png';
+import addPng from '../../assets/img/contact-add.png';
+import addGroup1Png from '../../assets/img/addGroup1.png';
+import addGroup2Png from '../../assets/img/addGroup2.png';
+import downArrowbPng from '../../assets/img/downArrowb.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: any;
-  value: any;
-}
+
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     input: {
@@ -98,8 +90,8 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   const [searchVisible, setSearchVisible] = React.useState(false);
   const [searchAllVisible, setSearchAllVisible] = React.useState(false);
   const [searchInputState, setSearchInputState] = React.useState('');
-  const [memberSortVisible, setMemberSortVisible] = React.useState(false);
-  const [groupSortVisible, setGroupSortVisible] = React.useState(false);
+  // const [memberSortVisible, setMemberSortVisible] = React.useState(false);
+  // const [groupSortVisible, setGroupSortVisible] = React.useState(false);
   const [addVisible, setAddVisible] = React.useState(false);
   const [addGroupVisible, setAddGroupVisible] = React.useState(false);
   const [addModelVisible, setAddModelVisible] = React.useState(false);
@@ -128,14 +120,12 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   useEffect(() => {
     if (tabsRef.current) {
       let clientHeight = tabsRef.current.clientHeight;
-      console.log('clientHeight', clientHeight);
       setClientHeight(clientHeight);
     }
   }, [tabsRef.current]);
   useEffect(() => {
     if (searchInput) {
       let newMainSearchList = [];
-      console.log(groupArray, 'groupArray');
       if (contactIndex === 1) {
         newMainSearchList = memberArray.filter(
           (memberItem: any, memberIndex: number) => {
@@ -153,7 +143,6 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
           }
         );
       }
-      console.log(newMainSearchList);
       setMainSearchList(newMainSearchList);
     }
   }, [memberArray, groupArray]);
@@ -185,7 +174,6 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
         );
         getSearchGroup(page);
       }
-      console.log(newMainSearchList);
       setMainSearchList(newMainSearchList);
     }
   };
@@ -290,7 +278,6 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     let groupRes: any = await api.group.getGroupInfo(groupKey);
     if (groupRes.msg === 'OK') {
       let newGroupInfo = groupRes.result;
-      console.log(groupRes);
       if (newGroupInfo.joinType) {
         setJoinType(newGroupInfo.joinType);
         setIsHasPassword(newGroupInfo.isHasPassword);
@@ -363,7 +350,16 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     setGroupObj(obj);
   };
   const addGroup = async () => {
-    let groupRes: any = await api.group.addGroup(groupObj);
+    let newGroupObj = _.cloneDeep(groupObj);
+    if (
+      !newGroupObj ||
+      !newGroupObj.groupName ||
+      !newGroupObj.groupName.trim()
+    ) {
+      dispatch(setMessage(true, '请输入群名', 'error'));
+      return;
+    }
+    let groupRes: any = await api.group.addGroup(newGroupObj);
     if (groupRes.msg === 'OK') {
       dispatch(setMessage(true, '创建群成功', 'success'));
       dispatch(setGroupKey(groupRes.result._key));
@@ -395,7 +391,6 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     dispatch(setMoveState('in'));
   };
   const toTargetUser = (targetUserKey: string) => {
-    console.log(targetUserKey);
     // dispatch(setTargetUserKey(targetUserKey));
     // dispatch(userKeyToGroupKey(targetUserKey));
     dispatch(getTargetUserInfo(targetUserKey));
@@ -409,8 +404,8 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       style={{
         height:
           theme && theme.calendarVisible
-            ? 'calc(100% - 242px)'
-            : 'calc(100% - 197px)',
+            ? 'calc(100% - 245px)'
+            : 'calc(100% - 200px)',
       }}
     >
       <ClickAwayListener
@@ -623,7 +618,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                       ? mainSearchItem.groupName
                       : mainSearchItem.nickName;
                   let key =
-                    contactIndex == 0
+                    contactIndex === 0
                       ? mainSearchItem._key
                       : mainSearchItem.userId;
                   return (
@@ -713,9 +708,9 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                         : searchItem._key;
                       return (
                         <React.Fragment>
-                          {(contactIndex == 1 &&
+                          {(contactIndex === 1 &&
                             !searchItem.isMyMainGroupMember) ||
-                          (contactIndex == 0 && !searchItem.isGroupMember) ? (
+                          (contactIndex === 0 && !searchItem.isGroupMember) ? (
                             <div
                               key={'search' + searchIndex}
                               className="personMember-item"

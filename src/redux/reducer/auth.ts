@@ -56,7 +56,6 @@ export const auth = (state = defaultState, action: any) => {
       localStorage.setItem('auth_token', action.data.token);
       localStorage.setItem('userKey', action.data._key);
       const socket = io.connect(api.SOCKET_URL);
-      console.log(socket);
       // socket.on('online', () => {
       socket.emit('login', action.data._key);
       return {

@@ -135,7 +135,7 @@ const traditionalDate = {
   },
   e2c() {
     this.TheDate =
-      arguments.length != 3
+      arguments.length !== 3
         ? new Date()
         : new Date(arguments[0], arguments[1], arguments[2]);
     let total, m, n, k;
@@ -150,7 +150,7 @@ const traditionalDate = {
       this.madd[this.TheDate.getMonth()] +
       this.TheDate.getDate() -
       38;
-    if (this.TheDate.getYear() % 4 == 0 && this.TheDate.getMonth() > 1) {
+    if (this.TheDate.getYear() % 4 === 0 && this.TheDate.getMonth() > 1) {
       total++;
     }
     for (m = 0; ; m++) {
@@ -167,8 +167,8 @@ const traditionalDate = {
     this.cYear = 1921 + m;
     this.cMonth = k - n + 1;
     this.cDay = total;
-    if (k == 12) {
-      if (this.cMonth == Math.floor(this.calendarData[m] / 0x10000) + 1) {
+    if (k === 12) {
+      if (this.cMonth === Math.floor(this.calendarData[m] / 0x10000) + 1) {
         this.cMonth = 1 - this.cMonth;
       }
       if (this.cMonth > Math.floor(this.calendarData[m] / 0x10000) + 1) {
@@ -198,10 +198,9 @@ const traditionalDate = {
         : this.cDay < 30
         ? '廿'
         : '三十';
-    if (this.cDay % 10 != 0 || this.cDay == 10) {
+    if (this.cDay % 10 !== 0 || this.cDay === 10) {
       tmp[2] += this.numString.charAt((this.cDay - 1) % 10);
     }
-    // console.log(moment(this.TheDate).month())
     // if (this.cMonth == 0 && this.cDay == 1) tmp[2] = '元旦';
     // if (this.cMonth == 2 && this.cDay == 12) tmp[2] = '植树节';
     // if (this.cMonth == 3 && this.cDay == 5) tmp[2] = '清明节';

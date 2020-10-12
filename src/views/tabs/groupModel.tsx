@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import './groupModel.css';
-import { useTypedSelector } from '../../redux/reducer/RootState';
 import { Button } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
-import { setMessage } from '../../redux/actions/commonActions';
 import api from '../../services/api';
-import leftArrowPng from '../../assets/img/leftArrow.png';
 
+import { setMessage } from '../../redux/actions/commonActions';
+
+import leftArrowPng from '../../assets/img/leftArrow.png';
 interface GroupModelProps {
   toGroupSet: any;
 }
@@ -17,7 +17,7 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
   const [modelTypeArr, setModelTypeArr] = useState<any>([]);
   const [modelTypeList, setModelTypeList] = useState<any>([]);
   const [modelInfo, setModelInfo] = useState<any>(null);
-  const [modelType, setModelType] = useState<any>(null);
+  // const [modelType, setModelType] = useState<any>(null);
   const [modelIndex, setModelIndex] = useState(0);
   const [modelInfoIndex, setModelInfoIndex] = useState<any>(null);
   const [modelState, setModelState] = useState(false);
@@ -29,9 +29,9 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
   const getModelType = async () => {
     let res: any = await api.group.getTemplateTypeList();
     if (res.msg === 'OK') {
-      console.log(res);
+
       setModelTypeArr(res.result);
-      setModelType(res.result[0]);
+      // setModelType(res.result[0]);
       getModelTypeList(res.result[0], 1);
     } else {
       dispatch(setMessage(true, res.msg, 'error'));
@@ -52,14 +52,14 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
           return (
             <div
               onClick={() => {
-                setModelType(item);
+                // setModelType(item);
                 getModelTypeList(item, 1);
                 setModelPage(1);
                 setModelIndex(index);
               }}
               className="groupModel-left-item"
               style={
-                modelIndex == index
+                modelIndex === index
                   ? { background: '#ffffff', color: '#17b881' }
                   : {}
               }
@@ -89,7 +89,7 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
                 >
                   <div className="groupModel-right-item-img">
                     <img src={item.templateUrl} alt="" />
-                    {modelInfoIndex == index ? (
+                    {modelInfoIndex === index ? (
                       <div className="groupModel-right-item-button">
                         <Button
                           variant="contained"

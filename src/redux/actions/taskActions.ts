@@ -1,4 +1,3 @@
-import moment from 'moment';
 import _ from 'lodash';
 export const actionTypes = {
   GET_GROUP_TASK: 'GET_GROUP_TASK',
@@ -155,7 +154,6 @@ export function addWorkingTableTaskSuccess(data: any) {
   return { type: actionTypes.ADD_WORKING_TABLE_TASK_SUCCESS, data };
 }
 export function setFilterObject(filterObj: any) {
-  console.log('filterObj', filterObj);
   return {
     type: actionTypes.SET_FILTER_OBJECT,
     filterObj: filterObj,

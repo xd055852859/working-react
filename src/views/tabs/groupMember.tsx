@@ -3,12 +3,15 @@ import './groupMember.css';
 import { Checkbox, TextField, Button } from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux';
-import { setMessage } from '../../redux/actions/commonActions';
-import { getMember } from '../../redux/actions/memberActions';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import _ from 'lodash';
 import api from '../../services/api';
+
+import { setMessage } from '../../redux/actions/commonActions';
+import { getMember } from '../../redux/actions/memberActions';
+
 import DropMenu from '../../components/common/dropMenu';
+
 import closePng from '../../assets/img/taskClose.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 export interface GroupMemberProps {
@@ -250,7 +253,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
     }
     setMemberList(newMemberList);
     setMember(newMemberList);
-    if (_.findIndex(groupMemberArray, { userId: userId }) != -1) {
+    if (_.findIndex(groupMemberArray, { userId: userId }) !== -1) {
       let memberRes: any = await api.group.deleteGroupMember(groupKey, [
         userId,
       ]);
@@ -318,7 +321,6 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
     ]);
     if (memberRes.msg === 'OK') {
       dispatch(setMessage(true, '通过审核成功', 'success'));
-      console.log(joinIndex);
       newJoinMemberList.splice(joinIndex, 1);
       setJoinMemberList(newJoinMemberList);
       dispatch(getMember(groupKey, 2));
@@ -358,7 +360,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                 setChooseIndex(0);
               }}
               style={{
-                borderBottom: chooseIndex == 0 ? '2px solid #17B881' : 'none',
+                borderBottom: chooseIndex === 0 ? '2px solid #17B881' : 'none',
                 marginRight: '15px',
                 cursor: 'pointer',
               }}
@@ -370,7 +372,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                 setChooseIndex(1);
               }}
               style={{
-                borderBottom: chooseIndex == 1 ? '2px solid #17B881' : 'none',
+                borderBottom: chooseIndex === 1 ? '2px solid #17B881' : 'none',
                 cursor: 'pointer',
               }}
             >
@@ -530,6 +532,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                     {newItem.role > groupRole ? (
                       <img
                         src={closePng}
+                        alt=""
                         onClick={() => {
                           deleteMember(newItem.userId);
                         }}

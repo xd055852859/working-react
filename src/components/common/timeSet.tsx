@@ -25,7 +25,6 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
     percentClick,
     timestate,
   } = prop;
-  console.log(dayNumber);
   const [timeDate, setTimeDate] = useState<any>([]);
   const [timeWeek, setTimeWeek] = useState<any>([]);
   const [timeMonth, setTimeMonth] = useState<any>([]);
@@ -98,7 +97,6 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
         .add(dayNumber - 1, 'day')
         .endOf('day')
         .date();
-      console.log('date', dateIndex);
     } else {
       if (dayNumber >= 0) {
         dateIndex = dayNumber;

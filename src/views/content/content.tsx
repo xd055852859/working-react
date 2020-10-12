@@ -16,9 +16,20 @@ const Content: React.FC<ContentProps> = (props) => {
   const theme = useTypedSelector((state) => state.auth.theme);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const [nowTime, setNowTime] = useState<any>([]);
-  const [createNum, setCreateNum] = useState(0);
-  const [finishNum, setfinishNum] = useState(0);
+  // const [createNum, setCreateNum] = useState(0);
+  // const [finishNum, setfinishNum] = useState(0);
   const [prompt, setPrompt] = useState();
+  const [targetInterval, setTargetInterval] = useState<any>(null);
+  useEffect(() => {
+    let interval: any = null;
+    if (user && headerIndex === 0) {
+      formatTime();
+      getPrompt();
+      interval = setInterval(formatTime, 60000);
+      // getSocket();
+      setTargetInterval(interval);
+    }
+  }, [user, headerIndex]);
   useEffect(() => {
     let interval: any = null;
     if (user && headerIndex === 0) {
@@ -28,9 +39,11 @@ const Content: React.FC<ContentProps> = (props) => {
       // getSocket();
     }
     return () => {
-      clearInterval(interval);
+      if (targetInterval) {
+        clearInterval(targetInterval);
+      }
     };
-  }, [user, headerIndex]);
+  }, []);
   const formatTime = () => {
     let hour = moment().hour();
     let minute = moment().minute();
@@ -47,7 +60,6 @@ const Content: React.FC<ContentProps> = (props) => {
       nowTime[0] = '晚上';
     }
     nowTime[1] = moment().format('HH:mm');
-    console.log(new Date());
     setNowTime(nowTime);
   };
   const getPrompt = async () => {
@@ -60,8 +72,8 @@ const Content: React.FC<ContentProps> = (props) => {
     }
   };
   const getNum = async (createNum: number, finishNum: number) => {
-    setCreateNum(createNum);
-    setfinishNum(finishNum);
+    // setCreateNum(createNum);
+    // setfinishNum(finishNum);
   };
   return (
     <div className="content">

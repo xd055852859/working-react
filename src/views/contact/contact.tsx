@@ -14,7 +14,7 @@ import {
   setMoveState,
 } from '../../redux/actions/commonActions';
 import {
-  setTargetUserKey,
+  // setTargetUserKey,
   getTargetUserInfo,
   // userKeyToGroupKey
 } from '../../redux/actions/authActions';
@@ -45,16 +45,15 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 const Contact: React.FC<ContactProps> = (props) => {
-  const classes = useStyles();
+  // const classes = useStyles();
   const { contactIndex, contactType } = props;
   const [contactArray, setContactArray] = useState([]);
-  const [selectedIndex, setSelectedIndex] = useState<any>();
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
   const memberArray = useTypedSelector((state) => state.member.memberArray);
   const groupArray = useTypedSelector((state) => state.group.groupArray);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
-  const theme = useTypedSelector((state) => state.auth.theme);
+  // const theme = useTypedSelector((state) => state.auth.theme);
   useEffect(() => {
     if (user && user._key) {
       if (!groupArray && contactIndex === 0) {
@@ -75,18 +74,13 @@ const Contact: React.FC<ContactProps> = (props) => {
     dispatch(setGroupKey(groupKey));
     dispatch(getGroupInfo(groupKey));
     dispatch(setCommonHeaderIndex(3));
-    setSelectedIndex(index);
     dispatch(setMoveState('in'));
     await api.group.visitGroupOrFriend(2, groupKey);
     dispatch(getGroup(3));
   };
   const toTargetUser = async (targetUserKey: string, index: number) => {
-    console.log(targetUserKey);
-    // dispatch(setTargetUserKey(targetUserKey));
-    // dispatch(userKeyToGroupKey(targetUserKey));
     dispatch(getTargetUserInfo(targetUserKey));
     dispatch(setCommonHeaderIndex(2));
-    setSelectedIndex(index);
     dispatch(setMoveState('in'));
     await api.group.visitGroupOrFriend(1, targetUserKey);
     dispatch(getMember(mainGroupKey, 2));
@@ -131,7 +125,6 @@ const Contact: React.FC<ContactProps> = (props) => {
                     ? toTargetUser(key, index)
                     : toTargetGroup(key, index);
                 }}
-                // selected={selectedIndex === index}
               >
                 <div className="contact-left">
                   <div className="contact-avatar">

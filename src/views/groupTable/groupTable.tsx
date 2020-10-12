@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import './groupTable.css';
@@ -6,7 +6,7 @@ import {
   getGroupMember,
   setHeaderIndex,
 } from '../../redux/actions/memberActions';
-import api from '../../services/api';
+// import api from '../../services/api';
 import GroupTableHeader from './groupTableHeader';
 import GroupTableGroup from './groupTableGroup';
 import GroupTableData from './groupTableData';
@@ -26,30 +26,17 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
   );
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const moveState = useTypedSelector((state) => state.common.moveState);
-  const [inputVisible, setInputVisible] = useState(false);
-  const [inputValue, setInputValue] = useState('');
 
   useEffect(() => {
     if (user && user._key && groupKey) {
       dispatch(getGroupMember(groupKey));
     }
   }, [user, groupKey]);
-  const handleInputChange = (e: any) => {
-    setInputValue(e.target.value);
-  };
   useEffect(() => {
     if (groupKey) {
       dispatch(setHeaderIndex(0));
     }
   }, [groupKey]);
-  // const handleInputConfirm = async () => {
-  //   setInputVisible(false);
-  //   if (inputValue !== '') {
-  //     await api.task.addTaskLabel(groupKey, inputValue);
-  //     setInputValue('');
-  //     await api.task.getTaskList(3, groupKey, '[0,1,2]');
-  //   }
-  // };
   return (
     <div
       className="groupTable"
@@ -63,7 +50,6 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
     >
       <GroupTableHeader />
       <div className="groupTableContent">
-        {/* <WorkingTableLabel /> */}
         {memberHeaderIndex === 0 ? <GroupTableGroup /> : null}
         {memberHeaderIndex === 1 ? <Grid gridState={true} /> : null}
         {memberHeaderIndex === 2 ? <Grid gridState={false} /> : null}
@@ -75,40 +61,6 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
           <Vitality vitalityType={headerIndex} vitalityKey={groupKey} />
         ) : null}
       </div>
-
-      {/* <div
-        className="cooperation-container-item"
-        style={{
-          width: '350px',
-          position: 'fixed',
-          bottom: '2px',
-          right: '0px',
-        }}
-      >
-        <div className="cooperation-info" style={{ width: '100%' }}>
-          {inputVisible ? (
-            <input
-              style={{ width: '100%', height: '35px' }}
-              onChange={handleInputChange}
-              value={inputValue}
-              onBlur={() => {
-                handleInputConfirm();
-              }}
-              placeholder="输入标签名"
-            />
-          ) : (
-            <div
-              className="cooperation-info-labelName"
-              onClick={() => {
-                setInputVisible(true);
-              }}
-              style={{ background: '#fff', color: '#333' }}
-            >
-              <div>新建标签</div>
-            </div>
-          )}
-        </div>
-      </div> */}
     </div>
   );
 };

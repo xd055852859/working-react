@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import './dropMenu.css';
 interface dropMenuProp {

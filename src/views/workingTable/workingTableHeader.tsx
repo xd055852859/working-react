@@ -1,26 +1,28 @@
 import React, { useState, useEffect } from 'react';
+import './workingTableHeader.css';
 import { Checkbox, Chip, Avatar } from '@material-ui/core';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
+import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
+import api from '../../services/api';
+import _ from 'lodash';
+
+import DropMenu from '../../components/common/dropMenu';
+import HeaderFilter from '../../components/headerFilter/headerFilter';
+import Contact from '../../views/contact/contact';
+import Tooltip from '../../components/common/tooltip';
+
 import { setHeaderIndex } from '../../redux/actions/memberActions';
 import { setFilterObject } from '../../redux/actions/taskActions';
 import { setTheme } from '../../redux/actions/authActions';
-import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import {
   setCommonHeaderIndex,
   setMoveState,
   setChatState,
   setMessage,
 } from '../../redux/actions/commonActions';
-import api from '../../services/api';
-import _ from 'lodash';
+
 import tablePng from '../../assets/img/table.png';
-import './workingTableHeader.css';
-import DropMenu from '../../components/common/dropMenu';
-import HeaderFilter from '../../components/headerFilter/headerFilter';
-import Contact from '../../views/contact/contact';
-import Tooltip from '../../components/common/tooltip';
-import VitalityIcon from '../../components/vitalityIcon/vitalityIcon';
 import labelPng from '../../assets/img/label.png';
 import labelTabPng from '../../assets/img/labelTab.png';
 import groupPng from '../../assets/img/group.png';
@@ -104,7 +106,6 @@ const WorkingTableHeader: React.FC = (prop) => {
   ];
   const [viewVisible, setViewVisible] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
-  // const [vitalityVisible, setVitalityVisible] = useState(false);
   const [memberVisible, setMemberVisible] = useState(false);
   const [filterCheckedArray, setFilterCheckedArray] = useState<any>([
     true,
@@ -114,7 +115,6 @@ const WorkingTableHeader: React.FC = (prop) => {
     false,
     false,
   ]);
-  const [energyValueTotal, setEnergyValueTotal] = useState(0);
   const [fileState, setFileState] = useState(true);
   const [fileInput, setFileInput] = useState('7');
 
@@ -129,13 +129,6 @@ const WorkingTableHeader: React.FC = (prop) => {
         key = userKey;
       } else if (headerIndex === 2 && targetUserKey != '') {
         key = targetUserKey;
-      }
-      console.log('userKey', key);
-      if (key && _.findIndex(memberArray, { userId: key }) != -1) {
-        setEnergyValueTotal(
-          memberArray[_.findIndex(memberArray, { userId: key })]
-            .energyValueTotal
-        );
       }
     }
   }, [memberArray, userKey, targetUserKey]);
@@ -255,19 +248,6 @@ const WorkingTableHeader: React.FC = (prop) => {
         工作台
       </div>
       <div className="workingTableHeader-line">|</div>
-      {/* <div
-        className="workingTableHeader-vitalityNum"
-        onClick={() => {
-          setVitalityVisible(true);
-        }}
-      >
-        <div style={{ width: '50px', flexShrink: 0 }}>活力值</div>
-        <VitalityIcon
-          vitalityNum={energyValueTotal}
-          vitalityDirection={'vertical'}
-          vitalityStyle={{ marginLeft: '5px', color: '#fff' }}
-        />
-      </div> */}
       {headerIndex === 2 ? (
         <div className="groupTableHeader-name">
           <div className="groupTableHeader-logo">
@@ -464,7 +444,7 @@ const WorkingTableHeader: React.FC = (prop) => {
                           color="primary"
                         />
                         {item}
-                        {item == '已归档' ? (
+                        {item === '已归档' ? (
                           <React.Fragment>
                             {fileState ? (
                               <div

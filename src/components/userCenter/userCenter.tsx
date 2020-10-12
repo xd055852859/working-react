@@ -98,7 +98,6 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
       },
     });
     if (res.msg === 'OK') {
-      // console.log(res);
       dispatch(setMessage(true, '修改用户数据成功', 'success'));
       dispatch(getUserInfo(token));
       onClose();

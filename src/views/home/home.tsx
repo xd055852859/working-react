@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import './home.css';
 import logoPng from '../../assets/img/logo.png';
 import boardPng from '../../assets/img/board.png';
@@ -46,6 +46,7 @@ const Home: React.FC<HomeProps> = (props) => {
             : { backgroundColor: theme.backgroundColor }
         }
       ></div>
+      <div className="home-b"></div>
       <div className="home-header">
         <div
           className="home-header-logo"

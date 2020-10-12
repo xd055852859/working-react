@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import { useLocation, useHistory } from 'react-router-dom';
 import { useTypedSelector } from './redux/reducer/RootState';
 import { getSearchParamValue } from './services/util';
 import { useDispatch } from 'react-redux';
-import closePng from './assets/img/close.png';
+import moment from 'moment';
+import _ from 'lodash';
+
 import {
   getUserInfo,
   getMainGroupKey,
@@ -20,8 +22,7 @@ import {
   setChooseKey,
   changeTaskInfoVisible,
   getCalendarList,
-  setTaskAction,
-  setTaskKey
+  setTaskKey,
 } from './redux/actions/taskActions';
 import Home from './views/home/home';
 import Content from './views/content/content';
@@ -30,9 +31,10 @@ import GroupTable from './views/groupTable/groupTable';
 import Chat from './views/chat/chat';
 import Calendar from './views/calendar/calendar';
 import TaskInfo from './components/taskInfo/taskInfo';
+
+import closePng from './assets/img/close.png';
 import { setGroupKey } from './redux/actions/groupActions';
-import moment from 'moment';
-import _ from 'lodash';
+
 const App: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
@@ -40,7 +42,6 @@ const App: React.FC = () => {
   const user = useTypedSelector((state) => state.auth.user);
   const token = useTypedSelector((state) => state.auth.token);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
-  const taskInfo = useTypedSelector((state) => state.task.taskInfo);
   const taskInfoVisible = useTypedSelector(
     (state) => state.task.taskInfoVisible
   );
@@ -49,10 +50,12 @@ const App: React.FC = () => {
   );
   const taskAction = useTypedSelector((state) => state.task.taskAction);
   const theme = useTypedSelector((state) => state.auth.theme);
-  const message = useTypedSelector((state) => state.common.message);
   const [intervalTime, setIntervalTime] = useState<any>(null);
   const [playAction, setPlayAction] = useState<any>({});
   const [playState, setPlayState] = useState(false);
+  const [clientWidth, setClientWidth] = useState(0);
+  const [clientHeight, setClientHeight] = useState(0);
+
   const calendarColor = [
     '#39B98D',
     '#3C8FB5',
@@ -65,6 +68,14 @@ const App: React.FC = () => {
     '#4A4A4A',
     '#9B9B9B',
   ];
+  const pageRef: React.RefObject<any> = useRef();
+  useEffect(() => {
+    if (pageRef.current) {
+      setClientWidth(pageRef.current.clientWidth);
+      let clientHeight = pageRef.current.clientHeight;
+      setClientHeight(clientHeight);
+    }
+  }, [pageRef.current]);
   useEffect(() => {
     // 用户已登录
     if (
@@ -73,7 +84,6 @@ const App: React.FC = () => {
       token &&
       token === localStorage.getItem('auth_token')
     ) {
-      // console.log(user);
       dispatch(getMainGroupKey());
       dispatch(getTheme());
       dispatch(
@@ -181,17 +191,33 @@ const App: React.FC = () => {
       }
     });
   };
+  window.onresize = _.debounce(function () {
+    setClientWidth(pageRef.current.clientWidth);
+    let clientHeight = pageRef.current.clientHeight;
+    setClientHeight(clientHeight);
+  }, 500);
   return (
     <div
       className="App"
       style={
         theme.backgroundImg
-          ? { backgroundImage: 'url(' + theme.backgroundImg + ')' }
+          ? {
+              backgroundImage:
+                'url(' +
+                theme.backgroundImg +
+                '?imageMogr2/auto-orient/thumbnail/' +
+                clientWidth +
+                'x' +
+                clientHeight +
+                '/format/jpg' +
+                ')',
+            }
           : { backgroundColor: theme.backgroundColor }
       }
-      onClick={()=>{
+      onClick={() => {
         dispatch(setTaskKey(''));
       }}
+      ref={pageRef}
     >
       <Home />
       {headerIndex === 0 ? <Content /> : null}

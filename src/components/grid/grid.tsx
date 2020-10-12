@@ -8,7 +8,7 @@ import moment from 'moment';
 import Loading from '../common/loading';
 import './grid.css';
 import api from '../../services/api';
-import format from '../../components/common/format';
+// import format from '../../components/common/format';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import Tooltip from '../common/tooltip';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
@@ -19,8 +19,8 @@ interface GridProps {
 const Grid: React.FC<GridProps> = (prop) => {
   let { gridState } = prop;
   const dispatch = useDispatch();
-  const user = useTypedSelector((state) => state.auth.user);
-  const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
+  // const user = useTypedSelector((state) => state.auth.user);
+  // const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const groupMemberArray = useTypedSelector(
     (state) => state.member.groupMemberArray
   );
@@ -45,7 +45,7 @@ const Grid: React.FC<GridProps> = (prop) => {
   const [loading, setLoading] = useState(false);
   const labelRef: React.RefObject<any> = useRef();
   useEffect(() => {
-    if (headerIndex == 3 && groupInfo && labelArray && taskArray) {
+    if (headerIndex === 3 && groupInfo && labelArray && taskArray) {
       let groupArray: any = _.cloneDeep([groupInfo]);
       groupArray[0].labelArray = _.cloneDeep(labelArray);
       let cardArray: any = _.cloneDeep([taskArray]).map((item: any) => {
@@ -190,7 +190,6 @@ const Grid: React.FC<GridProps> = (prop) => {
     } else {
       newTaskNavDay = formatData()[0];
     }
-    console.log('XXXXXXXXXXXXXXX', newTaskNavDay);
     let newGridGroupArray: any = [];
     if (groupArray.length > 0 && taskArray.length > 0) {
       taskArray.forEach((item: any, index: number) => {
@@ -199,7 +198,6 @@ const Grid: React.FC<GridProps> = (prop) => {
           tabShow: true,
         };
         item.forEach((groupItem: any, groupIndex: number) => {
-          console.log('22222222222', groupItem);
           if (groupItem.labelKey) {
             if (!arr[index][groupItem.labelKey]) {
               let labelIndex = _.findIndex(groupArray[index].labelArray, {
@@ -342,7 +340,6 @@ const Grid: React.FC<GridProps> = (prop) => {
     return gridState ? formatDate() : formatPerson();
   };
   // playTreeAudio() {
-  //   console.log("????????", this.$refs.treeAudio);
   //   this.$refs.treeAudio.play();
   // },
   const changeTaskNum = (newTaskNavDay: any) => {
@@ -385,7 +382,6 @@ const Grid: React.FC<GridProps> = (prop) => {
                 </div>
               </div>
               {groupItem.arr.map((taskItem: any, taskIndex: number) => {
-                // console.log(taskItem);
                 return (
                   <div
                     key={'task' + taskIndex}

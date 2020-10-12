@@ -2,19 +2,19 @@ import React, { useState, useRef, useEffect } from 'react';
 import './workingTableLabel.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
+import api from '../../services/api';
+import _ from 'lodash';
 import format from '../../components/common/format';
+
 import {
   getWorkingTableTask,
-  addWorkingTableTask,
 } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
+
 import Task from '../../components/task/task';
-import DropMenu from '../../components/common/dropMenu';
 import TaskNav from '../../components/taskNav/taskNav';
-import _ from 'lodash';
-import api from '../../services/api';
+
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
-import ellipsisPng from '../../assets/img/ellipsis.png';
 const WorkingTableGroup: React.FC = (prop) => {
   const user = useTypedSelector((state) => state.auth.user);
   const memberHeaderIndex = useTypedSelector(
@@ -31,10 +31,6 @@ const WorkingTableGroup: React.FC = (prop) => {
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const [mainGroupArray, setMainGroupArray] = useState<any>([]);
-  const [batchTaskVisible, setBatchTaskVisible] = useState(false);
-  const [batchLabelKey, setBatchLabelKey] = useState<string | null>('');
-  const [batchGroupKey, setBatchGroupKey] = useState<string | null>('');
-  const [batchTaskIndex, setBatchTaskIndex] = useState(0);
   const [chooseLabelKey, setChooseLabelKey] = useState('');
   const dispatch = useDispatch();
   const [colWidth, setColWidth] = useState(0);
@@ -139,14 +135,12 @@ const WorkingTableGroup: React.FC = (prop) => {
   useEffect(() => {
     let groupArray = [];
     if (memberHeaderIndex === 5 && mainGroupArray.length > 0) {
-      console.log('mainGroupArray', mainGroupArray);
       groupArray = mainGroupArray.filter((item: any, index: number) => {
         if (item.arrlength > 0) {
           item.position = render(index);
           return item;
         }
       });
-      console.log('groupArray', groupArray);
       setMainGroupArray(groupArray);
     }
   }, [memberHeaderIndex, mainGroupArray.length]);
@@ -163,7 +157,6 @@ const WorkingTableGroup: React.FC = (prop) => {
       top: 0,
     };
     let dom: any = document.getElementById('workingTableGroup' + index);
-    console.log(dom);
     if (dom) {
       let height = dom.offsetHeight;
       let width = dom.offsetWidth;
@@ -185,7 +178,6 @@ const WorkingTableGroup: React.FC = (prop) => {
         //  把高度加上去
         colHeight[minIndex] += colWidth / ratio;
       }
-      console.log(obj);
       return obj;
     }
   };
@@ -228,7 +220,7 @@ const WorkingTableGroup: React.FC = (prop) => {
                             <Task
                               taskItem={taskItem}
                               // timeSetStatus={taskIndex > groupItem.arr.length - 3}
-                              myState={item.groupObj._key == mainGroupKey}
+                              myState={item.groupObj._key === mainGroupKey}
                             />
                           ) : null}
                         </React.Fragment>
@@ -260,15 +252,7 @@ const WorkingTableGroup: React.FC = (prop) => {
       dispatch(setMessage(true, batchRes.msg, 'error'));
     }
   };
-  const chooseBatchLabel = (
-    labelKey: string | null,
-    groupKey: string | null,
-    index: number
-  ) => {
-    setBatchGroupKey(groupKey);
-    setBatchTaskVisible(true);
-    setBatchTaskIndex(index - 1);
-  };
+
   return (
     <div
       className="workingTableLabel-container"
@@ -308,7 +292,6 @@ const WorkingTableGroup: React.FC = (prop) => {
               >
                 <div className="workingTableLabel-info-groupName">
                   {/* onClick={toGroup(item.groupObj)} */}
-
                   <div className="workingTableLabel-info-groupLogo">
                     <img
                       src={

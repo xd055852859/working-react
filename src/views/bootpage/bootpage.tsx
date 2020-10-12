@@ -14,7 +14,7 @@ const Bootpage: React.FC = () => {
       let clientHeight = bootpageRef.current.clientHeight;
       setClientHeight(clientHeight);
     }
-  }, [bootpageRef.current]);
+  }, [bootpageRef]);
   const toUrl = () => {
     window.open('http://www.beian.miit.gov.cn/');
   };
@@ -55,9 +55,10 @@ const Bootpage: React.FC = () => {
       <div
         className="bootpage-video"
         style={{
-          width: clientHeight,
-          left: clientWidth - clientHeight / 2,
-          overflow: 'hidden'
+          width: clientHeight + 'px',
+          left: clientWidth - clientHeight / 2 + 'px',
+          height: clientHeight - 1 + 'px',
+          overflow: 'hidden',
         }}
       >
         <video

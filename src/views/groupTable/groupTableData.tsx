@@ -3,14 +3,14 @@ import { useTypedSelector } from '../../redux/reducer/RootState';
 import { Radio, RadioGroup, FormControlLabel } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import moment from 'moment';
-import Task from '../../components/task/task';
-import chart from '../../components/common/chart';
-import { setMessage } from '../../redux/actions/commonActions';
-import api from '../../services/api';
-import Loading from '../../components/common/loading';
+import _ from 'lodash';
 import './groupTableData.css';
 
-import _ from 'lodash';
+import Task from '../../components/task/task';
+import chart from '../../components/common/chart';
+import Loading from '../../components/common/loading';
+import { setMessage } from '../../redux/actions/commonActions';
+import api from '../../services/api';
 
 interface GroupTableDataProps {}
 
@@ -26,7 +26,6 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
   const [XYlength, setXYlength] = useState(0);
   const [loading, setLoading] = useState(false);
   const [colWidth, setColWidth] = useState(0);
-  const [divHeight, setDivHeight] = useState(0);
   let dataChart = null;
   let XYLeftchart = null;
   let XYLeft1chart = null;
@@ -68,8 +67,6 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
         groupDataRef.current.childNodes.length > 0 &&
         JSON.stringify(personGroupObj) != '{}'
       ) {
-        console.log(personGroupObj);
-        console.log(groupDataRef.current.childNodes[0].offsetHeight);
         let newPositionObj = _.cloneDeep(positionObj);
         Object.keys(personObj).forEach((item: any, index: number) => {
           newPositionObj[item] = render(index, item);
@@ -78,15 +75,6 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
       }
     }
   }, [personGroupObj]);
-  // useEffect(() => {
-  //   if (groupDataRef.current.childNodes.length > 0) {
-  //     console.log(
-  //       'groupDataRef.current.childNodes',
-  //       groupDataRef.current.childNodes
-  //     );
-
-  //   }
-  // }, [groupDataRef.current]);
 
   const getGroupData = async () => {
     setLoading(true);
@@ -111,7 +99,6 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
     getTeamData(groupData, parseInt(e.target.value));
   };
   const handleChart = (taskState: number, groupData: any) => {
-    console.log('taskState', typeof taskState);
     let data: any = [];
     let newData: any = {};
     let XYLeftdata: any = [];
@@ -193,7 +180,6 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
       }
       // {"from":"Monica","to":"Rachel","value":4}
     });
-    console.log('newData', newData);
     for (let key in newData) {
       let keyArr = key.split('-');
       data.push({ from: keyArr[0], to: keyArr[1], value: newData[key] });
@@ -296,7 +282,6 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
         // this.showTabObj[item.executorKey] = true;
       }
     });
-    console.log('newPersonObj', newPersonObj);
     for (let key in newPersonObj) {
       if (key != 'position') {
         newPersonGroupObj[key] = {};

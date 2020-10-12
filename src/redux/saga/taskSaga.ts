@@ -105,7 +105,6 @@ function* getWorkingTableTask(action: any) {
 function* editTask(action: any) {
   try {
     const res = yield call(api.task.editTask, action.data);
-    console.log('res', res);
     if (res.msg === 'OK') {
       yield put(editTaskSuccess([res.result, action.headerIndex]));
     } else {
@@ -124,7 +123,6 @@ function* addWorkingTableTask(action: any) {
       action.labelKey,
       action.executorKey
     );
-    console.log('res', res);
     if (res.msg === 'OK') {
       yield put(addWorkingTableTaskSuccess(res.result));
     } else {
@@ -142,7 +140,6 @@ function* getCalendarList(action: any) {
       action.startTime,
       action.endTime,
     );
-    console.log('res', res);
     if (res.msg === 'OK') {
       yield put(getCalendarListSuccess(res.result));
     } else {

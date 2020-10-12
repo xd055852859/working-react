@@ -147,8 +147,7 @@ export const task = (state = defaultState, action: any) => {
             return taskItem;
           }
         );
-        console.log(state.workingTaskArray);
-      } else if (headerIndex == 3) {
+      } else if (headerIndex === 3) {
         state.taskArray = state.taskArray.map(
           (taskItem: any, taskIndex: number) => {
             if (taskItem._key === taskInfo._key) {
@@ -182,7 +181,6 @@ export const task = (state = defaultState, action: any) => {
         taskInfoVisible: action.taskInfoVisible,
       };
     case actionTypes.SET_TASK_ACTION:
-      console.log('???????????', action.taskAction);
       return {
         ...state,
         taskAction: action.taskAction,
@@ -198,7 +196,6 @@ export const task = (state = defaultState, action: any) => {
           taskActionArray.push(item);
         }
       });
-      console.log(taskActionArray);
       return {
         ...state,
         calendarList: action.data,
