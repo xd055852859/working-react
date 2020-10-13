@@ -528,7 +528,7 @@ const WorkingTableHeader: React.FC = (prop) => {
       >
         活力
       </div>
-      {headerIndex === 2 ? (
+      {/* {headerIndex === 2 ? (
         <Tooltip title="群聊天">
           <img
             src={chatPng}
@@ -544,7 +544,7 @@ const WorkingTableHeader: React.FC = (prop) => {
             }}
           />
         </Tooltip>
-      ) : null}
+      ) : null} */}
     </div>
   );
 };

@@ -323,7 +323,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       dispatch(setMessage(true, '通过审核成功', 'success'));
       newJoinMemberList.splice(joinIndex, 1);
       setJoinMemberList(newJoinMemberList);
-      dispatch(getMember(groupKey, 2));
+      dispatch(getMember(groupKey));
       api.group.deleteApplyJoinGroup(joinItem._key);
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
@@ -345,7 +345,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       newSearchMemberList[addIndex].isMyMainGroupMember = true;
       setSearchMemberList(newSearchMemberList);
       setGroupMemberList(newSearchMemberList);
-      dispatch(getMember(mainGroupKey, 2));
+      dispatch(getMember(mainGroupKey));
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }

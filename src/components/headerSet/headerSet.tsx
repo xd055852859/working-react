@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './headerSet.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useLocation, useHistory } from 'react-router-dom';
 import { TextField, Button } from '@material-ui/core';
@@ -10,14 +11,17 @@ import Dialog from '../common/dialog';
 import DropMenu from '../common/dropMenu';
 import Tooltip from '../common/tooltip';
 import ClockIn from '../clockIn/clockIn';
-
 import Task from '../task/task';
 import UserCenter from '../userCenter/userCenter';
 import MessageBoard from '../../views/board/messageBoard';
 import { setTheme } from '../../redux/actions/authActions';
-import { setMessage } from '../../redux/actions/commonActions';
+import {
+  setMessage,
+  setUnMessageNum,
+  setChatState,
+} from '../../redux/actions/commonActions';
 import { getSelfTask } from '../../redux/actions/taskActions';
-import './headerSet.css';
+
 import set1Png from '../../assets/img/set1.png';
 import set2Png from '../../assets/img/set2.png';
 import set3Png from '../../assets/img/set3.png';
@@ -29,6 +33,7 @@ import clockInPng from '../../assets/img/clockIn.png';
 import searchPng from '../../assets/img/headerSearch.png';
 import addPng from '../../assets/img/taskAdd.png';
 import messagePng from '../../assets/img/headerMessage.png';
+import chatPng from '../../assets/img/headerChat.png';
 import downArrowbPng from '../../assets/img/downArrowb.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 
@@ -65,7 +70,11 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const theme = useTypedSelector((state) => state.auth.theme);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const groupArray = useTypedSelector((state) => state.group.groupArray);
-  const groupKey = useTypedSelector((state) => state.group.groupKey);
+  const memberArray = useTypedSelector((state) => state.member.memberArray);
+  const groupInfo = useTypedSelector((state) => state.group.groupInfo);
+  // const groupKey = useTypedSelector((state) => state.group.groupKey);
+  const unChatNum = useTypedSelector((state) => state.common.unChatNum);
+  const unMessageNum = useTypedSelector((state) => state.common.unMessageNum);
   const socket = useTypedSelector((state) => state.auth.socket);
   const [avatar, setAvatar] = useState<any>(null);
   const [contentSetVisilble, setContentSetVisilble] = useState(false);
@@ -256,6 +265,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     dispatch(setMessage(true, '退出登录成功', 'success'));
     history.push('/bootpage');
   };
+
   return (
     <React.Fragment>
       <div className="contentHeader-set">
@@ -311,20 +321,58 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             }}
           />
         </Tooltip>
-        <Tooltip title="消息中心">
-          <img
-            src={messagePng}
-            alt=""
-            style={{
-              width: '40px',
-              height: '40px',
-              marginRight: '15px',
-              cursor: 'pointer',
-            }}
-            onClick={() => {
-              setMessageVisible(true);
-            }}
-          />
+        {headerIndex !== 0 ? (
+          <Tooltip title="消息中心">
+            <div style={{ position: 'relative' }}>
+              <img
+                src={messagePng}
+                alt=""
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  marginRight: '15px',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  setMessageVisible(true);
+                  dispatch(setUnMessageNum(0));
+                }}
+              />
+              {unMessageNum ? (
+                <div
+                  className="headerSet-unRead"
+                  style={{ borderRadius: unMessageNum < 10 ? '50%' : '20px' }}
+                >
+                  {unMessageNum}
+                </div>
+              ) : null}
+            </div>
+          </Tooltip>
+        ) : null}
+        <Tooltip title="聊天中心">
+          <div style={{ position: 'relative' }}>
+            <img
+              src={chatPng}
+              alt=""
+              style={{
+                width: '40px',
+                height: '40px',
+                marginRight: '15px',
+                cursor: 'pointer',
+              }}
+              onClick={() => {
+                dispatch(setChatState(true));
+              }}
+            />
+            {unChatNum ? (
+              <div
+                className="headerSet-unRead"
+                style={{ borderRadius: unChatNum < 10 ? '50%' : '20px' }}
+              >
+                {unChatNum}
+              </div>
+            ) : null}
+          </div>
         </Tooltip>
         <Tooltip title="用户中心">
           <div
@@ -363,7 +411,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             width: '260px',
             height: '450px',
             top: '65px',
-            right: '21px',
+            left: 'calc(100% - 260px)',
           }}
           onClose={() => {
             setContentSetVisilble(false);

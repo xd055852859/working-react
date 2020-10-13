@@ -29,7 +29,6 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
   const getModelType = async () => {
     let res: any = await api.group.getTemplateTypeList();
     if (res.msg === 'OK') {
-
       setModelTypeArr(res.result);
       // setModelType(res.result[0]);
       getModelTypeList(res.result[0], 1);
@@ -63,6 +62,7 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
                   ? { background: '#ffffff', color: '#17b881' }
                   : {}
               }
+              key={'modelTypeArr' + index}
             >
               {item}
             </div>
@@ -86,6 +86,7 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
                     setModelState(true);
                     setModelInfo(item);
                   }}
+                  key={'modelType' + index}
                 >
                   <div className="groupModel-right-item-img">
                     <img src={item.templateUrl} alt="" />

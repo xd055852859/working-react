@@ -154,19 +154,25 @@ const Task: React.FC<TaskProps> = (props) => {
     // dispatch(setChooseKey('0'));
   }, [headerIndex, groupKey]);
   useEffect(() => {
-    if (titleRef.current) {
-      if (titleRef.current.setSelectionRange) {
-        titleRef.current.setSelectionRange(
-          titleRef.current.value.length,
-          titleRef.current.value.length
-        );
-      } else {
-        let range = titleRef.current.createTextRange();
-        range.moveStart('character', titleRef.current.value.length);
-        range.moveEnd('character', titleRef.current.value.length);
-        range.select();
-      }
-      titleRef.current.focus();
+    if (titleRef.current && taskKey === taskDetail._key && editRole) {
+      console.log(titleRef.current);
+      // if (titleRef.current.setSelectionRange) {
+      //   titleRef.current.setSelectionRange(
+      //     titleRef.current.value.length,
+      //     titleRef.current.value.length
+      //   );
+      // } else {
+      //   let range = titleRef.current.createTextRange();
+      //   range.moveStart('character', titleRef.current.value.length);
+      //   range.moveEnd('character', titleRef.current.value.length);
+      //   range.select();
+      // }
+      let range = document.createRange();
+      range.selectNodeContents(titleRef.current);
+      range.collapse(false);
+      let sel: any = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
     }
     // dispatch(setChooseKey('0'));
   }, [titleRef, taskKey, taskDetail]);
@@ -228,17 +234,17 @@ const Task: React.FC<TaskProps> = (props) => {
     }
     setNewDetail(newTaskDetail);
   };
-  const changeTitle = (e: any) => {
+  const changeTitle = (title: string) => {
     let newTaskDetail = _.cloneDeep(taskDetail);
-    newTaskDetail.title = e.target.value;
+    newTaskDetail.title = title;
     setEditState(true);
     setNewDetail(newTaskDetail);
   };
-  const changeTextArea = (e: any) => {
-    if (e.keyCode === 13) {
-      setTextHeight(textHeight + 17);
-    }
-  };
+  // const changeTextArea = (e: any) => {
+  //   if (e.keyCode === 13) {
+  //     setTextHeight(textHeight + 17);
+  //   }
+  // };
   const changeImportant = (importantStatus: number) => {
     taskDetail.importantStatus = importantStatus;
     setNewDetail(taskDetail);
@@ -463,23 +469,34 @@ const Task: React.FC<TaskProps> = (props) => {
                     </div>
                   ) : null}
                   <div className="taskItem-title">
-                    {taskKey === taskDetail._key && editRole ? (
-                      <textarea
-                        value={taskDetail.title}
-                        onChange={changeTitle}
-                        onKeyDown={changeTextArea}
-                        style={{
-                          height: textHeight + 'px',
-                          textDecoration:
-                            taskDetail.finishPercent === 2
-                              ? 'line-through'
-                              : '',
-                        }}
-                        // style={{ height: textHeight + 'px' }}
-                        id={'taskDetailText' + taskDetail._key}
-                        ref={titleRef}
-                      />
-                    ) : (
+                    {/* {taskKey === taskDetail._key && editRole ? ( */}
+                    <div
+                      // onKeyDown={changeTextArea}
+                      style={{
+                        // height: textHeight + 'px',
+                        width: '100%',
+                        minHeight: '28px',
+                        backgroundColor: bottomtype ? 'transparent' : '',
+                        color: bottomtype ? '#fff' : '#333',
+                        textDecoration:
+                          taskDetail.finishPercent === 2 ? 'line-through' : '',
+                      }}
+                      contentEditable={taskKey === taskDetail._key && editRole}
+                      suppressContentEditableWarning
+                      onBlur={(e: any) => {
+                        if (e.target.innerText != taskDetail.title) {
+                          changeTitle(e.target.innerText);
+                        }
+                        // setEditState(true);
+                      }}
+                      // style={{ height: textHeight + 'px' }}
+                      id={'taskDetailText' + taskDetail._key}
+                      ref={titleRef}
+                    >
+                      {taskDetail.title}
+                    </div>
+                    {/* ) */}
+                    {/* : (
                       <div
                         style={{
                           width: '100%',
@@ -495,7 +512,7 @@ const Task: React.FC<TaskProps> = (props) => {
                       >
                         {taskDetail.title}
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </div>
                 {!bottomtype && !myState ? (

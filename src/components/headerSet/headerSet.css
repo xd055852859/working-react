@@ -1,9 +1,12 @@
 .contentHeader-set {
-  height: 100%;
-  position: relative;
+  height: 68px;
+  position: fixed;
+  top: 0px;
+  right: 26px;
   color: #333;
   display: flex;
   align-items: center;
+  z-index: 30;
 }
 .contentHeader-avatar-info {
   width: 40px;
@@ -99,16 +102,16 @@
   margin-bottom: 10px;
   background-size: cover;
   cursor: pointer;
-  padding:2px;
+  padding: 2px;
   box-sizing: border-box;
   display: flex;
   align-items: center;
   justify-content: center;
   /* background-attachment: fixed; */
 }
-.bg-point{
-  width:10px;
-  height:10px;
+.bg-point {
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background-color: #fff;
 }
@@ -180,6 +183,18 @@
 }
 .chooseItem:hover {
   background-color: #f0f0f0;
+}
+.headerSet-unRead {
+  min-width: 20px;
+  min-height: 20px;
+  padding: 2px;
+  position: absolute;
+  top: -5px;
+  right: 7px;
+  background-color: #e94848;
+  color: #fff;
+  font-size: 12px;
+  text-align: center;
 }
 @keyframes avatarSmall {
   from {

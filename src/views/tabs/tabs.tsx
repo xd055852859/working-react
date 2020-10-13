@@ -238,7 +238,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       dispatch(setMessage(true, '添加好友成功', 'success'));
       newSearchList.splice(searchIndex, 1);
       setSearchList(newSearchList);
-      dispatch(getMember(mainGroupKey, theme.personSortType));
+      dispatch(getMember(mainGroupKey));
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }
@@ -252,7 +252,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       dispatch(setMessage(true, '删除好友成功', 'success'));
       newMainSearchList.splice(searchIndex, 1);
       setMainSearchList(newMainSearchList);
-      dispatch(getMember(mainGroupKey, 2));
+      dispatch(getMember(mainGroupKey));
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }
@@ -404,8 +404,8 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       style={{
         height:
           theme && theme.calendarVisible
-            ? 'calc(100% - 245px)'
-            : 'calc(100% - 200px)',
+            ? 'calc(100% - 215px)'
+            : 'calc(100% - 170px)',
       }}
     >
       <ClickAwayListener

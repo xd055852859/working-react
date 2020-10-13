@@ -164,7 +164,6 @@ const GroupTableHeader: React.FC = (prop) => {
     dispatch(getGroup(3));
   };
   const setMember = (groupMember: any) => {
-
     setGroupMember(groupMember);
   };
   const saveGroupMember = () => {
@@ -638,8 +637,7 @@ const GroupTableHeader: React.FC = (prop) => {
       >
         活力
       </div>
-      <Tooltip title="群聊天">
-        {/* <div className="header-chat"> */}
+      {/* <Tooltip title="群聊天">
         <img
           src={chatPng}
           alt=""
@@ -653,8 +651,7 @@ const GroupTableHeader: React.FC = (prop) => {
             goChat();
           }}
         />
-        {/* </div> */}
-      </Tooltip>
+      </Tooltip> */}
 
       <Dialog
         visible={dismissVisible}

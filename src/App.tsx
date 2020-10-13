@@ -24,6 +24,8 @@ import {
   getCalendarList,
   setTaskKey,
 } from './redux/actions/taskActions';
+
+import HeaderSet from './components/headerSet/headerSet';
 import Home from './views/home/home';
 import Content from './views/content/content';
 import WorkingTable from './views/workingTable/workingTable';
@@ -98,8 +100,10 @@ const App: React.FC = () => {
         : '0';
 
       if (headerIndex) {
-        if (headerIndex == '3') {
+        if (headerIndex == '3' || headerIndex == '2') {
           dispatch(setMoveState('in'));
+        } else {
+          dispatch(setMoveState('out'));
         }
         if (headerIndex == '5') {
           if (theme && !theme.calendarVisible) {
@@ -110,7 +114,6 @@ const App: React.FC = () => {
           if (headerIndex == '2' && targetUserKey) {
             dispatch(getTargetUserInfo(targetUserKey));
           }
-          dispatch(setMoveState('out'));
         }
         dispatch(setCommonHeaderIndex(parseInt(headerIndex)));
       }
@@ -227,6 +230,7 @@ const App: React.FC = () => {
       {headerIndex === 5 && theme && theme.calendarVisible ? (
         <Calendar />
       ) : null}
+      <HeaderSet />
       <Chat />
       {taskInfoVisible ? <TaskInfo /> : null}
       {playState ? (

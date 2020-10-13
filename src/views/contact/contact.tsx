@@ -61,7 +61,7 @@ const Contact: React.FC<ContactProps> = (props) => {
         setTimeout(() => {
           dispatch(getGroup(3));
         }, 2000);
-        dispatch(getMember(mainGroupKey, 2));
+        dispatch(getMember(mainGroupKey));
       }
       if (groupArray && contactIndex === 0) {
         setContactArray(groupArray);
@@ -83,7 +83,7 @@ const Contact: React.FC<ContactProps> = (props) => {
     dispatch(setCommonHeaderIndex(2));
     dispatch(setMoveState('in'));
     await api.group.visitGroupOrFriend(1, targetUserKey);
-    dispatch(getMember(mainGroupKey, 2));
+    dispatch(getMember(mainGroupKey));
   };
   const changeCare = (
     e: any,

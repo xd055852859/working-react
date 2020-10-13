@@ -51,7 +51,7 @@ const MemberBoardItem: React.FC<MemberBoardItemProps> = (props) => {
       </div>
       {memberItem.map((item: any, index: number) => {
         return (
-          <div key={'memberItem' + index}  style={{ width: '100%' }}>
+          <div key={'memberItem' + index} style={{ width: '100%' }}>
             <div className="memberBoard-group" style={{ marginTop: '5px' }}>
               <Avatar
                 alt="群头像"
@@ -65,7 +65,13 @@ const MemberBoardItem: React.FC<MemberBoardItemProps> = (props) => {
             </div>
             <div className="memberBoard-info">
               {item.map((taskItem: any, taskIndex: number) => {
-                return <Task taskItem={taskItem} key={'task' + taskIndex} timeSetStatus={taskIndex > item.length - 3}/>;
+                return (
+                  <Task
+                    taskItem={taskItem}
+                    key={'task' + taskIndex}
+                    timeSetStatus={taskIndex > item.length - 3}
+                  />
+                );
               })}
             </div>
           </div>
@@ -92,9 +98,13 @@ const ProjectBoardItem: React.FC<ProjectBoardItemProps> = (props) => {
                 : '无标题'}
             </div>
             {projectItem[key].arr.map((taskItem: any, taskIndex: number) => {
-              return <Task taskItem={taskItem} key={'task' + taskIndex}  
-              // timeSetStatus={taskIndex > projectItem[key].arr.length - 3}
-              />;
+              return (
+                <Task
+                  taskItem={taskItem}
+                  key={'task' + taskIndex}
+                  // timeSetStatus={taskIndex > projectItem[key].arr.length - 3}
+                />
+              );
             })}
           </React.Fragment>
         );
@@ -133,7 +143,14 @@ const MemberBoard: React.FC = () => {
     if (mainGroupKey) {
       setLoading(true);
       if (boardIndex === 0) {
-        dispatch(getTeamTask([0, 1]));
+        dispatch(
+          getTeamTask(
+            [0, 1],
+            undefined,
+            moment().startOf('day').valueOf(),
+            moment().add(1, 'days').startOf('day').valueOf()
+          )
+        );
       } else {
         dispatch(getProjectTask([0]));
       }
@@ -176,6 +193,7 @@ const MemberBoard: React.FC = () => {
       Object.values(personGroupObj).map((item: any, index: number) => {
         personGroupArray.push(Object.values(item));
       });
+      console.log('xxxxxxxxxxxxxxxxxx', personGroupArray);
       setMemberGroupArray(personGroupArray);
     }
   }, [teamTaskArray, user]);
@@ -319,12 +337,12 @@ const MemberBoard: React.FC = () => {
             <React.Fragment>
               <img src={noneBoardPng} className="memberBoard-item-img" />
               <div className="memberBoard-item-title">
-                点击项目和队友右侧的 
+                点击项目和队友右侧的
                 <img
-                  style={{ width: '17px', height: '15px',margin:'0px 5px' }}
+                  style={{ width: '17px', height: '15px', margin: '0px 5px' }}
                   src={uncarePng}
                 />
-                 关注
+                关注
               </div>
             </React.Fragment>
           )}

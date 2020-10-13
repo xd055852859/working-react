@@ -91,7 +91,7 @@ const Home: React.FC<HomeProps> = (props) => {
             我的日程
           </div>
         ) : null}
-        <div
+        {/* <div
           style={
             headerIndex === 4 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
           }
@@ -100,7 +100,7 @@ const Home: React.FC<HomeProps> = (props) => {
         >
           <img src={chatPng} alt="" className="home-header-item-logo" />
           聊天
-        </div>
+        </div> */}
       </div>
       <Tabs />
     </div>

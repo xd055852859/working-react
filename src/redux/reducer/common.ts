@@ -14,6 +14,8 @@ export interface Common {
   headerIndex: any;
   moveState: string;
   chatState: boolean;
+  unChatNum: number | string;
+  unMessageNum: number;
 }
 
 const defaultState: Common = {
@@ -30,6 +32,8 @@ const defaultState: Common = {
   headerIndex: null,
   moveState: '',
   chatState: false,
+  unChatNum: 0,
+  unMessageNum: 0,
 };
 
 export const common = (state = defaultState, action: any) => {
@@ -97,6 +101,16 @@ export const common = (state = defaultState, action: any) => {
       return {
         ...state,
         chatState: action.chatState,
+      };
+    case commonActionTypes.SET_UNCHATREADNUM:
+      return {
+        ...state,
+        unChatNum: action.unChatNum,
+      };
+    case commonActionTypes.SET_UNMESSAGEREADNUM:
+      return {
+        ...state,
+        unMessageNum: action.unMessageNum,
       };
     default:
       return state;

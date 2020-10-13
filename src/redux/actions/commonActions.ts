@@ -8,6 +8,8 @@ export const actionTypes = {
   SET_MOVESTATE: 'SET_MOVESTATE',
   LOADING: 'LOADING',
   SET_CHATSTATE: 'SET_CHATSTATE',
+  SET_UNCHATREADNUM: 'SET_UNCHATREADNUM',
+  SET_UNMESSAGEREADNUM: 'SET_UNMESSAGEREADNUM',
 };
 
 export function Failed(error: any) {
@@ -69,5 +71,17 @@ export function setChatState(chatState: boolean) {
   return {
     type: actionTypes.SET_CHATSTATE,
     chatState,
+  };
+}
+export function setUnChatNum(unChatNum: number) {
+  return {
+    type: actionTypes.SET_UNCHATREADNUM,
+    unChatNum,
+  };
+}
+export function setUnMessageNum(unMessageNum: number) {
+  return {
+    type: actionTypes.SET_UNMESSAGEREADNUM,
+    unMessageNum,
   };
 }

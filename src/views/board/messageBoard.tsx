@@ -5,7 +5,7 @@ import moment from 'moment';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import './messageBoard.css';
 import api from '../../services/api';
-import { setMessage } from '../../redux/actions/commonActions';
+import { setMessage, setUnMessageNum } from '../../redux/actions/commonActions';
 import messageType1Png from '../../assets/img/messageType1.png';
 import messageType2Png from '../../assets/img/messageType2.png';
 import messageType3Png from '../../assets/img/messageType3.png';
@@ -25,7 +25,9 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
   const { type } = prop;
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
-  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  // const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const unMessageNum = useTypedSelector((state) => state.common.unMessageNum);
+
   const socket = useTypedSelector((state) => state.auth.socket);
   const [messagePage, setMessagePage] = useState(1);
   const [messageTotal, setMessageTotal] = useState(0);
@@ -53,6 +55,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
   useEffect(() => {
     if (socket) {
       socket.on('notice', (data: any) => {
+        dispatch(setUnMessageNum(unMessageNum + 1));
         setSocketObj({ data: JSON.parse(data) });
       });
     }

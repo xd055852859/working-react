@@ -115,7 +115,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     setCommentList([]);
     setComment('');
     if (headerIndex != 3) {
-      getDiaryNote(dateArray[index].start, diaryKey);
+      getDiaryNote(dateArray[index].start, dateArray[index]._key);
       if (dateArray[index]._key) {
         getCommentList(1, dateArray[index]._key);
       }
