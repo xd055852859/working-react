@@ -51,7 +51,7 @@ const Grid: React.FC<GridProps> = (prop) => {
       let cardArray: any = _.cloneDeep([taskArray]).map((item: any) => {
         item.children = [];
         // return _.cloneDeep(format.formatFilter(item, filterObject));
-        return item
+        return item;
       });
       getGroupData(groupArray, cardArray);
     } else {
@@ -65,6 +65,10 @@ const Grid: React.FC<GridProps> = (prop) => {
       setAvatarHeight(clientWidth);
     }
   }, [labelRef.current]);
+  useEffect(() => {
+    console.log('taskNavDay',taskNavDay);
+  }, [taskNavDay]);
+
   useEffect(() => {
     if (allGridTaskArray) {
       getGroupData(
@@ -150,7 +154,7 @@ const Grid: React.FC<GridProps> = (prop) => {
       });
       newTaskNavWeek.push(moment().add(i, 'days').weekday());
     }
-    setTaskNavDay(newTaskNavDay);
+    // setTaskNavDay(newTaskNavDay);
     setTaskNavDate(newTaskNavDate);
     setTaskNavWeek(newTaskNavWeek);
     return [newTaskNavDay, newTaskNavDate, newTaskNavWeek];
@@ -173,7 +177,7 @@ const Grid: React.FC<GridProps> = (prop) => {
         allTaskNum: 0,
       });
     });
-    setTaskNavDay(newTaskNavDay);
+    // setTaskNavDay(newTaskNavDay);
     setTaskNavDate(newTaskNavDate);
     return [newTaskNavDay, newTaskNavDate];
     // this.$nextTick(() => {

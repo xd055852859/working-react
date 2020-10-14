@@ -16,7 +16,7 @@ const Bootpage: React.FC = () => {
     }
   }, [bootpageRef]);
   const toUrl = () => {
-    window.open('http://www.beian.miit.gov.cn/');
+    window.open('http://beian.miit.gov.cn/');
   };
   const toLogin = () => {
     const redirect = `${window.location.protocol}//${window.location.host}`;

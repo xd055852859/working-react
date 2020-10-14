@@ -161,25 +161,13 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     };
   }, [chooseKey, taskInfoVisible, taskInfo, fatherTaskItem]);
   useEffect(() => {
-    return () => {
-      if (editState) {
-        let newTaskItem: any = stopCountdown();
-        dispatch(
-          editTask(
-            { key: newTaskItem._key, ...newTaskItem },
-            headerIndex == 5 ? 1 : headerIndex
-          )
-        );
-        // setTaskItem(null);
-        // setEditState(false);
-      }
-    };
-  }, [editState]);
-  useEffect(() => {
     if (groupArray && groupArray.length > 0) {
       getLabelArray(groupArray[0]._key);
     }
   }, [groupArray]);
+  // useEffect(() => {
+  //   console.log('改变', taskItem);
+  // }, [taskItem]);
   // useEffect(() => {
   //   if (editState) {
   //     let newTaskItem: any = stopCountdown();
@@ -224,9 +212,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
         taskInfo.creatorKey === user._key ||
         taskInfo.executorKey === user._key
     );
-    if (taskInfo.countDownTime != taskInfo.hour * 3600000) {
-      setCountDownTime(taskInfo.countDownTime);
-    }
+    setCountDownTime(taskInfo.countDownTime);
     getTaskMemberArray(taskInfo.groupKey);
   };
   const getTaskMemberArray = async (groupKey: string) => {
@@ -337,8 +323,8 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     newTaskItem['executorKey'] = executorKey;
     newTaskItem['executorName'] = executorName;
     newTaskItem['executorAvatar'] = executorAvatar;
-    setTaskItem(newTaskItem);
     setEditState(true);
+    setTaskItem(newTaskItem);
   };
   const saveCommentMsg = async () => {
     let newCommentArray = _.cloneDeep(taskCommentArray);
@@ -388,8 +374,8 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       newCountDownTime = newCountDownTime + 1000;
       setCountDownTime(newCountDownTime);
       newTaskItem['countDownTime'] = newCountDownTime;
-      setTaskItem(newTaskItem);
       setEditState(true);
+      setTaskItem(newTaskItem);
     }, 1000);
     setCountInterval(newCountInterval);
   };
@@ -437,10 +423,13 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
         if (onClose) {
           onClose();
         }
-        // if (editState) {
-        // dispatch(editTask({ key: taskItem._key, ...taskItem }, headerIndex));
-        // dispatch(setMessage(true, '保存成功', 'success'));
-        // }
+        if (editState) {
+          dispatch(editTask({ key: taskItem._key, ...taskItem }, headerIndex));
+          // if (onClose) {
+          //   onClose();
+          // }
+          // dispatch(setMessage(true, '保存成功', 'success'));
+        }
       }}
     >
       <div className="taskInfo">

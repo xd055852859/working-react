@@ -155,7 +155,6 @@ const Editor: React.FC<EditorProps> = (prop) => {
       },
     },
   };
-
   return (
     <div style={{ backgroundColor: '#efefef', width: '100%' }}>
       {editable ? (
