@@ -703,6 +703,13 @@ const group = {
       perPage: 8,
     });
   },
+  //添加模板
+  addTemplate(patchData: any) {
+    return request.post(HOME_URL + '/group/addTemplate', {
+      token: auth_token,
+      patchData: patchData,
+    });
+  },
 };
 export default {
   auth,

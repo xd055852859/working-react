@@ -13,6 +13,8 @@ import {
   getUploadToken,
   getTheme,
   getTargetUserInfo,
+  getThemeBg,
+  setTheme,
 } from './redux/actions/authActions';
 import {
   setCommonHeaderIndex,
@@ -52,7 +54,9 @@ const App: React.FC = () => {
   );
   const taskAction = useTypedSelector((state) => state.task.taskAction);
   const theme = useTypedSelector((state) => state.auth.theme);
+  const themeBg = useTypedSelector((state) => state.auth.themeBg);
   const [intervalTime, setIntervalTime] = useState<any>(null);
+  const [bgIntervalTime, setBgIntervalTime] = useState<any>(null);
   const [playAction, setPlayAction] = useState<any>({});
   const [playState, setPlayState] = useState(false);
   const [clientWidth, setClientWidth] = useState(0);
@@ -95,6 +99,7 @@ const App: React.FC = () => {
           moment().endOf('month').endOf('day').valueOf()
         )
       );
+      dispatch(getThemeBg());
       let headerIndex = localStorage.getItem('headerIndex')
         ? localStorage.getItem('headerIndex')
         : '0';
@@ -178,6 +183,18 @@ const App: React.FC = () => {
     }
   }, [taskActionArray]);
   useEffect(() => {
+    if (themeBg.length > 0 && theme.randomVisible) {
+      clearInterval(bgIntervalTime);
+      let newIntervalTime: any = 0;
+      randomBg();
+      newIntervalTime = setInterval(randomBg, 3600000);
+      setBgIntervalTime(newIntervalTime);
+    }
+    if (themeBg.length == 0 || !theme.randomVisible) {
+      clearInterval(bgIntervalTime);
+    }
+  }, [themeBg, theme]);
+  useEffect(() => {
     setPlayAction(_.cloneDeep(taskAction));
   }, [taskAction]);
 
@@ -194,6 +211,25 @@ const App: React.FC = () => {
       }
     });
   };
+  const randomBg = () => {
+    const localTime = localStorage.getItem('localTime')
+      ? localStorage.getItem('localTime')
+      : '';
+    const randomTime = theme.randomType ? 3600000 : 86400000;
+    if (!localTime || parseInt(localTime) + randomTime <= moment().valueOf()) {
+      changeBg();
+      localStorage.setItem('localTime', moment().valueOf() + '');
+    }
+  };
+  const changeBg = () => {
+    let newTheme = _.cloneDeep(theme);
+    let newThemeBg = _.cloneDeep(themeBg);
+    const randomNum = Math.round(Math.random() * (newThemeBg.length - 1));
+    console.log(randomNum);
+    newTheme.backgroundImg = newThemeBg[randomNum];
+    newTheme.backgroundColor = '';
+    dispatch(setTheme(newTheme));
+  };
   window.onresize = _.debounce(function () {
     setClientWidth(pageRef.current.clientWidth);
     let clientHeight = pageRef.current.clientHeight;
@@ -205,15 +241,14 @@ const App: React.FC = () => {
       style={
         theme.backgroundImg
           ? {
-              backgroundImage:
-                'url(' +
-                theme.backgroundImg +
-                '?imageMogr2/auto-orient/thumbnail/' +
-                clientWidth +
-                'x' +
-                clientHeight +
-                '/format/jpg' +
-                ')',
+              backgroundImage: 'url(' + theme.backgroundImg,
+              // +
+              // '?imageMogr2/auto-orient/thumbnail/' +
+              // clientWidth +
+              // 'x' +
+              // clientHeight +
+              // '/format/jpg' +
+              // ')'
             }
           : { backgroundColor: theme.backgroundColor }
       }

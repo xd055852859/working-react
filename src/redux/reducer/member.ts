@@ -52,7 +52,7 @@ export const member = (state = defaultState, action: any) => {
           executorKey: null,
           executorAvatar: '',
           executorName: '',
-          filterType: ['过期', '今天', '已完成'],
+          filterType: ['过期', '今天','未来',  '已完成'],
         };
       }
       return {

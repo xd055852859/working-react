@@ -77,7 +77,7 @@ const Editor: React.FC<EditorProps> = (prop) => {
     documentReady: editorState ? true : false,
     language: 'zh_cn',
     // iframe: true,
-    toolbarSticky: editorState ? true : false,
+    // toolbarSticky: editorState ? true : false,
     events: events,
     height: editorHeight,
     // toolbarButtons: [

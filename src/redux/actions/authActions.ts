@@ -8,6 +8,8 @@ export const actionTypes = {
   GET_TARGET_USERINFO_SUCCESS: 'GET_TARGET_USERINFO_SUCCESS',
   GET_THEME: 'GET_THEME',
   GET_THEME_SUCCESS: 'GET_THEME_SUCCESS',
+  GET_THEME_BG: 'GET_THEME_BG',
+  GET_THEME_BG_SUCCESS: 'GET_THEME_BG_SUCCESS',
   SET_THEME: 'SET_THEME',
   SET_THEME_SUCCESS: 'SET_THEME_SUCCESS',
   GET_UPLOAD_TOKEN: 'GET_UPLOAD_TOKEN',
@@ -75,6 +77,18 @@ export function getTheme() {
 export function getThemeSuccess(data: any) {
   return {
     type: actionTypes.GET_THEME_SUCCESS,
+    data,
+  };
+}
+export function getThemeBg() {
+  return {
+    type: actionTypes.GET_THEME_BG,
+  };
+}
+
+export function getThemeBgSuccess(data: any) {
+  return {
+    type: actionTypes.GET_THEME_BG_SUCCESS,
     data,
   };
 }

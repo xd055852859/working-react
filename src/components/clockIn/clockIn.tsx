@@ -216,7 +216,7 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
                   setGroupVisible(true);
                 }}
               >
-                打卡群:
+                晒一晒:
                 <div className="clockIn-title-logo">
                   <img
                     src={

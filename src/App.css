@@ -89,6 +89,9 @@ body > div[role] {
 textarea {
   padding: 0;
 }
+[contenteditable]:focus {
+  outline: 1px solid #17b881;
+}
 @keyframes moveIn {
   from {
     width: 320px;
@@ -110,6 +113,24 @@ textarea {
   to {
     width: 320px;
     opacity: 1;
+  }
+}
+@keyframes moveRight {
+  from {
+    left: 0px;
+  }
+
+  to {
+    left: -260px;
+  }
+}
+@keyframes moveLeft {
+  from {
+    left: -260px;
+  }
+
+  to {
+    left: 0px;
   }
 }
 @keyframes searchInputIn {
@@ -192,7 +213,7 @@ textarea {
 
   to {
     width: 22px;
-    height:22px;
+    height: 22px;
     right: 5px;
     top: 20px;
   }

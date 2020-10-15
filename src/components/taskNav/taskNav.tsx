@@ -193,184 +193,203 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
     <React.Fragment>
       {taskNavArray && taskNavArray[0] && taskNavArray[1] ? (
         <div
-          className="taskNav"
+          className="taskNav-container"
           style={{
-            backgroundColor: BgColorArray[taskNavBgColor],
-            width: taskNavWidth,
-            marginRight: headerIndex === 3 ? '15px' : '0px',
+            height:
+              (taskNavArray[1]._key + '' == chooseLabelKey ||
+                taskNavArray[0]._key + '' == chooseLabelKey) &&
+              addTaskVisible
+                ? '172px'
+                : '60px',
           }}
         >
-          {loading ? <Loading /> : null}
-          <div className="taskNav-name-info">
-            {avatar ? (
-              <div
-                className="taskNav-avatar"
-                onClick={() => {
-                  if (role > 0 && role < 4 && headerIndex === 3) {
+          <div
+            className="taskNav"
+            style={{
+              backgroundColor: BgColorArray[taskNavBgColor],
+              width: taskNavWidth,
+              marginRight: headerIndex === 3 ? '15px' : '0px',
+            }}
+          >
+            {loading ? <Loading /> : null}
+            <div className="taskNav-name-info">
+              {avatar ? (
+                <div
+                  className="taskNav-avatar"
+                  onClick={() => {
+                    if (role > 0 && role < 4 && headerIndex === 3) {
+                      setChooseLabelKey(
+                        taskNavArray[1]._key
+                          ? taskNavArray[1]._key
+                          : taskNavArray[0]._key
+                      );
+                      setAvatarVisible(true);
+                    }
+                  }}
+                >
+                  <img src={labelAvatar} alt="" />
+                  <DropMenu
+                    visible={
+                      (taskNavArray[1]._key === chooseLabelKey ||
+                        taskNavArray[0]._key === chooseLabelKey) &&
+                      avatarVisible
+                    }
+                    dropStyle={{
+                      width: '80%',
+                      height: '350px',
+                      top: '45px',
+                      color: '#333',
+                    }}
+                    onClose={() => {
+                      setChooseLabelKey('');
+                      setAvatarVisible(false);
+                    }}
+                    title={'设置默认执行人'}
+                  >
+                    <div className="defaultExecutor-info">
+                      {groupMemberArray
+                        ? groupMemberArray.map(
+                            (
+                              groupMemberItem: any,
+                              groupMemberIndex: number
+                            ) => {
+                              return (
+                                <div
+                                  key={'groupMember' + groupMemberIndex}
+                                  className="defaultExecutor-info-item"
+                                  onClick={() => {
+                                    changeDefaultExecutor(
+                                      groupMemberItem,
+                                      taskNavArray[1]._key
+                                    );
+                                  }}
+                                >
+                                  <div className="defaultExecutor-info-avatar">
+                                    <img
+                                      src={
+                                        groupMemberItem.avatar
+                                          ? groupMemberItem.avatar +
+                                            '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
+                                          : defaultPersonPng
+                                      }
+                                      alt=""
+                                    />
+                                  </div>
+                                  {groupMemberItem.nickName}
+                                </div>
+                              );
+                            }
+                          )
+                        : null}
+                    </div>
+                  </DropMenu>
+                </div>
+              ) : null}
+              {!labelNameVisible ? (
+                <div
+                  className="taskNav-name"
+                  onClick={() => {
+                    if (role > 0 && role < 4 && headerIndex === 3) {
+                      setLabelNameVisible(true);
+                    }
+                  }}
+                >
+                  {labelName.split('_')[0]}
+                </div>
+              ) : (
+                <TextField
+                  required
+                  id="outlined-basic"
+                  variant="outlined"
+                  label="标题名"
+                  onChange={(e: any) => {
+                    setLabelName(e.target.value);
+                  }}
+                  className={classes.input}
+                  value={labelName}
+                  onMouseLeave={() => {
+                    changeLabelName(taskNavArray[1]);
+                  }}
+                />
+              )}
+            </div>
+            {!taskNavArray[1]._key ? (
+              <img
+                src={unDragPng}
+                alt=""
+                style={{ width: '17px', height: '20px' }}
+              />
+            ) : null}
+
+            {role > 0 && role < 4 ? (
+              <div className="taskNav-name-info">
+                <div
+                  className="icon-container"
+                  onClick={() => {
                     setChooseLabelKey(
                       taskNavArray[1]._key
                         ? taskNavArray[1]._key
                         : taskNavArray[0]._key
                     );
-                    setAvatarVisible(true);
-                  }
-                }}
-              >
-                <img src={labelAvatar} alt="" />
+                    setAddTaskVisible(true);
+                  }}
+                >
+                  <img src={plusPng} className="taskNav-name-plus" />
+                </div>
+                <div
+                  className="icon-container"
+                  onClick={() => {
+                    setChooseLabelKey(
+                      taskNavArray[1]._key
+                        ? taskNavArray[1]._key
+                        : taskNavArray[0]._key
+                    );
+                    setBatchVisible(true);
+                  }}
+                >
+                  <img src={ellipsisPng} className="taskNav-name-ellipsis" />
+                </div>
                 <DropMenu
                   visible={
-                    (taskNavArray[1]._key === chooseLabelKey ||
-                      taskNavArray[0]._key === chooseLabelKey) &&
-                    avatarVisible
+                    (taskNavArray[1]._key + '' == chooseLabelKey ||
+                      taskNavArray[0]._key + '' == chooseLabelKey) &&
+                    batchVisible
                   }
                   dropStyle={{
-                    width: '80%',
-                    height: '350px',
+                    width: '150px',
                     top: '45px',
+                    left: '190px',
                     color: '#333',
                   }}
                   onClose={() => {
                     setChooseLabelKey('');
-                    setAvatarVisible(false);
+                    setBatchVisible(false);
                   }}
-                  title={'设置默认执行人'}
+                  title={'设置频道'}
                 >
-                  <div className="defaultExecutor-info">
-                    {groupMemberArray
-                      ? groupMemberArray.map(
-                          (groupMemberItem: any, groupMemberIndex: number) => {
-                            return (
-                              <div
-                                key={'groupMember' + groupMemberIndex}
-                                className="defaultExecutor-info-item"
-                                onClick={() => {
-                                  changeDefaultExecutor(
-                                    groupMemberItem,
-                                    taskNavArray[1]._key
-                                  );
-                                }}
-                              >
-                                <div className="defaultExecutor-info-avatar">
-                                  <img
-                                    src={
-                                      groupMemberItem.avatar
-                                        ? groupMemberItem.avatar +
-                                          '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
-                                        : defaultPersonPng
-                                    }
-                                    alt=""
-                                  />
-                                </div>
-                                {groupMemberItem.nickName}
-                              </div>
-                            );
-                          }
-                        )
-                      : null}
-                  </div>
-                </DropMenu>
-              </div>
-            ) : null}
-            {!labelNameVisible ? (
-              <div
-                className="taskNav-name"
-                onClick={() => {
-                  if (role > 0 && role < 4 && headerIndex === 3) {
-                    setLabelNameVisible(true);
-                  }
-                }}
-              >
-                {labelName.split('_')[0]}
-              </div>
-            ) : (
-              <TextField
-                required
-                id="outlined-basic"
-                variant="outlined"
-                label="标题名"
-                onChange={(e: any) => {
-                  setLabelName(e.target.value);
-                }}
-                className={classes.input}
-                value={labelName}
-                onMouseLeave={() => {
-                  changeLabelName(taskNavArray[1]);
-                }}
-              />
-            )}
-          </div>
-          {!taskNavArray[1]._key ? (
-            <img
-              src={unDragPng}
-              alt=""
-              style={{ width: '17px', height: '20px' }}
-            />
-          ) : null}
-
-          {role > 0 && role < 4 ? (
-            <div className="taskNav-name-info">
-              <div
-                className="icon-container"
-                onClick={() => {
-                  setAddTaskVisible(true);
-                }}
-              >
-                <img src={plusPng} className="taskNav-name-plus" />
-              </div>
-              <div
-                className="icon-container"
-                onClick={() => {
-                  setChooseLabelKey(
-                    taskNavArray[1]._key
-                      ? taskNavArray[1]._key
-                      : taskNavArray[0]._key
-                  );
-                  setBatchVisible(true);
-                }}
-              >
-                <img src={ellipsisPng} className="taskNav-name-ellipsis" />
-              </div>
-              <DropMenu
-                visible={
-                  (taskNavArray[1]._key + '' == chooseLabelKey ||
-                    taskNavArray[0]._key + '' == chooseLabelKey) &&
-                  batchVisible
-                }
-                dropStyle={{
-                  width: '150px',
-                  top: '45px',
-                  left: '190px',
-                  color: '#333',
-                }}
-                onClose={() => {
-                  setChooseLabelKey('');
-                  setBatchVisible(false);
-                }}
-                title={'设置频道'}
-              >
-                <div className="taskNav-set">
-                  {role > 0 && role < 4 ? (
-                    <div onClick={batchTaskArray}>归档全部已完成任务</div>
-                  ) : null}
-                  <div
-                    onClick={() => {
-                      setBatchAddVisible(true);
-                    }}
-                  >
-                    批量导入
-                  </div>
-                  {role > 0 && role < 3 && taskNavArray[1]._key ? (
+                  <div className="taskNav-set">
+                    {role > 0 && role < 4 ? (
+                      <div onClick={batchTaskArray}>归档全部已完成任务</div>
+                    ) : null}
                     <div
                       onClick={() => {
-                        setDeleteVisible(true);
+                        setBatchAddVisible(true);
                       }}
                     >
-                      删除频道
+                      批量导入
                     </div>
-                  ) : null}
-                </div>
-              </DropMenu>
-              <DropMenu
+                    {role > 0 && role < 3 && taskNavArray[1]._key ? (
+                      <div
+                        onClick={() => {
+                          setDeleteVisible(true);
+                        }}
+                      >
+                        删除频道
+                      </div>
+                    ) : null}
+                  </div>
+                </DropMenu>
+                {/* <DropMenu
                 visible={addTaskVisible}
                 dropStyle={{
                   width: '100%',
@@ -384,81 +403,88 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                 }}
                 title={'新增任务'}
               >
-                <div className="taskItem-plus-title taskNav-plus-title">
-                  <div className="taskItem-plus-input">
-                    <input
-                      // required
-                      placeholder="任务标题"
-                      value={addInput}
-                      autoComplete="off"
-                      onChange={(e) => {
-                        setAddInput(e.target.value);
-                      }}
-                    />
-                  </div>
-                  <div
-                    className="taskItem-plus-button"
-                    style={{ marginTop: '10px' }}
-                  >
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => {
-                        addTask(taskNavArray[0], taskNavArray[1]);
-                      }}
-                      style={{ marginRight: '10px', color: '#fff' }}
-                    >
-                      确定
-                    </Button>
-                    <Button
-                      variant="contained"
-                      onClick={() => {
-                        setAddTaskVisible(false);
-                        setAddInput('');
-                      }}
-                    >
-                      取消
-                    </Button>
-                  </div>
-                </div>
-              </DropMenu>
+                
+              </DropMenu> */}
+              </div>
+            ) : null}
+            <Dialog
+              visible={batchAddVisible}
+              onClose={() => {
+                setBatchAddVisible(false);
+              }}
+              onOK={() => {
+                batchAddTask();
+              }}
+              title={'批量导入'}
+              dialogStyle={{ width: '500px', height: '450px' }}
+            >
+              <div className="taskNav-textarea-container">
+                <textarea
+                  value={batchAddText}
+                  onChange={(e: any) => {
+                    setBatchAddText(e.target.value);
+                  }}
+                  className="taskNav-textarea"
+                ></textarea>
+              </div>
+            </Dialog>
+            <Dialog
+              visible={deleteVisible}
+              onClose={() => {
+                setDeleteVisible(false);
+              }}
+              onOK={() => {
+                deleteLabel();
+                setDeleteVisible(false);
+              }}
+              title={'删除频道'}
+              dialogStyle={{ width: '300px', height: '200px' }}
+            >
+              <div className="deleteLabel-container">是否删除该频道</div>
+            </Dialog>
+          </div>
+          {(taskNavArray[1]._key + '' == chooseLabelKey ||
+            taskNavArray[0]._key + '' == chooseLabelKey) &&
+          addTaskVisible ? (
+            <div className="taskItem-plus-title taskNav-plus-title">
+              <div className="taskItem-plus-input">
+                <input
+                  // required
+                  placeholder="任务标题"
+                  value={addInput}
+                  autoComplete="off"
+                  onChange={(e) => {
+                    setAddInput(e.target.value);
+                  }}
+                />
+              </div>
+              <div
+                className="taskItem-plus-button"
+                style={{ marginTop: '10px' }}
+              >
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => {
+                    addTask(taskNavArray[0], taskNavArray[1]);
+                  }}
+                  style={{ marginRight: '10px', color: '#fff' }}
+                >
+                  确定
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    setChooseLabelKey('');
+                    setAddTaskVisible(false);
+                    setAddInput('');
+                  }}
+                >
+                  取消
+                </Button>
+              </div>
             </div>
           ) : null}
-          <Dialog
-            visible={batchAddVisible}
-            onClose={() => {
-              setBatchAddVisible(false);
-            }}
-            onOK={() => {
-              batchAddTask();
-            }}
-            title={'批量导入'}
-            dialogStyle={{ width: '500px', height: '450px' }}
-          >
-            <div className="taskNav-textarea-container">
-              <textarea
-                value={batchAddText}
-                onChange={(e: any) => {
-                  setBatchAddText(e.target.value);
-                }}
-                className="taskNav-textarea"
-              ></textarea>
-            </div>
-          </Dialog>
-          <Dialog
-            visible={deleteVisible}
-            onClose={() => {
-              setDeleteVisible(false);
-            }}
-            onOK={() => {
-              deleteLabel();
-              setDeleteVisible(false);
-            }}
-            title={'删除频道'}
-            dialogStyle={{ width: '300px', height: '200px' }}
-          >
-            <div className="deleteLabel-container">是否删除该频道</div>
-          </Dialog>
         </div>
       ) : null}
     </React.Fragment>

@@ -6,6 +6,7 @@ import {
   getTargetUserInfoSuccess,
   getThemeSuccess,
   setThemeSuccess,
+  getThemeBgSuccess,
   getUploadTokenSuccess
 } from '../actions/authActions';
 import { Failed } from '../actions/commonActions';
@@ -60,6 +61,19 @@ function* getTheme(action: any) {
     yield put(Failed(e));
   }
 }
+function* getThemeBg(action: any) {
+  try {
+    const res = yield call(api.auth.getWallPapers);
+    if (res.msg === 'OK') {
+      yield put(getThemeBgSuccess(res.data));
+    } else {
+      yield put(Failed(res));
+    }
+  } catch (e) {
+    yield put(Failed(e));
+  }
+}
+
 function* setTheme(action: any) {
   try {
     const res = yield call(api.auth.setWorkingConfigInfo, action.configInfo);
@@ -89,6 +103,7 @@ const authSaga = [
   takeLatest(actionTypes.GET_MAIN_GROUP_KEY, getMainGroupKey),
   takeLatest(actionTypes.GET_TARGET_USERINFO, getTargetUserInfo),
   takeLatest(actionTypes.GET_THEME, getTheme),
+  takeLatest(actionTypes.GET_THEME_BG, getThemeBg),
   takeLatest(actionTypes.SET_THEME, setTheme),
   takeLatest(actionTypes.GET_UPLOAD_TOKEN, getUploadToken),
 ];

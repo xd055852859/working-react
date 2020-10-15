@@ -82,6 +82,8 @@ const Task: React.FC<TaskProps> = (props) => {
   const [endtime, setEndtime] = useState(0);
   const [taskDayColor, setTaskDayColor] = useState<any>();
   const [editRole, setEditRole] = useState(false);
+  const [suggestVisible, setSuggestVisible] = useState(false);
+  const [taskTypeIndex, setTaskTypeIndex] = useState(0);
   const [editState, setEditState] = useState(false);
   const [taskDetail, setTaskDetail] = useState<any>(null);
   const [taskExecutorShow, setTaskExecutorShow] = useState<any>(false);
@@ -94,7 +96,6 @@ const Task: React.FC<TaskProps> = (props) => {
   const [taskInfoDialogShow, setTaskInfoDialogShow] = useState(false);
   const [addTaskVisible, setAddTaskVisible] = useState(false);
   const [addInput, setAddInput] = useState('');
-  const [textHeight, setTextHeight] = useState(20);
 
   const titleRef: React.RefObject<any> = useRef();
   const color = [
@@ -104,6 +105,22 @@ const Task: React.FC<TaskProps> = (props) => {
     '#FB8444',
     '#FF5D5B',
     '#9F33FE',
+  ];
+  const backgroundColor = [
+    '#DAF6E6',
+    '#D8ECFF',
+    '#FBE6C4',
+    '#FFDDCC',
+    '#FFE3DE',
+    '#F3E5FF',
+  ];
+  const taskTypeArr = [
+    { name: '建议', id: 1 },
+    { name: '强烈建议', id: 2 },
+    { name: '错误', id: 3 },
+    { name: '严重错误', id: 4 },
+    { name: '致命错误', id: 5 },
+    { name: '顶级优先', id: 10 },
   ];
   useEffect(() => {
     // 用户已登录
@@ -139,7 +156,11 @@ const Task: React.FC<TaskProps> = (props) => {
         taskItem.executorKey === user._key;
 
       // getTaskMemberArray(taskItem.grougKey)
-
+      taskTypeArr.filter((item: any, index: number) => {
+        if (item.id === taskItem.taskType) {
+          setTaskTypeIndex(index);
+        }
+      });
       setEndtime(endTime);
       setTaskDayColor(taskDayColor);
       setEditRole(editRole);
@@ -177,12 +198,6 @@ const Task: React.FC<TaskProps> = (props) => {
     // dispatch(setChooseKey('0'));
   }, [titleRef, taskKey, taskDetail]);
 
-  useEffect(() => {
-    if (taskDetail && document.getElementById('taskDetail' + taskDetail._key)) {
-      let dom: any = document.getElementById('taskDetail' + taskDetail._key);
-      setTextHeight(dom.clientHeight - 6);
-    }
-  }, [taskDetail]);
   const getTaskMemberArray = async (groupKey: string) => {
     let taskMemberRes: any = null;
     taskMemberRes = await api.member.getMember(groupKey);
@@ -246,8 +261,14 @@ const Task: React.FC<TaskProps> = (props) => {
   //   }
   // };
   const changeImportant = (importantStatus: number) => {
-    taskDetail.importantStatus = importantStatus;
-    setNewDetail(taskDetail);
+    let newTaskDetail = _.cloneDeep(taskDetail);
+    newTaskDetail.importantStatus = importantStatus;
+    setNewDetail(newTaskDetail);
+  };
+  const changeTaskType = (taskType: number) => {
+    let newTaskDetail = _.cloneDeep(taskDetail);
+    newTaskDetail.taskType = taskType;
+    setNewDetail(newTaskDetail);
   };
   const chooseExecutor = (e: React.MouseEvent) => {
     if (editRole) {
@@ -260,10 +281,11 @@ const Task: React.FC<TaskProps> = (props) => {
     executorName: string,
     executorAvatar: string
   ) => {
-    taskDetail.executorKey = executorKey;
-    taskDetail.executorName = executorName;
-    taskDetail.executorAvatar = executorAvatar;
-    setNewDetail(taskDetail);
+    let newTaskDetail = _.cloneDeep(taskDetail);
+    newTaskDetail.executorKey = executorKey;
+    newTaskDetail.executorName = executorName;
+    newTaskDetail.executorAvatar = executorAvatar;
+    setNewDetail(newTaskDetail);
   };
   const changeTime = () => {
     if (editRole) {
@@ -337,9 +359,6 @@ const Task: React.FC<TaskProps> = (props) => {
       dispatch(setMessage(true, addTaskRes.msg, 'error'));
     }
   };
-  const changeInputHeight = (e: any) => {
-    e.target.style.height = e.target.scrollHeight + 'px';
-  };
   return (
     <React.Fragment>
       {taskShow && taskDetail ? (
@@ -356,12 +375,17 @@ const Task: React.FC<TaskProps> = (props) => {
             tabIndex={taskItem._key}
             onKeyDown={taskKeyDown}
             style={{
-              backgroundColor: bottomtype
+              background: bottomtype
                 ? 'transparent'
                 : taskDetail.finishPercent === 0 ||
                   taskDetail.finishPercent === 10
-                ? 'rgb(255,255,255)'
-                : 'rgba(255,255,255,0.66)',
+                ? 'rgb(255,255,255,0.95)'
+                : 'rgb(229,231,234,0.9)',
+              // opacity:
+              //   taskDetail.finishPercent === 0 ||
+              //   taskDetail.finishPercent === 10
+              //     ? 1
+              //     : 0.9,
               boxShadow:
                 !bottomtype && taskItem._key === taskKey
                   ? '0 0 7px 0 rgba(0, 0, 0, 0.26)'
@@ -373,20 +397,52 @@ const Task: React.FC<TaskProps> = (props) => {
                 <div
                   className="taskItem-taskType"
                   style={{
-                    borderTop:
-                      '7px solid ' +
-                      color[
-                        taskDetail.taskType === 10 ? 5 : taskDetail.taskType - 1
-                      ],
-                    borderRight:
-                      '7px solid ' +
-                      color[
-                        taskDetail.taskType === 10 ? 5 : taskDetail.taskType - 1
-                      ],
-                    borderLeft: '7px solid transparent',
-                    borderBottom: '7px solid transparent',
+                    borderTop: '9px solid ' + color[taskTypeIndex],
+                    borderRight: '9px solid ' + color[taskTypeIndex],
+                    borderLeft: '9px solid transparent',
+                    borderBottom: '9px solid transparent',
                   }}
-                ></div>
+                  onClick={() => {
+                    if (taskKey === taskDetail._key && editRole) {
+                      setSuggestVisible(true);
+                    }
+                  }}
+                >
+                  {suggestVisible ? (
+                    <DropMenu
+                      visible={suggestVisible}
+                      dropStyle={{
+                        width: '100px',
+                        top: '-6px',
+                        left: '-109px',
+                        zIndex: '20',
+                      }}
+                      onClose={() => {
+                        setSuggestVisible(false);
+                      }}
+                    >
+                      {taskTypeArr.map((taskTypeItem, taskTypeIndex) => {
+                        return (
+                          <div
+                            key={'taskType' + taskTypeIndex}
+                            className="taskItem-suggest-item"
+                            style={{
+                              color: color[taskTypeIndex],
+                              backgroundColor: backgroundColor[taskTypeIndex],
+                            }}
+                            onClick={() => {
+                              setTaskTypeIndex(taskTypeIndex);
+                              changeTaskType(taskTypeItem.id);
+                              setSuggestVisible(false);
+                            }}
+                          >
+                            {taskTypeItem.name}
+                          </div>
+                        );
+                      })}
+                    </DropMenu>
+                  ) : null}
+                </div>
               ) : null}
               {taskDetail.finishPercent !== 10 ? (
                 <div
@@ -535,7 +591,7 @@ const Task: React.FC<TaskProps> = (props) => {
                             ? taskDetail.creatorName.substring(0, 3) + '...'
                             : taskDetail.creatorName}
                         </span>
-                        <span></span>
+                        <span>⇀</span>
                         <span style={{ flexShrink: 0 }}>
                           {taskDetail.executorName &&
                           taskDetail.executorName.length > 3

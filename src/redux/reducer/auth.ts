@@ -11,6 +11,7 @@ export interface AuthType {
   token: string | null;
   uploadToken: string | null;
   theme: any;
+  themeBg: any;
   nowTime: number;
   socket: any;
 }
@@ -29,6 +30,8 @@ const defaultState: AuthType = {
     mainVisible: true,
     messageVisible: false,
     memberVisible: false,
+    randomVisible: false,
+    randomType: true,
     calendarVisible: true,
     groupSortType: 1,
     personSortType: 1,
@@ -42,10 +45,11 @@ const defaultState: AuthType = {
       executorKey: null,
       executorAvatar: '',
       executorName: '',
-      filterType: ['过期', '今天', '已完成'],
+      filterType: ['过期', '今天', '未来', '已完成'],
       fileDay: 0,
     },
   },
+  themeBg: [],
   nowTime: 0,
   socket: null,
 };
@@ -107,13 +111,21 @@ export const auth = (state = defaultState, action: any) => {
             executorKey: null,
             executorAvatar: '',
             executorName: '',
-            filterType: ['过期', '今天', '已完成'],
+            filterType: ['过期', '今天', '未来', '已完成'],
           };
-      action.data.fileDay =
-        !action.data.fileDay? 7 : action.data.fileDay;
+      action.data.fileDay = !action.data.fileDay ? 7 : action.data.fileDay;
       return {
         ...state,
         theme: action.data,
+      };
+    case actionTypes.GET_THEME_BG_SUCCESS:
+      let themeBg: any = [];
+      action.data.forEach((item: any) => {
+        themeBg.push(item.url);
+      });
+      return {
+        ...state,
+        themeBg: themeBg,
       };
     case actionTypes.SET_THEME_SUCCESS:
       return {

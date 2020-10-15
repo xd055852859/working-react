@@ -2,7 +2,13 @@ import React, { useState, useEffect } from 'react';
 import './headerSet.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useLocation, useHistory } from 'react-router-dom';
-import { TextField, Button } from '@material-ui/core';
+import {
+  TextField,
+  Button,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+} from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux';
 import _ from 'lodash';
@@ -26,6 +32,8 @@ import set1Png from '../../assets/img/set1.png';
 import set2Png from '../../assets/img/set2.png';
 import set3Png from '../../assets/img/set3.png';
 import set4Png from '../../assets/img/set4.png';
+import rightArrowPng from '../../assets/img/rightArrow.png';
+import leftArrowPng from '../../assets/img/leftArrow.png';
 import logoutPng from '../../assets/img/logout.png';
 
 import bgImg from '../../assets/img/bgImg.png';
@@ -68,6 +76,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const classes = useStyles();
   const user = useTypedSelector((state) => state.auth.user);
   const theme = useTypedSelector((state) => state.auth.theme);
+  const themeBg = useTypedSelector((state) => state.auth.themeBg);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const groupArray = useTypedSelector((state) => state.group.groupArray);
   const memberArray = useTypedSelector((state) => state.member.memberArray);
@@ -96,6 +105,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const [addInput, setAddInput] = useState('');
   const [userVisible, setUserVisible] = useState(false);
   const [imgBigArr2, setImgBigArr2] = useState<any>([]);
+  const [moveState, setMoveState] = useState('');
   const color1 = [
     '#3C3C3C',
     '#46558C',
@@ -144,7 +154,6 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   useEffect(() => {
     if (user) {
       setAvatar(user.profile.avatar);
-      getPng();
     }
   }, [user]);
   useEffect(() => {
@@ -405,202 +414,301 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             <div className="contentHeader-avatar-bg"></div>
           </div>
         </Tooltip>
-        <DropMenu
+        <Dialog
           visible={contentSetVisilble}
-          dropStyle={{
+          dialogStyle={{
+            position: 'fixed',
             width: '260px',
-            height: '450px',
+            height: moveState === 'right' ? 'calc(100% - 66px)' : '460px',
             top: '65px',
             left: 'calc(100% - 260px)',
+            overflow: 'hidden',
           }}
           onClose={() => {
             setContentSetVisilble(false);
             setAvatarShow(false);
             setBgVisible(false);
             setUserVisible(false);
+            setMoveState('');
           }}
+          showMask={false}
+          footer={false}
         >
-          <div className="contentHeader-set-title">
-            <div
-              className="contentHeader-set-avatar"
-              onClick={() => {
-                setUserVisible(true);
-              }}
-            >
-              <img src={avatar} alt="" />
-            </div>
-          </div>
-          <div className="contentHeader-set-item">
-            <div className="contentHeader-set-item-title">
-              <img
-                src={set1Png}
-                alt=""
-                style={{ width: '15px', height: '17px', marginRight: '10px' }}
-              />
-              <div>提醒</div>
-            </div>
-            <div>
-              <Switch
-                checked={theme.messageVisible ? true : false}
-                onChange={() => {
-                  changeBoard('messageVisible');
-                }}
-                name="checkedA"
-                inputProps={{ 'aria-label': 'secondary checkbox' }}
-              />
-            </div>
-          </div>
-          <div className="contentHeader-set-item">
-            <div className="contentHeader-set-item-title">
-              <img
-                src={set2Png}
-                alt=""
-                style={{ width: '15px', height: '14px', marginRight: '10px' }}
-              />
-              <div>我的任务</div>
-            </div>
-            <div>
-              <Switch
-                checked={theme.mainVisible ? true : false}
-                onChange={() => {
-                  changeBoard('mainVisible');
-                }}
-                name="checkedB"
-                inputProps={{ 'aria-label': 'secondary checkbox' }}
-              />
-            </div>
-          </div>
-          <div className="contentHeader-set-item">
-            <div className="contentHeader-set-item-title">
-              <img
-                src={set3Png}
-                alt=""
-                style={{ width: '20px', height: '15px', marginRight: '5px' }}
-              />
-              <div>协作看板</div>
-            </div>
-            <div>
-              <Switch
-                checked={theme.memberVisible ? true : false}
-                onChange={() => {
-                  changeBoard('memberVisible');
-                }}
-                name="checkedC"
-                inputProps={{ 'aria-label': 'secondary checkbox' }}
-              />
-            </div>
-          </div>
-          <div className="contentHeader-set-item">
-            <div className="contentHeader-set-item-title">
-              <img
-                src={set4Png}
-                alt=""
-                style={{ width: '20px', height: '15px', marginRight: '5px' }}
-              />
-              <div>日程</div>
-            </div>
-            <div>
-              <Switch
-                checked={theme.calendarVisible ? true : false}
-                onChange={() => {
-                  changeBoard('calendarVisible');
-                }}
-                name="checkedD"
-                inputProps={{ 'aria-label': 'secondary checkbox' }}
-              />
-            </div>
-          </div>
           <div
-            className="contentHeader-set-item"
-            onClick={() => {
-              setBgVisible(true);
-            }}
-            style={bgVisible ? { backgroundColor: '#f0f0f0' } : {}}
+            className="contentHeader-set-container"
+            style={
+              moveState === 'right'
+                ? {
+                    animation: 'moveRight 500ms',
+                    // animationFillMode: 'forwards',
+                    left: '-260px',
+                  }
+                : moveState === 'left'
+                ? {
+                    animation: 'moveLeft 500ms',
+                    // animationFillMode: 'forwards',
+                    left: '0px',
+                  }
+                : { left: '0px', height: '460px' }
+            }
           >
-            <div className="contentHeader-set-item-title contentHeader-set-item-bg">
-              <div className="contentHeader-set-item-bg-info">
-                <img
-                  src={bgImg}
-                  alt=""
-                  style={{ width: '15px', height: '17px', marginRight: '10px' }}
-                />
-                <div>壁纸设置</div>
+            <div className="contentHeader-set-left">
+              <div className="contentHeader-set-title">
+                <div
+                  className="contentHeader-set-avatar"
+                  onClick={() => {
+                    setUserVisible(true);
+                  }}
+                >
+                  <img src={avatar} alt="" />
+                </div>
               </div>
               <div
-                className="bg-item"
-                style={{
-                  backgroundImage: theme.backgroundImg
-                    ? 'url(' + theme.backgroundImg + ')'
-                    : '',
-                  backgroundColor: !theme.backgroundImg
-                    ? theme.backgroundColor
-                    : '',
-                  marginBottom: '0px',
-                  width: '44px',
-                  height: '25px',
+                className="contentHeader-set-item"
+                onClick={() => {
+                  setMoveState('right');
                 }}
-              ></div>
-            </div>
-          </div>
-          <div className="contentHeader-set-item">
-            <div
-              className="contentHeader-set-item-title"
-              onClick={() => {
-                logout();
-              }}
-              style={{ cursor: 'pointer' }}
-            >
-              <img
-                src={logoutPng}
-                alt=""
-                style={{
-                  width: '16px',
-                  height: '15px',
-                  marginRight: '5px',
+                style={bgVisible ? { backgroundColor: '#f0f0f0' } : {}}
+              >
+                <div className="contentHeader-set-item-title contentHeader-set-item-bg">
+                  <div className="contentHeader-set-item-bg-info">
+                    <img
+                      src={bgImg}
+                      alt=""
+                      style={{
+                        width: '15px',
+                        height: '17px',
+                        marginRight: '10px',
+                      }}
+                    />
+                    <div>壁纸设置</div>
+                  </div>
+                  <div className="bg-item-right">
+                    <div
+                      className="bg-item"
+                      style={{
+                        backgroundImage: theme.backgroundImg
+                          ? 'url(' + theme.backgroundImg + ')'
+                          : '',
+                        backgroundColor: !theme.backgroundImg
+                          ? theme.backgroundColor
+                          : '',
+                        marginBottom: '0px',
+                        width: '44px',
+                        height: '25px',
+                      }}
+                    ></div>
+                    <img
+                      src={rightArrowPng}
+                      alt=""
+                      style={{ width: '7px', height: '11px' }}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="contentHeader-set-item">
+                <div className="contentHeader-set-item-title">
+                  <img
+                    src={set1Png}
+                    alt=""
+                    style={{
+                      width: '15px',
+                      height: '17px',
+                      marginRight: '10px',
+                    }}
+                  />
+                  <div>提醒</div>
+                </div>
+                <div>
+                  <Switch
+                    checked={theme.messageVisible ? true : false}
+                    onChange={() => {
+                      changeBoard('messageVisible');
+                    }}
+                    name="checkedA"
+                    inputProps={{ 'aria-label': 'secondary checkbox' }}
+                  />
+                </div>
+              </div>
+              <div className="contentHeader-set-item">
+                <div className="contentHeader-set-item-title">
+                  <img
+                    src={set2Png}
+                    alt=""
+                    style={{
+                      width: '15px',
+                      height: '14px',
+                      marginRight: '10px',
+                    }}
+                  />
+                  <div>我的任务</div>
+                </div>
+                <div>
+                  <Switch
+                    checked={theme.mainVisible ? true : false}
+                    onChange={() => {
+                      changeBoard('mainVisible');
+                    }}
+                    name="checkedB"
+                    inputProps={{ 'aria-label': 'secondary checkbox' }}
+                  />
+                </div>
+              </div>
+              <div className="contentHeader-set-item">
+                <div className="contentHeader-set-item-title">
+                  <img
+                    src={set3Png}
+                    alt=""
+                    style={{
+                      width: '20px',
+                      height: '15px',
+                      marginRight: '5px',
+                    }}
+                  />
+                  <div>协作看板</div>
+                </div>
+                <div>
+                  <Switch
+                    checked={theme.memberVisible ? true : false}
+                    onChange={() => {
+                      changeBoard('memberVisible');
+                    }}
+                    name="checkedC"
+                    inputProps={{ 'aria-label': 'secondary checkbox' }}
+                  />
+                </div>
+              </div>
+              <div className="contentHeader-set-item">
+                <div className="contentHeader-set-item-title">
+                  <img
+                    src={set4Png}
+                    alt=""
+                    style={{
+                      width: '20px',
+                      height: '15px',
+                      marginRight: '5px',
+                    }}
+                  />
+                  <div>日程</div>
+                </div>
+                <div>
+                  <Switch
+                    checked={theme.calendarVisible ? true : false}
+                    onChange={() => {
+                      changeBoard('calendarVisible');
+                    }}
+                    name="checkedD"
+                    inputProps={{ 'aria-label': 'secondary checkbox' }}
+                  />
+                </div>
+              </div>
+              <div className="contentHeader-set-item">
+                <div
+                  className="contentHeader-set-item-title"
+                  onClick={() => {
+                    logout();
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <img
+                    src={logoutPng}
+                    alt=""
+                    style={{
+                      width: '16px',
+                      height: '15px',
+                      marginRight: '5px',
+                    }}
+                  />
+                  <div>退出登录</div>
+                </div>
+              </div>
+              <Dialog
+                visible={userVisible}
+                footer={false}
+                onClose={() => {
+                  setUserVisible(false);
                 }}
-              />
-              <div>退出登录</div>
+                title={'用户设置'}
+                dialogStyle={{
+                  position: 'fixed',
+                  top: '65px',
+                  right: '270px',
+                  width: '400px',
+                  height: 'calc(100% - 66px)',
+                  overflow: 'visible',
+                }}
+                showMask={false}
+              >
+                <UserCenter
+                  onClose={() => {
+                    setUserVisible(false);
+                  }}
+                />
+              </Dialog>
             </div>
-          </div>
-          <Dialog
-            visible={userVisible}
-            footer={false}
-            onClose={() => {
-              setUserVisible(false);
-            }}
-            title={'用户设置'}
-            dialogStyle={{
-              position: 'fixed',
-              top: '65px',
-              right: '270px',
-              width: '400px',
-              height: 'calc(100% - 66px)',
-              overflow: 'visible',
-            }}
-            showMask={false}
-          >
-            <UserCenter
-              onClose={() => {
-                setUserVisible(false);
-              }}
-            />
-          </Dialog>
-          <Dialog
-            visible={bgVisible}
-            onClose={() => {
-              setBgVisible(false);
-            }}
-            dialogStyle={{
-              position: 'fixed',
-              top: '455px',
-              right: '5px',
-              width: '260px',
-              height: 'calc(100% - 455px)',
-            }}
-            footer={false}
-            showMask={false}
-          >
             <div className="bg">
+              <div className="bg-header">
+                <img
+                  src={leftArrowPng}
+                  alt=""
+                  style={{ width: '7px', height: '11px', marginRight: '10px' }}
+                  onClick={() => {
+                    setMoveState('left');
+                  }}
+                />
+                壁纸设置
+              </div>
+              <div
+                className="contentHeader-set-item"
+                style={{ marginTop: '30px' }}
+              >
+                <div className="contentHeader-set-item-title">
+                  <img
+                    src={set1Png}
+                    alt=""
+                    style={{
+                      width: '15px',
+                      height: '17px',
+                      marginRight: '10px',
+                    }}
+                  />
+                  <div>随机壁纸</div>
+                </div>
+                <div>
+                  <Switch
+                    checked={theme.randomVisible ? true : false}
+                    onChange={() => {
+                      changeBoard('randomVisible');
+                    }}
+                    name="checkedD"
+                    inputProps={{ 'aria-label': 'secondary checkbox' }}
+                  />
+                </div>
+              </div>
+              {theme.randomVisible ? (
+                <div className="contentHeader-set-item">
+                  <RadioGroup
+                    aria-label="gender"
+                    name="randomType"
+                    value={theme.randomType}
+                    onChange={() => {
+                      changeBoard('randomType');
+                    }}
+                    row
+                  >
+                    <FormControlLabel
+                      value={true}
+                      control={<Radio />}
+                      label="时更新"
+                    />
+                    <FormControlLabel
+                      value={false}
+                      control={<Radio />}
+                      label="日更新"
+                    />
+                  </RadioGroup>
+                </div>
+              ) : null}
               <div className="bg-title">颜色</div>
               <div className="bg-container">
                 {color1.map((color1Item: any, color1Index: number) => {
@@ -628,37 +736,35 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
               </div>
               <div className="bg-title">壁纸</div>
               <div className="bg-container">
-                {imgBigArr2.map(
-                  (imgBigArr2Item: any, imgBigArr2Index: number) => {
-                    return (
-                      <div
-                        style={{
-                          backgroundImage:
-                            'url(' +
-                            imgBigArr2Item +
-                            '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg)',
-                          border:
-                            theme.backgroundImg === imgBigArr2Item
-                              ? '2px solid #87B940'
-                              : 'transparent',
-                        }}
-                        key={'imgBigArr2' + imgBigArr2Index}
-                        className="bg-item"
-                        onClick={() => {
-                          changeBg('backgroundImg', imgBigArr2Item);
-                        }}
-                      >
-                        {theme.backgroundImg === imgBigArr2Item ? (
-                          <div className="bg-point"></div>
-                        ) : null}
-                      </div>
-                    );
-                  }
-                )}
+                {themeBg.map((imgBigArr2Item: any, imgBigArr2Index: number) => {
+                  return (
+                    <div
+                      style={{
+                        backgroundImage:
+                          'url(' +
+                          imgBigArr2Item +
+                          '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg)',
+                        border:
+                          theme.backgroundImg === imgBigArr2Item
+                            ? '2px solid #87B940'
+                            : 'transparent',
+                      }}
+                      key={'imgBigArr2' + imgBigArr2Index}
+                      className="bg-item"
+                      onClick={() => {
+                        changeBg('backgroundImg', imgBigArr2Item);
+                      }}
+                    >
+                      {theme.backgroundImg === imgBigArr2Item ? (
+                        <div className="bg-point"></div>
+                      ) : null}
+                    </div>
+                  );
+                })}
               </div>
             </div>
-          </Dialog>
-        </DropMenu>
+          </div>
+        </Dialog>
       </div>
       <Dialog
         visible={addVisible}
@@ -817,7 +923,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           top: '65px',
           right: '10px',
           width: '370px',
-          height: 'calc(100% - 66px)',
+          height: searchTaskList.length > 0 ? 'calc(100% - 66px)' : '140px',
           overflow: 'auto',
         }}
         showMask={false}
@@ -853,17 +959,19 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             搜索
           </Button>
         </div>
-        <div className="headerSet-search-info" onScroll={scrollSearchLoading}>
-          {searchTaskList.map((taskItem: any, taskIndex: number) => {
-            return (
-              <Task
-                key={'search' + taskIndex}
-                taskItem={taskItem}
-                showGroupName={true}
-              />
-            );
-          })}
-        </div>
+        {searchTaskList.length > 0 ? (
+          <div className="headerSet-search-info" onScroll={scrollSearchLoading}>
+            {searchTaskList.map((taskItem: any, taskIndex: number) => {
+              return (
+                <Task
+                  key={'search' + taskIndex}
+                  taskItem={taskItem}
+                  showGroupName={true}
+                />
+              );
+            })}
+          </div>
+        ) : null}
       </Dialog>
       <Dialog
         visible={messageVisible}

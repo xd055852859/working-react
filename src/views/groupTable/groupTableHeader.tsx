@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Checkbox, Chip, Avatar } from '@material-ui/core';
+import { Checkbox, Chip, Avatar, Button } from '@material-ui/core';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
@@ -15,6 +15,7 @@ import { getGroupMember } from '../../redux/actions/memberActions';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import _ from 'lodash';
 import copy from 'copy-to-clipboard';
+import moment from 'moment';
 import '../workingTable/workingTableHeader.css';
 import DropMenu from '../../components/common/dropMenu';
 import Dialog from '../../components/common/dialog';
@@ -61,6 +62,8 @@ const GroupTableHeader: React.FC = (prop) => {
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
+  const labelArray = useTypedSelector((state) => state.task.labelArray);
+  const taskArray = useTypedSelector((state) => state.task.taskArray);
   const groupArray = useTypedSelector((state) => state.group.groupArray);
   const groupMemberArray = useTypedSelector(
     (state) => state.member.groupMemberArray
@@ -100,6 +103,7 @@ const GroupTableHeader: React.FC = (prop) => {
   const [dismissVisible, setDismissVisible] = useState(false);
   const [groupMember, setGroupMember] = useState<any>([]);
   const [groupObj, setGroupObj] = React.useState<any>(null);
+
   const [filterCheckedArray, setFilterCheckedArray] = useState<any>([
     false,
     false,
@@ -237,6 +241,59 @@ const GroupTableHeader: React.FC = (prop) => {
     copy(redirect + '/?groupKey=' + groupKey);
     dispatch(setMessage(true, '复制链接群成功', 'success'));
   };
+  const addTemplate = async () => { 
+    let patchData = {
+      type: '用户模板',
+      name: groupInfo.groupName,
+      description: groupInfo.groupDesc,
+      templateUrl: '',
+      modelUrl: groupInfo.modelUrl
+        ? groupInfo.modelUrl
+        : theme.backgroundImg
+        ? theme.backgroundImg
+        : '',
+      templateJson: [
+        // {
+        //   name: '测试频道1',
+        //   children: [{ name: '测试任务11' }, { name: '测试任务12' }],
+        // },
+        // {
+        //   name: '测试频道2',
+        //   children: [{ name: '测试任务21' }, { name: '测试任务22' }],
+        // },
+      ],
+    };
+    let templateJson: any = [{ name: 'ToDo', children: [] }];
+    labelArray.forEach((labelItem: any, labelIndex: number) => {
+      if (labelItem.cardLabelName) {
+        templateJson[labelIndex] = {
+          name: labelItem.cardLabelName,
+          children: [],
+        };
+      }
+      taskArray.forEach((taskItem: any, taskIndex: number) => {
+        if (
+          taskItem.taskEndDate >= moment().startOf('day').valueOf() &&
+          taskItem.taskEndDate <= moment().endOf('day').valueOf()
+        ) {
+          if (taskItem.labelKey) {
+            if (taskItem.labelKey === labelItem._key) {
+              templateJson[labelIndex].children.push({ name: taskItem.title });
+            }
+          } else {
+            templateJson[labelIndex].children.push({ name: taskItem.title });
+          }
+        }
+      });
+    });
+    patchData.templateJson = templateJson;
+    let templateRes: any = await api.group.addTemplate(patchData);
+    if (templateRes.msg === 'OK') {
+      dispatch(setMessage(true, '模板生成成功,请等待审核', 'success'));
+    } else {
+      dispatch(setMessage(true, templateRes.msg, 'error'));
+    }
+  };
   return (
     <div className="workingTableHeader">
       <div
@@ -322,6 +379,7 @@ const GroupTableHeader: React.FC = (prop) => {
               top: '40px',
               left: '-15px',
               color: '#333',
+              overflow: 'visible',
             }}
             onClose={() => {
               setInfoVisible(false);
@@ -344,7 +402,8 @@ const GroupTableHeader: React.FC = (prop) => {
                   setGroupMemberVisible(true);
                 }}
               >
-                <img /> 群成员
+                <img />
+                群成员
               </div>
               <div
                 className="groupTableHeader-info-item"
@@ -352,7 +411,8 @@ const GroupTableHeader: React.FC = (prop) => {
                   setSonGroupVisible(true);
                 }}
               >
-                <img /> 子群列表
+                <img />
+                子群列表
               </div>
               <div
                 className="groupTableHeader-info-item"
@@ -360,16 +420,9 @@ const GroupTableHeader: React.FC = (prop) => {
                   shareGroup();
                 }}
               >
-                <img /> 分享群组
+                <img />
+                分享群组
               </div>
-              {/* <div
-                className="groupTableHeader-info-item"
-                onClick={() => {
-                  setOutGroupVisible(true);
-                }}
-              >
-                <img /> 退出群组
-              </div> */}
               {groupInfo && groupInfo.role == 1 ? (
                 <div
                   className="groupTableHeader-info-item"
@@ -377,9 +430,21 @@ const GroupTableHeader: React.FC = (prop) => {
                     setDismissVisible(true);
                   }}
                 >
-                  <img /> 解散群组
+                  <img />
+                  解散群组
                 </div>
               ) : null}
+              {/* {groupInfo && groupInfo.role == 1 ? ( */}
+              <div
+                className="groupTableHeader-info-item"
+                onClick={() => {
+                  addTemplate();
+                }}
+              >
+                <img />
+                设为模板
+              </div>
+              {/* ) : null} */}
             </div>
           </DropMenu>
         </div>
@@ -679,7 +744,6 @@ const GroupTableHeader: React.FC = (prop) => {
       >
         <GroupSet saveGroupSet={saveGroupSet} type={'设置'} />
       </Dialog>
-
       <Dialog
         visible={groupMemberVisible}
         onClose={() => {
@@ -710,6 +774,7 @@ const GroupTableHeader: React.FC = (prop) => {
           }}
         />
       </Dialog>
+
       {/* <Dialog
         visible={vitalityVisible}
         onClose={() => {

@@ -69,10 +69,12 @@
   overflow: auto;
 }
 .taskInfo-title {
-  width: 100%;
-  margin: 15px 0px 20px 0px;
+  width: calc(100% - 5px);
+  margin: 15px 0px 20px 2.5px;
   border: 0px;
   font-size: 18px;
+  padding:5px;
+  box-sizing: border-box;
 }
 .taskInfo-item {
   width: 100%;
@@ -211,9 +213,9 @@
   right: 0px;
   z-index: 30;
 }
-.taskInfo [contenteditable]:focus {
+/* .taskInfo [contenteditable]:focus {
   outline: none;
-}
+} */
 .taskInfo .addTask-item {
   width: 100%;
   justify-content: space-between;

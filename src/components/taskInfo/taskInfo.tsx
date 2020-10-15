@@ -888,17 +888,17 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                       setSuggestVisible(false);
                     }}
                   >
-                    {taskTypeArr.map((taskTypeItem, tasKTypeIndex) => {
+                    {taskTypeArr.map((taskTypeItem, taskTypeIndex) => {
                       return (
                         <div
-                          key={'taskType' + tasKTypeIndex}
+                          key={'taskType' + taskTypeIndex}
                           className="taskInfo-item-suggest-item"
                           style={{
-                            color: color[tasKTypeIndex],
-                            backgroundColor: backgroundColor[tasKTypeIndex],
+                            color: color[taskTypeIndex],
+                            backgroundColor: backgroundColor[taskTypeIndex],
                           }}
                           onClick={() => {
-                            setTaskTypeIndex(tasKTypeIndex);
+                            setTaskTypeIndex(taskTypeIndex);
                             changeTaskItem('taskType', taskTypeItem.id);
                             setSuggestVisible(false);
                           }}
