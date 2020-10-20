@@ -2,6 +2,8 @@
   width: 100%;
   height: 556px;
   display: flex;
+  padding: 0px 17px;
+  box-sizing: border-box;
 }
 .group-member-search {
   width: calc(100% - 17px);

@@ -348,7 +348,11 @@ const task = {
       hour: 1,
       day: 1,
       date: moment().date(),
-      taskEndDate: taskEndDate ? taskEndDate : moment().endOf('day').valueOf(),
+      taskEndDate: taskEndDate
+        ? taskEndDate
+        : moment().hour() > 20
+        ? moment().add(1, 'days').endOf('day').valueOf()
+        : moment().endOf('day').valueOf(),
       groupRole: groupRole,
       cardIndex: cardIndex ? cardIndex : 0,
       labelKey: labelKey,

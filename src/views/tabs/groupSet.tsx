@@ -42,8 +42,6 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     input: {
       width: 'calc(100% - 115px)',
-      marginRight: '10px',
-      minWidth: '200px',
       '& .MuiInput-formControl': {
         marginTop: '0px',
       },
@@ -71,9 +69,11 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
   );
   const [groupDesc, setGroupDesc] = useState('');
   const [groupLogo, setGroupLogo] = useState('');
+  const [modelUrl, setModelUrl] = useState('');
   const [isOpen, setIsOpen] = useState(true);
   const [joinType, setJoinType] = useState('0');
   const [password, setPassword] = useState('');
+  const [question, setQuestion] = useState('');
   const [isHasPassword, setIsHasPassword] = useState(false);
   const [isLinkJoin, setIsLinkJoin] = useState(false);
   const [defaultPower, setDefaultPower] = useState(5);
@@ -102,6 +102,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
       setGroupName(groupInfo.groupName ? groupInfo.groupName : '');
       setGroupDesc(groupInfo.groupDesc ? groupInfo.groupDesc : '');
       setGroupLogo(groupInfo.groupLogo ? groupInfo.groupLogo : '');
+      setModelUrl(groupInfo.modelUrl ? groupInfo.modelUrl : '');
       setEnterprise(groupInfo.enterprise === 2 ? true : false);
       setStatisticsSonGroupEnergy(
         groupInfo.statisticsSonGroupEnergy
@@ -111,6 +112,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
       setIsOpen(groupInfo.isOpen ? groupInfo.isOpen : false);
       setJoinType(groupInfo.joinType ? groupInfo.joinType + '' : '0');
       setPassword(groupInfo.password ? groupInfo.password : '');
+      setQuestion(groupInfo.question ? groupInfo.question : '');
       setIsHasPassword(
         groupInfo.isHasPassword ? groupInfo.isHasPassword : false
       );
@@ -166,6 +168,11 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
     setPassword(newPassword);
     setGroupSet('password', newPassword);
   };
+  const changeQuestion = (e: any) => {
+    let newQuestion = e.target.value;
+    setQuestion(newQuestion);
+    setGroupSet('question', newQuestion);
+  };
   const changeJoin = (e: any) => {
     let newIsLinkJoin = e.target.checked;
     setIsLinkJoin(newIsLinkJoin);
@@ -194,14 +201,33 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
       };
     };
   };
+  const uploadModelImg = (e: any) => {
+    let mimeType = ['image/png', 'image/jpeg'];
+    let item = {};
+    let file = e.target.files[0];
+    let reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = function (theFile: any) {
+      let image = new Image();
+      image.src = theFile.target.result;
+      image.onload = function () {
+        uploadFile.uploadImg(file, uploadToken, mimeType, function (url: any) {
+          setModelUrl(url);
+          setGroupSet('modelUrl', url);
+        });
+      };
+    };
+  };
   const setGroupSet = (type: string, value: any) => {
     let obj: any = {
       groupName: groupName,
       groupDesc: groupDesc,
       groupLogo: groupLogo,
+      modelUrl: modelUrl,
       isOpen: isOpen,
       joinType: parseInt(joinType, 10),
       password: password,
+      question: question,
       isHasPassword: isHasPassword,
       isLinkJoin: isLinkJoin,
       defaultPower: defaultPower,
@@ -311,6 +337,22 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
               disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
             />
           </div>
+          <div className="contact-name-content" style={{ height: '250px' }}>
+            <div className="contact-name-title">群概念图</div>
+            <div className="contact-model">
+              <img src={plusPng} className="contact-dialog-icon" />
+              {modelUrl ? (
+                <img src={modelUrl} className="contact-dialog-groupLogo" />
+              ) : null}
+              <input
+                type="file"
+                accept="image/*"
+                onChange={uploadModelImg}
+                className="upload-img"
+                disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
+              />
+            </div>
+          </div>
           <div className="contact-name-content">
             <div className="contact-name-title">群特性</div>
             <RadioGroup
@@ -345,36 +387,60 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
             </RadioGroup>
           </div>
           <div className="contact-name-content">
+            <div className="contact-name-title" style={{ marginRight: '3px' }}>
+              口令加入
+            </div>
             <Checkbox
               checked={isHasPassword}
               style={{ marginRight: '10px' }}
               onChange={changeIsPassword}
               disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
             />
-            验证口令通过后加入
             {isHasPassword ? (
-              <TextField
-                required
-                id="outlined-basic"
-                variant="outlined"
-                label="口令"
-                className={classes.input}
-                style={{ marginLeft: '15px', width: '60%' }}
-                value={password}
-                onChange={changePassword}
-                disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
-              />
+              <React.Fragment>
+                <TextField
+                  required
+                  id="outlined-basic"
+                  variant="outlined"
+                  label="口令问题"
+                  className={classes.input}
+                  style={{ marginLeft: '15px', width: '45%' }}
+                  value={question}
+                  onChange={changeQuestion}
+                  disabled={
+                    (groupRole > 2 || groupRole === 0) && type === '设置'
+                  }
+                />
+                <TextField
+                  required
+                  id="outlined-basic"
+                  variant="outlined"
+                  label="口令"
+                  className={classes.input}
+                  style={{ marginLeft: '15px', width: '25%' }}
+                  value={password}
+                  onChange={changePassword}
+                  disabled={
+                    (groupRole > 2 || groupRole === 0) && type === '设置'
+                  }
+                />
+              </React.Fragment>
             ) : null}
           </div>
           {type === '设置' ? (
             <div className="contact-name-content">
+              <div
+                className="contact-name-title"
+                style={{ marginRight: '3px' }}
+              >
+                链接加入
+              </div>
               <Checkbox
                 checked={isLinkJoin}
                 onChange={changeJoin}
                 style={{ marginRight: '10px' }}
                 disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
               />
-              邀请链接后加入
               <TextField
                 required
                 id="outlined-basic"
@@ -400,7 +466,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
             </div>
           ) : null}
           <div className="contact-name-content">
-            <div className="contact-name-title">新成员默认权限</div>
+            <div className="contact-name-title">默认权限</div>
             <div
               onClick={() => {
                 if ((groupRole > 0 && groupRole < 3) || type === '创建') {

@@ -463,7 +463,7 @@ const GroupTableGroup: React.FC = (prop) => {
                                         animation: 'navIn 200ms',
                                         width: '0px',
                                         height: '0px',
-                                        right: '10px',
+                                        right: '0px',
                                         top: '30px',
                                       }
                                     : addVisible === 'out'
@@ -471,13 +471,13 @@ const GroupTableGroup: React.FC = (prop) => {
                                         animation: 'navOut 200ms',
                                         width: '22px',
                                         height: '22px',
-                                        right: '5px',
+                                        right: '-3px',
                                         top: '20px',
                                       }
                                     : {
                                         width: '0px',
                                         height: '0px',
-                                        right: '20px',
+                                        right: '0px',
                                         top: '30px',
                                       }
                                 }

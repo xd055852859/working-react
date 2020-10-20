@@ -47,12 +47,13 @@
 }
 .contact-dialog-content {
   width: 100%;
-  height: 100%;
+  height: calc(100% - 60px);
   display: flex;
   flex-wrap: wrap;
   align-content: space-between;
-  padding:0px 17px;
+  padding: 0px 17px;
   box-sizing: border-box;
+  overflow: auto;
 }
 .contact-name-title {
   width: 100px;
@@ -82,4 +83,22 @@
   top: -55px;
   right: 20px;
   cursor: pointer;
+}
+.contact-model {
+  width: calc(100% - 115px);
+  height: 100%;
+  border: 1px solid #d9d9d9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  border-radius: 4px;
+}
+.contact-dialog-info .upload-img {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 2;
 }

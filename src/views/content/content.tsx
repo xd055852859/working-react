@@ -19,6 +19,7 @@ const Content: React.FC<ContentProps> = (props) => {
   // const [createNum, setCreateNum] = useState(0);
   // const [finishNum, setfinishNum] = useState(0);
   const [prompt, setPrompt] = useState();
+  const [timeInterval, setTimeInterval] = useState<any>(null);
   const [targetInterval, setTargetInterval] = useState<any>(null);
   useEffect(() => {
     let interval: any = null;
@@ -27,8 +28,13 @@ const Content: React.FC<ContentProps> = (props) => {
       getPrompt();
       interval = setInterval(formatTime, 60000);
       // getSocket();
-      setTargetInterval(interval);
+      setTimeInterval(interval);
     }
+    return () => {
+      if (timeInterval) {
+        clearInterval(timeInterval);
+      }
+    };
   }, [user, headerIndex]);
   useEffect(() => {
     let interval: any = null;
@@ -37,6 +43,7 @@ const Content: React.FC<ContentProps> = (props) => {
       getPrompt();
       interval = setInterval(formatTime, 60000);
       // getSocket();
+      setTargetInterval(interval);
     }
     return () => {
       if (targetInterval) {
@@ -88,8 +95,8 @@ const Content: React.FC<ContentProps> = (props) => {
           <div className="content-timeTitle">{nowTime[1]}</div>
           <div className="content-subTitle">{prompt}</div>
         </div>
-        {theme && theme.memberVisible ? <MemberBoard /> : null}
         {theme && theme.mainVisible ? <MainBoard getNum={getNum} /> : null}
+        {theme && theme.memberVisible ? <MemberBoard /> : null}
         {theme && theme.messageVisible ? <MessageBoard /> : null}
       </div>
     </div>

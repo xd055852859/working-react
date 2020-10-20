@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './headerSet.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useLocation, useHistory } from 'react-router-dom';
+import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import {
   TextField,
   Button,
@@ -12,11 +13,13 @@ import {
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux';
 import _ from 'lodash';
+import format from '../common/format';
 import Switch from '@material-ui/core/Switch';
 import Dialog from '../common/dialog';
 import DropMenu from '../common/dropMenu';
 import Tooltip from '../common/tooltip';
 import ClockIn from '../clockIn/clockIn';
+import Chat from '../../views/chat/chat';
 import Task from '../task/task';
 import UserCenter from '../userCenter/userCenter';
 import MessageBoard from '../../views/board/messageBoard';
@@ -106,6 +109,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const [userVisible, setUserVisible] = useState(false);
   const [imgBigArr2, setImgBigArr2] = useState<any>([]);
   const [moveState, setMoveState] = useState('');
+  const canvasRef: React.RefObject<any> = useRef();
   const color1 = [
     '#3C3C3C',
     '#46558C',
@@ -184,16 +188,29 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     newTheme[type] = newTheme[type] ? false : true;
     dispatch(setTheme(newTheme));
   };
+  const changeRandomType = (value: string) => {
+    let newTheme = _.cloneDeep(theme);
+    newTheme.randomType = value;
+    dispatch(setTheme(newTheme));
+  };
   const changeBg = (type: string, value: string) => {
     let newTheme = _.cloneDeep(theme);
     if (type === 'backgroundImg') {
-      newTheme.backgroundImg = value;
-      newTheme.backgroundColor = '';
+      let img = new Image();
+      img.src = value;
+      // img.crossOrigin = 'anonymous';
+      // 确定图片加载完成后再进行背景图片切换
+      img.onload = function () {
+        // format.formatColor(canvasRef.current, img);
+        newTheme.backgroundImg = value;
+        newTheme.backgroundColor = '';
+        dispatch(setTheme(newTheme));
+      };
     } else {
       newTheme.backgroundImg = '';
       newTheme.backgroundColor = value;
+      dispatch(setTheme(newTheme));
     }
-    dispatch(setTheme(newTheme));
   };
   const searchTask = () => {
     if (searchInput !== '') {
@@ -359,29 +376,36 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           </Tooltip>
         ) : null}
         <Tooltip title="聊天中心">
-          <div style={{ position: 'relative' }}>
-            <img
-              src={chatPng}
-              alt=""
-              style={{
-                width: '40px',
-                height: '40px',
-                marginRight: '15px',
-                cursor: 'pointer',
-              }}
-              onClick={() => {
-                dispatch(setChatState(true));
-              }}
-            />
-            {unChatNum ? (
-              <div
-                className="headerSet-unRead"
-                style={{ borderRadius: unChatNum < 10 ? '50%' : '20px' }}
-              >
-                {unChatNum}
-              </div>
-            ) : null}
-          </div>
+          <ClickAwayListener
+            onClickAway={() => {
+              dispatch(setChatState(false));
+            }}
+          >
+            <div style={{ position: 'relative' }}>
+              <img
+                src={chatPng}
+                alt=""
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  marginRight: '15px',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  dispatch(setChatState(true));
+                }}
+              />
+              {unChatNum ? (
+                <div
+                  className="headerSet-unRead"
+                  style={{ borderRadius: unChatNum < 10 ? '50%' : '20px' }}
+                >
+                  {unChatNum}
+                </div>
+              ) : null}
+              <Chat />
+            </div>
+          </ClickAwayListener>
         </Tooltip>
         <Tooltip title="用户中心">
           <div
@@ -419,7 +443,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           dialogStyle={{
             position: 'fixed',
             width: '260px',
-            height: moveState === 'right' ? 'calc(100% - 66px)' : '460px',
+            height: moveState === 'right' ? 'calc(100% - 70px)' : '460px',
             top: '65px',
             left: 'calc(100% - 260px)',
             overflow: 'hidden',
@@ -506,78 +530,84 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                   </div>
                 </div>
               </div>
-              <div className="contentHeader-set-item">
-                <div className="contentHeader-set-item-title">
-                  <img
-                    src={set1Png}
-                    alt=""
-                    style={{
-                      width: '15px',
-                      height: '17px',
-                      marginRight: '10px',
-                    }}
-                  />
-                  <div>提醒</div>
+              {headerIndex === 0 ? (
+                <div className="contentHeader-set-item">
+                  <div className="contentHeader-set-item-title">
+                    <img
+                      src={set1Png}
+                      alt=""
+                      style={{
+                        width: '15px',
+                        height: '17px',
+                        marginRight: '10px',
+                      }}
+                    />
+                    <div>提醒</div>
+                  </div>
+                  <div>
+                    <Switch
+                      checked={theme.messageVisible ? true : false}
+                      onChange={() => {
+                        changeBoard('messageVisible');
+                      }}
+                      name="checkedA"
+                      inputProps={{ 'aria-label': 'secondary checkbox' }}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Switch
-                    checked={theme.messageVisible ? true : false}
-                    onChange={() => {
-                      changeBoard('messageVisible');
-                    }}
-                    name="checkedA"
-                    inputProps={{ 'aria-label': 'secondary checkbox' }}
-                  />
+              ) : null}
+              {headerIndex === 0 ? (
+                <div className="contentHeader-set-item">
+                  <div className="contentHeader-set-item-title">
+                    <img
+                      src={set2Png}
+                      alt=""
+                      style={{
+                        width: '15px',
+                        height: '14px',
+                        marginRight: '10px',
+                      }}
+                    />
+                    <div>我的任务</div>
+                  </div>
+                  <div>
+                    <Switch
+                      checked={theme.mainVisible ? true : false}
+                      onChange={() => {
+                        changeBoard('mainVisible');
+                      }}
+                      name="checkedB"
+                      inputProps={{ 'aria-label': 'secondary checkbox' }}
+                    />
+                  </div>
                 </div>
-              </div>
-              <div className="contentHeader-set-item">
-                <div className="contentHeader-set-item-title">
-                  <img
-                    src={set2Png}
-                    alt=""
-                    style={{
-                      width: '15px',
-                      height: '14px',
-                      marginRight: '10px',
-                    }}
-                  />
-                  <div>我的任务</div>
+              ) : null}
+              {headerIndex === 0 ? (
+                <div className="contentHeader-set-item">
+                  <div className="contentHeader-set-item-title">
+                    <img
+                      src={set3Png}
+                      alt=""
+                      style={{
+                        width: '20px',
+                        height: '15px',
+                        marginRight: '5px',
+                      }}
+                    />
+                    <div>协作看板</div>
+                  </div>
+                  <div>
+                    <Switch
+                      checked={theme.memberVisible ? true : false}
+                      onChange={() => {
+                        changeBoard('memberVisible');
+                      }}
+                      name="checkedC"
+                      inputProps={{ 'aria-label': 'secondary checkbox' }}
+                    />
+                  </div>
                 </div>
-                <div>
-                  <Switch
-                    checked={theme.mainVisible ? true : false}
-                    onChange={() => {
-                      changeBoard('mainVisible');
-                    }}
-                    name="checkedB"
-                    inputProps={{ 'aria-label': 'secondary checkbox' }}
-                  />
-                </div>
-              </div>
-              <div className="contentHeader-set-item">
-                <div className="contentHeader-set-item-title">
-                  <img
-                    src={set3Png}
-                    alt=""
-                    style={{
-                      width: '20px',
-                      height: '15px',
-                      marginRight: '5px',
-                    }}
-                  />
-                  <div>协作看板</div>
-                </div>
-                <div>
-                  <Switch
-                    checked={theme.memberVisible ? true : false}
-                    onChange={() => {
-                      changeBoard('memberVisible');
-                    }}
-                    name="checkedC"
-                    inputProps={{ 'aria-label': 'secondary checkbox' }}
-                  />
-                </div>
-              </div>
+              ) : null}
               <div className="contentHeader-set-item">
                 <div className="contentHeader-set-item-title">
                   <img
@@ -634,7 +664,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                   top: '65px',
                   right: '270px',
                   width: '400px',
-                  height: 'calc(100% - 66px)',
+                  height: 'calc(100% - 70px)',
                   overflow: 'visible',
                 }}
                 showMask={false}
@@ -648,31 +678,20 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             </div>
             <div className="bg">
               <div className="bg-header">
-                <img
-                  src={leftArrowPng}
-                  alt=""
-                  style={{ width: '7px', height: '11px', marginRight: '10px' }}
-                  onClick={() => {
-                    setMoveState('left');
-                  }}
-                />
-                壁纸设置
-              </div>
-              <div
-                className="contentHeader-set-item"
-                style={{ marginTop: '30px' }}
-              >
-                <div className="contentHeader-set-item-title">
+                <div>
                   <img
-                    src={set1Png}
+                    src={leftArrowPng}
                     alt=""
                     style={{
-                      width: '15px',
-                      height: '17px',
+                      width: '7px',
+                      height: '11px',
                       marginRight: '10px',
                     }}
+                    onClick={() => {
+                      setMoveState('left');
+                    }}
                   />
-                  <div>随机壁纸</div>
+                  壁纸设置
                 </div>
                 <div>
                   <Switch
@@ -686,30 +705,62 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                 </div>
               </div>
               {theme.randomVisible ? (
-                <div className="contentHeader-set-item">
-                  <RadioGroup
-                    aria-label="gender"
-                    name="randomType"
-                    value={theme.randomType}
-                    onChange={() => {
-                      changeBoard('randomType');
-                    }}
-                    row
-                  >
-                    <FormControlLabel
-                      value={true}
-                      control={<Radio />}
-                      label="时更新"
+                <div
+                  className="contentHeader-set-item"
+                  style={{ margin: '30px 0px 0px 0px' }}
+                >
+                  <div className="contentHeader-set-item-title">
+                    <img
+                      src={set2Png}
+                      alt=""
+                      style={{
+                        width: '15px',
+                        height: '17px',
+                        marginRight: '10px',
+                      }}
                     />
-                    <FormControlLabel
-                      value={false}
-                      control={<Radio />}
-                      label="日更新"
+                    <div>更新频率</div>
+                  </div>
+                  <div className="contentHeader-set-item-radio">
+                    <input
+                      type="radio"
+                      name="randomType"
+                      value={'1'}
+                      onChange={() => {
+                        changeRandomType('1');
+                      }}
+                      checked={theme.randomType === '1'}
                     />
-                  </RadioGroup>
+                    分钟
+                    <input
+                      type="radio"
+                      name="randomType"
+                      value={'2'}
+                      onChange={() => {
+                        changeRandomType('2');
+                      }}
+                      checked={theme.randomType === '2'}
+                    />
+                    小时
+                    <input
+                      type="radio"
+                      name="randomType"
+                      value={'3'}
+                      onChange={() => {
+                        changeRandomType('3');
+                      }}
+                      checked={theme.randomType === '3'}
+                    />
+                    日
+                  </div>
                 </div>
               ) : null}
-              <div className="bg-title">颜色</div>
+              <div
+                className="bg-title"
+                style={{ marginTop: theme.randomVisible ? '10px' : '40px' }}
+              >
+                颜色
+              </div>
               <div className="bg-container">
                 {color1.map((color1Item: any, color1Index: number) => {
                   return (
@@ -923,7 +974,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           top: '65px',
           right: '10px',
           width: '370px',
-          height: searchTaskList.length > 0 ? 'calc(100% - 66px)' : '140px',
+          height: searchTaskList.length > 0 ? 'calc(100% - 70px)' : '140px',
           overflow: 'auto',
         }}
         showMask={false}
@@ -985,13 +1036,14 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           top: '65px',
           right: '10px',
           width: '370px',
-          height: 'calc(100% - 66px)',
+          height: 'calc(100% - 70px)',
           overflow: 'auto',
         }}
         showMask={false}
       >
         <MessageBoard type={'header'} />
       </Dialog>
+      <canvas ref={canvasRef} className="appCanvas"></canvas>
     </React.Fragment>
   );
 };

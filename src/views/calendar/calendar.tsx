@@ -280,10 +280,10 @@ const Calendar: React.FC<CalendarProps> = (props) => {
     let pageX = e.pageX;
     let pageY = e.pageY;
     if ((index + 1) % 7 === 0 && index !== 0) {
-      pageX = pageX - 400;
+      pageX = pageX -300;
       setPos([e.pageX, e.pageY]);
     } else if (index % 7 !== 0) {
-      pageX = pageX - 200;
+      pageX = pageX - 150;
     }
     if (index > 20) {
       pageY = pageY - 240;
@@ -471,7 +471,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
                   //   calendarIndex !== 0
                   //     ? '#F9F9F9'
                   //     : '',
-                  border: calendarItem.targetDay ? '2px solid #17B881' : '',
+                  border: calendarItem.targetDay ? '4px solid #17B881' : '',
                 }}
               >
                 <div className="calendar-day-item-title">

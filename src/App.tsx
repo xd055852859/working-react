@@ -6,7 +6,7 @@ import { getSearchParamValue } from './services/util';
 import { useDispatch } from 'react-redux';
 import moment from 'moment';
 import _ from 'lodash';
-
+import format from './components/common/format';
 import {
   getUserInfo,
   getMainGroupKey,
@@ -32,7 +32,6 @@ import Home from './views/home/home';
 import Content from './views/content/content';
 import WorkingTable from './views/workingTable/workingTable';
 import GroupTable from './views/groupTable/groupTable';
-import Chat from './views/chat/chat';
 import Calendar from './views/calendar/calendar';
 import TaskInfo from './components/taskInfo/taskInfo';
 
@@ -75,6 +74,7 @@ const App: React.FC = () => {
     '#9B9B9B',
   ];
   const pageRef: React.RefObject<any> = useRef();
+  const canvasRef: React.RefObject<any> = useRef();
   useEffect(() => {
     if (pageRef.current) {
       setClientWidth(pageRef.current.clientWidth);
@@ -140,10 +140,10 @@ const App: React.FC = () => {
       // 用户未登录
       const token =
         getSearchParamValue(location.search, 'token') ||
-        localStorage.getItem('auth_token');
+        localStorage.getItem('token');
       if (token) {
         // 获取用户信息
-        localStorage.setItem('auth_token', token);
+        localStorage.setItem('token', token);
         dispatch(getUserInfo(token));
         dispatch(getUploadToken());
       } else {
@@ -181,19 +181,38 @@ const App: React.FC = () => {
     if (taskActionArray.length == 0) {
       clearInterval(intervalTime);
     }
+    return () => {
+      clearInterval(intervalTime);
+    };
   }, [taskActionArray]);
   useEffect(() => {
-    if (themeBg.length > 0 && theme.randomVisible) {
+    if (
+      themeBg.length > 0 &&
+      theme.randomVisible &&
+      theme.randomType &&
+      canvasRef.current
+    ) {
       clearInterval(bgIntervalTime);
       let newIntervalTime: any = 0;
+      const randomTime =
+        theme.randomType === '1'
+          ? 6000
+          : theme.randomType === '2'
+          ? 3600000
+          : theme.randomType === '3'
+          ? 86400000
+          : 6000;
       randomBg();
-      newIntervalTime = setInterval(randomBg, 3600000);
+      newIntervalTime = setInterval(randomBg, randomTime);
       setBgIntervalTime(newIntervalTime);
     }
     if (themeBg.length == 0 || !theme.randomVisible) {
       clearInterval(bgIntervalTime);
     }
-  }, [themeBg, theme]);
+    return () => {
+      clearInterval(bgIntervalTime);
+    };
+  }, [themeBg, theme, canvasRef]);
   useEffect(() => {
     setPlayAction(_.cloneDeep(taskAction));
   }, [taskAction]);
@@ -215,7 +234,14 @@ const App: React.FC = () => {
     const localTime = localStorage.getItem('localTime')
       ? localStorage.getItem('localTime')
       : '';
-    const randomTime = theme.randomType ? 3600000 : 86400000;
+    const randomTime =
+      theme.randomType === '1'
+        ? 6000
+        : theme.randomType === '2'
+        ? 3600000
+        : theme.randomType === '3'
+        ? 86400000
+        : 6000;
     if (!localTime || parseInt(localTime) + randomTime <= moment().valueOf()) {
       changeBg();
       localStorage.setItem('localTime', moment().valueOf() + '');
@@ -225,10 +251,16 @@ const App: React.FC = () => {
     let newTheme = _.cloneDeep(theme);
     let newThemeBg = _.cloneDeep(themeBg);
     const randomNum = Math.round(Math.random() * (newThemeBg.length - 1));
-    console.log(randomNum);
-    newTheme.backgroundImg = newThemeBg[randomNum];
-    newTheme.backgroundColor = '';
-    dispatch(setTheme(newTheme));
+    let img = new Image();
+    img.src = newThemeBg[randomNum];
+    // img.crossOrigin = 'anonymous'
+    // 确定图片加载完成后再进行背景图片切换
+    img.onload = function () {
+      // console.log(format.formatColor(canvasRef.current, img));
+      newTheme.backgroundImg = newThemeBg[randomNum];
+      newTheme.backgroundColor = '';
+      dispatch(setTheme(newTheme));
+    };
   };
   window.onresize = _.debounce(function () {
     setClientWidth(pageRef.current.clientWidth);
@@ -241,14 +273,7 @@ const App: React.FC = () => {
       style={
         theme.backgroundImg
           ? {
-              backgroundImage: 'url(' + theme.backgroundImg,
-              // +
-              // '?imageMogr2/auto-orient/thumbnail/' +
-              // clientWidth +
-              // 'x' +
-              // clientHeight +
-              // '/format/jpg' +
-              // ')'
+              backgroundImage: 'url(' + theme.backgroundImg + ')',
             }
           : { backgroundColor: theme.backgroundColor }
       }
@@ -266,7 +291,7 @@ const App: React.FC = () => {
         <Calendar />
       ) : null}
       <HeaderSet />
-      <Chat />
+
       {taskInfoVisible ? <TaskInfo /> : null}
       {playState ? (
         <div className="action">
@@ -289,6 +314,7 @@ const App: React.FC = () => {
           />
         </div>
       ) : null}
+      <canvas ref={canvasRef} className="appCanvas"></canvas>
     </div>
   );
 };

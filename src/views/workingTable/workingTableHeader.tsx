@@ -241,7 +241,7 @@ const WorkingTableHeader: React.FC = (prop) => {
         className="workingTableHeader-logo"
         onClick={() => {
           dispatch(setMoveState('out'));
-          dispatch(setCommonHeaderIndex(0));
+          dispatch(setCommonHeaderIndex(1));
         }}
       >
         <img src={tablePng} alt="" />
@@ -491,13 +491,16 @@ const WorkingTableHeader: React.FC = (prop) => {
         style={
           memberHeaderIndex < 7
             ? {
-                background: 'rgba(255,255,255,0.24)',
+                borderBottom: '3px solid #17B881',
+                // color: '#17B881',
+                marginLeft:'10px'
               }
-            : {}
+            : {marginLeft:'10px'}
         }
       >
         任务
       </div>
+      |
       <div
         className="view-tab"
         onClick={() => {
@@ -506,13 +509,15 @@ const WorkingTableHeader: React.FC = (prop) => {
         style={
           memberHeaderIndex === 7
             ? {
-                background: 'rgba(255,255,255,0.24)',
+                borderBottom: '3px solid #17B881',
+                // color: '#17B881',
               }
             : {}
         }
       >
         日报
       </div>
+      |
       <div
         className="view-tab"
         onClick={() => {
@@ -521,7 +526,8 @@ const WorkingTableHeader: React.FC = (prop) => {
         style={
           memberHeaderIndex === 8
             ? {
-                background: 'rgba(255,255,255,0.24)',
+                borderBottom: '3px solid #17B881',
+                // color: '#17B881',
               }
             : {}
         }

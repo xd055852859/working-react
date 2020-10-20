@@ -31,7 +31,7 @@ const defaultState: AuthType = {
     messageVisible: false,
     memberVisible: false,
     randomVisible: false,
-    randomType: true,
+    randomType: '1',
     calendarVisible: true,
     groupSortType: 1,
     personSortType: 1,
@@ -57,7 +57,7 @@ const defaultState: AuthType = {
 export const auth = (state = defaultState, action: any) => {
   switch (action.type) {
     case actionTypes.GET_USERINFO_SUCCESS:
-      localStorage.setItem('auth_token', action.data.token);
+      localStorage.setItem('token', action.data.token);
       localStorage.setItem('userKey', action.data._key);
       const socket = io.connect(api.SOCKET_URL);
       // socket.on('online', () => {

@@ -36,14 +36,14 @@ const Vitality: React.FC<VitalityProps> = (props) => {
   const [monthEnergy, setMonthEnergy] = useState<any>([]);
   const [monthData, setMonthData] = useState<any>([]);
   const [monthTitleArr, setMonthTitleArr] = useState<any>([]);
-
+  const [vitalityState, setVitalityState] = useState('month');
   const [monthStr, setMonthStr] = useState('');
   const [logDate, setLogDate] = useState('');
   const [logList, setLogList] = useState<any>([]);
   const [logtotal, setLogtotal] = useState(0);
   const [page, setLogPage] = useState(1);
   const monthArr = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-  const limit = 15;
+  const limit = 40;
   const toDoc = () => {
     window.open(
       'https://baoku.qingtime.cn/OHPRQG_1585745644894/article?key=1249218647'
@@ -231,7 +231,10 @@ const Vitality: React.FC<VitalityProps> = (props) => {
     }
   };
   const getTargetLog = (startTime: number) => {
-    vitalityLogRef.current.scrollTop = 0;
+    setVitalityState('day');
+    if (vitalityLogRef.current) {
+      vitalityLogRef.current.scrollTop = 0;
+    }
     setStartTime(startTime);
     setEndTime(moment(startTime).endOf('day').valueOf());
     setLogDate(
@@ -243,22 +246,22 @@ const Vitality: React.FC<VitalityProps> = (props) => {
   };
   const getColor = (num: number) => {
     let color = '';
-    if (num < 0) {
-      color = '#FDBCAE';
-    } else if (num == 0) {
+    if (num <= 0) {
       color = '#FFFFFF';
     } else if (num < 10 && num > 0) {
-      color = '#DBE6F9';
+      color = '#FFFCDA';
     } else if (num < 20 && num >= 10) {
-      color = '#C3D8FF';
+      color = '#F6EDA5';
     } else if (num < 30 && num >= 20) {
-      color = '#ADC4FF';
+      color = '#FFBB8E';
     } else if (num < 40 && num >= 30) {
-      color = '#8AABFF';
+      color = '#FFA661';
     } else if (num < 50 && num >= 40) {
-      color = '#5E8AFB';
-    } else if (num >= 50) {
-      color = '#366DFB';
+      color = '#FF6760';
+    } else if (num < 60 && num >= 50) {
+      color = '#F73850';
+    } else if (num >= 60) {
+      color = '#FF232E';
     }
     return color;
   };
@@ -328,6 +331,18 @@ const Vitality: React.FC<VitalityProps> = (props) => {
       getLog(startTime, newPage, limit);
     }
   };
+  const changeTargetMonth = (index: number) => {
+    getPersonVitality(
+      moment().subtract(index, 'month').startOf('month').valueOf(),
+      moment().subtract(index, 'month').endOf('month').valueOf()
+    );
+    setTargetMonthStr(
+      moment().subtract(index, 'month').format('YYYY') +
+        '/' +
+        moment().subtract(index, 'month').format('MM')
+    );
+    setVitalityState('month');
+  };
   return (
     <React.Fragment>
       {vitalityInfo ? (
@@ -378,98 +393,129 @@ const Vitality: React.FC<VitalityProps> = (props) => {
             </div>
           </div>
           <div className="vitality-chart-info">
-            <div className="vitality-chart">
-              <div
-                className="vitality-title"
-                style={{ justifyContent: 'space-between' }}
-              >
-                <div>成员贡献度</div>
-                <div className="vitality-choose">
-                  <img
-                    src={leftArrowPng}
-                    className="vitality-choose-icon"
-                    onClick={() => {
-                      changeMonth(0);
-                    }}
-                  />
-                  <div>{targetMonthStr}</div>
-                  <img
-                    src={rightArrowPng}
-                    className="vitality-choose-icon"
-                    onClick={() => {
-                      changeMonth(1);
-                    }}
-                  />
-                </div>
-              </div>
-              <div className="vitality-week" id="piechartdiv"></div>
-            </div>
-            <div className="vitality-box">
-              <div className="vitality-month">
-                <div className="vitality-title">月活力分布</div>
-                <div className="vitality-month-container">
-                  <div
-                    style={{
-                      paddingLeft: '40px',
-                      boxSizing: 'border-box',
-                      width: '100%',
-                      display: 'flex',
-                      height: '17px',
-                    }}
-                  >
-                    {monthArr.map((monthItem: any, monthIndex: number) => {
-                      return (
-                        <div
-                          className="vitality-month-item-title vitality-month-item"
-                          key={'month' + monthIndex}
-                        >
-                          {monthItem}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {monthData.map((item: any, index: number) => {
+            <div className="vitality-month">
+              <div className="vitality-title">月活力分布</div>
+              <div className="vitality-month-container">
+                <div
+                  style={{
+                    paddingLeft: '40px',
+                    boxSizing: 'border-box',
+                    width: '100%',
+                    display: 'flex',
+                    height: '17px',
+                  }}
+                >
+                  {monthArr.map((monthItem: any, monthIndex: number) => {
                     return (
                       <div
-                        key={'monthData' + index}
-                        className="vitality-month-info"
+                        className="vitality-month-item-title vitality-month-item"
+                        key={'month' + monthIndex}
                       >
-                        <div className="vitality-month-title">
-                          {monthTitleArr[index]}
-                        </div>
-                        {item.map((dayItem: any, dayIndex: number) => {
-                          return (
-                            <div
-                              className="vitality-month-item"
-                              key={'vitality' + index + dayIndex}
-                            >
-                              {/* <template slot="title">分值: {{dayItem.value}} 分</template> */}
-                              <Tooltip title={dayItem.value}>
-                                <div
-                                  className="vitality-month-item-day"
-                                  style={{
-                                    backgroundColor: dayItem.color,
-                                    border: dayItem.date
-                                      ? '1px solid rgba(151, 151, 151, 1)'
-                                      : 0,
-                                  }}
-                                  onClick={() => {
-                                    if (headerIndex !== 2) {
-                                      getTargetLog(dayItem.startTime);
-                                    }
-                                  }}
-                                ></div>
-                              </Tooltip>
-                            </div>
-                          );
-                        })}
+                        {monthItem}
                       </div>
                     );
                   })}
-                  {/* */}
                 </div>
+                {monthData.map((item: any, index: number) => {
+                  return (
+                    <div
+                      key={'monthData' + index}
+                      className="vitality-month-info"
+                    >
+                      <div
+                        className="vitality-month-title"
+                        onClick={() => {
+                          changeTargetMonth(index);
+                        }}
+                      >
+                        {monthTitleArr[index]}
+                      </div>
+                      {item.map((dayItem: any, dayIndex: number) => {
+                        return (
+                          <div
+                            className="vitality-month-item"
+                            key={'vitality' + index + dayIndex}
+                          >
+                            {/* <template slot="title">分值: {{dayItem.value}} 分</template> */}
+                            <Tooltip title={dayItem.value}>
+                              <div
+                                className="vitality-month-item-day"
+                                style={{
+                                  // backgroundColor: dayItem.color,
+                                  backgroundColor: dayItem.color,
+                                  border: dayItem.date
+                                    ? '1px solid rgba(151, 151, 151, 1)'
+                                    : 0,
+                                }}
+                                onClick={() => {
+                                  if (headerIndex !== 2) {
+                                    getTargetLog(dayItem.startTime);
+                                  }
+                                }}
+                              ></div>
+                            </Tooltip>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
               </div>
-              <div className="vitality-log">
+            </div>
+
+            <div className="vitality-box">
+              <div
+                className="vitality-chart"
+                style={
+                  vitalityState === 'month'
+                    ? { opacity: '1' }
+                    : {
+                        opacity: '0',
+                        height: '0px',
+                        width: '0px',
+                        zIndex: -1,
+                      }
+                }
+              >
+                <div
+                  className="vitality-title"
+                  style={{ justifyContent: 'space-between' }}
+                >
+                  <div>月活力</div>
+                  <div className="vitality-choose">
+                    {/* <img
+                      src={leftArrowPng}
+                      className="vitality-choose-icon"
+                      onClick={() => {
+                        changeMonth(0);
+                      }}
+                    /> */}
+                    <div>{targetMonthStr}</div>
+                    {/* <img
+                      src={rightArrowPng}
+                      className="vitality-choose-icon"
+                      onClick={() => {
+                        changeMonth(1);
+                      }}
+                    /> */}
+                  </div>
+                </div>
+                <div className="vitality-week" id="piechartdiv"></div>
+              </div>
+              <div
+                className="vitality-log"
+                style={
+                  vitalityState === 'day'
+                    ? { opacity: '1' }
+                    : {
+                        opacity: '0',
+                        height: '0px',
+                        width: '0px',
+                        padding: '0px',
+                        zIndex: -1,
+                      }
+                }
+              >
                 <div className="vitality-title">
                   活力日志
                   <span style={{ marginLeft: '5px', fontSize: '12px' }}>
@@ -485,7 +531,10 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                     return (
                       <div className="vitality-msg" key={'log' + logIndex}>
                         <div
-                          style={{ width: '12%', color: 'rgba(94,138,251,1)' }}
+                          style={{
+                            width: '12%',
+                            color: 'rgba(94,138,251,1)',
+                          }}
                         >
                           {logItem.creatorName}{' '}
                           {logItem.creatorName && logItem.executorName
@@ -524,7 +573,6 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                   })}
                 </div>
               </div>
-              {/* <a-icon type="close" class="close-icon" @click="closeVitality" /> */}
             </div>
           </div>
         </div>

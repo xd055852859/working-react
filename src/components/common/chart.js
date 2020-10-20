@@ -145,15 +145,15 @@ const amChart = {
     nodeTemplate.tooltipText = '{name}的被指派: {total}';
 
     // when rolled over the node, make all the links rolled-over
-    nodeTemplate.events.on('over', function(event) {
+    nodeTemplate.events.on('over', function (event) {
       let node = event.target;
-      node.outgoingDataItems.each(function(dataItem) {
+      node.outgoingDataItems.each(function (dataItem) {
         if (dataItem.toNode) {
           dataItem.link.isHover = true;
           dataItem.toNode.label.isHover = true;
         }
       });
-      node.incomingDataItems.each(function(dataItem) {
+      node.incomingDataItems.each(function (dataItem) {
         if (dataItem.fromNode) {
           dataItem.link.isHover = true;
           dataItem.fromNode.label.isHover = true;
@@ -164,15 +164,15 @@ const amChart = {
     });
 
     // when rolled out from the node, make all the links rolled-out
-    nodeTemplate.events.on('out', function(event) {
+    nodeTemplate.events.on('out', function (event) {
       let node = event.target;
-      node.outgoingDataItems.each(function(dataItem) {
+      node.outgoingDataItems.each(function (dataItem) {
         if (dataItem.toNode) {
           dataItem.link.isHover = false;
           dataItem.toNode.label.isHover = false;
         }
       });
-      node.incomingDataItems.each(function(dataItem) {
+      node.incomingDataItems.each(function (dataItem) {
         if (dataItem.fromNode) {
           dataItem.link.isHover = false;
           dataItem.fromNode.label.isHover = false;
@@ -191,11 +191,11 @@ const amChart = {
 
     nodeTemplate.cursorOverStyle = am4core.MouseCursorStyle.pointer;
     // this adapter makes non-main character nodes to be filled with color of the main character which he/she kissed most
-    nodeTemplate.adapter.add('fill', function(fill, target) {
+    nodeTemplate.adapter.add('fill', function (fill, target) {
       let node = target;
       let counters = {};
       let mainChar = false;
-      node.incomingDataItems.each(function(dataItem) {
+      node.incomingDataItems.each(function (dataItem) {
         if (colors[dataItem.toName]) {
           mainChar = true;
         }
@@ -263,12 +263,13 @@ const amChart = {
     chart.paddingRight = 20;
 
     chart.data = data;
-
     let categoryAxis = chart.yAxes.push(new am4charts.CategoryAxis());
     categoryAxis.dataFields.category = 'name';
+    categoryAxis.renderer.labels.title = -20;
     categoryAxis.renderer.grid.template.strokeOpacity = 0;
     categoryAxis.renderer.minGridDistance = 10;
     categoryAxis.renderer.labels.template.dx = -20;
+
     categoryAxis.renderer.minWidth = 40;
     categoryAxis.renderer.tooltip.dx = -20;
 
@@ -284,6 +285,7 @@ const amChart = {
     let series = chart.series.push(new am4charts.ColumnSeries());
     series.dataFields.valueX = 'steps';
     series.dataFields.categoryY = 'name';
+    // series.dataFields.categoryY.fill = '#fff';
     series.tooltipText = '{valueX.value}';
     series.tooltip.pointerOrientation = 'vertical';
     series.tooltip.dy = -30;
@@ -321,7 +323,7 @@ const amChart = {
 
     let hoverState = bullet.states.create('hover');
     let outlineCircle = bullet.createChild(am4core.Circle);
-    outlineCircle.adapter.add('radius', function(radius, target) {
+    outlineCircle.adapter.add('radius', function (radius, target) {
       let circleBullet = target.parent;
       return circleBullet.circle.pixelRadius + 10;
     });
@@ -333,13 +335,13 @@ const amChart = {
     image.verticalCenter = 'middle';
     image.propertyFields.href = 'href';
 
-    image.adapter.add('mask', function(mask, target) {
+    image.adapter.add('mask', function (mask, target) {
       let circleBullet = target.parent;
       return circleBullet.circle;
     });
 
     let previousBullet;
-    chart.cursor.events.on('cursorpositionchanged', function(event) {
+    chart.cursor.events.on('cursorpositionchanged', function (event) {
       let dataItem = series.tooltipDataItem;
 
       if (dataItem.column) {

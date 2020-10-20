@@ -535,7 +535,7 @@ const Task: React.FC<TaskProps> = (props) => {
                         backgroundColor: bottomtype ? 'transparent' : '',
                         color: bottomtype ? '#fff' : '#333',
                         textDecoration:
-                          taskDetail.finishPercent === 2 ? 'line-through' : '',
+                          taskDetail.finishPercent === 2 ? 'line-through #a9a9a9 solid' : '',
                       }}
                       contentEditable={taskKey === taskDetail._key && editRole}
                       suppressContentEditableWarning

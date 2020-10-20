@@ -31,7 +31,7 @@ moment.locale('zh-cn');
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
-      width: '145px',
+      width: '150px',
     },
     input: {
       width: '100%',
@@ -51,7 +51,7 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     hourInput: {
-      width: '150px',
+      width: '105px',
       color: '#fff',
       marginTop: '24px',
       marginLeft: '10px',
@@ -230,7 +230,7 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
                 dropStyle={{
                   width: '180px',
                   height: '75px',
-                  top: '40px',
+                  top: '30px',
                   left: '0px',
                   color: '#333',
                 }}

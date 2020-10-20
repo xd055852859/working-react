@@ -97,6 +97,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   const [searchList, setSearchList] = React.useState<any>([]);
   const [mainSearchList, setMainSearchList] = React.useState<any>([]);
   const [searchInput, setSearchInput] = React.useState('');
+  const [question, setQuestion] = React.useState('');
   const [passwordInput, setPasswordInput] = React.useState('');
   const [joinType, setJoinType] = React.useState(0);
   const [searchIndex, setSearchIndex] = React.useState(0);
@@ -278,6 +279,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     if (groupRes.msg === 'OK') {
       let newGroupInfo = groupRes.result;
       if (newGroupInfo.joinType) {
+        setQuestion(newGroupInfo.question);
         setJoinType(newGroupInfo.joinType);
         setIsHasPassword(newGroupInfo.isHasPassword);
         setSearchIndex(searchIndex);
@@ -814,21 +816,29 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             title={'申请加群'}
             dialogStyle={{
               width: '400px',
-              height: isHasPassword ? '300px' : '200px',
+              height: question ? '300px' : isHasPassword ? '250px' : '200px',
             }}
             footer={false}
           >
             <div className="invite-container">
               {isHasPassword ? (
-                <TextField
-                  required
-                  id="outlined-basic"
-                  variant="outlined"
-                  label="口令"
-                  className={classes.addInput}
-                  onChange={changePasswordInput}
-                  value={passwordInput}
-                />
+                <div style={{ width: '100%;' }}>
+                  {question ? <div>{question} :</div> : null}
+                  <TextField
+                    required
+                    id="outlined-basic"
+                    variant="outlined"
+                    label="口令"
+                    className={classes.addInput}
+                    onChange={changePasswordInput}
+                    value={passwordInput}
+                    style={
+                      question
+                        ? { marginTop: '15px', width: '100%' }
+                        : { width: '100%' }
+                    }
+                  />
+                </div>
               ) : null}
               <div
                 className="invite-button"

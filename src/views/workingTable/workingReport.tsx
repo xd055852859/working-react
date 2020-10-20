@@ -137,7 +137,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     let newPersonArray = _.cloneDeep(personArray);
     let newDiaryKey: string | number = '';
     let arr: any = [];
-    for (let i = 30; i > 0; i--) {
+    for (let i = 30; i >= 0; i--) {
       arr.push({
         start: moment().subtract(i, 'days').startOf('day').valueOf(),
         end: moment().subtract(i, 'days').endOf('day').valueOf(),
@@ -345,7 +345,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     let dom: any = [];
     for (let dayKey in dayCanlendarItem) {
       dom.push(
-        <React.Fragment>
+        <React.Fragment key={'day' + dayKey}>
           <div className="diaryall-subtitle">
             <div className="diaryall-subtitle-img">
               <img

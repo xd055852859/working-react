@@ -1,13 +1,14 @@
 .chat-iframe {
   width: calc(100% - 320px);
-  height: 100%;
   position: fixed;
-  height: calc(100% - 65px);
+  height: calc(100% - 70px);
   opacity: 1;
   right: 0px;
   top: 65px;
   z-index: 15;
   overflow: hidden;
+  border-radius: 10px;
+  box-shadow: -5px 2px 4px 0px rgba(0, 0, 0, 0.5);
 }
 .chat-close {
   width: 25px;

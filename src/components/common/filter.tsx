@@ -49,7 +49,7 @@ const Filter: React.FC<FilterProps> = (prop) => {
   return (
     <div className="filter" style={filterStyle}>
       <div className="filter-title">{title+" :"}</div>
-      <div className="filter-menu" onClick={onOpen}>
+      <div className="filter-menu" onMouseEnter={onOpen} onMouseLeave={onClose}>
         {filterArray.length > 0 ? (
           <div className="filter-menu-info">
             <Avatar

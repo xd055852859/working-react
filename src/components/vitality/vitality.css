@@ -76,11 +76,11 @@
 }
 .vitality-chart {
   width: 100%;
+  height: 100%;
   display: flex;
   flex-wrap: wrap;
   justify-items: flex-start;
   box-sizing: border-box;
-  margin-bottom: 10px;
   position: relative;
 }
 .vitality-chart-title {
@@ -89,14 +89,8 @@
   line-height: 25px;
   display: flex;
 }
-.vitality-chart-info {
-  width: 100%;
-  height: 250px;
-  display: flex;
-  margin-top: 10px;
-}
 .vitality-month {
-  width: 30%;
+  width: 25%;
   height: 100%;
   display: flex;
   flex-wrap: wrap;
@@ -108,13 +102,15 @@
 .vitality-month-container,
 .vitality-log-container {
   width: 100%;
-  height: calc(100% - 35px);
+  height: calc(100% - 31px);
   display: flex;
   flex-wrap: wrap;
   overflow: auto;
 }
-.vitality-log-container{
+.vitality-log-container {
   align-content: flex-start;
+  height: 100%;
+  overflow: auto;
 }
 .vitality-month-info {
   width: 100%;
@@ -125,17 +121,22 @@
   box-sizing: border-box;
 }
 .vitality-month-title {
-  height: 36px;
+  height: 26px;
   position: absolute;
   top: 0px;
   left: 0px;
-  line-height: 36px;
+  line-height: 26px;
   font-size: 16px;
   font-weight: 500;
-  color: rgba(51, 51, 51, 1);
+  color: #fff;
+  padding: 0px 10px;
+  border-radius: 15px;
+  background-color: #17b881;
+  cursor: pointer;
 }
 .vitality-month-item {
   width: calc(96% / 7);
+  cursor: pointer;
 }
 .vitality-month-item-day {
   height: 36px;
@@ -158,7 +159,8 @@
   margin-bottom: 1px;
 }
 .vitality-log {
-  width: 70%;
+  width: 100%;
+  height: calc(100% - 30px);
   padding: 0px 10px;
   box-sizing: border-box;
 }
@@ -190,15 +192,16 @@
 }
 .vitality-chart-info {
   width: 100%;
-  height: calc(100% - 91px);
+  height: calc(100% - 70px);
   display: flex;
   flex-wrap: wrap;
-  overflow: auto;
+  justify-content: space-between;
 }
 .vitality-box {
-  width: 100%;
-  height: 280px;
+  width: 75%;
+  height: 100%;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
 }
 .vitality-doc {
@@ -211,7 +214,7 @@
   cursor: pointer;
 }
 .vitality-choose {
-  width: 100px;
+  /* width: 100px; */
   height: 30px;
   display: flex;
   justify-content: space-between;

@@ -58,25 +58,25 @@ const Home: React.FC<HomeProps> = (props) => {
           <img src={logoPng} alt="" />
         </div>
         <div
-          className="home-header-item"
-          style={
-            headerIndex === 0 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
-          }
-          onClick={() => dispatch(setCommonHeaderIndex(0))}
-        >
-          <img src={boardPng} alt="" className="home-header-item-logo" />
-          首页
-        </div>
-        <div
           style={
             headerIndex === 1 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
           }
           className="home-header-item"
           onClick={() => dispatch(setCommonHeaderIndex(1))}
         >
-          <img src={tablePng} alt="" className="home-header-item-logo" />
+          <img src={boardPng} alt="" className="home-header-item-logo" />
           我的工作台
         </div>
+        <div
+          className="home-header-item"
+          style={
+            headerIndex === 0 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
+          }
+          onClick={() => dispatch(setCommonHeaderIndex(0))}
+        >
+          <img src={tablePng} alt="" className="home-header-item-logo" />
+          看板
+        </div>       
         {theme && theme.calendarVisible ? (
           <div
             style={

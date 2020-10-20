@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useHistory } from 'react-router-dom';
 import './bootpage.css';
 import bootpage from '../../assets/img/bootpage.png';
 import boottitle from '../../assets/img/boottitle.png';
 import { Button } from '@material-ui/core';
 import _ from 'lodash';
 const Bootpage: React.FC = () => {
+  const history = useHistory();
   const bootpageRef: React.RefObject<any> = useRef();
   const [clientHeight, setClientHeight] = useState(0);
   const [clientWidth, setClientWidth] = useState(0);
@@ -19,8 +21,13 @@ const Bootpage: React.FC = () => {
     window.open('http://beian.miit.gov.cn/');
   };
   const toLogin = () => {
-    const redirect = `${window.location.protocol}//${window.location.host}`;
-    window.location.href = `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`;
+    console.log(localStorage.getItem('token'));
+    if (localStorage.getItem('token')) {
+      history.push('/');
+    } else {
+      const redirect = `${window.location.protocol}//${window.location.host}`;
+      window.location.href = `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`;
+    }
   };
   window.onresize = _.debounce(function () {
     setClientWidth(bootpageRef.current.clientWidth);

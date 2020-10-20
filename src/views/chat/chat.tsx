@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
+
 import {
   setChatState,
   setUnChatNum,
@@ -46,7 +47,6 @@ const Chat: React.FC<ChatProps> = (prop) => {
       (headerIndex === 2 && memberArray) ||
       (headerIndex === 3 && groupInfo)
     ) {
-      console.log('xxxxxxxxxxxxxxxxxxxxxx');
       goChat();
     }
     // dispatch(setChatState(false));
@@ -76,30 +76,32 @@ const Chat: React.FC<ChatProps> = (prop) => {
     if (headerIndex === 2) {
       const privatePerson =
         memberArray[_.findIndex(memberArray, { userId: targetUserKey })];
-      const privateChatRId = privatePerson.privateChatRId;
-      if (privateChatRId) {
-        dom.contentWindow.postMessage(
-          {
-            externalCommand: 'go',
-            path: '/direct/' + privateChatRId,
-          },
-          '*'
-        );
-      } else {
-        let chatRes: any = await api.member.getPrivateChatRId(
-          mainGroupKey,
-          targetUserKey
-        );
-        if (chatRes.msg === 'OK') {
+      if (privatePerson) {
+        const privateChatRId = privatePerson.privateChatRId;
+        if (privateChatRId) {
           dom.contentWindow.postMessage(
             {
               externalCommand: 'go',
-              path: '/direct/' + chatRes.result,
+              path: '/direct/' + privateChatRId,
             },
             '*'
           );
         } else {
-          dispatch(setMessage(true, chatRes.msg, 'error'));
+          let chatRes: any = await api.member.getPrivateChatRId(
+            mainGroupKey,
+            targetUserKey
+          );
+          if (chatRes.msg === 'OK') {
+            dom.contentWindow.postMessage(
+              {
+                externalCommand: 'go',
+                path: '/direct/' + chatRes.result,
+              },
+              '*'
+            );
+          } else {
+            dispatch(setMessage(true, chatRes.msg, 'error'));
+          }
         }
       }
     } else if (headerIndex === 3) {

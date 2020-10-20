@@ -1,8 +1,8 @@
 .App {
   display: flex;
+  position: relative;
   background-size: cover;
   background-attachment: fixed;
-  position: relative;
 }
 .home-chat {
   height: 100%;
@@ -91,6 +91,13 @@ textarea {
 }
 [contenteditable]:focus {
   outline: 1px solid #17b881;
+}
+.appCanvas {
+  position: absolute;
+  width: 0px;
+  height: 0px;
+  z-index: -10;
+  opacity: 0;
 }
 @keyframes moveIn {
   from {
@@ -207,14 +214,14 @@ textarea {
   from {
     width: 0px;
     height: 0px;
-    right: 15px;
+    right: 0px;
     top: 30px;
   }
 
   to {
     width: 22px;
     height: 22px;
-    right: 5px;
+    right: -3px;
     top: 20px;
   }
 }
@@ -223,14 +230,14 @@ textarea {
   from {
     width: 22px;
     height: 22px;
-    right: 5px;
+    right: -3px;
     top: 20px;
   }
 
   to {
     width: 0px;
     height: 0px;
-    right: 15px;
+    right: 0px;
     top: 30px;
   }
 }

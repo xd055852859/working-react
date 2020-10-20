@@ -32,7 +32,13 @@
   /* height: 200px; */
   height: calc(100% - 30px);
   border-radius: 5px;
+  padding: 8px;
+  box-sizing: border-box;
 }
+.clockIn-textarea:focus {
+  outline: 0;
+}
+
 .clockIn-logo {
   width: 12px;
   height: 7px;

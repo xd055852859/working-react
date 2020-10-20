@@ -42,6 +42,7 @@ export const common = (state = defaultState, action: any) => {
       if (action.error.statusCode === '701') {
         const redirect = `${window.location.protocol}//${window.location.host}`;
         // window.location.href = `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`;
+        localStorage.clear();
         window.location.href = `${redirect}/bootpage`;
       }
       return {

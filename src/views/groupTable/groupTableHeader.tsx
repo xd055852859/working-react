@@ -41,6 +41,9 @@ import filterPng from '../../assets/img/filter.png';
 import chatPng from '../../assets/img/chat.png';
 import infoPng from '../../assets/img/info.png';
 import filePng from '../../assets/img/file.png';
+import groupSet1Png from '../../assets/img/groupSet1.png';
+import groupSet2Png from '../../assets/img/groupSet2.png';
+import groupSet3Png from '../../assets/img/groupSet3.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import downArrowPng from '../../assets/img/downArrow.png';
 import './groupTableHeader.css';
@@ -103,7 +106,7 @@ const GroupTableHeader: React.FC = (prop) => {
   const [dismissVisible, setDismissVisible] = useState(false);
   const [groupMember, setGroupMember] = useState<any>([]);
   const [groupObj, setGroupObj] = React.useState<any>(null);
-
+  const [groupTabIndex, setGroupTabIndex] = React.useState(0);
   const [filterCheckedArray, setFilterCheckedArray] = useState<any>([
     false,
     false,
@@ -164,6 +167,7 @@ const GroupTableHeader: React.FC = (prop) => {
   const setGroup = () => {
     dispatch(changeGroupInfo(groupKey, groupObj));
     setGroupSetVisible(false);
+    dispatch(setMessage(true, '修改群属性成功', 'success'));
     // dispatch(getGroup(3, null, theme.groupSortType));
     dispatch(getGroup(3));
   };
@@ -241,7 +245,7 @@ const GroupTableHeader: React.FC = (prop) => {
     copy(redirect + '/?groupKey=' + groupKey);
     dispatch(setMessage(true, '复制链接群成功', 'success'));
   };
-  const addTemplate = async () => { 
+  const addTemplate = async () => {
     let patchData = {
       type: '用户模板',
       name: groupInfo.groupName,
@@ -301,7 +305,7 @@ const GroupTableHeader: React.FC = (prop) => {
         style={{ width: '56px' }}
         onClick={() => {
           dispatch(setMoveState('out'));
-          dispatch(setCommonHeaderIndex(0));
+          dispatch(setCommonHeaderIndex(1));
         }}
       >
         <img src={boardPng} alt="" />
@@ -393,10 +397,14 @@ const GroupTableHeader: React.FC = (prop) => {
                   setGroupSetVisible(true);
                 }}
               >
-                <img />
+                <img
+                  src={groupSet1Png}
+                  alt=""
+                  style={{ width: '18px', height: '18px' }}
+                />
                 项目属性
               </div>
-              <div
+              {/* <div
                 className="groupTableHeader-info-item"
                 onClick={() => {
                   setGroupMemberVisible(true);
@@ -413,14 +421,18 @@ const GroupTableHeader: React.FC = (prop) => {
               >
                 <img />
                 子群列表
-              </div>
+              </div> */}
               <div
                 className="groupTableHeader-info-item"
                 onClick={() => {
                   shareGroup();
                 }}
               >
-                <img />
+                <img
+                  src={groupSet2Png}
+                  alt=""
+                  style={{ width: '20px', height: '19px' }}
+                />
                 分享群组
               </div>
               {groupInfo && groupInfo.role == 1 ? (
@@ -441,7 +453,11 @@ const GroupTableHeader: React.FC = (prop) => {
                   addTemplate();
                 }}
               >
-                <img />
+                <img
+                  src={groupSet3Png}
+                  alt=""
+                  style={{ width: '17px', height: '17px' }}
+                />
                 设为模板
               </div>
               {/* ) : null} */}
@@ -635,14 +651,15 @@ const GroupTableHeader: React.FC = (prop) => {
         style={
           memberHeaderIndex < 7
             ? {
-                background: 'rgba(255,255,255,0.24)',
+                borderBottom: '3px solid #17B881',
+                marginLeft: '10px',
               }
-            : {}
+            : { marginLeft: '10px' }
         }
       >
         任务
       </div>
-      <div
+      |<div
         className="view-tab"
         onClick={() => {
           chooseMemberHeader(9);
@@ -650,14 +667,14 @@ const GroupTableHeader: React.FC = (prop) => {
         style={
           memberHeaderIndex === 9
             ? {
-                background: 'rgba(255,255,255,0.24)',
+                borderBottom: '3px solid #17B881',
               }
             : {}
         }
       >
         文档
       </div>
-      <div
+      |<div
         className="view-tab"
         onClick={() => {
           chooseMemberHeader(7);
@@ -665,14 +682,14 @@ const GroupTableHeader: React.FC = (prop) => {
         style={
           memberHeaderIndex === 7
             ? {
-                background: 'rgba(255,255,255,0.24)',
+                borderBottom: '3px solid #17B881',
               }
             : {}
         }
       >
         日报
       </div>
-      <div
+      |<div
         className="view-tab"
         onClick={() => {
           chooseMemberHeader(8);
@@ -680,14 +697,14 @@ const GroupTableHeader: React.FC = (prop) => {
         style={
           memberHeaderIndex === 8
             ? {
-                background: 'rgba(255,255,255,0.24)',
+                borderBottom: '3px solid #17B881',
               }
             : {}
         }
       >
         动态
       </div>
-      <div
+      |<div
         className="view-tab"
         onClick={() => {
           chooseMemberHeader(10);
@@ -695,7 +712,7 @@ const GroupTableHeader: React.FC = (prop) => {
         style={
           memberHeaderIndex === 10
             ? {
-                background: 'rgba(255,255,255,0.24)',
+                borderBottom: '3px solid #17B881',
               }
             : {}
         }
@@ -737,44 +754,81 @@ const GroupTableHeader: React.FC = (prop) => {
           setGroupSetVisible(false);
         }}
         onOK={() => {
-          setGroup();
+          if (groupTabIndex === 0) {
+            setGroup();
+          } else if (groupTabIndex === 1) {
+            saveGroupMember();
+          }
         }}
-        title={'设置群属性'}
-        dialogStyle={{ width: '750px', height: '700px' }}
+        // title={'设置群'}
+        dialogStyle={{
+          width: '850px',
+          height: '700px',
+        }}
+        // showMask={false}
       >
-        <GroupSet saveGroupSet={saveGroupSet} type={'设置'} />
+        <div className="groupSet-tab">
+          <div
+            onClick={() => {
+              setGroupTabIndex(0);
+            }}
+            className="groupSet-tab-item"
+            style={
+              groupTabIndex == 0
+                ? {
+                    borderBottom: '2px solid #17B881',
+                    color: '#17B881',
+                  }
+                : {}
+            }
+          >
+            项目属性
+          </div>
+          <div
+            onClick={() => {
+              setGroupTabIndex(1);
+            }}
+            className="groupSet-tab-item"
+            style={
+              groupTabIndex == 1
+                ? {
+                    borderBottom: '2px solid #17B881',
+                    color: '#17B881',
+                  }
+                : {}
+            }
+          >
+            成员
+          </div>
+          <div
+            onClick={() => {
+              setGroupTabIndex(2);
+            }}
+            className="groupSet-tab-item"
+            style={
+              groupTabIndex == 2
+                ? {
+                    borderBottom: '2px solid #17B881',
+                    color: '#17B881',
+                  }
+                : {}
+            }
+          >
+            子群
+          </div>
+        </div>
+        {groupTabIndex === 0 ? (
+          <GroupSet saveGroupSet={saveGroupSet} type={'设置'} />
+        ) : null}
+        {groupTabIndex === 1 ? <GroupMember setMember={setMember} /> : null}
+        {groupTabIndex === 2 ? (
+          <SonGroup
+            onClose={() => {
+              setSonGroupVisible(false);
+            }}
+          />
+        ) : null}
       </Dialog>
-      <Dialog
-        visible={groupMemberVisible}
-        onClose={() => {
-          setGroupMemberVisible(false);
-        }}
-        onOK={() => {
-          saveGroupMember();
-        }}
-        title={'设置群成员'}
-        dialogStyle={{ width: '850px', height: '700px' }}
-      >
-        {/* saveGroupSet={saveGroupSet} type={'设置'}  */}
-        <GroupMember setMember={setMember} />
-      </Dialog>
-      <Dialog
-        visible={sonGroupVisible}
-        onClose={() => {
-          setSonGroupVisible(false);
-        }}
-        footer={false}
-        title={'设置子群'}
-        dialogStyle={{ width: '850px', height: '700px' }}
-      >
-        {/* saveGroupSet={saveGroupSet} type={'设置'}  */}
-        <SonGroup
-          onClose={() => {
-            setSonGroupVisible(false);
-          }}
-        />
-      </Dialog>
-
       {/* <Dialog
         visible={vitalityVisible}
         onClose={() => {
