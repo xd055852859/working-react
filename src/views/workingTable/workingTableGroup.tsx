@@ -6,9 +6,7 @@ import api from '../../services/api';
 import _ from 'lodash';
 import format from '../../components/common/format';
 
-import {
-  getWorkingTableTask,
-} from '../../redux/actions/taskActions';
+import { getWorkingTableTask } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
 
 import Task from '../../components/task/task';
@@ -304,7 +302,7 @@ const WorkingTableGroup: React.FC = (prop) => {
                   <div style={{ color: '#fff' }}>{item.groupObj.groupName}</div>
                 </div>
                 <div
-                  style={{ overflowY: 'auto' }}
+                  style={memberHeaderIndex === 1 ?{overflowY: 'auto' }:{}}
                   className="workingTableLabel-info-item-group-container"
                 >
                   {getGroupItem(item, index)}

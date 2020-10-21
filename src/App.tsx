@@ -58,8 +58,6 @@ const App: React.FC = () => {
   const [bgIntervalTime, setBgIntervalTime] = useState<any>(null);
   const [playAction, setPlayAction] = useState<any>({});
   const [playState, setPlayState] = useState(false);
-  const [clientWidth, setClientWidth] = useState(0);
-  const [clientHeight, setClientHeight] = useState(0);
 
   const calendarColor = [
     '#39B98D',
@@ -76,19 +74,12 @@ const App: React.FC = () => {
   const pageRef: React.RefObject<any> = useRef();
   const canvasRef: React.RefObject<any> = useRef();
   useEffect(() => {
-    if (pageRef.current) {
-      setClientWidth(pageRef.current.clientWidth);
-      let clientHeight = pageRef.current.clientHeight;
-      setClientHeight(clientHeight);
-    }
-  }, [pageRef.current]);
-  useEffect(() => {
     // 用户已登录
     if (
       user &&
       user._key &&
       token &&
-      token === localStorage.getItem('auth_token')
+      token === localStorage.getItem('token')
     ) {
       dispatch(getMainGroupKey());
       dispatch(getTheme());
@@ -196,12 +187,12 @@ const App: React.FC = () => {
       let newIntervalTime: any = 0;
       const randomTime =
         theme.randomType === '1'
-          ? 6000
+          ? 60000
           : theme.randomType === '2'
           ? 3600000
           : theme.randomType === '3'
           ? 86400000
-          : 6000;
+          : 60000;
       randomBg();
       newIntervalTime = setInterval(randomBg, randomTime);
       setBgIntervalTime(newIntervalTime);
@@ -236,12 +227,12 @@ const App: React.FC = () => {
       : '';
     const randomTime =
       theme.randomType === '1'
-        ? 6000
+        ? 60000
         : theme.randomType === '2'
         ? 3600000
         : theme.randomType === '3'
         ? 86400000
-        : 6000;
+        : 60000;
     if (!localTime || parseInt(localTime) + randomTime <= moment().valueOf()) {
       changeBg();
       localStorage.setItem('localTime', moment().valueOf() + '');
@@ -262,11 +253,6 @@ const App: React.FC = () => {
       dispatch(setTheme(newTheme));
     };
   };
-  window.onresize = _.debounce(function () {
-    setClientWidth(pageRef.current.clientWidth);
-    let clientHeight = pageRef.current.clientHeight;
-    setClientHeight(clientHeight);
-  }, 500);
   return (
     <div
       className="App"

@@ -46,6 +46,7 @@ import groupSet2Png from '../../assets/img/groupSet2.png';
 import groupSet3Png from '../../assets/img/groupSet3.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import downArrowPng from '../../assets/img/downArrow.png';
+import logoutPng from '../../assets/img/logout.png';
 import './groupTableHeader.css';
 import sonGroup from '../tabs/sonGroup';
 const useStyles = makeStyles((theme: Theme) =>
@@ -90,7 +91,7 @@ const GroupTableHeader: React.FC = (prop) => {
     '今天',
     '已完成',
     '未来',
-    '计划',
+    '重要',
     '未计划',
     '一般卡片',
     '已归档',
@@ -115,6 +116,7 @@ const GroupTableHeader: React.FC = (prop) => {
     false,
     false,
   ]);
+  const [outGroupVisible, setOutGroupVisible] = useState(false);
   const chooseMemberHeader = (headIndex: number) => {
     dispatch(setHeaderIndex(headIndex));
     setViewVisible(false);
@@ -298,6 +300,17 @@ const GroupTableHeader: React.FC = (prop) => {
       dispatch(setMessage(true, templateRes.msg, 'error'));
     }
   };
+  const outGroup = async () => {
+    let memberRes: any = await api.group.outGroup(groupKey);
+    if (memberRes.msg === 'OK') {
+      dispatch(setMessage(true, '退出项目成功', 'success'));
+      dispatch(getGroup(3));
+      dispatch(setCommonHeaderIndex(1));
+      dispatch(setMoveState('out'));
+    } else {
+      dispatch(setMessage(true, memberRes.msg, 'error'));
+    }
+  };
   return (
     <div className="workingTableHeader">
       <div
@@ -472,7 +485,6 @@ const GroupTableHeader: React.FC = (prop) => {
           style={{ width: '30px', height: '25px', marginRight: '30px' }}
         />
       </Tooltip> */}
-
       <div className="view-container">
         {memberHeaderIndex < 3 ? (
           <React.Fragment>
@@ -642,7 +654,6 @@ const GroupTableHeader: React.FC = (prop) => {
           </React.Fragment>
         ) : null}
       </div>
-
       <div
         className="view-tab"
         onClick={() => {
@@ -659,7 +670,8 @@ const GroupTableHeader: React.FC = (prop) => {
       >
         任务
       </div>
-      |<div
+      |
+      <div
         className="view-tab"
         onClick={() => {
           chooseMemberHeader(9);
@@ -674,7 +686,8 @@ const GroupTableHeader: React.FC = (prop) => {
       >
         文档
       </div>
-      |<div
+      |
+      <div
         className="view-tab"
         onClick={() => {
           chooseMemberHeader(7);
@@ -689,7 +702,8 @@ const GroupTableHeader: React.FC = (prop) => {
       >
         日报
       </div>
-      |<div
+      |
+      <div
         className="view-tab"
         onClick={() => {
           chooseMemberHeader(8);
@@ -704,7 +718,8 @@ const GroupTableHeader: React.FC = (prop) => {
       >
         动态
       </div>
-      |<div
+      |
+      <div
         className="view-tab"
         onClick={() => {
           chooseMemberHeader(10);
@@ -734,7 +749,6 @@ const GroupTableHeader: React.FC = (prop) => {
           }}
         />
       </Tooltip> */}
-
       <Dialog
         visible={dismissVisible}
         onClose={() => {
@@ -816,6 +830,14 @@ const GroupTableHeader: React.FC = (prop) => {
           >
             子群
           </div>
+          <img
+            src={logoutPng}
+            alt=""
+            className="contact-dialog-out"
+            onClick={() => {
+              setOutGroupVisible(true);
+            }}
+          />
         </div>
         {groupTabIndex === 0 ? (
           <GroupSet saveGroupSet={saveGroupSet} type={'设置'} />
@@ -828,6 +850,19 @@ const GroupTableHeader: React.FC = (prop) => {
             }}
           />
         ) : null}
+      </Dialog>
+      <Dialog
+        visible={outGroupVisible}
+        onClose={() => {
+          setOutGroupVisible(false);
+        }}
+        onOK={() => {
+          outGroup();
+        }}
+        title={'退出项目'}
+        dialogStyle={{ width: '400px', height: '200px' }}
+      >
+        <div className="dialog-onlyTitle">是否退出该群</div>
       </Dialog>
       {/* <Dialog
         visible={vitalityVisible}

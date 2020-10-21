@@ -27,7 +27,6 @@ import DropMenu from '../../components/common/dropMenu';
 import Dialog from '../../components/common/dialog';
 
 import plusPng from '../../assets/img/contact-plus.png';
-import logoutPng from '../../assets/img/logout.png';
 
 interface GroupSetProps {
   saveGroupSet: any;
@@ -78,7 +77,6 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
   const [isLinkJoin, setIsLinkJoin] = useState(false);
   const [defaultPower, setDefaultPower] = useState(5);
   const [defaultPowerVisible, setDefaultPowerVisible] = useState(false);
-  const [outGroupVisible, setOutGroupVisible] = useState(false);
   const roleArray = [
     {
       name: '管理员',
@@ -242,29 +240,11 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
     copy(redirect + '/?groupKey=' + groupKey);
     dispatch(setMessage(true, '复制链接群成功', 'success'));
   };
-  const outGroup = async () => {
-    let memberRes: any = await api.group.outGroup(groupKey);
-    if (memberRes.msg === 'OK') {
-      dispatch(setMessage(true, '退出项目成功', 'success'));
-      dispatch(getGroup(3));
-      dispatch(setCommonHeaderIndex(1));
-      dispatch(setMoveState('out'));
-    } else {
-      dispatch(setMessage(true, memberRes.msg, 'error'));
-    }
-  };
   return (
     <div className="contact-dialog-content">
       <div className="contact-dialog-info">
         <div className="contact-dialog-container">
-          <img
-            src={logoutPng}
-            alt=""
-            className="contact-dialog-out"
-            onClick={() => {
-              setOutGroupVisible(true);
-            }}
-          />
+         
           <div className="contact-name-content" style={{ width: '70%' }}>
             <div className="contact-name-title">群名</div>
             <TextField
@@ -521,19 +501,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
           </div>
         </div>
       </div>
-      <Dialog
-        visible={outGroupVisible}
-        onClose={() => {
-          setOutGroupVisible(false);
-        }}
-        onOK={() => {
-          outGroup();
-        }}
-        title={'退出项目'}
-        dialogStyle={{ width: '400px', height: '200px' }}
-      >
-        <div className="dialog-onlyTitle">是否退出该群</div>
-      </Dialog>
+      
     </div>
   );
 };

@@ -356,6 +356,8 @@
   height: 200px;
   border-radius: 5px;
   border: 0px;
+  padding: 8px;
+  box-sizing: border-box;
 }
 .diary-textarea {
   width: calc(100% - 30px);
@@ -363,6 +365,12 @@
   border-radius: 5px;
   border: 1px solid rgba(232, 232, 232, 1);
   margin-left: 30px;
+  padding: 8px;
+  box-sizing: border-box;
+}
+.diary-textarea:focus,
+.diary-content-textarea:focus {
+  outline: 0;
 }
 .save-button {
   position: absolute;

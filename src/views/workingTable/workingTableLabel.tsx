@@ -281,9 +281,7 @@ const WorkingTableLabel: React.FC = (prop) => {
                   }}
                 />
                 <div
-                  style={{
-                    overflowY: 'auto',
-                  }}
+                  style={memberHeaderIndex === 0 ?{overflowY: 'auto' }:{}}
                   className="workingTableLabel-info-item-label-container"
                 >
                   {labelItem.arr.map((taskItem: any, taskIndex: number) => {

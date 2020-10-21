@@ -174,30 +174,28 @@ const Task: React.FC<TaskProps> = (props) => {
     // dispatch(setTaskKey('0'));
     // dispatch(setChooseKey('0'));
   }, [headerIndex, groupKey]);
-  useEffect(() => {
-    if (titleRef.current && taskKey === taskDetail._key && editRole) {
-      console.log(titleRef.current);
-      // if (titleRef.current.setSelectionRange) {
-      //   titleRef.current.setSelectionRange(
-      //     titleRef.current.value.length,
-      //     titleRef.current.value.length
-      //   );
-      // } else {
-      //   let range = titleRef.current.createTextRange();
-      //   range.moveStart('character', titleRef.current.value.length);
-      //   range.moveEnd('character', titleRef.current.value.length);
-      //   range.select();
-      // }
-      let range = document.createRange();
-      range.selectNodeContents(titleRef.current);
-      range.collapse(false);
-      let sel: any = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }
-    // dispatch(setChooseKey('0'));
-  }, [titleRef, taskKey, taskDetail]);
-
+  // useEffect(() => {
+  //   if (titleRef.current && taskKey === taskDetail._key && editRole) {
+  // if (titleRef.current.setSelectionRange) {
+  //   titleRef.current.setSelectionRange(
+  //     titleRef.current.value.length,
+  //     titleRef.current.value.length
+  //   );
+  // } else {
+  //   let range = titleRef.current.createTextRange();
+  //   range.moveStart('character', titleRef.current.value.length);
+  //   range.moveEnd('character', titleRef.current.value.length);
+  //   range.select();
+  // }
+  //   let range = document.createRange();
+  //   range.selectNodeContents(titleRef.current);
+  //   range.collapse(false);
+  //   let sel: any = window.getSelection();
+  //   sel.removeAllRanges();
+  //   sel.addRange(range);
+  // }
+  // dispatch(setChooseKey('0'));
+  // }, [titleRef.current]);
   const getTaskMemberArray = async (groupKey: string) => {
     let taskMemberRes: any = null;
     taskMemberRes = await api.member.getMember(groupKey);
@@ -213,8 +211,10 @@ const Task: React.FC<TaskProps> = (props) => {
   };
   const cancelTask = async (e: React.MouseEvent) => {
     let newTaskDetail = _.cloneDeep(taskDetail);
+    let newEditState = editState;
+    titleRef.current.blur();
     if (taskKey !== '') {
-      if (editState) {
+      if (newEditState) {
         dispatch(
           editTask(
             {
@@ -535,16 +535,27 @@ const Task: React.FC<TaskProps> = (props) => {
                         backgroundColor: bottomtype ? 'transparent' : '',
                         color: bottomtype ? '#fff' : '#333',
                         textDecoration:
-                          taskDetail.finishPercent === 2 ? 'line-through #a9a9a9 solid' : '',
+                          taskDetail.finishPercent === 2
+                            ? 'line-through #a9a9a9 solid'
+                            : '',
                       }}
                       contentEditable={taskKey === taskDetail._key && editRole}
                       suppressContentEditableWarning
-                      onBlur={(e: any) => {
+                      onMouseLeave={(e: any) => {
                         if (e.target.innerText != taskDetail.title) {
                           changeTitle(e.target.innerText);
                         }
                         // setEditState(true);
                       }}
+                      // onBlur={(e: any) => {
+                      //   if (e.target.innerText != taskDetail.title) {
+                      //     changeTitle(e.target.innerText);
+                      //   }
+                      //   // setEditState(true);
+                      // }}
+                      // onChange={(e: any) => {
+                      //   console.log(e)
+                      // }}
                       // style={{ height: textHeight + 'px' }}
                       id={'taskDetailText' + taskDetail._key}
                       ref={titleRef}

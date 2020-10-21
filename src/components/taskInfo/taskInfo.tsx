@@ -590,19 +590,20 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                       visible={moveTaskVisible}
                       dialogStyle={{
                         width: '320px',
-                        height: '160px',
+                        height: '125px',
                         position: 'fixed',
                         top: '129px',
                         right: '158px',
                         overflow: 'visible',
                       }}
-                      onOK={() => {
-                        setMoveTaskVisible(false);
-                      }}
+                      // onOK={() => {
+                      //   setMoveTaskVisible(false);
+                      // }}
                       onClose={() => {
                         setMoveTaskVisible(false);
                       }}
                       showMask={false}
+                      footer={false}
                     >
                       {labelArray && labelArray.length > 0 ? (
                         <div className="addTask-container">

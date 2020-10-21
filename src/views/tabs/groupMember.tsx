@@ -529,7 +529,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                   </div>
 
                   <div className="group-time-close">
-                    {newItem.role > groupRole ? (
+                    {groupRole > 0 && groupRole < 3 ? (
                       <img
                         src={closePng}
                         alt=""

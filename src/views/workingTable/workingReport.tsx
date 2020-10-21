@@ -95,12 +95,12 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       } else if (headerIndex == 1 && workingTaskArray) {
         getDiaryList(
           moment().subtract(30, 'days').startOf('day').valueOf(),
-          moment().subtract(1, 'days').endOf('day').valueOf()
+          moment().endOf('day').valueOf()
         );
       } else if (headerIndex == 2 && workingTaskArray && targetUserInfo) {
         getDiaryList(
           moment().subtract(30, 'days').startOf('day').valueOf(),
-          moment().subtract(1, 'days').endOf('day').valueOf()
+          moment().endOf('day').valueOf()
         );
       }
     }
@@ -115,7 +115,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     setCommentList([]);
     setComment('');
     if (headerIndex != 3) {
-      getDiaryNote(dateArray[index].start, dateArray[index]._key);
+      getDiaryNote(dateArray[index].start, diaryKey);
       if (dateArray[index]._key) {
         getCommentList(1, dateArray[index]._key);
       }
@@ -254,7 +254,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     //   moment().subtract(1, 'days').endOf('day').valueOf()
     // );
     getDiaryNote(
-      moment().subtract(1, 'days').startOf('day').valueOf(),
+      moment().startOf('day').valueOf(),
       newDiaryKey
     );
     setDateArray(newDateArray);
@@ -263,6 +263,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     setPersonArray(newPersonArray);
   };
   const getDiaryNote = async (startTime: number, diaryKey: any) => {
+    console.log("???????????",moment(startTime).format('YYYY-MM-DD'));
     if (diaryKey) {
       let noteRes: any = await api.auth.getNote(diaryKey, startTime);
       if (noteRes.msg == 'OK') {

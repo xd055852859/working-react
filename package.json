@@ -20,6 +20,7 @@
     "date-fns": "^2.15.0",
     "lodash": "^4.17.20",
     "moment": "^2.26.0",
+    "node-sass": "^4.14.1",
     "qiniu-js": "^3.1.1",
     "react": "^16.13.1",
     "react-beautiful-dnd": "^13.0.0",

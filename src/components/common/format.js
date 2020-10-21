@@ -173,8 +173,8 @@ const format = {
           ? '(item.taskEndDate&&item.finishPercent===1)'
           : str + '||' + '(item.taskEndDate&&item.finishPercent===1)';
     }
-    if (filterArray.indexOf('未计划') !== -1) {
-      str = str === '' ? '!item.taskEndDate' : str + '||' + '!item.taskEndDate';
+    if (filterArray.indexOf('重要') !== -1) {
+      str = str === '' ? 'item.importantStatus' : str + '||' + 'item.importantStatus';
     }
     if (filterArray.indexOf('未来') !== -1) {
       str =
