@@ -40,7 +40,10 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [addLabelInputState, setAddLabelInputState] = useState<any>(null);
+  const [oldPage, setOldPage] = useState(0);
+  const [scrollState, setScrollState] = useState(false);
   const addLabelRef: React.RefObject<any> = useRef();
+  const contentRef: React.RefObject<any> = useRef();
   const handleInputChange = (e: any) => {
     setInputValue(e.target.value);
   };
@@ -102,7 +105,12 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
     >
       {loading ? <Loading /> : null}
       <WorkingTableHeader />
-      <div className="workingTableContent">
+      <div
+        className="workingTableContent"
+        onContextMenu={(e) => {
+          e.preventDefault();
+        }}
+      >
         {memberHeaderIndex === 0 || memberHeaderIndex === 4 ? (
           <WorkingTableLabel />
         ) : null}

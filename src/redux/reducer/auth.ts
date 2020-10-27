@@ -12,6 +12,7 @@ export interface AuthType {
   uploadToken: string | null;
   theme: any;
   themeBg: any;
+  themeBgTotal: number;
   nowTime: number;
   socket: any;
 }
@@ -31,10 +32,14 @@ const defaultState: AuthType = {
     messageVisible: false,
     memberVisible: false,
     randomVisible: false,
-    randomType: '1',
+    randomType: '0',
     calendarVisible: true,
     groupSortType: 1,
     personSortType: 1,
+    finishPercentArr: ['0', '1'],
+    cDayShow: true,
+    timeShow: true,
+    grayPencent: 0,
     filterObject: {
       groupKey: null,
       groupName: '',
@@ -50,6 +55,7 @@ const defaultState: AuthType = {
     },
   },
   themeBg: [],
+  themeBgTotal: 0,
   nowTime: 0,
   socket: null,
 };
@@ -114,18 +120,28 @@ export const auth = (state = defaultState, action: any) => {
             filterType: ['过期', '今天', '未来', '已完成'],
           };
       action.data.fileDay = !action.data.fileDay ? 7 : action.data.fileDay;
+      action.data.finishPercentArr = !action.data.finishPercentArr
+        ? ['0', '1']
+        : action.data.finishPercentArr;
       return {
         ...state,
         theme: action.data,
       };
     case actionTypes.GET_THEME_BG_SUCCESS:
       let themeBg: any = [];
-      action.data.forEach((item: any) => {
-        themeBg.push(item.url);
+      console.log('total', action);
+      if (action.data.page == 1) {
+        state.themeBg = [];
+      }
+      action.data.res.data.forEach((item: any, index: number) => {
+        item.url = encodeURI(item.url);
+        state.themeBg.push(item);
       });
+
       return {
         ...state,
-        themeBg: themeBg,
+        themeBg: state.themeBg,
+        themeBgTotal: action.data.res.total,
       };
     case actionTypes.SET_THEME_SUCCESS:
       return {

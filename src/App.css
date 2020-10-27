@@ -1,8 +1,24 @@
 .App {
   display: flex;
   position: relative;
+}
+.App-bg2{
+  position: fixed;
+  top:0px;
+  left:0px;
+  right:0px;
+  bottom:0px;
+  z-index:-2;
   background-size: cover;
   background-attachment: fixed;
+}
+.App-bg1{
+  position: fixed;
+  top:0px;
+  left:0px;
+  right:0px;
+  bottom:0px;
+  z-index:-1;
 }
 .home-chat {
   height: 100%;

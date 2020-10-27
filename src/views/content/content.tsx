@@ -46,9 +46,9 @@ const Content: React.FC<ContentProps> = (props) => {
       setTargetInterval(interval);
     }
     return () => {
-      if (targetInterval) {
+      // if (targetInterval) {
         clearInterval(targetInterval);
-      }
+      // }
     };
   }, []);
   const formatTime = () => {

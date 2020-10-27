@@ -71,7 +71,7 @@
 .task-tag-container::-webkit-scrollbar-thumb,
 .task-container-profile::-webkit-scrollbar-thumb,
 .task-item-info::-webkit-scrollbar-thumb {
-  background: #47475b;
+  background: #dedede;
   border-radius: 100px;
 }
 
@@ -194,4 +194,13 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+.taskNav-addLabel {
+  width: 20px;
+  height: 20px;
+  background-color:transparent;
+  position: absolute;
+  top: 20px;
+  right: 57px;
+  z-index: 10;
 }

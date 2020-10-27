@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, MouseEvent } from 'react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-import { TextField, Button } from '@material-ui/core';
+import { TextField, Button, ClickAwayListener } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import {} from '../../redux/actions/taskActions';
@@ -20,6 +20,7 @@ import _ from 'lodash';
 import './task.css';
 import api from '../../services/api';
 import TaskInfo from '../taskInfo/taskInfo';
+import ClickOutside from '../common/clickOutside';
 import Dialog from '../common/dialog';
 import DropMenu from '../common/dropMenu';
 import TimeSet from '../common/timeSet';
@@ -171,31 +172,27 @@ const Task: React.FC<TaskProps> = (props) => {
     }
   }, [taskItem]);
   useEffect(() => {
-    // dispatch(setTaskKey('0'));
+    if (titleRef.current && taskKey === taskDetail._key && editRole) {
+      // if (titleRef.current.setSelectionRange) {
+      //   titleRef.current.setSelectionRange(
+      //     titleRef.current.value.length,
+      //     titleRef.current.value.length
+      //   );
+      // } else {
+      //   let range = titleRef.current.createTextRange();
+      //   range.moveStart('character', titleRef.current.value.length);
+      //   range.moveEnd('character', titleRef.current.value.length);
+      //   range.select();
+      // }
+      // let range = document.createRange();
+      // range.selectNodeContents(titleRef.current);
+      // range.collapse(false);
+      // let sel: any = window.getSelection();
+      // sel.removeAllRanges();
+      // sel.addRange(range);
+    }
     // dispatch(setChooseKey('0'));
-  }, [headerIndex, groupKey]);
-  // useEffect(() => {
-  //   if (titleRef.current && taskKey === taskDetail._key && editRole) {
-  // if (titleRef.current.setSelectionRange) {
-  //   titleRef.current.setSelectionRange(
-  //     titleRef.current.value.length,
-  //     titleRef.current.value.length
-  //   );
-  // } else {
-  //   let range = titleRef.current.createTextRange();
-  //   range.moveStart('character', titleRef.current.value.length);
-  //   range.moveEnd('character', titleRef.current.value.length);
-  //   range.select();
-  // }
-  //   let range = document.createRange();
-  //   range.selectNodeContents(titleRef.current);
-  //   range.collapse(false);
-  //   let sel: any = window.getSelection();
-  //   sel.removeAllRanges();
-  //   sel.addRange(range);
-  // }
-  // dispatch(setChooseKey('0'));
-  // }, [titleRef.current]);
+  }, [titleRef]);
   const getTaskMemberArray = async (groupKey: string) => {
     let taskMemberRes: any = null;
     taskMemberRes = await api.member.getMember(groupKey);
@@ -209,12 +206,31 @@ const Task: React.FC<TaskProps> = (props) => {
     // let dom: any = document.getElementById('taskDetailText' + taskItem._key);
     // dom.focus()
   };
-  const cancelTask = async (e: React.MouseEvent) => {
+  // const editTargetTask = async (e: React.MouseEvent) => {
+  //   let newTaskDetail = _.cloneDeep(taskDetail);
+  //   if (taskKey !== '') {
+  //     if (editState) {
+  //       dispatch(
+  //         editTask(
+  //           {
+  //             key: taskKey,
+  //             ...newTaskDetail,
+  //           },
+  //           headerIndex
+  //         )
+  //       );
+  //       setEditState(false);
+  //       dispatch(setTaskInfo(newTaskDetail));
+  //     }
+  //     setTimeSetShow(false);
+  //     setTaskExecutorShow(false);
+  //   }
+  // };
+  const cancelTask = async () => {
     let newTaskDetail = _.cloneDeep(taskDetail);
-    let newEditState = editState;
-    titleRef.current.blur();
+    // titleRef.current.blur();
     if (taskKey !== '') {
-      if (newEditState) {
+      if (editState) {
         dispatch(
           editTask(
             {
@@ -225,7 +241,6 @@ const Task: React.FC<TaskProps> = (props) => {
           )
         );
         setEditState(false);
-        setTaskExecutorShow(false);
         dispatch(setTaskInfo(newTaskDetail));
       }
       if (changeTask) {
@@ -347,6 +362,7 @@ const Task: React.FC<TaskProps> = (props) => {
       taskDetail.labelKey,
       taskDetail.executorKey,
       addInput,
+      '',
       taskIndex ? taskIndex + 1 : 1
     );
     if (addTaskRes.msg === 'OK') {
@@ -359,174 +375,180 @@ const Task: React.FC<TaskProps> = (props) => {
       dispatch(setMessage(true, addTaskRes.msg, 'error'));
     }
   };
+
   return (
     <React.Fragment>
       {taskShow && taskDetail ? (
-        <div
-          className="task-container"
-          onMouseLeave={cancelTask}
-          onClick={(e: any) => {
-            e.stopPropagation();
-          }}
-        >
+        <React.Fragment>
           <div
-            className="taskItem"
-            onClick={chooseTask}
-            tabIndex={taskItem._key}
-            onKeyDown={taskKeyDown}
-            style={{
-              background: bottomtype
-                ? 'transparent'
-                : taskDetail.finishPercent === 0 ||
-                  taskDetail.finishPercent === 10
-                ? 'rgb(255,255,255,0.95)'
-                : 'rgb(229,231,234,0.9)',
-              // opacity:
-              //   taskDetail.finishPercent === 0 ||
-              //   taskDetail.finishPercent === 10
-              //     ? 1
-              //     : 0.9,
-              boxShadow:
-                !bottomtype && taskItem._key === taskKey
-                  ? '0 0 7px 0 rgba(0, 0, 0, 0.26)'
-                  : '',
+            className="task-container"
+            onMouseLeave={cancelTask}
+            onClick={(e: any) => {
+              e.stopPropagation();
             }}
           >
-            <React.Fragment>
-              {!bottomtype && !myState ? (
-                <div
-                  className="taskItem-taskType"
-                  style={{
-                    borderTop: '9px solid ' + color[taskTypeIndex],
-                    borderRight: '9px solid ' + color[taskTypeIndex],
-                    borderLeft: '9px solid transparent',
-                    borderBottom: '9px solid transparent',
-                  }}
-                  onClick={() => {
-                    if (taskKey === taskDetail._key && editRole) {
-                      setSuggestVisible(true);
-                    }
-                  }}
-                >
-                  {suggestVisible ? (
-                    <DropMenu
-                      visible={suggestVisible}
-                      dropStyle={{
-                        width: '100px',
-                        top: '-6px',
-                        left: '-109px',
-                        zIndex: '20',
-                      }}
-                      onClose={() => {
-                        setSuggestVisible(false);
-                      }}
-                    >
-                      {taskTypeArr.map((taskTypeItem, taskTypeIndex) => {
-                        return (
-                          <div
-                            key={'taskType' + taskTypeIndex}
-                            className="taskItem-suggest-item"
-                            style={{
-                              color: color[taskTypeIndex],
-                              backgroundColor: backgroundColor[taskTypeIndex],
-                            }}
-                            onClick={() => {
-                              setTaskTypeIndex(taskTypeIndex);
-                              changeTaskType(taskTypeItem.id);
-                              setSuggestVisible(false);
-                            }}
-                          >
-                            {taskTypeItem.name}
-                          </div>
-                        );
-                      })}
-                    </DropMenu>
-                  ) : null}
-                </div>
-              ) : null}
-              {taskDetail.finishPercent !== 10 ? (
-                <div
-                  className="taskItem-finishIcon"
-                  onClick={() => {
-                    changeFinishPercent(taskDetail.finishPercent !== 0 ? 0 : 1);
-                  }}
-                >
-                  <img
-                    src={
-                      taskDetail.finishPercent === 0
-                        ? bottomtype
-                          ? unfinishPng
-                          : unfinishbPng
-                        : bottomtype
-                        ? finishPng
-                        : finishbPng
-                    }
-                  />
-                </div>
-              ) : null}
-              <div className="taskItem-container">
-                <div className="taskItem-info">
-                  {!myState ? (
-                    <div
-                      className="taskItem-day"
-                      style={taskDayColor}
-                      onClick={() => {
-                        changeTime();
-                      }}
-                    >
-                      <div
-                        className="taskItem-time-day"
-                        style={{ left: endtime < 10 ? '5px' : '0px' }}
-                      >
-                        {endtime}
-                      </div>
-                      <div className="taskItem-time"></div>
-                      <div
-                        className="taskItem-time-hour"
-                        style={{ right: taskDetail.hour < 1 ? '5px' : '0px' }}
-                      >
-                        {taskDetail.hour}
-                      </div>
-                    </div>
-                  ) : null}
-                  <DropMenu
-                    visible={timeSetShow}
-                    dropStyle={{
-                      width: '318px',
-                      height: '245px',
-                      top: !timeSetStatus ? '28px' : '-245px',
-                      left: '-25px',
+            <div
+              className="taskItem"
+              onClick={chooseTask}
+              tabIndex={taskItem._key}
+              onKeyDown={taskKeyDown}
+              style={{
+                background: bottomtype
+                  ? 'transparent'
+                  : taskDetail.finishPercent === 0 ||
+                    taskDetail.finishPercent === 10
+                  ? 'rgb(255,255,255,0.95)'
+                  : 'rgb(229,231,234,0.9)',
+                // opacity:
+                //   taskDetail.finishPercent === 0 ||
+                //   taskDetail.finishPercent === 10
+                //     ? 1
+                //     : 0.9,
+                boxShadow:
+                  !bottomtype && taskItem._key === taskKey
+                    ? '0 0 7px 0 rgba(0, 0, 0, 0.26)'
+                    : '',
+              }}
+            >
+              <React.Fragment>
+                {!bottomtype && !myState ? (
+                  <div
+                    className="taskItem-taskType"
+                    style={{
+                      borderTop: '9px solid ' + color[taskTypeIndex],
+                      borderRight: '9px solid ' + color[taskTypeIndex],
+                      borderLeft: '9px solid transparent',
+                      borderBottom: '9px solid transparent',
                     }}
-                    onClose={() => {
-                      setTimeSetShow(false);
+                    onClick={() => {
+                      if (taskKey === taskDetail._key && editRole) {
+                        setSuggestVisible(true);
+                      }
                     }}
                   >
-                    <TimeSet
-                      timeSetClick={changeTimeSet}
-                      percentClick={changeFinishPercent}
-                      dayNumber={dayNumber + 1}
-                      timeNumber={timeNumber}
-                      endDate={taskDetail.taskEndDate}
+                    {suggestVisible ? (
+                      <DropMenu
+                        visible={suggestVisible}
+                        dropStyle={{
+                          width: '100px',
+                          top: '-6px',
+                          left: '-109px',
+                          zIndex: '20',
+                        }}
+                        onClose={() => {
+                          setSuggestVisible(false);
+                        }}
+                      >
+                        {taskTypeArr.map((taskTypeItem, taskTypeIndex) => {
+                          return (
+                            <div
+                              key={'taskType' + taskTypeIndex}
+                              className="taskItem-suggest-item"
+                              style={{
+                                color: color[taskTypeIndex],
+                                backgroundColor: backgroundColor[taskTypeIndex],
+                              }}
+                              onClick={() => {
+                                setTaskTypeIndex(taskTypeIndex);
+                                changeTaskType(taskTypeItem.id);
+                                setSuggestVisible(false);
+                              }}
+                            >
+                              {taskTypeItem.name}
+                            </div>
+                          );
+                        })}
+                      </DropMenu>
+                    ) : null}
+                  </div>
+                ) : null}
+                {taskDetail.finishPercent !== 10 ? (
+                  <div
+                    className="taskItem-finishIcon"
+                    onClick={() => {
+                      changeFinishPercent(
+                        taskDetail.finishPercent !== 0 ? 0 : 1
+                      );
+                    }}
+                  >
+                    <img
+                      src={
+                        taskDetail.finishPercent === 0
+                          ? bottomtype
+                            ? unfinishPng
+                            : unfinishbPng
+                          : bottomtype
+                          ? finishPng
+                          : finishbPng
+                      }
                     />
-                  </DropMenu>
-                  {bottomtype === 'grid' ? (
-                    <div
-                      className="taskItem-img"
-                      style={{ width: '25px', height: '25px' }}
+                  </div>
+                ) : null}
+                <div className="taskItem-container">
+                  <div className="taskItem-info">
+                    {!myState ? (
+                      <div
+                        className="taskItem-day"
+                        style={taskDayColor}
+                        onClick={() => {
+                          changeTime();
+                        }}
+                      >
+                        <div
+                          className="taskItem-time-day"
+                          style={{ left: endtime < 10 ? '5px' : '0px' }}
+                        >
+                          {endtime}
+                        </div>
+                        <div className="taskItem-time"></div>
+                        <div
+                          className="taskItem-time-hour"
+                          style={{
+                            right: taskDetail.hour < 1 ? '5px' : '0px',
+                          }}
+                        >
+                          {taskDetail.hour}
+                        </div>
+                      </div>
+                    ) : null}
+                    <DropMenu
+                      visible={timeSetShow}
+                      dropStyle={{
+                        width: '318px',
+                        height: '245px',
+                        top: !timeSetStatus ? '28px' : '-245px',
+                        left: '-25px',
+                      }}
+                      onClose={() => {
+                        setTimeSetShow(false);
+                      }}
                     >
-                      <img
-                        src={
-                          taskDetail.executorAvatar
-                            ? taskDetail.executorAvatar
-                            : defaultPerson
-                        }
-                        style={{ marginTop: '0px' }}
+                      <TimeSet
+                        timeSetClick={changeTimeSet}
+                        percentClick={changeFinishPercent}
+                        dayNumber={dayNumber + 1}
+                        timeNumber={timeNumber}
+                        endDate={taskDetail.taskEndDate}
                       />
-                    </div>
-                  ) : null}
-                  <div className="taskItem-title">
-                    {/* {taskKey === taskDetail._key && editRole ? ( */}
-                    <div
+                    </DropMenu>
+                    {bottomtype === 'grid' ? (
+                      <div
+                        className="taskItem-img"
+                        style={{ width: '25px', height: '25px' }}
+                      >
+                        <img
+                          src={
+                            taskDetail.executorAvatar
+                              ? taskDetail.executorAvatar
+                              : defaultPerson
+                          }
+                          style={{ marginTop: '0px' }}
+                        />
+                      </div>
+                    ) : null}
+                    <div className="taskItem-title">
+                      {/* {taskKey === taskDetail._key && editRole ? ( */}
+                      {/* <div
                       // onKeyDown={changeTextArea}
                       style={{
                         // height: textHeight + 'px',
@@ -547,12 +569,15 @@ const Task: React.FC<TaskProps> = (props) => {
                         }
                         // setEditState(true);
                       }}
-                      // onBlur={(e: any) => {
-                      //   if (e.target.innerText != taskDetail.title) {
-                      //     changeTitle(e.target.innerText);
-                      //   }
-                      //   // setEditState(true);
-                      // }}
+                      onFocus={(e: any) => {
+                        let range = document.createRange();
+                        range.selectNodeContents(e.target);
+                        range.collapse(false);
+                        let sel: any = window.getSelection();
+                        sel.removeAllRanges();
+                        sel.addRange(range);
+                        // setEditState(true);
+                      }}
                       // onChange={(e: any) => {
                       //   console.log(e)
                       // }}
@@ -561,9 +586,9 @@ const Task: React.FC<TaskProps> = (props) => {
                       ref={titleRef}
                     >
                       {taskDetail.title}
-                    </div>
-                    {/* ) */}
-                    {/* : (
+                    </div> */}
+                      {/* ) */}
+                      {/* : (
                       <div
                         style={{
                           width: '100%',
@@ -580,238 +605,269 @@ const Task: React.FC<TaskProps> = (props) => {
                         {taskDetail.title}
                       </div>
                     )} */}
+                      <div
+                        className="content-editable"
+                        contentEditable={true}
+                        suppressContentEditableWarning
+                      >
+                        {taskDetail.title}
+                      </div>
+                      <textarea
+                        value={taskDetail.title}
+                        onChange={(e: any) => {
+                          changeTitle(e.target.value);
+                        }}
+                        style={{
+                          // height: textHeight + 'px',
+                          width: '100%',
+                          minHeight: '28px',
+                          backgroundColor: bottomtype ? 'transparent' : '',
+                          color: bottomtype ? '#fff' : '#333',
+                          textDecoration:
+                            taskDetail.finishPercent === 2
+                              ? 'line-through #a9a9a9 solid'
+                              : '',
+                        }}
+                        onBlur={cancelTask}
+                        className="field-textarea"
+                      ></textarea>
+                    </div>
                   </div>
-                </div>
-                {!bottomtype && !myState ? (
-                  <div className="taskItem-footer">
-                    <div className="taskItem-footer-left">
-                      <div className="taskItem-name">
-                        {!showGroupName ? (
-                          <span>
-                            {taskDetail.serialNumber
-                              ? '#' + taskDetail.serialNumber
-                              : ''}
-                          </span>
-                        ) : (
+                  {!bottomtype && !myState ? (
+                    <div className="taskItem-footer">
+                      <div className="taskItem-footer-left">
+                        <div className="taskItem-name">
+                          {!showGroupName ? (
+                            <span>
+                              {taskDetail.serialNumber
+                                ? '#' + taskDetail.serialNumber
+                                : ''}
+                            </span>
+                          ) : (
+                            <span style={{ flexShrink: 0 }}>
+                              {taskDetail.groupName.split('_')[0]}
+                            </span>
+                          )}
                           <span style={{ flexShrink: 0 }}>
-                            {taskDetail.groupName.split('_')[0]}
+                            {taskDetail.creatorName.length > 3
+                              ? taskDetail.creatorName.substring(0, 3) + '...'
+                              : taskDetail.creatorName}
                           </span>
-                        )}
-                        <span style={{ flexShrink: 0 }}>
-                          {taskDetail.creatorName.length > 3
-                            ? taskDetail.creatorName.substring(0, 3) + '...'
-                            : taskDetail.creatorName}
-                        </span>
-                        <span>⇀</span>
-                        <span style={{ flexShrink: 0 }}>
-                          {taskDetail.executorName &&
-                          taskDetail.executorName.length > 3
-                            ? taskDetail.executorName.substring(0, 3) + '...'
-                            : taskDetail.executorName}
-                        </span>
-                      </div>
-                      <div className="taskItem-img-container">
-                        <div className="taskItem-img" onClick={chooseExecutor}>
-                          <img
-                            src={
-                              taskDetail.executorAvatar
-                                ? taskDetail.executorAvatar
-                                : defaultPerson
-                            }
-                          />
+                          <span>⇀</span>
+                          <span style={{ flexShrink: 0 }}>
+                            {taskDetail.executorName &&
+                            taskDetail.executorName.length > 3
+                              ? taskDetail.executorName.substring(0, 3) + '...'
+                              : taskDetail.executorName}
+                          </span>
                         </div>
-
-                        <DropMenu
-                          visible={taskExecutorShow}
-                          dropStyle={{
-                            width: '180px',
-                            height: '350px',
-                            top: '18px',
-                            left: '-30px',
-                          }}
-                          onClose={() => {
-                            setTaskExecutorShow(false);
-                          }}
-                          title={'分配任务'}
-                        >
-                          <div className="task-executor-dropMenu-info">
-                            {taskMemberArray.map(
-                              (
-                                taskMemberItem: any,
-                                taskMemberIndex: number
-                              ) => {
-                                return (
-                                  <div
-                                    className="task-executor-dropMenu-container"
-                                    key={'taskMember' + taskMemberIndex}
-                                    style={
-                                      taskDetail.executorKey ===
-                                      taskMemberItem.userId
-                                        ? { background: '#F0F0F0' }
-                                        : {}
-                                    }
-                                    onClick={() => {
-                                      changeExecutor(
-                                        taskMemberItem.userId,
-                                        taskMemberItem.nickName,
-                                        taskMemberItem.avatar
-                                      );
-                                    }}
-                                  >
-                                    <div className="task-executor-dropMenu-img">
-                                      <img
-                                        src={
-                                          taskMemberItem.avatar
-                                            ? taskMemberItem.avatar +
-                                              '?imageMogr2/auto-orient/thumbnail/50x50/format/jpg'
-                                            : defaultPersonPng
-                                        }
-                                      />
-                                    </div>
-                                    <div>{taskMemberItem.nickName}</div>
-                                  </div>
-                                );
+                        <div className="taskItem-img-container">
+                          <div
+                            className="taskItem-img"
+                            onClick={chooseExecutor}
+                          >
+                            <img
+                              src={
+                                taskDetail.executorAvatar
+                                  ? taskDetail.executorAvatar
+                                  : defaultPerson
                               }
-                            )}
+                            />
                           </div>
-                        </DropMenu>
+
+                          <DropMenu
+                            visible={taskExecutorShow}
+                            dropStyle={{
+                              width: '180px',
+                              height: '700px',
+                              top: '18px',
+                              left: '-30px',
+                            }}
+                            onClose={() => {
+                              setTaskExecutorShow(false);
+                            }}
+                            title={'分配任务'}
+                          >
+                            <div className="task-executor-dropMenu-info">
+                              {taskMemberArray.map(
+                                (
+                                  taskMemberItem: any,
+                                  taskMemberIndex: number
+                                ) => {
+                                  return (
+                                    <div
+                                      className="task-executor-dropMenu-container"
+                                      key={'taskMember' + taskMemberIndex}
+                                      style={
+                                        taskDetail.executorKey ===
+                                        taskMemberItem.userId
+                                          ? { background: '#F0F0F0' }
+                                          : {}
+                                      }
+                                      onClick={() => {
+                                        changeExecutor(
+                                          taskMemberItem.userId,
+                                          taskMemberItem.nickName,
+                                          taskMemberItem.avatar
+                                        );
+                                      }}
+                                    >
+                                      <div className="task-executor-dropMenu-img">
+                                        <img
+                                          src={
+                                            taskMemberItem.avatar
+                                              ? taskMemberItem.avatar
+                                              : defaultPersonPng
+                                          }
+                                        />
+                                      </div>
+                                      <div>{taskMemberItem.nickName}</div>
+                                    </div>
+                                  );
+                                }
+                              )}
+                            </div>
+                          </DropMenu>
+                        </div>
+                      </div>
+
+                      <div className="taskItem-icon-group">
+                        {editRole &&
+                        headerIndex === 3 &&
+                        memberHeaderIndex === 0 ? (
+                          <div
+                            className="taskItem-check-icon"
+                            onClick={() => {
+                              setAddTaskVisible(true);
+                            }}
+                          >
+                            <img
+                              src={taskAddPng}
+                              alt=""
+                              style={{ height: '18px', width: '18px' }}
+                            />
+                          </div>
+                        ) : null}
+                        {taskDetail.importantStatus ? (
+                          <div
+                            className="taskItem-check-icon"
+                            style={{ display: 'flex' }}
+                          >
+                            <img
+                              src={importantPng}
+                              alt="重要"
+                              onClick={() => {
+                                changeImportant(0);
+                              }}
+                              style={{ height: '18px', width: '19px' }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="taskItem-check-icon">
+                            <img
+                              src={unimportantPng}
+                              alt="不重要"
+                              onClick={() => {
+                                changeImportant(1);
+                              }}
+                              style={{ height: '18px', width: '19px' }}
+                            />
+                          </div>
+                        )}
+                        {editRole ? (
+                          <div
+                            className="taskItem-check-icon"
+                            style={
+                              taskDetail.content !== ''
+                                ? { display: 'flex' }
+                                : {}
+                            }
+                            onClick={() => {
+                              // dispatch(changeTaskInfoVisible(true));
+                              setTaskInfoDialogShow(true);
+                              // dispatch(setTaskInfo(taskDetail));
+                              dispatch(setChooseKey(taskDetail._key));
+                            }}
+                          >
+                            <img
+                              src={ellipsisbPng}
+                              alt="详情"
+                              style={{ height: '2px', width: '12px' }}
+                            />
+                          </div>
+                        ) : null}
                       </div>
                     </div>
-
-                    <div className="taskItem-icon-group">
-                      {editRole &&
-                      headerIndex === 3 &&
-                      memberHeaderIndex === 0 ? (
-                        <div
-                          className="taskItem-check-icon"
-                          onClick={() => {
-                            setAddTaskVisible(true);
-                          }}
-                        >
-                          <img
-                            src={taskAddPng}
-                            alt=""
-                            style={{ height: '18px', width: '18px' }}
-                          />
-                        </div>
-                      ) : null}
-                      {taskDetail.importantStatus ? (
-                        <div
-                          className="taskItem-check-icon"
-                          style={{ display: 'flex' }}
-                        >
-                          <img
-                            src={importantPng}
-                            alt="重要"
-                            onClick={() => {
-                              changeImportant(0);
-                            }}
-                            style={{ height: '18px', width: '19px' }}
-                          />
-                        </div>
-                      ) : (
-                        <div className="taskItem-check-icon">
-                          <img
-                            src={unimportantPng}
-                            alt="不重要"
-                            onClick={() => {
-                              changeImportant(1);
-                            }}
-                            style={{ height: '18px', width: '19px' }}
-                          />
-                        </div>
-                      )}
-                      {editRole ? (
-                        <div
-                          className="taskItem-check-icon"
-                          style={
-                            taskDetail.content !== '' ? { display: 'flex' } : {}
-                          }
-                          onClick={() => {
-                            // dispatch(changeTaskInfoVisible(true));
-                            setTaskInfoDialogShow(true);
-                            // dispatch(setTaskInfo(taskDetail));
-                            dispatch(setChooseKey(taskDetail._key));
-                          }}
-                        >
-                          <img
-                            src={ellipsisbPng}
-                            alt="详情"
-                            style={{ height: '2px', width: '12px' }}
-                          />
-                        </div>
-                      ) : null}
-                    </div>
-                  </div>
-                ) : null}
-                <div className="taskItem-taskType"></div>
-                {/*  style={cardKey===taskItem._key?{borderTop:'10px solid '+color[taskItem.taskType===10?5:taskItem.taskType-1],borderRight:'10px solid '+color[taskItem.taskType===10?5:taskItem.taskType-1],  borderLeft: '10px solid transparent',
+                  ) : null}
+                  <div className="taskItem-taskType"></div>
+                  {/*  style={cardKey===taskItem._key?{borderTop:'10px solid '+color[taskItem.taskType===10?5:taskItem.taskType-1],borderRight:'10px solid '+color[taskItem.taskType===10?5:taskItem.taskType-1],  borderLeft: '10px solid transparent',
   borderBottom: '10px solid transparent'}:{borderTop:'7px solid '+color[taskItem.taskType===10?5:taskItem.taskType-1],borderRight:'7px solid '+color[taskItem.taskType===10?5:taskItem.taskType-1],  borderLeft: '7px solid transparent',
   borderBottom: '7px solid transparent'}} */}
-              </div>
-            </React.Fragment>
-          </div>
-          {addTaskVisible ? (
-            <div className="taskItem-plus-title">
-              <div className="taskItem-plus-input">
-                <input
-                  // required
-                  placeholder="任务标题"
-                  value={addInput}
-                  autoComplete="off"
-                  onChange={(e) => {
-                    setAddInput(e.target.value);
-                  }}
-                />
-              </div>
-              <div className="taskItem-plus-button">
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => {
-                    plusTask();
-                  }}
-                  style={{ marginRight: '10px', color: '#fff' }}
-                  className={classes.button}
-                >
-                  确定
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={() => {
-                    setAddTaskVisible(false);
-                    setAddInput('');
-                  }}
-                  className={classes.button}
-                >
-                  取消
-                </Button>
-              </div>
+                </div>
+              </React.Fragment>
             </div>
-          ) : null}
-          {taskInfoDialogShow ? (
-            <TaskInfo
-              fatherTaskItem={taskDetail}
-              onClose={() => {
-                setTaskInfoDialogShow(false);
-              }}
-            />
-          ) : null}
-        </div>
+            {addTaskVisible ? (
+              <div className="taskItem-plus-title">
+                <div className="taskItem-plus-input">
+                  <input
+                    // required
+                    placeholder="任务标题"
+                    value={addInput}
+                    autoComplete="off"
+                    onChange={(e) => {
+                      setAddInput(e.target.value);
+                    }}
+                  />
+                </div>
+                <div className="taskItem-plus-button">
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {
+                      plusTask();
+                    }}
+                    style={{ marginRight: '10px', color: '#fff' }}
+                    className={classes.button}
+                  >
+                    确定
+                  </Button>
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      setAddTaskVisible(false);
+                      setAddInput('');
+                    }}
+                    className={classes.button}
+                  >
+                    取消
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+            {taskInfoDialogShow ? (
+              <TaskInfo
+                fatherTaskItem={taskDetail}
+                onClose={() => {
+                  setTaskInfoDialogShow(false);
+                }}
+              />
+            ) : null}
+          </div>
+          <Dialog
+            visible={deleteDialogShow}
+            onClose={() => {
+              setDeleteDialogShow(false);
+            }}
+            onOK={() => {
+              deleteTask();
+            }}
+            title={'删除任务'}
+            dialogStyle={{ width: '400px', height: '200px' }}
+          >
+            <div className="dialog-onlyTitle">是否删除该任务</div>
+          </Dialog>
+        </React.Fragment>
       ) : null}
-      <Dialog
-        visible={deleteDialogShow}
-        onClose={() => {
-          setDeleteDialogShow(false);
-        }}
-        onOK={() => {
-          deleteTask();
-        }}
-        title={'删除任务'}
-        dialogStyle={{ width: '400px', height: '200px' }}
-      >
-        <div className="dialog-onlyTitle">是否删除该任务</div>
-      </Dialog>
     </React.Fragment>
   );
 };

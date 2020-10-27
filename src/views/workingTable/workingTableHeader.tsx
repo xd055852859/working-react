@@ -353,8 +353,7 @@ const WorkingTableHeader: React.FC = (prop) => {
                   <Avatar
                     alt=""
                     src={
-                      filterObject.groupLogo +
-                      '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
+                      filterObject.groupLogo
                     }
                   />
                 }
@@ -373,8 +372,7 @@ const WorkingTableHeader: React.FC = (prop) => {
                   <Avatar
                     alt=""
                     src={
-                      filterObject.creatorAvatar +
-                      '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
+                      filterObject.creatorAvatar
                     }
                   />
                 }
@@ -393,8 +391,7 @@ const WorkingTableHeader: React.FC = (prop) => {
                   <Avatar
                     alt=""
                     src={
-                      filterObject.executorAvatar +
-                      '?imageMogr2/auto-orient/thumbnail/20x20/format/jpg'
+                      filterObject.executorAvatar
                     }
                   />
                 }

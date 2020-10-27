@@ -189,8 +189,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     if (res.msg === 'OK') {
       res.result.forEach((searchItem: any) => {
         searchItem.avatar = searchItem.avatar
-          ? searchItem.avatar +
-            '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
+          ? searchItem.avatar
           : defaultPersonPng;
         newSearchList.push(searchItem);
       });
@@ -211,8 +210,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     if (res.msg === 'OK') {
       res.result.map((searchItem: any) => {
         searchItem.avatar = searchItem.logo
-          ? searchItem.groupLogo +
-            '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
+          ? searchItem.groupLogo
           : defaultGroupPng;
         searchItem.nickName = searchItem.groupName;
         newSearchList.push(searchItem);
@@ -607,12 +605,10 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                   let avatar =
                     contactIndex === 0
                       ? mainSearchItem.groupLogo
-                        ? mainSearchItem.groupLogo +
-                          '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
+                        ? mainSearchItem.groupLogo
                         : defaultGroupPng
                       : mainSearchItem.avatar
-                      ? mainSearchItem.avatar +
-                        '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
+                      ? mainSearchItem.avatar
                       : defaultPersonPng;
                   let name =
                     contactIndex === 0
@@ -894,7 +890,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
               setAddModelVisible(false);
             }}
             title={'模板创群'}
-            dialogStyle={{ width: '70%', height: '80%' }}
+            dialogStyle={{ width: '80%', height: '80%' }}
             footer={false}
           >
             <GroupModel

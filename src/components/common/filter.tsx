@@ -48,14 +48,14 @@ const Filter: React.FC<FilterProps> = (prop) => {
 
   return (
     <div className="filter" style={filterStyle}>
-      <div className="filter-title">{title+" :"}</div>
+      <div className="filter-title">{title + ' :'}</div>
       <div className="filter-menu" onMouseEnter={onOpen} onMouseLeave={onClose}>
         {filterArray.length > 0 ? (
           <div className="filter-menu-info">
             <Avatar
               alt={filterArray[filterIndex][filterItem[1]]}
               src={
-                filterArray[filterIndex][filterItem[1]] 
+                filterArray[filterIndex][filterItem[1]]
                   ? filterArray[filterIndex][filterItem[1]]
                   : defaultPngType === 0
                   ? defaultPersonPng
@@ -64,7 +64,7 @@ const Filter: React.FC<FilterProps> = (prop) => {
               className={classes.avatar}
             />
             <div>{filterArray[filterIndex][filterItem[0]]}</div>
-            <img className="filter-menu-icon" src={downArrowbPng} alt=""/>
+            <img className="filter-menu-icon" src={downArrowbPng} alt="" />
           </div>
         ) : null}
         <DropMenu
@@ -84,10 +84,8 @@ const Filter: React.FC<FilterProps> = (prop) => {
                 <Avatar
                   alt={item[filterItem[0]]}
                   src={
-                    item[filterItem[1]] +
-                    '?imageMogr2/auto-orient/thumbnail/30x30/format/jpg'
-                      ? item[filterItem[1]] +
-                        '?imageMogr2/auto-orient/thumbnail/30x30/format/jpg'
+                    item[filterItem[1]]
+                      ? item[filterItem[1]]
                       : defaultPngType === 0
                       ? defaultPersonPng
                       : defaultGroupPng

@@ -352,8 +352,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
               <img
                 src={
                   dayCanlendarItem[dayKey].executorArr[0].executorAvatar
-                    ? dayCanlendarItem[dayKey].executorArr[0].executorAvatar +
-                      '?imageMogr2/auto-orient/thumbnail/50x50/format/jpg'
+                    ? dayCanlendarItem[dayKey].executorArr[0].executorAvatar
                     : defaultPersonPng
                 }
                 alt=""
@@ -501,6 +500,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       1,
       null,
       user._key,
+      '',
       '',
       0,
       2,

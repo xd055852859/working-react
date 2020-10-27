@@ -35,6 +35,8 @@ const WorkingTableGroup: React.FC = (prop) => {
   const [colNumbers, setColNumbers] = useState(4);
   const [colHeight, setColHeight] = useState<any>([]);
   const workingTableRef: React.RefObject<any> = useRef();
+  let oldPageX = 0;
+  let labelScroll = 0;
   useEffect(() => {
     if (user && user._key && !workingTaskArray && headerIndex === 1) {
       dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
@@ -250,12 +252,45 @@ const WorkingTableGroup: React.FC = (prop) => {
       dispatch(setMessage(true, batchRes.msg, 'error'));
     }
   };
+  const startMove = (e: any) => {
+    if (e.button === 2 && workingTableRef.current) {
+      console.log('进来');
+      if (workingTableRef.current) {
+        oldPageX = e.pageX;
+        // workingTableRef.current.addEventListener(
+        //   'mousemove',
+        //   moveContent,
+        //   true
+        // );
+      }
+    }
+  };
+  // const moveContent = (e: any) => {
+  //   // console.log(moveNum);
+  //   // workingTableRef.current.scrollTo(0, 0);
+  //   // setOldPage(e.pageX);
+  //   console.log("oldPageX",oldPageX)
+  //   console.log("e.pageX"e.pageX)
 
+  //   oldPageX = e.pageX;
+  // };
+  const endMove = (e: any) => {
+    if (workingTableRef.current) {
+      if (e.pageX > oldPageX) {
+        labelScroll = labelScroll - (e.pageX - oldPageX);
+      } else if (e.pageX < oldPageX) {
+        labelScroll = labelScroll + (oldPageX - e.pageX);
+      }
+      workingTableRef.current.scrollTo(labelScroll, 0);
+    }
+  };
   return (
     <div
       className="workingTableLabel-container"
       style={{ display: 'flex', overflowX: 'auto', height: '100%' }}
       ref={workingTableRef}
+      onMouseDown={startMove}
+      onContextMenu={endMove}
     >
       {mainGroupArray.map((item: any, index: number) => {
         return (
@@ -302,7 +337,7 @@ const WorkingTableGroup: React.FC = (prop) => {
                   <div style={{ color: '#fff' }}>{item.groupObj.groupName}</div>
                 </div>
                 <div
-                  style={memberHeaderIndex === 1 ?{overflowY: 'auto' }:{}}
+                  style={memberHeaderIndex === 1 ? { overflowY: 'auto' } : {}}
                   className="workingTableLabel-info-item-group-container"
                 >
                   {getGroupItem(item, index)}

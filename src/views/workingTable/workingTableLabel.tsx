@@ -45,6 +45,8 @@ const WorkingTableLabel: React.FC = (prop) => {
   // useEffect(() => {
   //   dispatch(setHeaderIndex(0));
   // }, [userKey, targetUserKey]);
+  let oldPageX = 0;
+  let labelScroll = 0;
   useEffect(() => {
     if (workingTaskArray) {
       setMainLabelArray([]);
@@ -210,7 +212,38 @@ const WorkingTableLabel: React.FC = (prop) => {
       dispatch(setMessage(true, batchRes.msg, 'error'));
     }
   };
+  const startMove = (e: any) => {
+    if (e.button === 2 && workingTableRef.current) {
+      console.log('进来');
+      if (workingTableRef.current) {
+        oldPageX = e.pageX;
+        // workingTableRef.current.addEventListener(
+        //   'mousemove',
+        //   moveContent,
+        //   true
+        // );
+      }
+    }
+  };
+  // const moveContent = (e: any) => {
+  //   // console.log(moveNum);
+  //   // workingTableRef.current.scrollTo(0, 0);
+  //   // setOldPage(e.pageX);
+  //   console.log("oldPageX",oldPageX)
+  //   console.log("e.pageX"e.pageX)
 
+  //   oldPageX = e.pageX;
+  // };
+  const endMove = (e: any) => {
+    if (workingTableRef.current) {
+      if (e.pageX > oldPageX) {
+        labelScroll = labelScroll - (e.pageX - oldPageX);
+      } else if (e.pageX < oldPageX) {
+        labelScroll = labelScroll + (oldPageX - e.pageX);
+      }
+      workingTableRef.current.scrollTo(labelScroll, 0);
+    }
+  };
   return (
     <div
       className="workingTableLabel-container"
@@ -220,6 +253,9 @@ const WorkingTableLabel: React.FC = (prop) => {
         height: '100%',
       }}
       ref={workingTableRef}
+      onMouseDown={startMove}
+      onContextMenu={endMove}
+      id="title"
     >
       {mainLabelArray.map((labelItem: any, labelIndex: number) => {
         return (
@@ -281,7 +317,7 @@ const WorkingTableLabel: React.FC = (prop) => {
                   }}
                 />
                 <div
-                  style={memberHeaderIndex === 0 ?{overflowY: 'auto' }:{}}
+                  style={memberHeaderIndex === 0 ? { overflowY: 'auto' } : {}}
                   className="workingTableLabel-info-item-label-container"
                 >
                   {labelItem.arr.map((taskItem: any, taskIndex: number) => {

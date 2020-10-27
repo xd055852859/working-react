@@ -123,8 +123,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
                       <img
                         src={
                           groupItem.groupLogo
-                            ? groupItem.groupLogo +
-                              '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
+                            ? groupItem.groupLogo
                             : defaultGroupPng
                         }
                         alt=""
@@ -164,8 +163,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
                     <img
                       src={
                         groupItem.groupLogo
-                          ? groupItem.groupLogo +
-                            '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
+                          ? groupItem.groupLogo
                           : defaultGroupPng
                       }
                       alt=""

@@ -1,0 +1,102 @@
+.showPage-container {
+  width: 100%;
+  height: 100%;
+}
+.showPage {
+  width: 365px;
+  height: 100%;
+  position: fixed;
+  top: 0px;
+  color: #fff;
+}
+.showPage-time {
+  width: 100%;
+  height: 47%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.showPage-time-title {
+  width: 100%;
+  height: 250px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 60px;
+}
+.showPage-time-subtitle {
+  width: 100%;
+  height: 25px;
+  font-size: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  box-sizing: border-box;
+}
+.showPage-logo {
+  width: 25px;
+  height: 25px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  cursor: pointer;
+}
+.showPage-set {
+  width: 350px;
+  height: 100%;
+  position: fixed;
+  top: 0px;
+  background-color: #fff;
+  padding: 10px 15px;
+  box-sizing: border-box;
+  color: #333;
+}
+.showPage-set-title {
+  width: 100%;
+  font-size: 16px;
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: space-between;
+}
+.showPage-task-container {
+  height: 53%;
+  width: 100%;
+}
+@keyframes setRight {
+  from {
+    right: 0px;
+  }
+
+  to {
+    right: -350px;
+  }
+}
+@keyframes setLeft {
+  from {
+    right: -350px;
+  }
+
+  to {
+    right: 0px;
+  }
+}
+@keyframes showRight {
+  from {
+    right: 350px;
+  }
+
+  to {
+    right: 0px;
+  }
+}
+@keyframes showLeft {
+  from {
+    right: 0px;
+  }
+
+  to {
+    right: 350px;
+  }
+}

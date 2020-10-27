@@ -23,7 +23,7 @@ import Chat from '../../views/chat/chat';
 import Task from '../task/task';
 import UserCenter from '../userCenter/userCenter';
 import MessageBoard from '../../views/board/messageBoard';
-import { setTheme } from '../../redux/actions/authActions';
+import { setTheme, getThemeBg } from '../../redux/actions/authActions';
 import {
   setMessage,
   setUnMessageNum,
@@ -82,6 +82,8 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const themeBg = useTypedSelector((state) => state.auth.themeBg);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const groupArray = useTypedSelector((state) => state.group.groupArray);
+  const themeBgTotal = useTypedSelector((state) => state.auth.themeBgTotal);
+
   const memberArray = useTypedSelector((state) => state.member.memberArray);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   // const groupKey = useTypedSelector((state) => state.group.groupKey);
@@ -109,6 +111,8 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const [userVisible, setUserVisible] = useState(false);
   const [imgBigArr2, setImgBigArr2] = useState<any>([]);
   const [moveState, setMoveState] = useState('');
+  const [chooseWallKey, setChooseWallKey] = useState('');
+  const [bgPage, setBgPage] = useState(1);
   const canvasRef: React.RefObject<any> = useRef();
   const color1 = [
     '#3C3C3C',
@@ -173,10 +177,10 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   }, [searchInput]);
   const getPng = async () => {
     let newImgBigArr2: any = [];
-    let res: any = await api.auth.getWallPapers();
+    let res: any = await api.auth.getWallPapers(1);
     if (res.msg === 'OK') {
       res.data.forEach((item: any) => {
-        newImgBigArr2.push(item.url);
+        newImgBigArr2.push(decodeURI(item.url));
       });
       setImgBigArr2(newImgBigArr2);
     } else {
@@ -193,22 +197,26 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     newTheme.randomType = value;
     dispatch(setTheme(newTheme));
   };
-  const changeBg = (type: string, value: string) => {
+  const changeBg = (type: string, value: any) => {
     let newTheme = _.cloneDeep(theme);
     if (type === 'backgroundImg') {
       let img = new Image();
-      img.src = value;
+      img.src = value.url;
       // img.crossOrigin = 'anonymous';
       // 确定图片加载完成后再进行背景图片切换
       img.onload = function () {
         // format.formatColor(canvasRef.current, img);
-        newTheme.backgroundImg = value;
+        newTheme.backgroundImg = value.url;
         newTheme.backgroundColor = '';
+        newTheme.grayPencent = value.color ? value.color / 900 : 0;
+        // newTheme.grayPencent = 0;
         dispatch(setTheme(newTheme));
+        api.auth.viewWallPapers(value._key);
       };
     } else {
       newTheme.backgroundImg = '';
       newTheme.backgroundColor = value;
+      newTheme.grayPencent = 0;
       dispatch(setTheme(newTheme));
     }
   };
@@ -290,6 +298,31 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     socket.emit('logout', user._key);
     dispatch(setMessage(true, '退出登录成功', 'success'));
     history.push('/bootpage');
+  };
+  const scrollBgLoading = (e: any) => {
+    let newPage = bgPage;
+    //文档内容实际高度（包括超出视窗的溢出部分）
+    let scrollHeight = e.target.scrollHeight;
+    //滚动条滚动距离
+    let scrollTop = e.target.scrollTop;
+    //窗口可视范围高度
+    let clientHeight = e.target.clientHeight;
+    console.log(themeBgTotal);
+    console.log(clientHeight + scrollTop, scrollHeight);
+    console.log(clientHeight + scrollTop >= scrollHeight);
+    console.log(themeBg.length < themeBgTotal);
+    console.log(
+      clientHeight + scrollTop >= scrollHeight && themeBg.length < themeBgTotal
+    );
+    if (
+      clientHeight + scrollTop + 1 >= scrollHeight &&
+      themeBg.length < themeBgTotal
+    ) {
+      newPage = newPage + 1;
+      console.log(newPage);
+      dispatch(getThemeBg(newPage));
+      setBgPage(newPage);
+    }
   };
 
   return (
@@ -454,6 +487,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             setBgVisible(false);
             setUserVisible(false);
             setMoveState('');
+            api.auth.chooseWallPapers(chooseWallKey);
           }}
           showMask={false}
           footer={false}
@@ -512,7 +546,9 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                       className="bg-item"
                       style={{
                         backgroundImage: theme.backgroundImg
-                          ? 'url(' + theme.backgroundImg + ')'
+                          ? 'url(' +
+                            theme.backgroundImg +
+                            '?imageMogr2/auto-orient/thumbnail/160x160/format/jpg)'
                           : '',
                         backgroundColor: !theme.backgroundImg
                           ? theme.backgroundColor
@@ -786,30 +822,38 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                 })}
               </div>
               <div className="bg-title">壁纸</div>
-              <div className="bg-container">
+              <div
+                className="bg-container"
+                style={{ height: 'calc(100% - 225px)', overflow: 'auto' }}
+                onScroll={scrollBgLoading}
+              >
                 {themeBg.map((imgBigArr2Item: any, imgBigArr2Index: number) => {
                   return (
-                    <div
-                      style={{
-                        backgroundImage:
-                          'url(' +
-                          imgBigArr2Item +
-                          '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg)',
-                        border:
-                          theme.backgroundImg === imgBigArr2Item
-                            ? '2px solid #87B940'
-                            : 'transparent',
-                      }}
-                      key={'imgBigArr2' + imgBigArr2Index}
-                      className="bg-item"
-                      onClick={() => {
-                        changeBg('backgroundImg', imgBigArr2Item);
-                      }}
-                    >
-                      {theme.backgroundImg === imgBigArr2Item ? (
-                        <div className="bg-point"></div>
+                    <React.Fragment key={'imgBigArr2' + imgBigArr2Index}>
+                      {imgBigArr2Item.url ? (
+                        <div
+                          style={{
+                            backgroundImage:
+                              'url(' +
+                              imgBigArr2Item.url +
+                              '?imageMogr2/auto-orient/thumbnail/160x160/format/jpg)',
+                            border:
+                              theme.backgroundImg === imgBigArr2Item.url
+                                ? '2px solid #87B940'
+                                : 'transparent',
+                          }}
+                          className="bg-item"
+                          onClick={() => {
+                            changeBg('backgroundImg', imgBigArr2Item);
+                            setChooseWallKey(imgBigArr2Item._key);
+                          }}
+                        >
+                          {theme.backgroundImg === imgBigArr2Item.url ? (
+                            <div className="bg-point"></div>
+                          ) : null}
+                        </div>
                       ) : null}
-                    </div>
+                    </React.Fragment>
                   );
                 })}
               </div>

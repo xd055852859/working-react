@@ -172,7 +172,7 @@ const Grid: React.FC<GridProps> = (prop) => {
         userId: item.userId,
         name: item.nickName,
         avatar: item.avatar
-          ? item.avatar + '?imageMogr2/auto-orient/thumbnail/50x50/format/jpg'
+          ? item.avatar
           : defaultPersonPng,
         allTaskNum: 0,
       });
@@ -492,8 +492,7 @@ const Grid: React.FC<GridProps> = (prop) => {
                       <img
                         src={
                           dateItem.avatar
-                            ? dateItem.avatar +
-                              '?imageMogr2/auto-orient/thumbnail/50x50/format/jpg'
+                            ? dateItem.avatar
                             : defaultPersonPng
                         }
                         alt=""
@@ -528,8 +527,7 @@ const Grid: React.FC<GridProps> = (prop) => {
                             <img
                               src={
                                 item.groupObj.groupLogo
-                                  ? item.groupObj.groupLogo +
-                                    '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
+                                  ? item.groupObj.groupLogo
                                   : defaultGroupPng
                               }
                               alt=""

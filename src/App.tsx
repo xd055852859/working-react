@@ -33,6 +33,7 @@ import Content from './views/content/content';
 import WorkingTable from './views/workingTable/workingTable';
 import GroupTable from './views/groupTable/groupTable';
 import Calendar from './views/calendar/calendar';
+import ShowPage from './views/showPage/showPage';
 import TaskInfo from './components/taskInfo/taskInfo';
 
 import closePng from './assets/img/close.png';
@@ -58,7 +59,7 @@ const App: React.FC = () => {
   const [bgIntervalTime, setBgIntervalTime] = useState<any>(null);
   const [playAction, setPlayAction] = useState<any>({});
   const [playState, setPlayState] = useState(false);
-
+  const [showType, setShowType] = useState('3');
   const calendarColor = [
     '#39B98D',
     '#3C8FB5',
@@ -72,15 +73,9 @@ const App: React.FC = () => {
     '#9B9B9B',
   ];
   const pageRef: React.RefObject<any> = useRef();
-  const canvasRef: React.RefObject<any> = useRef();
   useEffect(() => {
     // 用户已登录
-    if (
-      user &&
-      user._key &&
-      token &&
-      token === localStorage.getItem('token')
-    ) {
+    if (user && user._key && token && token === localStorage.getItem('token')) {
       dispatch(getMainGroupKey());
       dispatch(getTheme());
       dispatch(
@@ -90,10 +85,10 @@ const App: React.FC = () => {
           moment().endOf('month').endOf('day').valueOf()
         )
       );
-      dispatch(getThemeBg());
+      dispatch(getThemeBg(1));
       let headerIndex = localStorage.getItem('headerIndex')
         ? localStorage.getItem('headerIndex')
-        : '0';
+        : '1';
 
       if (headerIndex) {
         if (headerIndex == '3' || headerIndex == '2') {
@@ -124,7 +119,14 @@ const App: React.FC = () => {
       if (shareKey) {
         dispatch(setChooseKey(shareKey));
         dispatch(changeTaskInfoVisible(true));
-        localStorage.setItem('shareKey', '');
+        localStorage.removeItem('shareKey');
+      }
+      const showType = localStorage.getItem('showType');
+      if (showType) {
+        setShowType('2');
+        localStorage.removeItem('showType');
+      } else {
+        setShowType('1');
       }
     }
     if (!user) {
@@ -146,12 +148,17 @@ const App: React.FC = () => {
       const groupKey = getSearchParamValue(location.search, 'groupKey');
       if (groupKey) {
         localStorage.setItem('groupKey', groupKey);
+        localStorage.setItem('headerIndex', '3');
         window.location.href = window.location.origin + '/';
       }
       const shareKey = getSearchParamValue(location.search, 'shareKey');
       if (shareKey) {
         localStorage.setItem('shareKey', shareKey);
         window.location.href = window.location.origin + '/';
+      }
+      const showType = getSearchParamValue(location.search, 'showType');
+      if (showType) {
+        localStorage.setItem('showType', showType);
       }
       let url = window.location.href;
       // 自动切换为https
@@ -180,8 +187,8 @@ const App: React.FC = () => {
     if (
       themeBg.length > 0 &&
       theme.randomVisible &&
-      theme.randomType &&
-      canvasRef.current
+      theme.randomType
+      // &&canvasRef.current
     ) {
       clearInterval(bgIntervalTime);
       let newIntervalTime: any = 0;
@@ -203,7 +210,8 @@ const App: React.FC = () => {
     return () => {
       clearInterval(bgIntervalTime);
     };
-  }, [themeBg, theme, canvasRef]);
+  }, [themeBg, theme]);
+  // , canvasRef
   useEffect(() => {
     setPlayAction(_.cloneDeep(taskAction));
   }, [taskAction]);
@@ -256,28 +264,50 @@ const App: React.FC = () => {
   return (
     <div
       className="App"
-      style={
-        theme.backgroundImg
-          ? {
-              backgroundImage: 'url(' + theme.backgroundImg + ')',
-            }
-          : { backgroundColor: theme.backgroundColor }
-      }
-      onClick={() => {
-        dispatch(setTaskKey(''));
-      }}
+      // onClick={() => {
+      //   dispatch(setTaskKey(''));
+      // }}
       ref={pageRef}
     >
-      <Home />
-      {headerIndex === 0 ? <Content /> : null}
-      {headerIndex === 1 ? <WorkingTable /> : null}
-      {headerIndex === 3 ? <GroupTable /> : null}
-      {headerIndex === 2 ? <WorkingTable /> : null}
-      {headerIndex === 5 && theme && theme.calendarVisible ? (
-        <Calendar />
+      <div
+        className="App-bg1"
+        style={{
+          background: 'rgba(0,0,0,' + theme.grayPencent + ')',
+        }}
+      ></div>
+      <div
+        className="App-bg2"
+        style={
+          theme.backgroundImg
+            ? {
+                backgroundImage: 'url(' + theme.backgroundImg + ')',
+              }
+            : {
+                backgroundColor: theme.backgroundColor
+                  ? theme.backgroundColor
+                  : '#3C3C3C',
+              }
+        }
+      ></div>
+      {showType === '2' ? (
+        <ShowPage
+          changeShowType={() => {
+            setShowType('1');
+          }}
+        />
+      ) : showType === '1' ? (
+        <React.Fragment>
+          <Home />
+          {headerIndex === 0 ? <Content /> : null}
+          {headerIndex === 1 ? <WorkingTable /> : null}
+          {headerIndex === 3 ? <GroupTable /> : null}
+          {headerIndex === 2 ? <WorkingTable /> : null}
+          {headerIndex === 5 && theme && theme.calendarVisible ? (
+            <Calendar />
+          ) : null}
+          <HeaderSet />
+        </React.Fragment>
       ) : null}
-      <HeaderSet />
-
       {taskInfoVisible ? <TaskInfo /> : null}
       {playState ? (
         <div className="action">
@@ -300,7 +330,6 @@ const App: React.FC = () => {
           />
         </div>
       ) : null}
-      <canvas ref={canvasRef} className="appCanvas"></canvas>
     </div>
   );
 };

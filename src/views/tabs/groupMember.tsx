@@ -182,8 +182,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
     if (res.msg === 'OK') {
       res.result.forEach((searchItem: any) => {
         searchItem.avatar = searchItem.avatar
-          ? searchItem.avatar +
-            '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
+          ? searchItem.avatar
           : defaultPersonPng;
         let searchMemberIndex = _.findIndex(newMemberList, {
           userId: searchItem.userId,
@@ -422,8 +421,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                           <img
                             src={
                               mainItem.avatar
-                                ? mainItem.avatar +
-                                  '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
+                                ? mainItem.avatar
                                 : defaultPersonPng
                             }
                             alt=""
@@ -465,8 +463,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                         <img
                           src={
                             mainItem.avatar
-                              ? mainItem.avatar +
-                                '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
+                              ? mainItem.avatar
                               : defaultPersonPng
                           }
                           alt=""
@@ -504,8 +501,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                     <img
                       src={
                         newItem.avatar
-                          ? newItem.avatar +
-                            '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
+                          ? newItem.avatar
                           : defaultPersonPng
                       }
                       alt=""

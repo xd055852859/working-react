@@ -39,10 +39,18 @@ const Home: React.FC<HomeProps> = (props) => {
       }
     >
       <div
-        className="home-bg"
+        className="home-bg1"
+        style={{
+          background: 'rgba(0,0,0,' + theme.grayPencent + ')',
+        }}
+      ></div>
+      <div
+        className="home-bg2"
         style={
           theme.backgroundImg
-            ? { backgroundImage: 'url(' + theme.backgroundImg + ')' }
+            ? {
+                backgroundImage: 'url(' + theme.backgroundImg + ')',           
+              }
             : { backgroundColor: theme.backgroundColor }
         }
       ></div>
@@ -76,7 +84,7 @@ const Home: React.FC<HomeProps> = (props) => {
         >
           <img src={tablePng} alt="" className="home-header-item-logo" />
           看板
-        </div>       
+        </div>
         {theme && theme.calendarVisible ? (
           <div
             style={

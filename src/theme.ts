@@ -1,20 +1,20 @@
-import { createMuiTheme } from "@material-ui/core/styles";
-import { red } from "@material-ui/core/colors";
+import { createMuiTheme } from '@material-ui/core/styles';
+import { red } from '@material-ui/core/colors';
 
 //设置主题色
 const theme = createMuiTheme({
   palette: {
     primary: {
-      main: "#17B881",
+      main: '#17B881',
     },
     secondary: {
-      main: "#19857b",
+      main: '#19857b',
     },
     error: {
       main: red.A400,
     },
     background: {
-      default: "transparent",
+      default: 'transparent',
     },
   },
   overrides: {
@@ -23,8 +23,8 @@ const theme = createMuiTheme({
       // 规则的名字
       paper: {
         // 一些 CSS
-        minWidth:'400px',
-        minHeight:'300px'
+        minWidth: '400px',
+        minHeight: '300px',
       },
     },
   },

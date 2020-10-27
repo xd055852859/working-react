@@ -108,12 +108,10 @@ const Contact: React.FC<ContactProps> = (props) => {
             let name = contactIndex ? item.nickName : item.groupName;
             let avatar = contactIndex
               ? item.avatar
-                ? item.avatar +
-                  '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
+                ? item.avatar
                 : defaultPersonPng
               : item.groupLogo
-              ? item.groupLogo +
-                '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
+              ? item.groupLogo
               : defaultGroupPng;
             let key = contactIndex ? item.userId : item._key;
             return (

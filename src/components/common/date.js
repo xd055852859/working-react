@@ -197,6 +197,8 @@ const traditionalDate = {
         ? '十'
         : this.cDay < 30
         ? '廿'
+        : this.cDay == 20
+        ? '二十'
         : '三十';
     if (this.cDay % 10 !== 0 || this.cDay === 10) {
       tmp[2] += this.numString.charAt((this.cDay - 1) % 10);

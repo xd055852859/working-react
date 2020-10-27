@@ -71,7 +71,9 @@ function* getSelfTask(action: any) {
       action.typeBoard1,
       action.targetUGKey,
       action.finishPercentArray,
-      action.fileDay
+      action.fileDay,
+      action.endTime,
+      action.isAddTodayFinish,
     );
     if (res.msg === 'OK') {
       yield put(getSelfTaskSuccess(res.result));

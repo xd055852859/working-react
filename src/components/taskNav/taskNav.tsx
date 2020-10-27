@@ -268,8 +268,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                                     <img
                                       src={
                                         groupMemberItem.avatar
-                                          ? groupMemberItem.avatar +
-                                            '?imageMogr2/auto-orient/thumbnail/40x40/format/jpg'
+                                          ? groupMemberItem.avatar
                                           : defaultPersonPng
                                       }
                                       alt=""
@@ -321,7 +320,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
               />
             ) : null}
 
-            {role > 0 && role < 4 ? (
+            {role > 0 && role < 5 ? (
               <div className="taskNav-name-info">
                 <div
                   className="icon-container"
@@ -445,7 +444,8 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
           </div>
           {(taskNavArray[1]._key + '' == chooseLabelKey ||
             taskNavArray[0]._key + '' == chooseLabelKey) &&
-          addTaskVisible ? (
+          addTaskVisible &&
+          headerIndex !== 3 ? (
             <div className="taskItem-plus-title taskNav-plus-title">
               <div className="taskItem-plus-input">
                 <input

@@ -221,7 +221,7 @@ const Vitality: React.FC<VitalityProps> = (props) => {
     }
     if (dataRes.msg === 'OK') {
       dataRes.result.forEach((item: any) => {
-        item.createTime = moment(item.createTime).format('MM-DD HH:mm:ss');
+        item.createTime = moment(item.createTime).format('HH:mm');
         newLogList.push(item);
       });
       setLogList(newLogList);
@@ -452,7 +452,9 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                                     getTargetLog(dayItem.startTime);
                                   }
                                 }}
-                              ></div>
+                              >
+                                {dayItem.date}
+                              </div>
                             </Tooltip>
                           </div>
                         );
@@ -527,47 +529,61 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                   onScroll={scrollLogLoading}
                   ref={vitalityLogRef}
                 >
+                  <div className="vitality-msg">
+                    <div
+                      style={{
+                        width: '10%',
+                      }}
+                    >
+                      时间
+                    </div>
+                    <div style={{ width: '10%' }}>执行人</div>
+                    <div style={{ width: '50%' }}>任务</div>
+                    <div style={{ width: '20%' }}>干系人</div>
+                    <div style={{ width: '10%' }}>活力</div>
+                  </div>
                   {logList.map((logItem: any, logIndex: number) => {
                     return (
                       <div className="vitality-msg" key={'log' + logIndex}>
                         <div
                           style={{
-                            width: '12%',
-                            color: 'rgba(94,138,251,1)',
+                            width: '10%',
                           }}
                         >
-                          {logItem.creatorName}{' '}
+                          {logItem.createTime}
+                        </div>
+                        <div style={{ width: '10%' }}>
+                          {logItem.executorName}
+                        </div>
+                        <div
+                          style={{ width: '50%', justifyContent: 'flex-start' }}
+                        >
+                          {logItem.cardTitle}
+                        </div>
+                        <div style={{ width: '20%' }}>
+                          {logItem.creatorName}
                           {logItem.creatorName && logItem.executorName
                             ? '→'
                             : ''}
                           {logItem.executorName}
                         </div>
-                        <div style={{ width: '30%' }}>{logItem.log}</div>
-                        <div style={{ width: '35%' }}>{logItem.cardTitle}</div>
-                        <div style={{ width: '10%' }}>{logItem.createTime}</div>
-                        <div
-                          style={{
-                            color:
-                              logItem.energyValue > 0 ? '#417505' : '#D0021B',
-                          }}
-                        >
-                          活力
+                        <div style={{ width: '10%' }}>
+                          <span
+                            style={{
+                              backgroundColor:
+                                logItem.energyValue > 0 ? '#86B93F' : '#E94848',
+                              borderRadius: '8px',
+                              padding: '0px 6px',
+                              boxSizing: 'border-box',
+                              color: '#fff',
+                              height: '20px',
+                              lineHeight: '20px',
+                            }}
+                          >
+                            {logItem.energyValue > 0 ? '+' : null}
+                            {logItem.energyValue}
+                          </span>
                         </div>
-                        <span
-                          style={{
-                            backgroundColor:
-                              logItem.energyValue > 0 ? '#86B93F' : '#E94848',
-                            borderRadius: '8px',
-                            padding: '0px 6px',
-                            boxSizing: 'border-box',
-                            color: '#fff',
-                            height: '20px',
-                            lineHeight: '20px',
-                          }}
-                        >
-                          {logItem.energyValue > 0 ? '+' : null}
-                          {logItem.energyValue}
-                        </span>
                       </div>
                     );
                   })}

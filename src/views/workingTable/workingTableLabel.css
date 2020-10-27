@@ -80,7 +80,7 @@
   height: 12px;
 }
 .workingTableLabel-container::-webkit-scrollbar-thumb {
-  background: #47475b;
+  background: #dedede;
   border-radius: 100px;
 }
 .workingTableLabel-info-labelInfo {

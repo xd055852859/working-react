@@ -261,8 +261,22 @@ const auth = {
       ...param,
     });
   },
-  getWallPapers() {
-    return request.get(PNG_URL + '/wallPaper');
+  getWallPapers(page:number) {
+    return request.get(PNG_URL + '/wallPaper', {
+      style: 'web',
+      page: page,
+      limit: 100,
+    });
+  },
+  viewWallPapers(wallKey: string) {
+    return request.patch(PNG_URL + '/wallPaper/view', {
+      wallKey: wallKey,
+    });
+  },
+  chooseWallPapers(wallKey: string) {
+    return request.patch(PNG_URL + '/wallPaper/choose', {
+      wallKey: wallKey,
+    });
   },
 };
 const task = {
@@ -306,7 +320,9 @@ const task = {
     typeBoard1: number,
     targetUGKey: string,
     finishPercentArray: string,
-    fileDay?: number
+    fileDay?: number,
+    endTime?: number,
+    isAddTodayFinish?: number
   ) {
     return request.get(HOME_URL + '/card/listBoardTask', {
       token: auth_token,
@@ -314,6 +330,8 @@ const task = {
       targetUGKey: targetUGKey,
       finishPercentArray: finishPercentArray,
       fileDay: fileDay,
+      endTime: endTime,
+      isAddTodayFinish: isAddTodayFinish,
     });
   },
   editTask(params: any) {
@@ -326,8 +344,9 @@ const task = {
     groupKey: number | string,
     groupRole: number | string,
     labelKey: any,
-    executorKey?: number | string,
+    executorKey?: any,
     title?: string,
+    parentCardKey?: string,
     cardIndex?: number,
     type?: number,
     taskType?: number,
@@ -356,6 +375,7 @@ const task = {
       groupRole: groupRole,
       cardIndex: cardIndex ? cardIndex : 0,
       labelKey: labelKey,
+      parentCardKey: parentCardKey,
     });
   },
   deleteTask(cardKey: number | string, groupKey: number | string) {
@@ -495,6 +515,13 @@ const task = {
       targetUKey: targetUKey,
       startTime: startTime,
       endTime: endTime,
+    });
+  },
+  //获取树任务
+  getTaskTreeList(taskTreeRootCardKey: string) {
+    return request.post(HOME_URL + '/card/getTaskTreeList', {
+      token: auth_token,
+      taskTreeRootCardKey:taskTreeRootCardKey
     });
   },
 };

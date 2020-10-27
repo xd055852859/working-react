@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import './groupModel.css';
+import { useTypedSelector } from '../../redux/reducer/RootState';
 import { Button } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import api from '../../services/api';
 
 import { setMessage } from '../../redux/actions/commonActions';
 
+import Editor from '../../components/common/Editor';
+import unfinishbPng from '../../assets/img/unfinishb.png';
 import leftArrowPng from '../../assets/img/leftArrow.png';
+import modelDefaultPng from '../../assets/img/modelDefault.png';
+
 interface GroupModelProps {
   toGroupSet: any;
 }
@@ -14,6 +19,7 @@ interface GroupModelProps {
 const GroupModel: React.FC<GroupModelProps> = (props) => {
   const { toGroupSet } = props;
   const dispatch = useDispatch();
+  const theme = useTypedSelector((state) => state.auth.theme);
   const [modelTypeArr, setModelTypeArr] = useState<any>([]);
   const [modelTypeList, setModelTypeList] = useState<any>([]);
   const [modelInfo, setModelInfo] = useState<any>(null);
@@ -22,6 +28,13 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
   const [modelInfoIndex, setModelInfoIndex] = useState<any>(null);
   const [modelState, setModelState] = useState(false);
   const [modelPage, setModelPage] = useState(1);
+  const BgColorArray = [
+    'rgba(48,191,191,0.3)',
+    'rgba(0,170,255,0.3)',
+    'rgba(143,126,230,0.3)',
+    'rgba(179,152,152,0.3)',
+    'rgba(242,237,166,0.3)',
+  ];
   // const modelLimit = 8;
   useEffect(() => {
     getModelType();
@@ -89,7 +102,10 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
                   key={'modelType' + index}
                 >
                   <div className="groupModel-right-item-img">
-                    <img src={item.templateUrl} alt="" />
+                    <img
+                      src={item.modelUrl ? item.modelUrl : modelDefaultPng}
+                      alt=""
+                    />
                     {modelInfoIndex === index ? (
                       <div className="groupModel-right-item-button">
                         <Button
@@ -111,7 +127,9 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
                   </div>
                   <div className="groupModel-right-item-name">{item.name}</div>{' '}
                   <div className="groupModel-right-item-description">
-                    {item.description}
+                    {item.description
+                      .replace(/<[^>]*>|<\/[^>]*>/gm, '')
+                      .replace('Powered by Froala Editor', '')}
                   </div>
                 </div>
               );
@@ -148,12 +166,69 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
                 使用此模板
               </Button>
             </div>
-            <div className="groupModel-right-info-img">
-              <img src={modelInfo.templateUrl} alt="" />
+            <div
+              className="groupModel-model"
+              style={
+                theme.backgroundImg
+                  ? {
+                      backgroundImage: 'url(' + theme.backgroundImg + ')',
+                    }
+                  : {
+                      backgroundColor: theme.backgroundColor
+                        ? theme.backgroundColor
+                        : '#3C3C3C',
+                    }
+              }
+            >
+              {modelInfo.templateJson.map(
+                (templateItem: any, templateIndex: number) => {
+                  return (
+                    <div
+                      key={'template' + templateIndex}
+                      className="groupModel-model-container"
+                    >
+                      <div
+                        className="groupModel-model-taskNav"
+                        style={{
+                          backgroundColor: BgColorArray[templateIndex % 5],
+                        }}
+                      >
+                        {templateItem.name}
+                      </div>
+                      <div className="groupModel-model-taskContainer">
+                        {templateItem.children.map(
+                          (childItem: any, childIndex: number) => {
+                            return (
+                              <div
+                                key={'child' + childIndex}
+                                className="groupModel-model-task"
+                              >
+                                <img
+                                  src={unfinishbPng}
+                                  className="groupModel-model-logo"
+                                />
+                                <div className="groupModel-model-task-title">
+                                  {' '}
+                                  {childItem.name}
+                                </div>
+                              </div>
+                            );
+                          }
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+              )}
             </div>
-            <div className="groupModel-right-item-description">
+            {/* <div className="groupModel-right-item-description">
               {modelInfo.description}
-            </div>
+            </div> */}
+            <Editor
+              // editorHeight={'300px'}
+              data={modelInfo.description}
+              editable={false}
+            />
           </div>
         )}
       </div>

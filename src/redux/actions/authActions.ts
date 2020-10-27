@@ -10,6 +10,7 @@ export const actionTypes = {
   GET_THEME_SUCCESS: 'GET_THEME_SUCCESS',
   GET_THEME_BG: 'GET_THEME_BG',
   GET_THEME_BG_SUCCESS: 'GET_THEME_BG_SUCCESS',
+  SET_THEME_BG_PAGE: 'SET_THEME_BG_PAGE',
   SET_THEME: 'SET_THEME',
   SET_THEME_SUCCESS: 'SET_THEME_SUCCESS',
   GET_UPLOAD_TOKEN: 'GET_UPLOAD_TOKEN',
@@ -80,9 +81,10 @@ export function getThemeSuccess(data: any) {
     data,
   };
 }
-export function getThemeBg() {
+export function getThemeBg(page:number) {
   return {
     type: actionTypes.GET_THEME_BG,
+    page:page
   };
 }
 

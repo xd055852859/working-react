@@ -7,7 +7,7 @@ import {
   getThemeSuccess,
   setThemeSuccess,
   getThemeBgSuccess,
-  getUploadTokenSuccess
+  getUploadTokenSuccess,
 } from '../actions/authActions';
 import { Failed } from '../actions/commonActions';
 import api from '../../services/api';
@@ -63,9 +63,9 @@ function* getTheme(action: any) {
 }
 function* getThemeBg(action: any) {
   try {
-    const res = yield call(api.auth.getWallPapers);
+    const res = yield call(api.auth.getWallPapers, action.page);
     if (res.msg === 'OK') {
-      yield put(getThemeBgSuccess(res.data));
+      yield put(getThemeBgSuccess({ res: res, page: action.page }));
     } else {
       yield put(Failed(res));
     }
@@ -78,7 +78,7 @@ function* setTheme(action: any) {
   try {
     const res = yield call(api.auth.setWorkingConfigInfo, action.configInfo);
     if (res.msg === 'OK') {
-      yield put(setThemeSuccess(res.result,action));
+      yield put(setThemeSuccess(res.result, action));
     } else {
       yield put(Failed(res));
     }

@@ -42,8 +42,7 @@ const MemberBoardItem: React.FC<MemberBoardItemProps> = (props) => {
         <Avatar
           alt="人头像"
           src={
-            memberItem[0][0].executorAvatar +
-            '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
+            memberItem[0][0].executorAvatar
           }
           className={classes.avatar}
         />
@@ -56,8 +55,7 @@ const MemberBoardItem: React.FC<MemberBoardItemProps> = (props) => {
               <Avatar
                 alt="群头像"
                 src={
-                  item[0].groupLogo +
-                  '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
+                  item[0].groupLogo
                 }
                 className={classes.logo}
               />

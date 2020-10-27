@@ -3,7 +3,7 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import _ from 'lodash';
 import format from '../../components/common/format';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-import { TextField } from '@material-ui/core';
+import { TextField, Button } from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux';
 import {
@@ -46,6 +46,8 @@ const GroupTableGroup: React.FC = (prop) => {
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const chooseKey = useTypedSelector((state) => state.task.chooseKey);
+  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   // const [memberObj, setMemberObj] = useState<any>({});
   const [taskInfo, setTaskInfo] = useState<any>([]);
   const [taskNameArr, setTaskNameArr] = useState<any>([]);
@@ -56,6 +58,8 @@ const GroupTableGroup: React.FC = (prop) => {
   const [labelLogoVisible, setLabelLogoVisible] = useState(false);
   const [addLabelInput, setAddLabelInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [addTaskVisible, setAddTaskVisible] = useState(false);
+  const [addInput, setAddInput] = useState('');
   // const [batchTaskVisible, setBatchTaskVisible] = useState(false);
   // const [batchLabelKey, setBatchLabelKey] = useState<string | null>('');
   // const [batchGroupKey, setBatchGroupKey] = useState<string | null>('');
@@ -190,7 +194,6 @@ const GroupTableGroup: React.FC = (prop) => {
     taskNewNameArr = _.cloneDeep(taskNameArr);
     taskNewNameArr[index].name = e.target.value;
     setTaskNameArr(taskNewNameArr);
-
   };
   const saveLabel = async (key: string) => {
     let labelRes: any = await api.task.changeTaskLabelName(key, labelName);
@@ -406,6 +409,34 @@ const GroupTableGroup: React.FC = (prop) => {
     };
     setLabelExecutorArray(newLabelExecutorArray);
   };
+  const addTask = async (groupInfo: any, labelInfo: any) => {
+    if (addInput == '') {
+      setAddTaskVisible(false);
+      return;
+    }
+    if (mainGroupKey == groupInfo._key) {
+      labelInfo.executorKey = user._key;
+    }
+    setLoading(true);
+    let addTaskRes: any = await api.task.addTask(
+      groupInfo._key,
+      groupInfo.groupRole,
+      labelInfo._key,
+      labelInfo.executorKey,
+      addInput
+    );
+    if (addTaskRes.msg === 'OK') {
+      dispatch(setMessage(true, '新增任务成功', 'success'));
+      dispatch(setChooseKey(addTaskRes.result._key));
+      dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+      setAddTaskVisible(false);
+      setAddInput('');
+      setLoading(false);
+    } else {
+      setLoading(false);
+      dispatch(setMessage(true, addTaskRes.msg, 'error'));
+    }
+  };
   return (
     <div
       className="task"
@@ -483,7 +514,21 @@ const GroupTableGroup: React.FC = (prop) => {
                                 }
                               />
                             ) : null}
-
+                            {groupInfo &&
+                            groupInfo.role > 0 &&
+                            groupInfo.role < 5 ? (
+                              <div
+                                className="taskNav-addLabel"
+                                onClick={() => {
+                                  setAddTaskVisible(true);
+                                  setChooseLabelKey(
+                                    labelArray[taskNameindex]._key
+                                      ? labelArray[taskNameindex]._key
+                                      : '0'
+                                  );
+                                }}
+                              ></div>
+                            ) : null}
                             <TaskNav
                               avatar={
                                 labelExecutorArray[taskNameindex] &&
@@ -522,47 +567,100 @@ const GroupTableGroup: React.FC = (prop) => {
           <div className="task-container-task">
             {taskInfo.map((taskInfoitem: any, taskInfoindex: any) => {
               return (
-                <Droppable
-                  droppableId={taskInfoindex + 'task'}
-                  key={'taskInfoitem' + taskInfoindex}
-                >
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      className="task-item-info"
-                      style={{ marginRight: '15px' }}
-                    >
-                      {taskInfoitem.map((item: any, index: any) => (
-                        <Draggable
-                          key={item._key}
-                          draggableId={item._key}
-                          index={index}
-                        >
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              className="task-item-item"
-                              // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
-                            >
-                              {item.show ? (
-                                <Task
-                                  taskItem={item}
-                                  // timeSetStatus={
-                                  //   taskInfoitem.length > 4 &&
-                                  //   index > taskInfoitem.length - 3
-                                  // }
+                <React.Fragment key={'taskInfoitem' + taskInfoindex}>
+                  <Droppable droppableId={taskInfoindex + 'task'}>
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        className="task-item-info"
+                        style={{ marginRight: '15px' }}
+                      >
+                        <React.Fragment>
+                          {(addTaskVisible &&
+                            labelArray[taskInfoindex] &&
+                            labelArray[taskInfoindex]._key + '' ===
+                              chooseLabelKey) ||
+                          (chooseLabelKey === '0' &&
+                            labelArray[taskInfoindex] &&
+                            !labelArray[taskInfoindex]._key) ? (
+                            <div className="taskItem-plus-title taskNav-plus-title">
+                              <div className="taskItem-plus-input">
+                                <input
+                                  // required
+                                  placeholder="任务标题"
+                                  value={addInput}
+                                  autoComplete="off"
+                                  onChange={(e) => {
+                                    setAddInput(e.target.value);
+                                  }}
                                 />
-                              ) : null}
+                              </div>
+                              <div
+                                className="taskItem-plus-button"
+                                style={{ marginTop: '10px' }}
+                              >
+                                <Button
+                                  variant="contained"
+                                  color="primary"
+                                  onClick={() => {
+                                    addTask(
+                                      groupInfo,
+                                      labelArray[taskInfoindex]
+                                    );
+                                  }}
+                                  style={{
+                                    marginRight: '10px',
+                                    color: '#fff',
+                                  }}
+                                >
+                                  确定
+                                </Button>
+                                <Button
+                                  variant="contained"
+                                  onClick={() => {
+                                    setChooseLabelKey('');
+                                    setAddTaskVisible(false);
+                                    setAddInput('');
+                                  }}
+                                >
+                                  取消
+                                </Button>
+                              </div>
                             </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
+                          ) : null}
+                          {taskInfoitem.map((item: any, index: any) => (
+                            <Draggable
+                              key={item._key}
+                              draggableId={item._key}
+                              index={index}
+                            >
+                              {(provided, snapshot) => (
+                                <div
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                  className="task-item-item"
+                                  // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
+                                >
+                                  {item.show ? (
+                                    <Task
+                                      taskItem={item}
+                                      // timeSetStatus={
+                                      //   taskInfoitem.length > 4 &&
+                                      //   index > taskInfoitem.length - 3
+                                      // }
+                                    />
+                                  ) : null}
+                                </div>
+                              )}
+                            </Draggable>
+                          ))}
+                          {provided.placeholder}
+                        </React.Fragment>
+                      </div>
+                    )}
+                  </Droppable>
+                </React.Fragment>
               );
             })}
           </div>

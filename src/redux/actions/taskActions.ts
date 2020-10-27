@@ -80,7 +80,9 @@ export function getSelfTask(
   typeBoard1: number,
   targetUGKey: string,
   finishPercentArray: string,
-  fileDay?: number
+  fileDay?: number,
+  endTime?: number,
+  isAddTodayFinish?:number
 ) {
   return {
     type: actionTypes.GET_SELF_TASK,
@@ -88,6 +90,8 @@ export function getSelfTask(
     targetUGKey: targetUGKey,
     finishPercentArray: finishPercentArray,
     fileDay: fileDay,
+    endTime: endTime,
+    isAddTodayFinish:isAddTodayFinish
   };
 }
 export function getSelfTaskSuccess(data: any) {

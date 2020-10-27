@@ -144,6 +144,7 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
         '',
         userKey,
         calendarInput,
+        '',
         0,
         5,
         calendarIndex,

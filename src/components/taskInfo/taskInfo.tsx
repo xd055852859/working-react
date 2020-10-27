@@ -165,6 +165,29 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       getLabelArray(groupArray[0]._key);
     }
   }, [groupArray]);
+  useEffect(() => {
+    console.log(titleRef);
+    if (titleRef.current) {
+      // if (titleRef.current.setSelectionRange) {
+      //   titleRef.current.setSelectionRange(
+      //     titleRef.current.value.length,
+      //     titleRef.current.value.length
+      //   );
+      // } else {
+      //   let range = titleRef.current.createTextRange();
+      //   range.moveStart('character', titleRef.current.value.length);
+      //   range.moveEnd('character', titleRef.current.value.length);
+      //   range.select();
+      // }
+      let range = document.createRange();
+      range.selectNodeContents(titleRef.current);
+      range.collapse(false);
+      let sel: any = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+    }
+    // dispatch(setChooseKey('0'));
+  }, [titleRef.current]);
   // useEffect(() => {
   //   console.log('改变', taskItem);
   // }, [taskItem]);
@@ -513,8 +536,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                                 <img
                                   src={
                                     taskMemberItem.avatar
-                                      ? taskMemberItem.avatar +
-                                        '?imageMogr2/auto-orient/thumbnail/50x50/format/jpg'
+                                      ? taskMemberItem.avatar
                                       : defaultPersonPng
                                   }
                                 />
@@ -752,6 +774,14 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     onClick={() => {
                       dispatch(changeTaskInfoVisible(false));
                       dispatch(setChooseKey(''));
+                      if (editState) {
+                        dispatch(
+                          editTask(
+                            { key: taskItem._key, ...taskItem },
+                            headerIndex
+                          )
+                        );
+                      }
                       if (onClose) {
                         onClose();
                       }

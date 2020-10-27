@@ -189,8 +189,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
         name: newXYLeftData[key].item.executorName,
         steps: newXYLeftData[key].num,
         href:
-          newXYLeftData[key].item.executorAvatar +
-          '?imageMogr2/auto-orient/thumbnail/50x50/format/jpg',
+          newXYLeftData[key].item.executorAvatar,
       });
     }
     for (let key in newXYRightData) {

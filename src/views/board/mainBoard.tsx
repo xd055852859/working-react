@@ -8,6 +8,7 @@ import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
 import moment from 'moment';
 import _ from 'lodash';
 import Avatar from '@material-ui/core/Avatar';
+import theme from '../../theme';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     avatar: {
@@ -38,8 +39,7 @@ const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
             <Avatar
               alt="群头像"
               src={
-                mainItem[0].groupLogo +
-                '?imageMogr2/auto-orient/thumbnail/80x80/format/jpg'
+                mainItem[0].groupLogo
               }
               className={classes.avatar}
             />
@@ -68,46 +68,82 @@ const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
   );
 };
 interface MainBoardProps {
-  getNum: any;
+  getNum?: any;
+  showType?: string;
 }
 
 const MainBoard: React.FC<MainBoardProps> = (props) => {
-  const { getNum } = props;
+  const { getNum, showType } = props;
   const user = useTypedSelector((state) => state.auth.user);
   const selfTaskArray = useTypedSelector((state) => state.task.selfTaskArray);
+  const theme = useTypedSelector((state) => state.auth.theme);
   const [mainArray, setMainArray] = useState<any>([]);
   const dispatch = useDispatch();
   useEffect(() => {
     if (user && user._key) {
-      dispatch(getSelfTask(1, user._key, '[0, 1]'));
+      dispatch(
+        getSelfTask(
+          1,
+          user._key,
+          '[0, 1]',
+          1,
+          moment().add(1, 'days').startOf('day').valueOf(),
+          1
+        )
+      );
     }
-  }, [user]);
+  }, [user, theme]);
   useEffect(() => {
     if (selfTaskArray) {
       let groupObj: any = {};
       let groupArray = [];
       let createNum = 0;
       let finishNum = 0;
+      let state = '';
       const startTime = moment().startOf('day').valueOf();
       const endTime = moment().endOf('day').valueOf();
+      if (theme.finishPercentArr && theme.finishPercentArr.indexOf('0') != -1) {
+        state =
+          state +
+          'item.finishPercent === 0 && item.taskEndDate >=' +
+          startTime +
+          ' && item.taskEndDate <= ' +
+          endTime;
+      }
+      if (theme.finishPercentArr && theme.finishPercentArr.indexOf('1') != -1) {
+        state =
+          state +
+          (state
+            ? '||item.finishPercent === 1 && item.todayTaskTime >= ' +
+              startTime +
+              '  && item.todayTaskTime <= ' +
+              endTime
+            : 'item.finishPercent === 1 && item.todayTaskTime >= ' +
+              startTime +
+              '  && item.todayTaskTime <= ' +
+              endTime);
+      }
+      if (theme.finishPercentArr && theme.finishPercentArr.indexOf('2') != -1) {
+        state =
+          state +
+          (state
+            ? '||item.finishPercent === 0 && item.taskEndDate <= ' + endTime
+            : 'item.finishPercent === 0 && item.taskEndDate <=' + endTime);
+      }
       selfTaskArray.forEach((item: any, index: number) => {
-        if (
-          item.creatorKey === user._key &&
-          item.createTime >= startTime &&
-          item.createTime < endTime
-        ) {
-          createNum++;
-        }
-        let finishState =
-          item.finishPercent === 1 &&
-          item.todayTaskTime >= startTime &&
-          item.todayTaskTime <= endTime;
-        if (
-          ((item.finishPercent === 0 && item.taskEndDate <= endTime) ||
-            finishState) &&
-          item.title !== '' &&
-          item.taskEndDate
-        ) {
+        // if (
+        //   item.creatorKey === user._key &&
+        //   item.createTime >= startTime &&
+        //   item.createTime < endTime
+        // ) {
+        //   createNum++;
+        // }
+        // let finishState =
+        //   item.finishPercent === 1 &&
+        //   item.todayTaskTime >= startTime &&
+        //   item.todayTaskTime <= endTime;
+        console.log(state);
+        if (eval(state) && item.title !== '' && item.taskEndDate) {
           if (item.executorKey === user._key) {
             if (!groupObj[item.groupKey]) {
               groupObj[item.groupKey] = [];
@@ -127,7 +163,7 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
           }
         }
       });
-      getNum(createNum, finishNum);
+      // getNum(createNum, finishNum);
       setMainArray(_.sortBy(_.values(groupObj), ['groupName']));
     }
   }, [selfTaskArray]);
@@ -160,8 +196,11 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
   };
   return (
     <div className="mainBoard">
-      <div className="mainBoard-maintitle">我的任务</div>
-      <div className="mainBoard-item">
+      {!showType ? <div className="mainBoard-maintitle">我的任务</div> : null}
+      <div
+        className="mainBoard-item"
+        style={{ height: showType ? '100%' : 'calc(100% - 50px)' }}
+      >
         {mainArray.map((mainItem: any, mainIndex: number) => {
           return <MainBoardItem mainItem={mainItem} key={'main' + mainIndex} />;
         })}

@@ -14,6 +14,8 @@ import WorkingCalendar from '../workingTable/workingCalendar';
 import WorkingReport from '../workingTable/workingReport';
 import Grid from '../../components/grid/grid';
 import GroupTableDocument from './groupTableDocument';
+import GroupTableTree from './groupTableTree';
+
 import Vitality from '../../components/vitality/vitality';
 interface GroupTableProps {}
 
@@ -54,12 +56,14 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
         {memberHeaderIndex === 1 ? <Grid gridState={true} /> : null}
         {memberHeaderIndex === 2 ? <Grid gridState={false} /> : null}
         {memberHeaderIndex === 3 ? <WorkingCalendar /> : null}
+        {memberHeaderIndex === 4 ? <GroupTableTree /> : null}
         {memberHeaderIndex === 7 ? <WorkingReport /> : null}
         {memberHeaderIndex === 8 ? <GroupTableData /> : null}
         {memberHeaderIndex === 9 ? <GroupTableDocument /> : null}
         {memberHeaderIndex === 10 ? (
           <Vitality vitalityType={headerIndex} vitalityKey={groupKey} />
         ) : null}
+       
       </div>
     </div>
   );
