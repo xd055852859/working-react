@@ -251,12 +251,13 @@ const App: React.FC = () => {
     let newThemeBg = _.cloneDeep(themeBg);
     const randomNum = Math.round(Math.random() * (newThemeBg.length - 1));
     let img = new Image();
-    img.src = newThemeBg[randomNum];
+   
+    img.src = newThemeBg[randomNum].url;
     // img.crossOrigin = 'anonymous'
     // 确定图片加载完成后再进行背景图片切换
     img.onload = function () {
       // console.log(format.formatColor(canvasRef.current, img));
-      newTheme.backgroundImg = newThemeBg[randomNum];
+      newTheme.backgroundImg = newThemeBg[randomNum].url;
       newTheme.backgroundColor = '';
       dispatch(setTheme(newTheme));
     };

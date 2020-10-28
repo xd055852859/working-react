@@ -34,6 +34,8 @@ import unimportantPng from '../../assets/img/unimportant.png';
 import ellipsisbPng from '../../assets/img/ellipsisb.png';
 import taskAddPng from '../../assets/img/contact-plus.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
+import eyePng from '../../assets/img/eye.png';
+import uneyePng from '../../assets/img/uneye.png';
 interface TaskProps {
   taskItem: any;
   executorKey?: number | string;
@@ -168,6 +170,9 @@ const Task: React.FC<TaskProps> = (props) => {
       setDayNumber(time);
       setTimeNumber(taskItem.hour);
       taskDetail = _.cloneDeep(taskItem);
+      taskDetail.followUKeyArray = taskDetail.followUKeyArray
+        ? taskDetail.followUKeyArray
+        : [];
       setTaskDetail(taskDetail);
     }
   }, [taskItem]);
@@ -300,6 +305,16 @@ const Task: React.FC<TaskProps> = (props) => {
     newTaskDetail.executorKey = executorKey;
     newTaskDetail.executorName = executorName;
     newTaskDetail.executorAvatar = executorAvatar;
+    setNewDetail(newTaskDetail);
+  };
+  const changeFollow = (followKey: number | string) => {
+    let newTaskDetail = _.cloneDeep(taskDetail);
+    let followIndex = newTaskDetail.followUKeyArray.indexOf(followKey);
+    if (followIndex == -1) {
+      newTaskDetail.followUKeyArray.push(followKey);
+    } else {
+      newTaskDetail.followUKeyArray.splice(followIndex, 1);
+    }
     setNewDetail(newTaskDetail);
   };
   const changeTime = () => {
@@ -712,16 +727,36 @@ const Task: React.FC<TaskProps> = (props) => {
                                         );
                                       }}
                                     >
-                                      <div className="task-executor-dropMenu-img">
-                                        <img
-                                          src={
-                                            taskMemberItem.avatar
-                                              ? taskMemberItem.avatar
-                                              : defaultPersonPng
-                                          }
-                                        />
+                                      <div className="task-executor-dropMenu-left">
+                                        <div className="task-executor-dropMenu-img">
+                                          <img
+                                            src={
+                                              taskMemberItem.avatar
+                                                ? taskMemberItem.avatar
+                                                : defaultPersonPng
+                                            }
+                                          />
+                                        </div>
+                                        <div>{taskMemberItem.nickName}</div>
                                       </div>
-                                      <div>{taskMemberItem.nickName}</div>
+                                      <img
+                                        src={
+                                          taskDetail.followUKeyArray.indexOf(
+                                            taskMemberItem.userId
+                                          ) == -1
+                                            ? uneyePng
+                                            : eyePng
+                                        }
+                                        alt=""
+                                        style={{
+                                          width: '20px',
+                                          height: '12px',
+                                        }}
+                                        onClick={(e: any) => {
+                                          e.stopPropagation();
+                                          changeFollow(taskMemberItem.userId);
+                                        }}
+                                      />
                                     </div>
                                   );
                                 }

@@ -151,6 +151,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       if (taskInfoVisible && !taskInfo) {
         getTaskItem();
       } else if (fatherTaskItem) {
+        console.log('fatherTaskItem', fatherTaskItem);
         changeTaskInfo(fatherTaskItem);
       } else if (taskInfo) {
         changeTaskInfo(taskInfo);
