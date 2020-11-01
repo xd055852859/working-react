@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 import './bootpage.css';
 import bootpage from '../../assets/img/bootpage.png';
+import bootlogo from '../../assets/img/bootlogo.png';
 import boottitle from '../../assets/img/boottitle.png';
 import { Button } from '@material-ui/core';
 import _ from 'lodash';
@@ -10,6 +11,11 @@ const Bootpage: React.FC = () => {
   const bootpageRef: React.RefObject<any> = useRef();
   const [clientHeight, setClientHeight] = useState(0);
   const [clientWidth, setClientWidth] = useState(0);
+  useEffect(() => {
+    if (localStorage.getItem('token')) {
+      history.push('/');
+    }
+  }, []);
   useEffect(() => {
     if (bootpageRef.current) {
       setClientWidth(bootpageRef.current.clientWidth);
@@ -37,8 +43,8 @@ const Bootpage: React.FC = () => {
   return (
     <div className="bootpage" ref={bootpageRef}>
       <div className="bootpage-logo">
-        {/* <SvgIcon :iconSvg="logoSvg" fontSize="80px" /> */}
-        <a href="https://bbs.working.vip">雁行官网</a>
+        <img src={bootlogo} alt="" style={{ width: '50px', height: '42px' }} />
+        <a href="https://bbs.working.vip" style={{ marginLeft: '8px' }}>雁行官网</a>
       </div>
       <div className="bootpage-content">
         <div className="bootpage-image">
@@ -50,12 +56,11 @@ const Bootpage: React.FC = () => {
         <Button
           className="bootpage-button"
           variant="contained"
-          color="primary"
           onClick={() => {
             toLogin();
           }}
         >
-          去工作
+          开始工作
         </Button>
       </div>
       {/* v-show="videoState"  */}

@@ -46,6 +46,7 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  cursor: pointer;
 }
 .task-executor-dropMenu-info {
   height: 100%;
@@ -71,6 +72,7 @@
   padding: 8px 16px;
   box-sizing: border-box;
   cursor: pointer;
+  overflow: hidden;
 }
 .task-executor-dropMenu-left{
   width: calc(100% -30px);

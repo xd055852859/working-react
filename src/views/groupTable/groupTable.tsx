@@ -31,7 +31,7 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
 
   useEffect(() => {
     if (user && user._key && groupKey) {
-      dispatch(getGroupMember(groupKey));
+      dispatch(getGroupMember(groupKey,4));
     }
   }, [user, groupKey]);
   useEffect(() => {

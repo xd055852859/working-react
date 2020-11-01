@@ -22,6 +22,7 @@ function* getGroupTask(action: any) {
       action.targetUGKey,
       action.finishPercentArray,
       action.fileDay
+      // action.fileDay,
     );
     if (res.msg === 'OK') {
       yield Loading(false);

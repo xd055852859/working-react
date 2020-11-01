@@ -41,6 +41,7 @@ import Editor from '../common/Editor';
 interface TaskInfoProps {
   fatherTaskItem?: any;
   onClose?: any;
+  editFatherTask?: any
 }
 // pick a date util library
 moment.locale('zh-cn');
@@ -79,7 +80,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
-  const { fatherTaskItem, onClose } = prop;
+  const { fatherTaskItem, onClose, editFatherTask } = prop;
   const classes = useStyles();
   const dispatch = useDispatch();
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
@@ -147,8 +148,9 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   ];
   const taskLimit = 10;
   useEffect(() => {
+    console.log('chooseKey', chooseKey);
     if (chooseKey) {
-      if (taskInfoVisible && !taskInfo) {
+      if (taskInfoVisible && !taskInfo && !fatherTaskItem) {
         getTaskItem();
       } else if (fatherTaskItem) {
         console.log('fatherTaskItem', fatherTaskItem);
@@ -233,15 +235,15 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       (taskInfo.groupRole &&
         taskInfo.groupRole > 0 &&
         taskInfo.groupRole < 4) ||
-        taskInfo.creatorKey === user._key ||
-        taskInfo.executorKey === user._key
+      taskInfo.creatorKey === user._key ||
+      taskInfo.executorKey === user._key
     );
     setCountDownTime(taskInfo.countDownTime);
     getTaskMemberArray(taskInfo.groupKey);
   };
   const getTaskMemberArray = async (groupKey: string) => {
     let taskMemberRes: any = null;
-    taskMemberRes = await api.member.getMember(groupKey);
+    taskMemberRes = await api.member.getMember(groupKey,4);
     if (taskMemberRes.msg === 'OK') {
       setTaskMemberArray(taskMemberRes.result);
     }
@@ -424,7 +426,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   };
   const shareTask = () => {
     const redirect = `${window.location.protocol}//${window.location.host}`;
-    copy(redirect + '/?shareKey=' + chooseKey);
+    copy(redirect + '/?shareKey=' + (chooseKey ? chooseKey : taskItem._key));
     dispatch(setMessage(true, '复制链接任务成功', 'success'));
   };
   const getLabelArray = async (groupKey: string) => {
@@ -449,6 +451,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
         }
         if (editState) {
           dispatch(editTask({ key: taskItem._key, ...taskItem }, headerIndex));
+          editFatherTask(taskItem);
           // if (onClose) {
           //   onClose();
           // }
@@ -782,6 +785,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                             headerIndex
                           )
                         );
+                        editFatherTask(taskItem);
                       }
                       if (onClose) {
                         onClose();
@@ -959,6 +963,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                       );
                       dispatch(setMessage(true, '备注保存成功', 'success'));
                       // dispatch(changeTaskInfoVisible(false));
+                      editFatherTask(taskItem);
                     }}
                   >
                     保存
@@ -981,16 +986,16 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                       editable={editable}
                     />
                   ) : (
-                    <div>请点击输入备注信息</div>
-                  )
+                      <div>请点击输入备注信息</div>
+                    )
                 ) : (
-                  <Editor
-                    // editorHeight={'300px'}
-                    data={taskItem.content}
-                    onChange={changeTaskContent}
-                    editable={editable}
-                  />
-                )}
+                    <Editor
+                      // editorHeight={'300px'}
+                      data={taskItem.content}
+                      onChange={changeTaskContent}
+                      editable={editable}
+                    />
+                  )}
               </div>
               <div className="taskInfo-comment">
                 <div className="taskInfo-comment-tabs">
@@ -1002,9 +1007,9 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     style={
                       commentIndex === 0
                         ? {
-                            borderBottom: '1px solid #17B881',
-                            color: '#17B881',
-                          }
+                          borderBottom: '1px solid #17B881',
+                          color: '#17B881',
+                        }
                         : {}
                     }
                   >
@@ -1018,9 +1023,9 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     style={
                       commentIndex === 1
                         ? {
-                            borderBottom: '1px solid #17B881',
-                            color: '#17B881',
-                          }
+                          borderBottom: '1px solid #17B881',
+                          color: '#17B881',
+                        }
                         : {}
                     }
                   >
@@ -1074,24 +1079,24 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     </div>
                   </React.Fragment>
                 ) : (
-                  <div
-                    className="taskInfo-comment-tab"
-                    onScroll={scrollHistoryLoading}
-                  >
-                    {taskHistoryArray.map(
-                      (historyItem: any, historyIndex: number) => {
-                        return (
-                          <div
-                            key={'history' + historyIndex}
-                            className="taskInfo-comment-historyLog"
-                          >
-                            <div className="point"></div> {historyItem.log}
-                          </div>
-                        );
-                      }
-                    )}
-                  </div>
-                )}
+                    <div
+                      className="taskInfo-comment-tab"
+                      onScroll={scrollHistoryLoading}
+                    >
+                      {taskHistoryArray.map(
+                        (historyItem: any, historyIndex: number) => {
+                          return (
+                            <div
+                              key={'history' + historyIndex}
+                              className="taskInfo-comment-historyLog"
+                            >
+                              <div className="point"></div> {historyItem.log}
+                            </div>
+                          );
+                        }
+                      )}
+                    </div>
+                  )}
               </div>
             </div>
           </React.Fragment>

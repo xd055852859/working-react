@@ -2,6 +2,7 @@
   width: 100%;
   height: 100%;
 }
+
 .showPage {
   width: 365px;
   height: 100%;
@@ -9,14 +10,16 @@
   top: 0px;
   color: #fff;
 }
+
 .showPage-time {
   width: 100%;
-  height: 47%;
+  height: 370px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
 }
+
 .showPage-time-title {
   width: 100%;
   height: 250px;
@@ -25,16 +28,20 @@
   justify-content: center;
   font-size: 60px;
 }
+
 .showPage-time-subtitle {
   width: 100%;
-  height: 25px;
+  /* height: 25px; */
   font-size: 15px;
-  display: flex;
+  /* display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 10px;
-  box-sizing: border-box;
+  align-items: center; */
 }
+
+.showPage-time-subtitle>div {
+  text-align: center;
+}
+
 .showPage-logo {
   width: 25px;
   height: 25px;
@@ -43,6 +50,7 @@
   right: 10px;
   cursor: pointer;
 }
+
 .showPage-set {
   width: 350px;
   height: 100%;
@@ -53,6 +61,7 @@
   box-sizing: border-box;
   color: #333;
 }
+
 .showPage-set-title {
   width: 100%;
   font-size: 16px;
@@ -60,10 +69,12 @@
   display: flex;
   justify-content: space-between;
 }
+
 .showPage-task-container {
-  height: 53%;
+  height: calc(100% - 365px);
   width: 100%;
 }
+
 @keyframes setRight {
   from {
     right: 0px;
@@ -73,6 +84,7 @@
     right: -350px;
   }
 }
+
 @keyframes setLeft {
   from {
     right: -350px;
@@ -82,6 +94,7 @@
     right: 0px;
   }
 }
+
 @keyframes showRight {
   from {
     right: 350px;
@@ -91,6 +104,7 @@
     right: 0px;
   }
 }
+
 @keyframes showLeft {
   from {
     right: 0px;

@@ -440,9 +440,9 @@ const GroupTableGroup: React.FC = (prop) => {
   return (
     <div
       className="task"
-      // onClick={(e: any) => {
-      //   dispatch(setChooseKey(''));
-      // }}
+    // onClick={(e: any) => {
+    //   dispatch(setChooseKey(''));
+    // }}
     >
       {loading ? <Loading /> : null}
       <div className="task-container-profile">
@@ -479,63 +479,67 @@ const GroupTableGroup: React.FC = (prop) => {
                         >
                           <React.Fragment>
                             {labelIndex === taskNameindex &&
-                            groupInfo &&
-                            groupInfo.role < 4 &&
-                            groupInfo.role > 0 ? (
-                              <img
-                                src={taskAddPng}
-                                onClick={() => {
-                                  setLabelVisible(true);
-                                }}
-                                className="task-container-taskName-logo"
-                                style={
-                                  addVisible === 'in'
-                                    ? {
+                              groupInfo &&
+                              groupInfo.role < 4 &&
+                              groupInfo.role > 0 ? (
+                                <img
+                                  src={taskAddPng}
+                                  onClick={() => {
+                                    setLabelVisible(true);
+                                  }}
+                                  className="task-container-taskName-logo"
+                                  style={
+                                    addVisible === 'in'
+                                      ? {
                                         animation: 'navIn 200ms',
                                         width: '0px',
                                         height: '0px',
                                         right: '0px',
                                         top: '30px',
                                       }
-                                    : addVisible === 'out'
-                                    ? {
-                                        animation: 'navOut 200ms',
-                                        width: '22px',
-                                        height: '22px',
-                                        right: '-3px',
-                                        top: '20px',
-                                      }
-                                    : {
-                                        width: '0px',
-                                        height: '0px',
-                                        right: '0px',
-                                        top: '30px',
-                                      }
-                                }
-                              />
-                            ) : null}
+                                      : addVisible === 'out'
+                                        ? {
+                                          animation: 'navOut 200ms',
+                                          width: '22px',
+                                          height: '22px',
+                                          right: '-3px',
+                                          top: '20px',
+                                        }
+                                        : {
+                                          width: '0px',
+                                          height: '0px',
+                                          right: '0px',
+                                          top: '30px',
+                                        }
+                                  }
+                                />
+                              ) : null}
                             {groupInfo &&
-                            groupInfo.role > 0 &&
-                            groupInfo.role < 5 ? (
-                              <div
-                                className="taskNav-addLabel"
-                                onClick={() => {
-                                  setAddTaskVisible(true);
-                                  setChooseLabelKey(
-                                    labelArray[taskNameindex]._key
-                                      ? labelArray[taskNameindex]._key
-                                      : '0'
-                                  );
-                                }}
-                              ></div>
-                            ) : null}
+                              groupInfo.role > 0 &&
+                              groupInfo.role < 5 ? (
+                                <div
+                                  className="taskNav-addLabel"
+                                  onClick={() => {
+                                    setAddTaskVisible(true);
+                                    setChooseLabelKey(
+                                      labelArray[taskNameindex]._key
+                                        ? labelArray[taskNameindex]._key
+                                        : '0'
+                                    );
+                                  }}
+                                ></div>
+                              ) : null}
                             <TaskNav
                               avatar={
                                 labelExecutorArray[taskNameindex] &&
-                                labelExecutorArray[taskNameindex].executorAvatar
+                                  labelExecutorArray[taskNameindex].executorAvatar
                                   ? labelExecutorArray[taskNameindex]
-                                      .executorAvatar
+                                    .executorAvatar
                                   : defaultPerson
+                              }
+                              executorKey={
+                                labelExecutorArray[taskNameindex] &&
+                                labelExecutorArray[taskNameindex].executorKey
                               }
                               name={taskNameitem.name}
                               role={groupInfo && groupInfo.role}
@@ -579,55 +583,55 @@ const GroupTableGroup: React.FC = (prop) => {
                           {(addTaskVisible &&
                             labelArray[taskInfoindex] &&
                             labelArray[taskInfoindex]._key + '' ===
-                              chooseLabelKey) ||
-                          (chooseLabelKey === '0' &&
-                            labelArray[taskInfoindex] &&
-                            !labelArray[taskInfoindex]._key) ? (
-                            <div className="taskItem-plus-title taskNav-plus-title">
-                              <div className="taskItem-plus-input">
-                                <input
-                                  // required
-                                  placeholder="任务标题"
-                                  value={addInput}
-                                  autoComplete="off"
-                                  onChange={(e) => {
-                                    setAddInput(e.target.value);
-                                  }}
-                                />
-                              </div>
-                              <div
-                                className="taskItem-plus-button"
-                                style={{ marginTop: '10px' }}
-                              >
-                                <Button
-                                  variant="contained"
-                                  color="primary"
-                                  onClick={() => {
-                                    addTask(
-                                      groupInfo,
-                                      labelArray[taskInfoindex]
-                                    );
-                                  }}
-                                  style={{
-                                    marginRight: '10px',
-                                    color: '#fff',
-                                  }}
+                            chooseLabelKey) ||
+                            (chooseLabelKey === '0' &&
+                              labelArray[taskInfoindex] &&
+                              !labelArray[taskInfoindex]._key) ? (
+                              <div className="taskItem-plus-title taskNav-plus-title">
+                                <div className="taskItem-plus-input">
+                                  <input
+                                    // required
+                                    placeholder="任务标题"
+                                    value={addInput}
+                                    autoComplete="off"
+                                    onChange={(e) => {
+                                      setAddInput(e.target.value);
+                                    }}
+                                  />
+                                </div>
+                                <div
+                                  className="taskItem-plus-button"
+                                  style={{ marginTop: '10px' }}
                                 >
-                                  确定
+                                  <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => {
+                                      addTask(
+                                        groupInfo,
+                                        labelArray[taskInfoindex]
+                                      );
+                                    }}
+                                    style={{
+                                      marginRight: '10px',
+                                      color: '#fff',
+                                    }}
+                                  >
+                                    确定
                                 </Button>
-                                <Button
-                                  variant="contained"
-                                  onClick={() => {
-                                    setChooseLabelKey('');
-                                    setAddTaskVisible(false);
-                                    setAddInput('');
-                                  }}
-                                >
-                                  取消
+                                  <Button
+                                    variant="contained"
+                                    onClick={() => {
+                                      setChooseLabelKey('');
+                                      setAddTaskVisible(false);
+                                      setAddInput('');
+                                    }}
+                                  >
+                                    取消
                                 </Button>
+                                </div>
                               </div>
-                            </div>
-                          ) : null}
+                            ) : null}
                           {taskInfoitem.map((item: any, index: any) => (
                             <Draggable
                               key={item._key}
@@ -640,15 +644,15 @@ const GroupTableGroup: React.FC = (prop) => {
                                   {...provided.draggableProps}
                                   {...provided.dragHandleProps}
                                   className="task-item-item"
-                                  // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
+                                // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
                                 >
                                   {item.show ? (
                                     <Task
                                       taskItem={item}
-                                      // timeSetStatus={
-                                      //   taskInfoitem.length > 4 &&
-                                      //   index > taskInfoitem.length - 3
-                                      // }
+                                    // timeSetStatus={
+                                    //   taskInfoitem.length > 4 &&
+                                    //   index > taskInfoitem.length - 3
+                                    // }
                                     />
                                   ) : null}
                                 </div>

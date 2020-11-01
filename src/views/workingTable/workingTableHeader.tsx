@@ -299,7 +299,7 @@ const WorkingTableHeader: React.FC = (prop) => {
             <div
               className="workingTableHeader-logo"
               style={{ width: '108px' }}
-              onClick={() => {
+              onMouseEnter={() => {
                 setViewVisible(true);
               }}
             >
@@ -321,6 +321,7 @@ const WorkingTableHeader: React.FC = (prop) => {
                 setViewVisible(false);
               }}
               title={'视图切换'}
+              closeType={1}
             >
               {viewArray.map((viewItem, viewIndex) => {
                 return (
@@ -453,22 +454,22 @@ const WorkingTableHeader: React.FC = (prop) => {
                                 ( 近{fileInput}天 )
                               </div>
                             ) : (
-                              <div style={{ marginLeft: '8px' }}>
-                                ( 近
-                                <input
-                                  type="number"
-                                  value={fileInput}
-                                  onChange={(e) => {
-                                    setFileInput(e.target.value);
-                                  }}
-                                  onBlur={(e) => {
-                                    changeFileDay(parseInt(e.target.value));
-                                  }}
-                                  className="fileday"
-                                />
+                                <div style={{ marginLeft: '8px' }}>
+                                  ( 近
+                                  <input
+                                    type="number"
+                                    value={fileInput}
+                                    onChange={(e) => {
+                                      setFileInput(e.target.value);
+                                    }}
+                                    onBlur={(e) => {
+                                      changeFileDay(parseInt(e.target.value));
+                                    }}
+                                    className="fileday"
+                                  />
                                 天 )
-                              </div>
-                            )}
+                                </div>
+                              )}
                           </React.Fragment>
                         ) : null}
                       </div>
@@ -488,11 +489,11 @@ const WorkingTableHeader: React.FC = (prop) => {
         style={
           memberHeaderIndex < 7
             ? {
-                borderBottom: '3px solid #17B881',
-                // color: '#17B881',
-                marginLeft:'10px'
-              }
-            : {marginLeft:'10px'}
+              borderBottom: '3px solid #17B881',
+              // color: '#17B881',
+              marginLeft: '10px'
+            }
+            : { marginLeft: '10px' }
         }
       >
         任务
@@ -506,9 +507,9 @@ const WorkingTableHeader: React.FC = (prop) => {
         style={
           memberHeaderIndex === 7
             ? {
-                borderBottom: '3px solid #17B881',
-                // color: '#17B881',
-              }
+              borderBottom: '3px solid #17B881',
+              // color: '#17B881',
+            }
             : {}
         }
       >
@@ -523,9 +524,9 @@ const WorkingTableHeader: React.FC = (prop) => {
         style={
           memberHeaderIndex === 8
             ? {
-                borderBottom: '3px solid #17B881',
-                // color: '#17B881',
-              }
+              borderBottom: '3px solid #17B881',
+              // color: '#17B881',
+            }
             : {}
         }
       >

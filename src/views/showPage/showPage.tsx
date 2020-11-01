@@ -95,39 +95,38 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
         style={
           showState === 'left'
             ? {
-                animation: 'showLeft 500ms',
-                // animationFillMode: 'forwards',
-                right: '350px',
-              }
+              animation: 'showLeft 500ms',
+              // animationFillMode: 'forwards',
+              right: '350px',
+            }
             : showState === 'right'
-            ? {
+              ? {
                 animation: 'showRight 500ms',
                 // animationFillMode: 'forwards',
                 right: '0px',
               }
-            : { right: '0px' }
+              : { right: '0px' }
         }
       >
         <div className="showPage-time">
           {theme.timeShow ? (
             <div className="showPage-time-title">{nowTime}</div>
           ) : (
-            <Clock />
-          )}
-          {theme.cDayShow ? (
-            <div className="showPage-time-subtitle">
-              <div>
-                {year + '.' + (month + 1) + '.' + day + ' 星期' + weekStr[week]}
-              </div>
-              <div>
-                {' 农历 ' +
-                  format.formatJq(year, month, day) +
-                  ' ' +
-                  traditionalDate.GetLunarDay(moment())[1] +
-                  traditionalDate.GetLunarDay(moment())[2]}
-              </div>
+              <Clock />
+            )}
+
+          <div className="showPage-time-subtitle">
+            <div>
+              {year + '.' + (month + 1) + '.' + day + ' 星期' + weekStr[week]}
             </div>
-          ) : null}
+            {theme.cDayShow ? (<div>
+              {' 农历 ' +
+                format.formatJq(year, month, day) +
+                ' ' +
+                traditionalDate.GetLunarDay(moment())[1] +
+                traditionalDate.GetLunarDay(moment())[2]}
+            </div>) : null}
+          </div>
           <Button
             color="primary"
             onClick={(e: any) => {
@@ -159,22 +158,33 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
         style={
           showState === 'left'
             ? {
-                animation: 'setLeft 500ms',
-                // animationFillMode: 'forwards',
-                right: '0px',
-              }
+              animation: 'setLeft 500ms',
+              // animationFillMode: 'forwards',
+              right: '0px',
+            }
             : showState === 'right'
-            ? {
+              ? {
                 animation: 'setRight 500ms',
                 // animationFillMode: 'forwards',
                 right: '-350px',
               }
-            : { right: '-350px' }
+              : { right: '-350px' }
         }
         onClick={(e: any) => {
           e.stopPropagation();
         }}
       >
+        <div className="showPage-set-title">
+          壁纸设置
+          <Switch
+            checked={theme.randomVisible ? true : false}
+            onChange={() => {
+              changeBoard('randomVisible');
+            }}
+            name="checkedC"
+            inputProps={{ 'aria-label': 'secondary checkbox' }}
+          />
+        </div>
         <div className="showPage-set-title">壁纸更新</div>
         <div className="showPage-set-info" style={{ marginLeft: '10px' }}>
           <RadioGroup
@@ -205,20 +215,6 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
           </RadioGroup>
         </div>
         <div className="showPage-set-title">任务设置</div>
-        <div className="showPage-set-info">
-          <Checkbox
-            checked={
-              theme.finishPercentArr &&
-              theme.finishPercentArr.indexOf('0') != -1
-            }
-            onChange={(e) => {
-              changeFinishPercentArr(e, '0');
-            }}
-            color="primary"
-            disabled
-          />
-          今日未完成
-        </div>
         <div>
           <Checkbox
             checked={
@@ -231,19 +227,6 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
             color="primary"
           />
           今日已完成
-        </div>
-        <div>
-          <Checkbox
-            checked={
-              theme.finishPercentArr &&
-              theme.finishPercentArr.indexOf('2') != -1
-            }
-            onChange={(e) => {
-              changeFinishPercentArr(e, '2');
-            }}
-            color="primary"
-          />
-          过期
         </div>
         <div className="showPage-set-title">
           农历显示

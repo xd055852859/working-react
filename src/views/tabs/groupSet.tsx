@@ -27,6 +27,7 @@ import DropMenu from '../../components/common/dropMenu';
 import Dialog from '../../components/common/dialog';
 
 import plusPng from '../../assets/img/contact-plus.png';
+import editImgPng from '../../assets/img/editImg.png';
 
 interface GroupSetProps {
   saveGroupSet: any;
@@ -77,6 +78,8 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
   const [isLinkJoin, setIsLinkJoin] = useState(false);
   const [defaultPower, setDefaultPower] = useState(5);
   const [defaultPowerVisible, setDefaultPowerVisible] = useState(false);
+  const [defaultPngVisible, setDefaultPngVisible] = useState(false);
+
   const roleArray = [
     {
       name: '管理员',
@@ -94,6 +97,32 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
       name: '群成员',
       role: 5,
     },
+  ];
+  const defaultGroupPng = [
+    'https://cdn-icare.qingtime.cn/1603953838590_workingVip',
+    'https://cdn-icare.qingtime.cn/1603953880452_workingVip',
+    'https://cdn-icare.qingtime.cn/1603953902877_workingVip',
+    'https://cdn-icare.qingtime.cn/1603953959094_workingVip',
+    'https://cdn-icare.qingtime.cn/1603953965051_workingVip',
+    'https://cdn-icare.qingtime.cn/1603953970462_workingVip',
+    'https://cdn-icare.qingtime.cn/1603953975646_workingVip',
+    'https://cdn-icare.qingtime.cn/1603953980113_workingVip',
+    'https://cdn-icare.qingtime.cn/1603954045926_workingVip',
+    'https://cdn-icare.qingtime.cn/1603954057998_workingVip',
+    'https://cdn-icare.qingtime.cn/1603954062903_workingVip',
+    'https://cdn-icare.qingtime.cn/1603954067108_workingVip',
+    'https://cdn-icare.qingtime.cn/1603954070835_workingVip',
+    'https://cdn-icare.qingtime.cn/1603954077157_workingVip',
+    'https://cdn-icare.qingtime.cn/1603961605570_workingVip',
+    'https://cdn-icare.qingtime.cn/1603961610336_workingVip',
+    'https://cdn-icare.qingtime.cn/1603961615966_workingVip',
+    'https://cdn-icare.qingtime.cn/1603961621568_workingVip',
+    'https://cdn-icare.qingtime.cn/1603961626026_workingVip',
+    'https://cdn-icare.qingtime.cn/1603961631593_workingVip',
+    'https://cdn-icare.qingtime.cn/1603958216473_workingVip',
+    'https://cdn-icare.qingtime.cn/1603958223320_workingVip',
+    'https://cdn-icare.qingtime.cn/1603958229514_workingVip',
+    'https://cdn-icare.qingtime.cn/1603958235940_workingVip',
   ];
   useEffect(() => {
     if (type === '设置' && groupInfo) {
@@ -244,7 +273,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
     <div className="contact-dialog-content">
       <div className="contact-dialog-info">
         <div className="contact-dialog-container">
-         
+
           <div className="contact-name-content" style={{ width: '70%' }}>
             <div className="contact-name-title">群名</div>
             <TextField
@@ -320,9 +349,9 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
           <div className="contact-name-content" style={{ height: '250px' }}>
             <div className="contact-name-title">群概念图</div>
             <div className="contact-model">
-              <img src={plusPng} className="contact-dialog-icon" />
+              <img src={plusPng} className="contact-dialog-add" style={{ zIndex: 2 }} />
               {modelUrl ? (
-                <img src={modelUrl} className="contact-dialog-groupLogo" />
+                <img src={modelUrl} className="contact-dialog-groupLogo" style={{ borderRadius: '0px' }} />
               ) : null}
               <input
                 type="file"
@@ -330,6 +359,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
                 onChange={uploadModelImg}
                 className="upload-img"
                 disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
+                style={{ width: '100%', height: '100%', top: '0px', left: '0px' }}
               />
             </div>
           </div>
@@ -486,8 +516,11 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
               </div>
             </DropMenu>
           </div>
-          <div className="contact-dialog-logo">
-            <img src={plusPng} className="contact-dialog-icon" />
+          <div className="contact-dialog-logo" onClick={() => {
+            setDefaultPngVisible(true)
+          }} style={{ border: groupLogo ? 0 : '1px solid #d9d9d9' }}>
+            <img src={plusPng} className="contact-dialog-add" />
+            <img src={editImgPng} className="contact-dialog-icon" />
             {groupLogo ? (
               <img src={groupLogo} className="contact-dialog-groupLogo" />
             ) : null}
@@ -495,14 +528,41 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
               type="file"
               accept="image/*"
               onChange={uploadImg}
+              onClick={(e: any) => {
+                e.stopPropagation();
+              }}
               className="upload-img"
               disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
             />
           </div>
+          <DropMenu
+            visible={defaultPngVisible}
+            dropStyle={{
+              width: '300px',
+              height: '290px',
+              top: '105px',
+              left: '370px',
+            }}
+            onClose={() => {
+              setDefaultPngVisible(false);
+            }}
+          >
+            <div className="defaultPng-container">
+              {defaultGroupPng.map((defaultItem: any, defaultIndex: number) => {
+                return (
+                  <img key={'defaultPng' + defaultIndex} src={defaultItem} alt="" onClick={() => {
+                    setGroupLogo(defaultItem);
+                    setGroupSet('groupLogo', defaultItem);
+                  }} />
+                );
+              })}
+            </div>
+          </DropMenu>
+
         </div>
       </div>
-      
-    </div>
+
+    </div >
   );
 };
 export default GroupSet;

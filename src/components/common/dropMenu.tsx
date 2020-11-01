@@ -7,15 +7,20 @@ interface dropMenuProp {
   dropStyle: any;
   onClose?: any;
   title?: string | null;
+  closeType?: number
 }
 
 const DropMenu: React.FC<dropMenuProp> = (prop) => {
-  const { children, visible, dropStyle, onClose, title } = prop;
+  const { children, visible, dropStyle, onClose, title, closeType } = prop;
   return (
     <React.Fragment>
       {visible ? (
-        <ClickAwayListener onClickAway={onClose ? onClose : ()=>{}}>
-          <div className="dropMenu" style={dropStyle}>
+        <ClickAwayListener onClickAway={onClose ? onClose : () => { }}>
+          <div className="dropMenu" style={dropStyle} onMouseLeave={() => {
+            if (closeType === 1) {
+              onClose();
+            }
+          }}>
             {title ? <div className="dropMenu-title">{title}</div> : null}
             <div
               className="dropMenu-info"

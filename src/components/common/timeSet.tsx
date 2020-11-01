@@ -224,11 +224,11 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
           </div>
         </React.Fragment>
       ) : null}
-      {dayNumber < 1 ? (
+      {/* {dayNumber < 1 ? (
         <div className="timeSet-title" style={{marginTop:'30px',color:'#D0021B'}}>
           已过期 <span style={{color:'#D0021B'}}>{Math.abs(dayNumber) + 1 + '天'}</span>
         </div>
-      ) : null}
+      ) : null} */}
     </React.Fragment>
   );
 };

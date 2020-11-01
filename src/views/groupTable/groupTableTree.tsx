@@ -16,10 +16,10 @@ import api from '../../services/api';
 import TaskInfo from '../../components/taskInfo/taskInfo';
 import Dialog from '../../components/common/dialog';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
-interface GroupTableTreeProps {}
+interface GroupTableTreeProps { }
 
 const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
-  const {} = props;
+  const { } = props;
   const dispatch = useDispatch();
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const [gridList, setGridList] = useState<any>(null);
@@ -60,9 +60,9 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
           showStatus: true,
           hour: taskItem.hour,
           limitDay: gridTime < 0 ? gridTime : gridTime + 1,
-          avatarUri: taskItem.executorAvatar
-            ? taskItem.executorAvatar
-            : defaultPersonPng,
+          // avatarUri: taskItem.executorAvatar
+          //   ? taskItem.executorAvatar
+          //   : defaultPersonPng,
         };
         if (taskItem.parentCardKey) {
           newNodeObj[taskItem._key].father = taskItem.parentCardKey;
@@ -75,7 +75,6 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
       setTargetNode(newNodeObj[groupInfo.taskTreeRootCardKey]);
       setSelectedId(newNodeObj[groupInfo.taskTreeRootCardKey]._key);
       setNodeObj(newNodeObj);
-      console.log(newNodeObj);
     } else {
       dispatch(setMessage(true, gridRes.msg, 'error'));
     }
@@ -90,14 +89,17 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
       type === 'child'
         ? targetNode._key
         : type === 'next'
-        ? targetNode.father
-        : '',
+          ? targetNode.father
+          : '',
       0,
       6
     );
     if (addTaskRes.msg === 'OK') {
       let newNodeObj = _.cloneDeep(nodeObj);
+      let newGridList = _.cloneDeep(gridList);
       let result = addTaskRes.result;
+      newGridList.push(_.cloneDeep(result))
+      setGridList(newGridList);
       let gridTime = moment(result.taskEndDate)
         .endOf('day')
         .diff(moment().endOf('day'), 'days');
@@ -125,7 +127,6 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
       }
       setTargetNode(newNodeObj[newNode._key]);
       setNodeObj(newNodeObj);
-      console.log(newNodeObj);
       // dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
     } else {
       dispatch(setMessage(true, addTaskRes.msg, 'error'));
@@ -138,7 +139,6 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
     setTargetIndex(nodeIndex);
   };
   const editTaskText = async (nodeId: string, text: string) => {
-    console.log();
     let newTargetNode = _.cloneDeep(targetNode);
     let newNodeObj = _.cloneDeep(nodeObj);
     let newGridList = _.cloneDeep(gridList);
@@ -204,6 +204,32 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
       treeRef.current.removeEventListener('mousemove', moveContent, true);
     }
   };
+  const editTargetTask = (taskItem: any) => {
+    let newNodeObj = _.cloneDeep(nodeObj);
+    let newGridList = _.cloneDeep(gridList);
+    let nodeIndex = _.findIndex(newGridList, { _key: taskItem._key });
+    newGridList[nodeIndex] = taskItem;
+    let gridTime = moment(taskItem.taskEndDate)
+      .endOf('day')
+      .diff(moment().endOf('day'), 'days');
+    newNodeObj[taskItem._key] = {
+      _key: taskItem._key,
+      name: taskItem.title,
+      // father	父節點 id	String
+      contract: false,
+      checked: taskItem.finishPercent > 0,
+      showStatus: true,
+      hour: taskItem.hour,
+      limitDay: gridTime < 0 ? gridTime : gridTime + 1,
+      father: taskItem.parentCardKey,
+      sortList: taskItem.children,
+      avatarUri: taskItem.executorAvatar
+        ? taskItem.executorAvatar
+        : defaultPersonPng,
+
+    }
+    setNodeObj(newNodeObj);
+  }
   return (
     <div
       className="tree-container"
@@ -214,10 +240,10 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
       <div
         className="tree-box"
         ref={boxRef}
-        // style={{
-        //   top: treeTop,
-        //   left: treeLeft,
-        // }}
+      // style={{
+      //   top: treeTop,
+      //   left: treeLeft,
+      // }}
       >
         {nodeObj ? (
           <Tree
@@ -247,8 +273,8 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
             handleChangeNodeText={editTaskText}
             handleCheck={editFinishPercent}
             showCheckbox={true}
-            // nodeOptions={}
-            // handleClickDot
+          // nodeOptions={}
+          // handleClickDot
           />
         ) : null}
       </div>
@@ -258,6 +284,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
           onClose={() => {
             setTaskInfoDialogShow(false);
           }}
+          editFatherTask={editTargetTask}
         />
       ) : null}
       <Dialog

@@ -82,7 +82,7 @@ const GroupTableHeader: React.FC = (prop) => {
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const theme = useTypedSelector((state) => state.auth.theme);
   const dispatch = useDispatch();
-  const viewArray: string[] = ['项目', '时间表', '执行表', '日历', '树型'];
+  const viewArray: string[] = ['项目', '时间表', '执行表', '日历', '任务树'];
   //
   const viewImg: string[] = [
     labelPng,
@@ -107,6 +107,7 @@ const GroupTableHeader: React.FC = (prop) => {
     '未计划',
     '一般卡片',
     '已归档',
+    // '树任务',
   ];
   const [viewVisible, setViewVisible] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
@@ -271,8 +272,8 @@ const GroupTableHeader: React.FC = (prop) => {
       modelUrl: groupInfo.modelUrl
         ? groupInfo.modelUrl
         : theme.backgroundImg
-        ? theme.backgroundImg
-        : '',
+          ? theme.backgroundImg
+          : '',
       templateJson: [
         // {
         //   name: '测试频道1',
@@ -331,7 +332,7 @@ const GroupTableHeader: React.FC = (prop) => {
       <div className="workingTableHeader">
         <div
           className="workingTableHeader-logo"
-          style={{ width: '56px' }}
+          style={{ width: '35px' }}
           onClick={() => {
             dispatch(setMoveState('out'));
             dispatch(setCommonHeaderIndex(1));
@@ -417,7 +418,7 @@ const GroupTableHeader: React.FC = (prop) => {
               onClose={() => {
                 setInfoVisible(false);
               }}
-              // title={'视图切换'}
+            // title={'视图切换'}
             >
               <div className="groupTableHeader-info-container">
                 <div
@@ -517,7 +518,7 @@ const GroupTableHeader: React.FC = (prop) => {
               <div
                 className="workingTableHeader-logo"
                 style={{ width: '108px' }}
-                onClick={() => {
+                onMouseEnter={() => {
                   setViewVisible(true);
                 }}
               >
@@ -655,7 +656,7 @@ const GroupTableHeader: React.FC = (prop) => {
                           ) : null}
                         </div>
                       );
-                    })}
+                    })}                    
                   </div>
                 </div>
               </DropMenu>
@@ -670,9 +671,9 @@ const GroupTableHeader: React.FC = (prop) => {
           style={
             memberHeaderIndex < 7
               ? {
-                  borderBottom: '3px solid #17B881',
-                  marginLeft: '10px',
-                }
+                borderBottom: '3px solid #17B881',
+                marginLeft: '10px',
+              }
               : { marginLeft: '10px' }
           }
         >
@@ -687,8 +688,8 @@ const GroupTableHeader: React.FC = (prop) => {
           style={
             memberHeaderIndex === 9
               ? {
-                  borderBottom: '3px solid #17B881',
-                }
+                borderBottom: '3px solid #17B881',
+              }
               : {}
           }
         >
@@ -703,8 +704,8 @@ const GroupTableHeader: React.FC = (prop) => {
           style={
             memberHeaderIndex === 7
               ? {
-                  borderBottom: '3px solid #17B881',
-                }
+                borderBottom: '3px solid #17B881',
+              }
               : {}
           }
         >
@@ -719,8 +720,8 @@ const GroupTableHeader: React.FC = (prop) => {
           style={
             memberHeaderIndex === 8
               ? {
-                  borderBottom: '3px solid #17B881',
-                }
+                borderBottom: '3px solid #17B881',
+              }
               : {}
           }
         >
@@ -735,8 +736,8 @@ const GroupTableHeader: React.FC = (prop) => {
           style={
             memberHeaderIndex === 10
               ? {
-                  borderBottom: '3px solid #17B881',
-                }
+                borderBottom: '3px solid #17B881',
+              }
               : {}
           }
         >
@@ -804,7 +805,7 @@ const GroupTableHeader: React.FC = (prop) => {
           width: '850px',
           height: '700px',
         }}
-        // showMask={false}
+      // showMask={false}
       >
         <div className="groupSet-tab">
           <div
@@ -816,9 +817,9 @@ const GroupTableHeader: React.FC = (prop) => {
             style={
               groupTabIndex == 0
                 ? {
-                    borderBottom: '2px solid #17B881',
-                    color: '#17B881',
-                  }
+                  borderBottom: '2px solid #17B881',
+                  color: '#17B881',
+                }
                 : {}
             }
           >
@@ -833,9 +834,9 @@ const GroupTableHeader: React.FC = (prop) => {
             style={
               groupTabIndex == 1
                 ? {
-                    borderBottom: '2px solid #17B881',
-                    color: '#17B881',
-                  }
+                  borderBottom: '2px solid #17B881',
+                  color: '#17B881',
+                }
                 : {}
             }
           >
@@ -851,9 +852,9 @@ const GroupTableHeader: React.FC = (prop) => {
             style={
               groupTabIndex == 2
                 ? {
-                    borderBottom: '2px solid #17B881',
-                    color: '#17B881',
-                  }
+                  borderBottom: '2px solid #17B881',
+                  color: '#17B881',
+                }
                 : {}
             }
           >

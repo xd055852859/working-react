@@ -7,18 +7,19 @@
   padding-right: 25px;
   box-sizing: border-box;
 }
+
 .contact-dialog-logo {
   width: 100px;
   height: 100px;
-  border: 1px solid #d9d9d9;
-  overflow: hidden;
   position: absolute;
   display: flex;
   align-items: center;
   justify-content: center;
   top: 0px;
   right: 0px;
+  border-radius: 50%;
 }
+
 .contact-dialog-groupLogo {
   width: 100%;
   height: 100%;
@@ -26,17 +27,31 @@
   position: absolute;
   top: 0px;
   left: 0px;
+  z-index: 2;
+  border-radius: 50%;
 }
-.contact-dialog-icon {
+
+.contact-dialog-add {
   width: 25px;
   height: 25px;
 }
+
+.contact-dialog-icon {
+  width: 25px;
+  height: 25px;
+  position: absolute;
+  bottom: 4px;
+  right: 2px;
+  z-index: 3
+}
+
 .contact-dialog-container {
   width: 100%;
   display: flex;
   flex-wrap: wrap;
   position: relative;
 }
+
 .contact-name-content {
   width: 100%;
   min-height: 43px;
@@ -45,6 +60,7 @@
   position: relative;
   margin-bottom: 12px;
 }
+
 .contact-dialog-content {
   width: 100%;
   height: calc(100% - 50px);
@@ -55,13 +71,16 @@
   box-sizing: border-box;
   overflow: auto;
 }
+
 .contact-name-title {
   width: 100px;
   margin-right: 15px;
 }
+
 .contact-role {
   padding: 10px 10px;
 }
+
 .contact-role-item {
   width: 100%;
   height: 28px;
@@ -69,9 +88,11 @@
   cursor: pointer;
   line-height: 28px;
 }
+
 .contact-role-item:hover {
   background: #f0f0f0;
 }
+
 /* .contact-name-radio {
   display: flex;
   flex-wrap: wrap;
@@ -87,11 +108,33 @@
   position: relative;
   border-radius: 4px;
 }
+
 .contact-dialog-info .upload-img {
+  width: 25px;
+  height: 25px;
+  position: absolute;
+  top: 71px;
+  left: 73px;
+  z-index: 5;
+}
+
+.defaultPng-container {
   width: 100%;
   height: 100%;
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.defaultPng-container img {
+  width: 50px;
+  height: 50px;
+  margin-right: 7px;
+  margin-bottom: 5px;
+  border-radius: 50%;
+}
+
+.defaultPng-container img:nth-child(5n+5) {
+  margin-right: 0px;
 }
