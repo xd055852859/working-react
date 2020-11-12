@@ -130,7 +130,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
       }
       if (
         item.groupName &&
-        item.groupName.indexOf('主群') == -1 &&
+        item.groupName.indexOf('个人事务') == -1 &&
         item.title != '' &&
         state &&
         item.taskEndDate
@@ -264,7 +264,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
       }
       if (
         item.groupName &&
-        item.groupName.indexOf('主群') == -1 &&
+        item.groupName.indexOf('个人事务') == -1 &&
         item.title != '' &&
         state &&
         item.taskEndDate

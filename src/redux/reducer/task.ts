@@ -40,6 +40,7 @@ const defaultState: TaskType = {
     executorAvatar: '',
     executorName: '',
     filterType: ['过期', '今天', '未来', '已完成'],
+    headerIndex: 0,
   },
   taskInfoVisible: false,
   calendarList: null,
@@ -93,13 +94,16 @@ export const task = (state = defaultState, action: any) => {
       let cardIndex = _.findIndex(action.data.groupArray, {
         _key: localStorage.getItem('mainGroupKey'),
       });
-      if (action.data.groupArray.length > 0) {
-        action.data.groupArray.unshift(
-          action.data.groupArray.splice(cardIndex, 1)[0]
-        );
-        action.data.cardArray.unshift(
-          action.data.cardArray.splice(cardIndex, 1)[0]
-        );
+      if (cardIndex !== -1) {
+        action.data.groupArray[cardIndex].groupName = '个人事务';
+        if (action.data.groupArray.length > 0) {
+          action.data.groupArray.unshift(
+            action.data.groupArray.splice(cardIndex, 1)[0]
+          );
+          action.data.cardArray.unshift(
+            action.data.cardArray.splice(cardIndex, 1)[0]
+          );
+        }
       }
       return {
         ...state,
@@ -126,7 +130,7 @@ export const task = (state = defaultState, action: any) => {
       console.log(action);
       let taskInfo = _.cloneDeep(action.data[0]);
       let headerIndex = action.data[1];
-      if (headerIndex === 0) {
+      if (headerIndex === 0 && state.selfTaskArray) {
         state.selfTaskArray = state.selfTaskArray.map(
           (taskItem: any, taskIndex: number) => {
             if (taskItem._key === taskInfo._key) {
@@ -135,7 +139,10 @@ export const task = (state = defaultState, action: any) => {
             return taskItem;
           }
         );
-      } else if (headerIndex === 1 || headerIndex === 2) {
+      } else if (
+        (headerIndex === 1 || headerIndex === 2) &&
+        state.workingTaskArray
+      ) {
         state.workingTaskArray = state.workingTaskArray.map(
           (taskItem: any, taskIndex: number) => {
             taskItem = taskItem.map((item: any, index: number) => {
@@ -147,7 +154,7 @@ export const task = (state = defaultState, action: any) => {
             return taskItem;
           }
         );
-      } else if (headerIndex === 3) {
+      } else if (headerIndex === 3 && state.taskArray) {
         state.taskArray = state.taskArray.map(
           (taskItem: any, taskIndex: number) => {
             if (taskItem._key === taskInfo._key) {
@@ -170,6 +177,9 @@ export const task = (state = defaultState, action: any) => {
       let filterObject = _.cloneDeep(state.filterObject);
       for (let key in action.filterObj) {
         filterObject[key] = action.filterObj[key];
+      }
+      if (!filterObject.headerIndex) {
+        filterObject.headerIndex = 0;
       }
       return {
         ...state,

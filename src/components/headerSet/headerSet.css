@@ -238,7 +238,14 @@
 .contentHeader-set-item-radio input[type='radio' i]:checked {
   background-color: #ff5d5b;
 } */
-
+.groupCreate {
+  height: 295px;
+}
+.groupCreate-header {
+  width: 100%;
+  height: 40px;
+  line-height: 40px;
+}
 @keyframes avatarSmall {
   from {
     width: 40px;

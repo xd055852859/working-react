@@ -108,7 +108,10 @@ const WorkingTableGroup: React.FC = (prop) => {
                 .filter((arrItem, arrIndex) => {
                   return arrItem.show;
                 });
-              item.arrlength = item.arrlength + item[key].arr.length;
+              item.arrlength =
+                item.groupObj._key === mainGroupKey
+                  ? 10000
+                  : item.arrlength + item[key].arr.length;
             }
           }
           return item;
@@ -146,7 +149,7 @@ const WorkingTableGroup: React.FC = (prop) => {
   }, [memberHeaderIndex, mainGroupArray.length]);
   const sortArr = (arr: object[], item: any) => {
     arr.push(item);
-    arr = _.sortBy(arr, ['taskEndDate']).reverse();
+    arr = _.sortBy(arr, ['createTime']).reverse();
     // arr = _.sortBy(arr, ['createTime']).reverse();
     arr = _.sortBy(arr, ['finishPercent']);
     return arr;
@@ -209,10 +212,7 @@ const WorkingTableGroup: React.FC = (prop) => {
                     }}
                   />
 
-                  <div
-                    v-for="(taskItem,taskIndex) in groupItem.arr"
-                    className="workingTableLabel-info-item"
-                  >
+                  <div className="workingTableLabel-info-item">
                     {groupItem.arr.map((taskItem: any, taskIndex: number) => {
                       return (
                         <React.Fragment key={'task' + taskIndex}>
@@ -220,7 +220,8 @@ const WorkingTableGroup: React.FC = (prop) => {
                             <Task
                               taskItem={taskItem}
                               // timeSetStatus={taskIndex > groupItem.arr.length - 3}
-                              myState={item.groupObj._key === mainGroupKey}
+                              // myState={item.groupObj._key === mainGroupKey}
+                              taskIndex={index}
                             />
                           ) : null}
                         </React.Fragment>

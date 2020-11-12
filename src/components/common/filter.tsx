@@ -49,7 +49,12 @@ const Filter: React.FC<FilterProps> = (prop) => {
   return (
     <div className="filter" style={filterStyle}>
       <div className="filter-title">{title + ' :'}</div>
-      <div className="filter-menu" onMouseEnter={onOpen} onMouseLeave={onClose}>
+      <div
+        className="filter-menu"
+        onMouseEnter={onOpen}
+        onMouseLeave={onClose}
+        onClick={onOpen}
+      >
         {filterArray.length > 0 ? (
           <div className="filter-menu-info">
             <Avatar
@@ -63,7 +68,9 @@ const Filter: React.FC<FilterProps> = (prop) => {
               }
               className={classes.avatar}
             />
-            <div>{filterArray[filterIndex][filterItem[0]]}</div>
+            <div className="filter-menu-name">
+              {filterArray[filterIndex][filterItem[0]]}
+            </div>
             <img className="filter-menu-icon" src={downArrowbPng} alt="" />
           </div>
         ) : null}
@@ -92,7 +99,7 @@ const Filter: React.FC<FilterProps> = (prop) => {
                   }
                   className={classes.avatar}
                 />
-                <div>{item[filterItem[0]]}</div>
+                <div className="filter-menu-name">{item[filterItem[0]]}</div>
               </div>
             );
           })}

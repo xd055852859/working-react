@@ -58,6 +58,14 @@
   display: flex;
   align-items: center;
 }
+.group-member-item-button {
+  display: flex;
+  align-items: center;
+}
+.group-member-item-button img {
+  margin:0px 8px;
+  cursor: pointer;
+}
 .group-member-item .group-member-img {
   width: 40px;
   height: 40px;

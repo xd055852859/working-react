@@ -28,9 +28,22 @@ interface MainBoardItemProps {
 }
 const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
   const user = useTypedSelector((state) => state.auth.user);
+  const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
+
   const { mainItem } = props;
   const classes = useStyles();
-  const myState = mainItem[0].groupName == user.profile.nickName + '的主群';
+  let myState = false;
+  if (
+    mainItem[0].groupName.indexOf('主群') !== -1 &&
+    mainItem[0]._key === mainGroupKey
+  ) {
+    mainItem[0].groupName = '个人事务';
+    myState = true;
+  } else if (mainItem[0].groupName.indexOf('主群') !== -1) {
+    mainItem[0].groupName = '他人事务';
+    myState = true;
+  }
+
   return (
     <React.Fragment>
       <div>
@@ -38,9 +51,7 @@ const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
           {!myState ? (
             <Avatar
               alt="群头像"
-              src={
-                mainItem[0].groupLogo
-              }
+              src={mainItem[0].groupLogo}
               className={classes.avatar}
             />
           ) : null}
@@ -57,7 +68,7 @@ const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
             <Task
               taskItem={taskItem}
               key={'task' + taskIndex}
-              myState={myState}
+              // myState={myState}
               // timeSetStatus={taskIndex > mainItem.length - 3}
             />
             // </div>
@@ -92,7 +103,7 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
         )
       );
     }
-  }, [user, theme]);
+  }, [user]);
   useEffect(() => {
     if (selfTaskArray) {
       let groupObj: any = {};
@@ -105,30 +116,36 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
       if (theme.finishPercentArr && theme.finishPercentArr.indexOf('0') != -1) {
         state =
           state +
-          'item.finishPercent === 0 && item.taskEndDate >=' +
-          startTime +
+          '(item.finishPercent === 0 ' +
           ' && item.taskEndDate <= ' +
-          endTime;
+          endTime +
+          ')';
       }
       if (theme.finishPercentArr && theme.finishPercentArr.indexOf('1') != -1) {
         state =
           state +
           (state
-            ? '||item.finishPercent === 1 && item.todayTaskTime >= ' +
+            ? '||(item.finishPercent === 1 && item.todayTaskTime >= ' +
               startTime +
               '  && item.todayTaskTime <= ' +
-              endTime
-            : 'item.finishPercent === 1 && item.todayTaskTime >= ' +
+              endTime +
+              ')'
+            : '(item.finishPercent === 1 && item.todayTaskTime >= ' +
               startTime +
               '  && item.todayTaskTime <= ' +
-              endTime);
+              endTime +
+              ')');
       }
       if (theme.finishPercentArr && theme.finishPercentArr.indexOf('2') != -1) {
         state =
           state +
           (state
-            ? '||item.finishPercent === 0 && item.taskEndDate <= ' + endTime
-            : 'item.finishPercent === 0 && item.taskEndDate <=' + endTime);
+            ? '||(item.finishPercent === 0 && item.taskEndDate <= ' +
+              endTime +
+              ')'
+            : '(item.finishPercent === 0 && item.taskEndDate <=' +
+              endTime +
+              ')');
       }
       selfTaskArray.forEach((item: any, index: number) => {
         // if (
@@ -142,7 +159,6 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
         //   item.finishPercent === 1 &&
         //   item.todayTaskTime >= startTime &&
         //   item.todayTaskTime <= endTime;
-        console.log(state);
         if (eval(state) && item.title !== '' && item.taskEndDate) {
           if (item.executorKey === user._key) {
             if (!groupObj[item.groupKey]) {

@@ -6,6 +6,7 @@ export const actionTypes = {
   GET_GROUP_INFO_SUCCESS: 'GET_GROUP_INFO_SUCCESS',
   CHANGE_GROUP_INFO: 'CHANGE_GROUP_INFO',
   CHANGE_GROUP_INFO_SUCCESS: 'CHANGE_GROUP_INFO_SUCCESS',
+  CHANGE_START_ID: 'CHANGE_START_ID',
 };
 
 export function getGroup(
@@ -37,4 +38,7 @@ export function changeGroupInfo(key: string | number, patchData: any) {
 }
 export function changeGroupInfoSuccess(data: any) {
   return { type: actionTypes.CHANGE_GROUP_INFO_SUCCESS, data };
+}
+export function changeStartId(startId: string) {
+  return { type: actionTypes.CHANGE_START_ID, startId };
 }

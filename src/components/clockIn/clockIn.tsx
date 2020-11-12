@@ -2,13 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
-import {
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Typography,
-  Button,
-} from '@material-ui/core';
+import { Button } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import moment from 'moment';
@@ -96,7 +90,7 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
       // newGroupList = _.sortBy(Object.values(newGroupObj), [
       //   'taskNumber',
       // ]).reverse();
-
+      console.log('newTaskNumber', newTaskNumber);
       setTaskNumber(newTaskNumber);
     }
   }, [selfTaskArray]);
@@ -106,7 +100,7 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
     if (groupRes.msg === 'OK') {
       groupRes.result = groupRes.result.filter(
         (groupItem: any, groupIndex: number) => {
-          if (groupItem.groupName.indexOf('主群') == -1) {
+          if (groupItem.groupName.indexOf('个人事务') == -1) {
             newGroupList.push(groupItem);
           }
         }

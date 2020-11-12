@@ -63,3 +63,11 @@
   top: 14px;
   right: 18px;
 }
+.filter-menu-name {
+  width: calc(100% - 60px);
+  height: 40px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 40px;
+}

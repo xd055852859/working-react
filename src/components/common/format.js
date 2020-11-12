@@ -244,7 +244,7 @@ const format = {
     g = Math.round(g);
     b = Math.round(b);
     let colorLevel = parseInt(r * 0.299 + g * 0.587 + b * 0.114);
-    console.log(colorLevel);
+    console.log('色值', colorLevel);
     // return 'rgb(' + r + ',' + g + ',' + b + ')';
   },
   formatJq(year, month, day) {
@@ -340,6 +340,23 @@ const format = {
       }
     }
     return solarTerms;
+  },
+  formatImgUrl(arr, str) {
+    arr.map((item, index) => {
+      str = str.replace(/<img src=\"(blob:||data:)+.*?(?:>|\/>)/, item);
+    });
+    return str;
+  },
+  formatBlob(src) {
+    // let bstr = atob(bloburl);
+    // let n = bstr.length;
+    // let u8arr = new Uint8Array(n);
+    // while (n--) {
+    //   u8arr[n] = bstr.charCodeAt(n);
+    // }
+    // return new Blob([u8arr], { type: 'text/plain' });
+  
+
   },
 };
 export default format;

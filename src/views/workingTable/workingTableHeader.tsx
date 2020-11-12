@@ -76,6 +76,7 @@ const WorkingTableHeader: React.FC = (prop) => {
     '项目流',
     '日历',
   ];
+  const tabArray: string[] = ['任务', '日报', '活力'];
   const viewImg: string[] = [
     labelPng,
     groupPng,
@@ -105,6 +106,8 @@ const WorkingTableHeader: React.FC = (prop) => {
     '已归档',
   ];
   const [viewVisible, setViewVisible] = useState(false);
+  const [tabVisible, setTabVisible] = useState(false);
+  const [tabIndex, setTabIndex] = useState(0);
   const [filterVisible, setFilterVisible] = useState(false);
   const [memberVisible, setMemberVisible] = useState(false);
   const [filterCheckedArray, setFilterCheckedArray] = useState<any>([
@@ -121,6 +124,12 @@ const WorkingTableHeader: React.FC = (prop) => {
   const chooseMemberHeader = (headIndex: number) => {
     dispatch(setHeaderIndex(headIndex));
     setViewVisible(false);
+    let newFilterObject: any = _.cloneDeep(filterObject);
+    let newTheme = _.cloneDeep(theme);
+    newTheme.filterObject.headerIndex = headIndex;
+    newFilterObject.headerIndex = headIndex;
+    dispatch(setTheme(newTheme));
+    dispatch(setFilterObject(newFilterObject));
   };
   useEffect(() => {
     if (memberArray) {
@@ -134,6 +143,8 @@ const WorkingTableHeader: React.FC = (prop) => {
   }, [memberArray, userKey, targetUserKey]);
   useEffect(() => {
     dispatch(setFilterObject(theme.filterObject));
+    // dispatch(setHeaderIndex(theme.filterObject.headerIndex));
+    // dispatch(setHeaderIndex(0));
     let filterCheckedArray: any = [];
     if (theme.filterObject.filterType.length > 0) {
       filterCheckedArray = checkedTitle.map((item: any) => {
@@ -158,7 +169,7 @@ const WorkingTableHeader: React.FC = (prop) => {
     //       filterType: ['过期', '今天', '已完成'],
     //     })
     //   );
-    dispatch(setHeaderIndex(0));
+    // dispatch(setHeaderIndex(0));
   }, [headerIndex]);
   const changeFilterCheck = (filterTypeText: string) => {
     let filterType = filterObject.filterType;
@@ -294,27 +305,84 @@ const WorkingTableHeader: React.FC = (prop) => {
         </div>
       ) : null}
       <div className="view-container">
+        <div
+          className="workingTableHeader-logo"
+          style={{ width: '68px' }}
+          onMouseEnter={() => {
+            setTabVisible(true);
+            setViewVisible(false);
+            setFilterVisible(false);
+          }}
+          onClick={() => {
+            setTabVisible(true);
+            setViewVisible(false);
+            setFilterVisible(false);
+          }}
+        >
+          {/* <img src={viewImg[memberHeaderIndex]} alt=""></img> */}
+          <Chip
+            size="small"
+            label={tabArray[tabIndex]}
+            className={classes.chip}
+          />
+          <DropMenu
+            visible={tabVisible}
+            dropStyle={{
+              width: '180px',
+              top: '60px',
+              left: '0px',
+              color: '#333',
+            }}
+            onClose={() => {
+              setTabVisible(false);
+            }}
+            title={'页面切换'}
+            closeType={1}
+          >
+            {tabArray.map((tabItem: any, tabIndex: number) => {
+              return (
+                <div
+                  className="viewTableHeader-logo"
+                  onClick={() => {
+                    chooseMemberHeader(tabIndex === 0 ? 0 : tabIndex + 6);
+                    setTabIndex(tabIndex);
+                  }}
+                  key={'viewTable' + tabIndex}
+                >
+                  {/* <img src={viewImgb[viewIndex]} alt=""></img> */}
+                  {tabItem}
+                </div>
+              );
+            })}
+          </DropMenu>
+        </div>
         {memberHeaderIndex < 7 ? (
-          <React.Fragment>
-            <div
-              className="workingTableHeader-logo"
-              style={{ width: '108px' }}
-              onMouseEnter={() => {
-                setViewVisible(true);
-              }}
-            >
-              <img src={viewImg[memberHeaderIndex]} alt=""></img>
-              <Chip
-                size="small"
-                label={viewArray[memberHeaderIndex]}
-                className={classes.chip}
-              />
-            </div>
+          <div
+            className="workingTableHeader-logo"
+            style={{ width: '108px' }}
+            onMouseEnter={() => {
+              setViewVisible(true);
+              setTabVisible(false);
+              setFilterVisible(false);
+            }}
+            onClick={() => {
+              setViewVisible(true);
+              setTabVisible(false);
+              setFilterVisible(false);
+            }}
+          >
+            <img src={viewImg[memberHeaderIndex]} alt=""></img>
+            <Chip
+              size="small"
+              label={viewArray[memberHeaderIndex]}
+              className={classes.chip}
+            />
             <DropMenu
               visible={viewVisible}
               dropStyle={{
                 width: '180px',
                 top: '60px',
+                left: memberHeaderIndex < 7 ? '70px' : '0px',
                 color: '#333',
               }}
               onClose={() => {
@@ -338,26 +406,32 @@ const WorkingTableHeader: React.FC = (prop) => {
                 );
               })}
             </DropMenu>
+          </div>
+        ) : null}
+
+        {memberHeaderIndex < 7 ? (
+          <React.Fragment>
             <div
               className="workingTableHeader-logo"
               onClick={() => {
                 setFilterVisible(true);
+                setTabVisible(false);
+                setViewVisible(false);
+              }}
+              onMouseEnter={() => {
+                setFilterVisible(true);
+                setTabVisible(false);
+                setViewVisible(false);
               }}
               style={{ width: '40px' }}
             >
               <img src={filterPng} alt="" />
             </div>
+
             {filterObject.groupKey ? (
               <Chip
                 size="small"
-                avatar={
-                  <Avatar
-                    alt=""
-                    src={
-                      filterObject.groupLogo
-                    }
-                  />
-                }
+                avatar={<Avatar alt="" src={filterObject.groupLogo} />}
                 onClick={() => {
                   setFilterVisible(true);
                 }}
@@ -369,14 +443,7 @@ const WorkingTableHeader: React.FC = (prop) => {
             {filterObject.creatorKey ? (
               <Chip
                 size="small"
-                avatar={
-                  <Avatar
-                    alt=""
-                    src={
-                      filterObject.creatorAvatar
-                    }
-                  />
-                }
+                avatar={<Avatar alt="" src={filterObject.creatorAvatar} />}
                 onClick={() => {
                   setFilterVisible(true);
                 }}
@@ -388,14 +455,7 @@ const WorkingTableHeader: React.FC = (prop) => {
             {filterObject.executorKey ? (
               <Chip
                 size="small"
-                avatar={
-                  <Avatar
-                    alt=""
-                    src={
-                      filterObject.executorAvatar
-                    }
-                  />
-                }
+                avatar={<Avatar alt="" src={filterObject.executorAvatar} />}
                 onClick={() => {
                   setFilterVisible(true);
                 }}
@@ -454,22 +514,22 @@ const WorkingTableHeader: React.FC = (prop) => {
                                 ( 近{fileInput}天 )
                               </div>
                             ) : (
-                                <div style={{ marginLeft: '8px' }}>
-                                  ( 近
-                                  <input
-                                    type="number"
-                                    value={fileInput}
-                                    onChange={(e) => {
-                                      setFileInput(e.target.value);
-                                    }}
-                                    onBlur={(e) => {
-                                      changeFileDay(parseInt(e.target.value));
-                                    }}
-                                    className="fileday"
-                                  />
+                              <div style={{ marginLeft: '8px' }}>
+                                ( 近
+                                <input
+                                  type="number"
+                                  value={fileInput}
+                                  onChange={(e) => {
+                                    setFileInput(e.target.value);
+                                  }}
+                                  onBlur={(e) => {
+                                    changeFileDay(parseInt(e.target.value));
+                                  }}
+                                  className="fileday"
+                                />
                                 天 )
-                                </div>
-                              )}
+                              </div>
+                            )}
                           </React.Fragment>
                         ) : null}
                       </div>
@@ -480,57 +540,6 @@ const WorkingTableHeader: React.FC = (prop) => {
             </DropMenu>
           </React.Fragment>
         ) : null}
-      </div>
-      <div
-        className="view-tab"
-        onClick={() => {
-          chooseMemberHeader(0);
-        }}
-        style={
-          memberHeaderIndex < 7
-            ? {
-              borderBottom: '3px solid #17B881',
-              // color: '#17B881',
-              marginLeft: '10px'
-            }
-            : { marginLeft: '10px' }
-        }
-      >
-        任务
-      </div>
-      |
-      <div
-        className="view-tab"
-        onClick={() => {
-          chooseMemberHeader(7);
-        }}
-        style={
-          memberHeaderIndex === 7
-            ? {
-              borderBottom: '3px solid #17B881',
-              // color: '#17B881',
-            }
-            : {}
-        }
-      >
-        日报
-      </div>
-      |
-      <div
-        className="view-tab"
-        onClick={() => {
-          chooseMemberHeader(8);
-        }}
-        style={
-          memberHeaderIndex === 8
-            ? {
-              borderBottom: '3px solid #17B881',
-              // color: '#17B881',
-            }
-            : {}
-        }
-      >
-        活力
       </div>
       {/* {headerIndex === 2 ? (
         <Tooltip title="群聊天">

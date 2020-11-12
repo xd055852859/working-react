@@ -1,23 +1,69 @@
 .showPage-container {
   width: 100%;
   height: 100%;
+  box-sizing: border-box;
+  color: #fff;
+  background-size: cover;
+  background-attachment: fixed;
 }
-
+.showPage-clock {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .showPage {
   width: 365px;
   height: 100%;
   position: fixed;
   top: 0px;
-  color: #fff;
+  padding: 0px 10px;
 }
-
+.showPage-bg1 {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: -1;
+}
+.showPage-bg2 {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  -webkit-filter: blur(8px);
+  filter: blur(8px);
+  z-index: -2;
+  /* background-color: rgba(0, 0, 0); */
+  /* background-image: url('https://cdn-icare.qingtime.cn/1596679987203_画板备份10.jpg'); */
+  background-size: cover;
+  background-attachment: fixed;
+}
+.showPage-b {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  /* -webkit-filter: grayscale(40%) blur(8px);
+  filter: grayscale(40%) blur(8px); */
+  z-index: -1;
+  background-color: rgba(0, 0, 0, 0.27);
+  /* background-image: url('https://cdn-icare.qingtime.cn/1596679987203_画板备份10.jpg'); */
+}
 .showPage-time {
-  width: 100%;
-  height: 370px;
+  width: 600px;
+  height: 600px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
+  position: absolute;
 }
 
 .showPage-time-title {
@@ -26,19 +72,29 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 60px;
+  font-size: 130px;
 }
 
 .showPage-time-subtitle {
   width: 100%;
   /* height: 25px; */
-  font-size: 15px;
-  /* display: flex;
-  justify-content: space-between;
-  align-items: center; */
+  font-size: 12px;
+  position: absolute;
+  bottom: 30px;
 }
-
-.showPage-time-subtitle>div {
+.showPage-time-prompt {
+  width: 100%;
+  /* height: 25px; */
+  font-size: 15px;
+  position: absolute;
+  text-align: center;
+  bottom: 15px;
+}
+.showPage-time-subtitle-top {
+  font-size: 25px;
+  margin-bottom: 5px;
+}
+.showPage-time-subtitle > div {
   text-align: center;
 }
 
@@ -46,48 +102,93 @@
   width: 25px;
   height: 25px;
   position: absolute;
-  top: 10px;
+  top: 22px;
   right: 10px;
   cursor: pointer;
 }
 
 .showPage-set {
-  width: 350px;
+  width: 260px;
   height: 100%;
   position: fixed;
   top: 0px;
   background-color: #fff;
-  padding: 10px 15px;
+  padding: 20px 15px;
   box-sizing: border-box;
   color: #333;
+  overflow: hidden;
 }
 
 .showPage-set-title {
   width: 100%;
   font-size: 16px;
-  margin-bottom: 5px;
+  margin-bottom: 20px;
   display: flex;
+  align-items: center;
   justify-content: space-between;
+  cursor: pointer;
 }
-
-.showPage-task-container {
-  height: calc(100% - 365px);
+.showPage-task-title {
+  height: 50px;
   width: 100%;
 }
-
+.showPage-task-container {
+  height: calc(100% - 50px);
+  width: 100%;
+}
+.contentHeader-set-container {
+  width: 528px;
+  height: 100%;
+  display: flex;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  z-index: 5;
+}
+.showPage-set-time {
+  display: flex;
+  align-items: center;
+}
+.showPage-set-time img {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+}
+.contentHeader-set-left {
+  width: 260px;
+  height: 100%;
+  padding: 8px 10px;
+  box-sizing: border-box;
+}
+.showPage-input {
+  position: absolute;
+  top: 15px;
+  left: 10px;
+  background-color: transparent;
+  width: 250px;
+  height: 32px;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  border-radius: 30px;
+  color: #fff;
+  padding: 0px 10px;
+  box-sizing: border-box;
+}
+.showPage-input::-webkit-input-placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
 @keyframes setRight {
   from {
     right: 0px;
   }
 
   to {
-    right: -350px;
+    right: -260px;
   }
 }
 
 @keyframes setLeft {
   from {
-    right: -350px;
+    right: -260px;
   }
 
   to {
@@ -97,7 +198,7 @@
 
 @keyframes showRight {
   from {
-    right: 350px;
+    right: 260px;
   }
 
   to {
@@ -111,6 +212,6 @@
   }
 
   to {
-    right: 350px;
+    right: 260px;
   }
 }

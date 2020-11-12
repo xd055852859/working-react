@@ -10,38 +10,36 @@
 
 .container {
   position: relative;
-  height: 250px;
-  width: 250px;
+  height: 600px;
+  width: 600px;
   border-radius: 50%;
   box-shadow: #353535 0px 0px 1px 0px;
   background: transparent;
-  border: 5px solid rgba(255, 255, 255, 0.7);
 }
 
 .container .second {
-  height: 100px;
+  height: 190px;
   width: 3px;
-  top: 24px;
-  left: 122px;
+  top: 112px;
+  left: 299px;
   background-color: #ff6363;
 }
 
 .container .minute {
-  height: 75px;
-  width: 7px;
-  top: 41px;
-  left: 114px;
-  background-color: rgba(255, 255, 255, 0.7);
+  height: 150px;
+  width: 5px;
+  top: 151px;
+  left: 297px;
+  background-color: rgba(255, 255, 255, 0.93);
 }
 
 .container .hour {
-  height: 60px;
-  width: 7px;
-  top: 60px;
-  left: 120px;
-  background-color: rgba(255, 255, 255, 0.7);
+  height: 110px;
+  width: 12px;
+  top: 191px;
+  left: 295px;
+  background-color: rgba(255, 255, 255, 1);
 }
-
 .container .second,
 .container .minute,
 .container .hour {
@@ -52,14 +50,15 @@
 }
 
 .container .center {
-  width: 2px;
-  height: 2px;
-  border-radius: 1px;
-  background-color: #ffffff;
+  width: 16px;
+  height: 16px;
+  border: 3px solid #393838;  
+  background: #D8D8D8;
   box-shadow: 0px 0px 3px 1px #8c8c8c;
   position: absolute;
-  top: 24px;
-  left: 24px;
+  top: 294px;
+  left: 294px;
+  border-radius: 50%;
 }
 
 .deTime .time {
@@ -87,12 +86,17 @@
 }
 
 .grad {
-  height: 10px;
-  width: 5px;
-  background-color: rgba(255, 255, 255, 0.7);
+  height: 7px;
+  width: 7px;
+  background-color: rgba(255, 255, 255, 0.4);
   position: absolute;
-  left: 119px;
-  top: 0px;
-  transform-origin: center 121px;
-  border-radius: 10px;
+  left: 295px;
+  top: 2px;
+  transform-origin: center 298px;
+  border-radius: 50%;
+}
+.grad:nth-child(3n) {
+  height: 10px;
+  width: 10px;
+  background-color: rgba(255, 255, 255, 0.8);
 }

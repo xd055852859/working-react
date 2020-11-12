@@ -38,10 +38,12 @@ import DropMenu from '../common/dropMenu';
 import Dialog from '../common/dialog';
 import TimeSet from '../common/timeSet';
 import Editor from '../common/Editor';
+import uploadFile from '../common/upload';
+
 interface TaskInfoProps {
   fatherTaskItem?: any;
   onClose?: any;
-  editFatherTask?: any
+  editFatherTask?: any;
 }
 // pick a date util library
 moment.locale('zh-cn');
@@ -86,6 +88,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const chooseKey = useTypedSelector((state) => state.task.chooseKey);
   const taskKey = useTypedSelector((state) => state.task.taskKey);
+  const uptoken = useTypedSelector((state) => state.auth.uploadToken);
   const titleRef: React.RefObject<any> = useRef();
   const taskInfo = useTypedSelector((state) => state.task.taskInfo);
   const taskInfoVisible = useTypedSelector(
@@ -235,15 +238,15 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       (taskInfo.groupRole &&
         taskInfo.groupRole > 0 &&
         taskInfo.groupRole < 4) ||
-      taskInfo.creatorKey === user._key ||
-      taskInfo.executorKey === user._key
+        taskInfo.creatorKey === user._key ||
+        taskInfo.executorKey === user._key
     );
     setCountDownTime(taskInfo.countDownTime);
     getTaskMemberArray(taskInfo.groupKey);
   };
   const getTaskMemberArray = async (groupKey: string) => {
     let taskMemberRes: any = null;
-    taskMemberRes = await api.member.getMember(groupKey,4);
+    taskMemberRes = await api.member.getMember(groupKey, 4);
     if (taskMemberRes.msg === 'OK') {
       setTaskMemberArray(taskMemberRes.result);
     }
@@ -441,22 +444,62 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       dispatch(setMessage(true, labelRes.msg, 'error'));
     }
   };
+  const saveTaskInfo = (type?: number) => {
+    let newTaskItem = _.cloneDeep(taskItem);
+    let closeState = false;
+    if (newTaskItem.content && type !== 2) {
+      let srcReg = /src=[\'\"]?([^\'\"]*)[\'\"]?/i;
+      let arr = newTaskItem.content.match(srcReg);
+      if (arr) {
+        arr.forEach(async (item: any, index: number) => {
+          if (item.indexOf('blob:') != -1) {
+            closeState = true;
+            let str = item.replace('src="', '').replace('"', '');
+            let img = new Image();
+            img.src = str;
+            let blob = await fetch(img.src).then((r) => r.blob());
+            if (blob) {
+              uploadFile.qiniuUpload(uptoken, img, blob, false, (url: any) => {
+                newTaskItem.content = newTaskItem.content.replace(
+                  item,
+                  'src="' + url + '"'
+                );
+              });
+            }
+            // newTaskItem.content = newTaskItem.content.replace(str, url);
+            // uploadFile.uploadImg(img, uptoken, mimeType, (url: any) => {
+            //   console.log(url);
+            // });
+          }
+        });
+      }
+    }
+    setTaskItem(newTaskItem);
+    if (closeState) {
+      dispatch(setMessage(true, '图片正在上传，请稍后', 'error'));
+      return;
+    }
+    dispatch(changeTaskInfoVisible(false));
+    if (onClose) {
+      onClose();
+    }
+    if (editState) {
+      dispatch(
+        editTask({ key: newTaskItem._key, ...newTaskItem }, headerIndex)
+      );
+      if (editFatherTask) {
+        editFatherTask(newTaskItem, 0);
+      }
+    }
+    if (type === 1) {
+      dispatch(setMessage(true, '备注保存成功', 'success'));
+    }
+  };
   return (
     // changeTaskInfoVisible
     <ClickAwayListener
       onClickAway={() => {
-        dispatch(changeTaskInfoVisible(false));
-        if (onClose) {
-          onClose();
-        }
-        if (editState) {
-          dispatch(editTask({ key: taskItem._key, ...taskItem }, headerIndex));
-          editFatherTask(taskItem);
-          // if (onClose) {
-          //   onClose();
-          // }
-          // dispatch(setMessage(true, '保存成功', 'success'));
-        }
+        saveTaskInfo();
       }}
     >
       <div className="taskInfo">
@@ -776,20 +819,8 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     alt=""
                     style={{ width: '12px', height: '12px' }}
                     onClick={() => {
-                      dispatch(changeTaskInfoVisible(false));
                       dispatch(setChooseKey(''));
-                      if (editState) {
-                        dispatch(
-                          editTask(
-                            { key: taskItem._key, ...taskItem },
-                            headerIndex
-                          )
-                        );
-                        editFatherTask(taskItem);
-                      }
-                      if (onClose) {
-                        onClose();
-                      }
+                      saveTaskInfo(2);
                     }}
                   />
                 </div>
@@ -949,46 +980,40 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
               <div className="taskInfo-item">
                 <div className="taskInfo-item-title">关注</div>
                 <div className="taskInfo-item-follow"></div>
-                {editable ? (
+                {editable && !localStorage.getItem('page') ? (
                   <Button
                     variant="contained"
                     color="primary"
                     className="editor-button"
                     onClick={() => {
-                      dispatch(
-                        editTask(
-                          { key: taskItem._key, ...taskItem },
-                          headerIndex
-                        )
-                      );
-                      dispatch(setMessage(true, '备注保存成功', 'success'));
+                      saveTaskInfo(1);
                       // dispatch(changeTaskInfoVisible(false));
-                      editFatherTask(taskItem);
                     }}
                   >
                     保存
                   </Button>
                 ) : null}
               </div>
-              <div
-                onClick={() => {
-                  setEditable(true);
-                }}
-                style={
-                  !editable ? { cursor: 'pointer', margin: '30px 0px' } : {}
-                }
-              >
-                {!editable ? (
-                  taskItem.content ? (
-                    <Editor
-                      // editorHeight={'300px'}
-                      data={taskItem.content}
-                      editable={editable}
-                    />
-                  ) : (
+              {!localStorage.getItem('page') ? (
+                <div
+                  onClick={() => {
+                    setEditable(true);
+                  }}
+                  style={
+                    !editable ? { cursor: 'pointer', margin: '30px 0px' } : {}
+                  }
+                >
+                  {!editable ? (
+                    taskItem.content ? (
+                      <Editor
+                        // editorHeight={'300px'}
+                        data={taskItem.content}
+                        editable={editable}
+                      />
+                    ) : (
                       <div>请点击输入备注信息</div>
                     )
-                ) : (
+                  ) : (
                     <Editor
                       // editorHeight={'300px'}
                       data={taskItem.content}
@@ -996,7 +1021,8 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                       editable={editable}
                     />
                   )}
-              </div>
+                </div>
+              ) : null}
               <div className="taskInfo-comment">
                 <div className="taskInfo-comment-tabs">
                   <div
@@ -1007,9 +1033,9 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     style={
                       commentIndex === 0
                         ? {
-                          borderBottom: '1px solid #17B881',
-                          color: '#17B881',
-                        }
+                            borderBottom: '1px solid #17B881',
+                            color: '#17B881',
+                          }
                         : {}
                     }
                   >
@@ -1023,9 +1049,9 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     style={
                       commentIndex === 1
                         ? {
-                          borderBottom: '1px solid #17B881',
-                          color: '#17B881',
-                        }
+                            borderBottom: '1px solid #17B881',
+                            color: '#17B881',
+                          }
                         : {}
                     }
                   >
@@ -1079,24 +1105,24 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     </div>
                   </React.Fragment>
                 ) : (
-                    <div
-                      className="taskInfo-comment-tab"
-                      onScroll={scrollHistoryLoading}
-                    >
-                      {taskHistoryArray.map(
-                        (historyItem: any, historyIndex: number) => {
-                          return (
-                            <div
-                              key={'history' + historyIndex}
-                              className="taskInfo-comment-historyLog"
-                            >
-                              <div className="point"></div> {historyItem.log}
-                            </div>
-                          );
-                        }
-                      )}
-                    </div>
-                  )}
+                  <div
+                    className="taskInfo-comment-tab"
+                    onScroll={scrollHistoryLoading}
+                  >
+                    {taskHistoryArray.map(
+                      (historyItem: any, historyIndex: number) => {
+                        return (
+                          <div
+                            key={'history' + historyIndex}
+                            className="taskInfo-comment-historyLog"
+                          >
+                            <div className="point"></div> {historyItem.log}
+                          </div>
+                        );
+                      }
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </React.Fragment>

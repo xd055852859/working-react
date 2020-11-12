@@ -253,17 +253,14 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     //   moment().subtract(1, 'days').startOf('day').valueOf(),
     //   moment().subtract(1, 'days').endOf('day').valueOf()
     // );
-    getDiaryNote(
-      moment().startOf('day').valueOf(),
-      newDiaryKey
-    );
+    getDiaryNote(moment().startOf('day').valueOf(), newDiaryKey);
     setDateArray(newDateArray);
     setDayCanlendarArray(newDayCanlendarArray);
     newPersonArray.unshift({ key: '全部', avatar: '', name: '全部' });
     setPersonArray(newPersonArray);
   };
   const getDiaryNote = async (startTime: number, diaryKey: any) => {
-    console.log("???????????",moment(startTime).format('YYYY-MM-DD'));
+    console.log('???????????', moment(startTime).format('YYYY-MM-DD'));
     if (diaryKey) {
       let noteRes: any = await api.auth.getNote(diaryKey, startTime);
       if (noteRes.msg == 'OK') {
@@ -517,31 +514,6 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
   };
   return (
     <div className="diary">
-      {headerIndex === 1 ? (
-        <React.Fragment>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              saveNote();
-            }}
-            className="save-button"
-          >
-            保存
-          </Button>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              addTask();
-            }}
-            className="save-button"
-            style={{ right: '70px' }}
-          >
-            添加任务
-          </Button>
-        </React.Fragment>
-      ) : null}
       <div className="diary-bg">
         <div className="diary-menu">
           <div className="diary-menu-title">目录</div>
@@ -582,7 +554,35 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
         </div>
         {dayCanlendarArray.length > 0 ? (
           <div className="diary-container">
-            {headerIndex != 3 ? <h2>一、任务看板</h2> : null}
+            {headerIndex != 3 ? (
+              <h2>
+                一、任务看板
+                {headerIndex === 1 ? (
+                  <React.Fragment>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        saveNote();
+                      }}
+                      className="save-button"
+                    >
+                      保存
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        addTask();
+                      }}
+                      className="save-button"
+                    >
+                      添加任务
+                    </Button>
+                  </React.Fragment>
+                ) : null}
+              </h2>
+            ) : null}
             {diaryKey !== '全部' ? (
               <React.Fragment>
                 <div className="diary-container-title">1. 执行任务</div>

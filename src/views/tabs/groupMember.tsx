@@ -328,6 +328,17 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }
   };
+  const deleteJoinMember = async (joinItem: any, joinIndex: number) => {
+    let newJoinMemberList = _.cloneDeep(joinMemberList);
+    let memberRes: any = await api.group.deleteApplyJoinGroup(joinItem._key);
+    if (memberRes.msg === 'OK') {
+      dispatch(setMessage(true, '拒绝审核成功', 'success'));
+      newJoinMemberList.splice(joinIndex, 1);
+      setJoinMemberList(newJoinMemberList);
+    } else {
+      dispatch(setMessage(true, memberRes.msg, 'error'));
+    }
+  };
   const addMember = async (addItem: any, addIndex: number) => {
     let newSearchMemberList = _.cloneDeep(searchMemberList);
     let memberRes: any = await api.group.addGroupMember(mainGroupKey, [
@@ -462,9 +473,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                       <div className="group-member-img">
                         <img
                           src={
-                            mainItem.avatar
-                              ? mainItem.avatar
-                              : defaultPersonPng
+                            mainItem.avatar ? mainItem.avatar : defaultPersonPng
                           }
                           alt=""
                         />
@@ -473,16 +482,28 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                         {mainItem.nickName}
                       </div>
                     </div>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => {
-                        addJoinMember(mainItem, mainIndex);
-                      }}
-                      className={classes.addButton}
-                    >
-                      通过审核
-                    </Button>
+                    <div className="group-member-item-button">
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => {
+                          addJoinMember(mainItem, mainIndex);
+                        }}
+                        className={classes.addButton}
+                        style={{ marginRight: '5px' }}
+                      >
+                        通过
+                      </Button>
+                      <Button
+                        variant="contained"
+                        onClick={() => {
+                          deleteJoinMember(mainItem, mainIndex);
+                        }}
+                        className={classes.addButton}
+                      >
+                        拒绝
+                      </Button>
+                    </div>
                   </div>
                 );
               })}
@@ -499,11 +520,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                 <div className="group-member-item-container">
                   <div className="group-member-img">
                     <img
-                      src={
-                        newItem.avatar
-                          ? newItem.avatar
-                          : defaultPersonPng
-                      }
+                      src={newItem.avatar ? newItem.avatar : defaultPersonPng}
                       alt=""
                     />
                   </div>

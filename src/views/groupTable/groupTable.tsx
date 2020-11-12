@@ -2,10 +2,13 @@ import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import './groupTable.css';
+import { getGroupTask } from '../../redux/actions/taskActions';
 import {
   getGroupMember,
   setHeaderIndex,
 } from '../../redux/actions/memberActions';
+import { changeStartId, getGroupInfo } from '../../redux/actions/groupActions';
+import { getTheme } from '../../redux/actions/authActions';
 // import api from '../../services/api';
 import GroupTableHeader from './groupTableHeader';
 import GroupTableGroup from './groupTableGroup';
@@ -27,18 +30,34 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
     (state) => state.member.memberHeaderIndex
   );
   const groupKey = useTypedSelector((state) => state.group.groupKey);
+  const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const moveState = useTypedSelector((state) => state.common.moveState);
-
+  const groupMemberItem = useTypedSelector(
+    (state) => state.member.groupMemberItem
+  );
   useEffect(() => {
     if (user && user._key && groupKey) {
-      dispatch(getGroupMember(groupKey,4));
+      dispatch(getGroupMember(groupKey, 4));
+      dispatch(getGroupInfo(groupKey));
+      dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+      dispatch(getTheme());
     }
   }, [user, groupKey]);
   useEffect(() => {
+    if (groupInfo) {
+      dispatch(changeStartId(groupInfo.taskTreeRootCardKey));
+    }
+  }, [groupInfo]);
+  useEffect(() => {
     if (groupKey) {
+      // if (!groupMemberItem.config.headerIndex) {
+      //   groupMemberItem.config.headerIndex = 0;
+      // }
+      // dispatch(setHeaderIndex(groupMemberItem.config.headerIndex));
       dispatch(setHeaderIndex(0));
     }
-  }, [groupKey]);
+  }, [groupKey, headerIndex]);
+
   return (
     <div
       className="groupTable"
@@ -51,19 +70,24 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
       }
     >
       <GroupTableHeader />
-      <div className="groupTableContent">
+      <div
+        className="groupTableContent"
+        style={memberHeaderIndex === 4 ? { backgroundColor: '#f5f5f5' } : {}}
+      >
         {memberHeaderIndex === 0 ? <GroupTableGroup /> : null}
         {memberHeaderIndex === 1 ? <Grid gridState={true} /> : null}
         {memberHeaderIndex === 2 ? <Grid gridState={false} /> : null}
         {memberHeaderIndex === 3 ? <WorkingCalendar /> : null}
-        {memberHeaderIndex === 4 ? <GroupTableTree /> : null}
+        {memberHeaderIndex === 4 ? (
+          <GroupTableTree />
+        ) : //
+        null}
         {memberHeaderIndex === 7 ? <WorkingReport /> : null}
         {memberHeaderIndex === 8 ? <GroupTableData /> : null}
         {memberHeaderIndex === 9 ? <GroupTableDocument /> : null}
         {memberHeaderIndex === 10 ? (
           <Vitality vitalityType={headerIndex} vitalityKey={groupKey} />
         ) : null}
-       
       </div>
     </div>
   );

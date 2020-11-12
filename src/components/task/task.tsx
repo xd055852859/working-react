@@ -3,18 +3,17 @@ import { useTypedSelector } from '../../redux/reducer/RootState';
 import { TextField, Button, ClickAwayListener } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
-import { } from '../../redux/actions/taskActions';
 import {
   setTaskKey,
   editTask,
-  getSelfTask,
   getWorkingTableTask,
   getGroupTask,
   setChooseKey,
-  changeTaskInfoVisible,
   setTaskInfo,
 } from '../../redux/actions/taskActions';
+import { setHeaderIndex } from '../../redux/actions/memberActions';
 import { setMessage } from '../../redux/actions/commonActions';
+import { changeStartId } from '../../redux/actions/groupActions';
 import moment from 'moment';
 import _ from 'lodash';
 import './task.css';
@@ -70,8 +69,8 @@ const Task: React.FC<TaskProps> = (props) => {
   } = props;
   const taskKey = useTypedSelector((state) => state.task.taskKey);
   // const addKey = useTypedSelector((state) => state.task.addKey);
-
   const user = useTypedSelector((state) => state.auth.user);
+  const theme = useTypedSelector((state) => state.auth.theme);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
@@ -235,10 +234,11 @@ const Task: React.FC<TaskProps> = (props) => {
     // titleRef.current.blur();
     if (taskKey !== '') {
       if (editState) {
+        console.log(newTaskDetail);
         dispatch(
           editTask(
             {
-              key: taskKey,
+              key: newTaskDetail._key,
               ...newTaskDetail,
             },
             headerIndex
@@ -298,11 +298,12 @@ const Task: React.FC<TaskProps> = (props) => {
   const changeExecutor = (
     executorKey: number | string,
     executorName: string,
-    executorAvatar: string, index: number
+    executorAvatar: string,
+    index: number
   ) => {
     let newTaskDetail = _.cloneDeep(taskDetail);
     let newTaskMemberArray = _.cloneDeep(taskMemberArray);
-    let executorItem = _.cloneDeep(newTaskMemberArray[index])
+    let executorItem = _.cloneDeep(newTaskMemberArray[index]);
     if (newTaskDetail.executorKey === executorKey) {
       newTaskDetail.executorKey = '';
       newTaskDetail.executorName = '';
@@ -375,27 +376,38 @@ const Task: React.FC<TaskProps> = (props) => {
   const setNewDetail = (taskDetail: any) => {
     if (editRole) {
       setEditState(true);
-      let newTaskItem = {};
-      newTaskItem = _.cloneDeep(taskDetail);
-      setTaskDetail(newTaskItem);
+      setTaskDetail(_.cloneDeep(taskDetail));
     }
   };
   const plusTask = async () => {
+    let newTaskDetail = _.cloneDeep(taskDetail);
     let addTaskRes: any = await api.task.addTask(
-      groupInfo._key,
-      groupInfo.groupRole,
-      taskDetail.labelKey,
-      taskDetail.executorKey,
-      addInput,
+      newTaskDetail.groupKey,
+      newTaskDetail.groupRole,
+      newTaskDetail.labelKey,
+      newTaskDetail.executorKey,
       '',
-      taskIndex ? taskIndex + 1 : 1
+      '',
+      taskIndex ? taskIndex + 1 : 0
     );
     if (addTaskRes.msg === 'OK') {
+      console.log('taskIndex', taskIndex);
+      await api.task.editTask({
+        key: newTaskDetail._key,
+        ...newTaskDetail,
+      });
       setAddTaskVisible(false);
       setAddInput('');
-      setChooseKey(addTaskRes.result._key);
+      // setChooseKey(addTaskRes.result._key);
+      setTaskKey(addTaskRes.result._key);
       dispatch(setMessage(true, '新增成功', 'success'));
-      dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+      if (headerIndex == 3) {
+        dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+      } else {
+        dispatch(
+          getWorkingTableTask(1, user._key, 1, [0, 1, 2], theme.fileDay)
+        );
+      }
     } else {
       dispatch(setMessage(true, addTaskRes.msg, 'error'));
     }
@@ -422,8 +434,8 @@ const Task: React.FC<TaskProps> = (props) => {
                   ? 'transparent'
                   : taskDetail.finishPercent === 0 ||
                     taskDetail.finishPercent === 10
-                    ? 'rgb(255,255,255,0.95)'
-                    : 'rgb(229,231,234,0.9)',
+                  ? 'rgb(255,255,255,0.95)'
+                  : 'rgb(229,231,234,0.9)',
                 // opacity:
                 //   taskDetail.finishPercent === 0 ||
                 //   taskDetail.finishPercent === 10
@@ -503,8 +515,8 @@ const Task: React.FC<TaskProps> = (props) => {
                             ? unfinishPng
                             : unfinishbPng
                           : bottomtype
-                            ? finishPng
-                            : finishbPng
+                          ? finishPng
+                          : finishbPng
                       }
                     />
                   </div>
@@ -654,10 +666,48 @@ const Task: React.FC<TaskProps> = (props) => {
                               : '',
                         }}
                         onBlur={cancelTask}
+                        onKeyDown={(e: any) => {
+                          if (e.keyCode === 13) {
+                            plusTask(); // 发送文本
+                            e.preventDefault(); // 阻止浏览器默认换行操作
+                            return false;
+                          }
+                        }}
                         className="field-textarea"
                       ></textarea>
                     </div>
                   </div>
+                  {taskDetail.path1 &&
+                  (taskDetail.type === 6 || taskDetail.type === 1) ? (
+                    <div
+                      className="taskItem-path"
+                      style={{ color: bottomtype ? '#fff' : '#888' }}
+                    >
+                      {taskDetail.path1.map(
+                        (pathItem: any, pathIndex: number) => {
+                          return (
+                            <React.Fragment key={'path' + pathIndex}>
+                              <span
+                                onClick={() => {
+                                  if (headerIndex === 3) {
+                                    dispatch(changeStartId(pathItem._key));
+                                    dispatch(setHeaderIndex(4));
+                                  }
+                                }}
+                              >
+                                {pathItem.title}
+                              </span>
+                              <span>
+                                {pathIndex !== taskDetail.path1.length - 1
+                                  ? ' ⇀ '
+                                  : ''}
+                              </span>
+                            </React.Fragment>
+                          );
+                        }
+                      )}
+                    </div>
+                  ) : null}
                   {!bottomtype && !myState ? (
                     <div className="taskItem-footer">
                       <div className="taskItem-footer-left">
@@ -669,10 +719,10 @@ const Task: React.FC<TaskProps> = (props) => {
                                 : ''}
                             </span>
                           ) : (
-                              <span style={{ flexShrink: 0 }}>
-                                {taskDetail.groupName.split('_')[0]}
-                              </span>
-                            )}
+                            <span style={{ flexShrink: 0 }}>
+                              {taskDetail.groupName.split('_')[0]}
+                            </span>
+                          )}
                           <span style={{ flexShrink: 0 }}>
                             {taskDetail.creatorName.length > 3
                               ? taskDetail.creatorName.substring(0, 3) + '...'
@@ -681,7 +731,7 @@ const Task: React.FC<TaskProps> = (props) => {
                           <span>⇀</span>
                           <span style={{ flexShrink: 0 }}>
                             {taskDetail.executorName &&
-                              taskDetail.executorName.length > 3
+                            taskDetail.executorName.length > 3
                               ? taskDetail.executorName.substring(0, 3) + '...'
                               : taskDetail.executorName}
                           </span>
@@ -725,7 +775,7 @@ const Task: React.FC<TaskProps> = (props) => {
                                       key={'taskMember' + taskMemberIndex}
                                       style={
                                         taskDetail.executorKey ===
-                                          taskMemberItem.userId
+                                        taskMemberItem.userId
                                           ? { background: '#F0F0F0' }
                                           : {}
                                       }
@@ -739,9 +789,21 @@ const Task: React.FC<TaskProps> = (props) => {
                                       }}
                                     >
                                       <div className="task-executor-dropMenu-left">
-                                        <div className="task-executor-dropMenu-img" style={taskDetail.followUKeyArray.indexOf(
-                                          taskMemberItem.userId
-                                        ) !== -1 || taskDetail.executorKey === taskMemberItem.userId || taskDetail.creatorKey === taskMemberItem.userId ? { border: '3px solid #17b881' } : {}}>
+                                        <div
+                                          className="task-executor-dropMenu-img"
+                                          style={
+                                            (taskDetail.followUKeyArray &&
+                                              taskDetail.followUKeyArray.indexOf(
+                                                taskMemberItem.userId
+                                              ) !== -1) ||
+                                            taskDetail.executorKey ===
+                                              taskMemberItem.userId ||
+                                            taskDetail.creatorKey ===
+                                              taskMemberItem.userId
+                                              ? { border: '3px solid #17b881' }
+                                              : {}
+                                          }
+                                        >
                                           <img
                                             src={
                                               taskMemberItem.avatar
@@ -750,20 +812,25 @@ const Task: React.FC<TaskProps> = (props) => {
                                             }
                                             onClick={(e: any) => {
                                               e.stopPropagation();
-                                              changeFollow(taskMemberItem.userId);
+                                              changeFollow(
+                                                taskMemberItem.userId
+                                              );
                                             }}
                                           />
                                         </div>
                                         <div>{taskMemberItem.nickName}</div>
                                       </div>
-                                      {taskDetail.executorKey === taskMemberItem.userId ? <img
-                                        src={checkPersonPng}
-                                        alt=""
-                                        style={{
-                                          width: '20px',
-                                          height: '12px',
-                                        }}
-                                      /> : null}
+                                      {taskDetail.executorKey ===
+                                      taskMemberItem.userId ? (
+                                        <img
+                                          src={checkPersonPng}
+                                          alt=""
+                                          style={{
+                                            width: '20px',
+                                            height: '12px',
+                                          }}
+                                        />
+                                      ) : null}
                                     </div>
                                   );
                                 }
@@ -775,21 +842,21 @@ const Task: React.FC<TaskProps> = (props) => {
 
                       <div className="taskItem-icon-group">
                         {editRole &&
-                          headerIndex === 3 &&
-                          memberHeaderIndex === 0 ? (
-                            <div
-                              className="taskItem-check-icon"
-                              onClick={() => {
-                                setAddTaskVisible(true);
-                              }}
-                            >
-                              <img
-                                src={taskAddPng}
-                                alt=""
-                                style={{ height: '18px', width: '18px' }}
-                              />
-                            </div>
-                          ) : null}
+                        headerIndex === 3 &&
+                        memberHeaderIndex === 0 ? (
+                          <div
+                            className="taskItem-check-icon"
+                            onClick={() => {
+                              setAddTaskVisible(true);
+                            }}
+                          >
+                            <img
+                              src={taskAddPng}
+                              alt=""
+                              style={{ height: '18px', width: '18px' }}
+                            />
+                          </div>
+                        ) : null}
                         {taskDetail.importantStatus ? (
                           <div
                             className="taskItem-check-icon"
@@ -805,17 +872,17 @@ const Task: React.FC<TaskProps> = (props) => {
                             />
                           </div>
                         ) : (
-                            <div className="taskItem-check-icon">
-                              <img
-                                src={unimportantPng}
-                                alt="不重要"
-                                onClick={() => {
-                                  changeImportant(1);
-                                }}
-                                style={{ height: '18px', width: '19px' }}
-                              />
-                            </div>
-                          )}
+                          <div className="taskItem-check-icon">
+                            <img
+                              src={unimportantPng}
+                              alt="不重要"
+                              onClick={() => {
+                                changeImportant(1);
+                              }}
+                              style={{ height: '18px', width: '19px' }}
+                            />
+                          </div>
+                        )}
                         {editRole ? (
                           <div
                             className="taskItem-check-icon"

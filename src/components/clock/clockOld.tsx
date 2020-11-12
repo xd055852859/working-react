@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './clock.css';
+import './clockOld.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import _ from 'lodash';
@@ -21,22 +21,29 @@ const Clock: React.FC<ClockProps> = (props) => {
     updateTime();
     timer = setInterval(() => {
       updateTime();
-    }, 60000);
+    }, 100);
     setTimer(timer);
     return () => {
       clearInterval(timer);
     };
   }, []);
   const updateTime = () => {
-    // let secAngle = (moment().second() + moment().millisecond() / 1000) * 6;
-    let minAngle = moment().minutes() * 6 + secAngle / 60;
-    let hourAngle = (moment().hour() % 12) * 30 + minAngle / 12;
+    const dom: any = document.querySelector('.second');
+    let newSecAngle = (moment().second() + moment().millisecond() / 1000) * 6;
+    let newMinAngle = moment().minutes() * 6 + newSecAngle / 60;
+    let newHourAngle = (moment().hour() % 12) * 30 + newMinAngle / 12;
     let transition: any = TRANSITION;
     //  当秒针走到 0 的时候 角度其实是变小了 所以会倒着转 需要暂时删除 transition
-    if (secAngle > secAngle) transition = null;
-    setHourAngle(hourAngle);
-    setMinAngle(minAngle);
-    // setSecAngle(secAngle);
+    if (dom) {
+      if (newSecAngle > 358) {
+        dom.style.display = 'none';
+      } else {
+        dom.style.display = 'block';
+      }
+    }
+    setHourAngle(newHourAngle);
+    setMinAngle(newMinAngle);
+    setSecAngle(newSecAngle);
     setTransition(transition);
   };
   const leadingZero = (number: number) => {
@@ -62,13 +69,13 @@ const Clock: React.FC<ClockProps> = (props) => {
         className="hour"
         style={{ transform: 'rotateZ(' + hourAngle + 'deg)' }}
       ></div>
-      {/* <div
+      <div
         className="second"
         style={{
           transition: transition,
           transform: 'rotateZ(' + secAngle + 'deg)',
         }}
-      ></div> */}
+      ></div>
       <div className="center"></div>
     </div>
     // </div>

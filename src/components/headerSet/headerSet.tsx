@@ -3,13 +3,7 @@ import './headerSet.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useLocation, useHistory } from 'react-router-dom';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import {
-  TextField,
-  Button,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-} from '@material-ui/core';
+import { TextField, Button } from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux';
 import _ from 'lodash';
@@ -20,10 +14,12 @@ import DropMenu from '../common/dropMenu';
 import Tooltip from '../common/tooltip';
 import ClockIn from '../clockIn/clockIn';
 import Chat from '../../views/chat/chat';
+import HeaderBg from './headerBg';
 import Task from '../task/task';
 import UserCenter from '../userCenter/userCenter';
 import MessageBoard from '../../views/board/messageBoard';
-import { setTheme, getThemeBg } from '../../redux/actions/authActions';
+import GroupCreate from '../../views/tabs/groupCreate';
+import { setTheme } from '../../redux/actions/authActions';
 import {
   setMessage,
   setUnMessageNum,
@@ -35,6 +31,7 @@ import set1Png from '../../assets/img/set1.png';
 import set2Png from '../../assets/img/set2.png';
 import set3Png from '../../assets/img/set3.png';
 import set4Png from '../../assets/img/set4.png';
+import set5Png from '../../assets/img/set5.png';
 import rightArrowPng from '../../assets/img/rightArrow.png';
 import leftArrowPng from '../../assets/img/leftArrow.png';
 import logoutPng from '../../assets/img/logout.png';
@@ -79,10 +76,8 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const classes = useStyles();
   const user = useTypedSelector((state) => state.auth.user);
   const theme = useTypedSelector((state) => state.auth.theme);
-  const themeBg = useTypedSelector((state) => state.auth.themeBg);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const groupArray = useTypedSelector((state) => state.group.groupArray);
-  const themeBgTotal = useTypedSelector((state) => state.auth.themeBgTotal);
 
   const memberArray = useTypedSelector((state) => state.member.memberArray);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
@@ -111,30 +106,11 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const [userVisible, setUserVisible] = useState(false);
   const [imgBigArr2, setImgBigArr2] = useState<any>([]);
   const [moveState, setMoveState] = useState('');
+  const [moveType, setMoveType] = useState(0);
   const [chooseWallKey, setChooseWallKey] = useState('');
-  const [bgPage, setBgPage] = useState(1);
+
   const canvasRef: React.RefObject<any> = useRef();
-  const color1 = [
-    '#3C3C3C',
-    '#46558C',
-    '#9C5D9E',
-    '#C14C6B',
-    '#C14F4B ',
-    '#D19235',
-    '#29835D',
-    '#24807B',
-    '#68767F',
-  ];
-  const color2 = [
-    '#DFEDF9',
-    '#F2E7F9',
-    '#FFE3E8',
-    '#F9E8DF',
-    '#FAE8CD',
-    '#D5F2E6',
-    '#D2F1F1',
-    '#E7ECF0',
-  ];
+
   // const imgBigArr2 = [
   // 'https://cdn-icare.qingtime.cn/1596679428976_8Big@1x.png',
   // 'https://cdn-icare.qingtime.cn/1596679446272_9Big@1x.png',
@@ -192,34 +168,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     newTheme[type] = newTheme[type] ? false : true;
     dispatch(setTheme(newTheme));
   };
-  const changeRandomType = (value: string) => {
-    let newTheme = _.cloneDeep(theme);
-    newTheme.randomType = value;
-    dispatch(setTheme(newTheme));
-  };
-  const changeBg = (type: string, value: any) => {
-    let newTheme = _.cloneDeep(theme);
-    if (type === 'backgroundImg') {
-      let img = new Image();
-      img.src = value.url;
-      // img.crossOrigin = 'anonymous';
-      // 确定图片加载完成后再进行背景图片切换
-      img.onload = function () {
-        // format.formatColor(canvasRef.current, img);
-        newTheme.backgroundImg = value.url;
-        newTheme.backgroundColor = '';
-        newTheme.grayPencent = value.color ? value.color / 900 : 0;
-        // newTheme.grayPencent = 0;
-        dispatch(setTheme(newTheme));
-        api.auth.viewWallPapers(value._key);
-      };
-    } else {
-      newTheme.backgroundImg = '';
-      newTheme.backgroundColor = value;
-      newTheme.grayPencent = 0;
-      dispatch(setTheme(newTheme));
-    }
-  };
+
   const searchTask = () => {
     if (searchInput !== '') {
       // this.getSearchList({ param: { name: this.searchInput }, type: 1 })
@@ -299,32 +248,6 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     dispatch(setMessage(true, '退出登录成功', 'success'));
     history.push('/bootpage');
   };
-  const scrollBgLoading = (e: any) => {
-    let newPage = bgPage;
-    //文档内容实际高度（包括超出视窗的溢出部分）
-    let scrollHeight = e.target.scrollHeight;
-    //滚动条滚动距离
-    let scrollTop = e.target.scrollTop;
-    //窗口可视范围高度
-    let clientHeight = e.target.clientHeight;
-    console.log(themeBgTotal);
-    console.log(clientHeight + scrollTop, scrollHeight);
-    console.log(clientHeight + scrollTop >= scrollHeight);
-    console.log(themeBg.length < themeBgTotal);
-    console.log(
-      clientHeight + scrollTop >= scrollHeight && themeBg.length < themeBgTotal
-    );
-    if (
-      clientHeight + scrollTop + 1 >= scrollHeight &&
-      themeBg.length < themeBgTotal
-    ) {
-      newPage = newPage + 1;
-      console.log(newPage);
-      dispatch(getThemeBg(newPage));
-      setBgPage(newPage);
-    }
-  };
-
   return (
     <React.Fragment>
       <div className="contentHeader-set">
@@ -476,7 +399,12 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           dialogStyle={{
             position: 'fixed',
             width: '260px',
-            height: moveState === 'right' ? 'calc(100% - 70px)' : '460px',
+            height:
+              moveState === 'right'
+                ? moveType
+                  ? '295px'
+                  : 'calc(100% - 70px)'
+                : '520px',
             top: '65px',
             left: 'calc(100% - 260px)',
             overflow: 'hidden',
@@ -507,7 +435,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                     // animationFillMode: 'forwards',
                     left: '0px',
                   }
-                : { left: '0px', height: '460px' }
+                : { left: '0px', height: '520px' }
             }
           >
             <div className="contentHeader-set-left">
@@ -525,6 +453,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                 className="contentHeader-set-item"
                 onClick={() => {
                   setMoveState('right');
+                  setMoveType(0);
                 }}
                 style={bgVisible ? { backgroundColor: '#f0f0f0' } : {}}
               >
@@ -558,6 +487,40 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                         height: '25px',
                       }}
                     ></div>
+                    <img
+                      src={rightArrowPng}
+                      alt=""
+                      style={{
+                        width: '7px',
+                        height: '11px',
+                        marginLeft: '5px',
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div
+                className="contentHeader-set-item"
+                onClick={() => {
+                  setMoveState('right');
+                  setMoveType(1);
+                }}
+                style={bgVisible ? { backgroundColor: '#f0f0f0' } : {}}
+              >
+                <div className="contentHeader-set-item-title contentHeader-set-item-bg">
+                  <div className="contentHeader-set-item-bg-info">
+                    <img
+                      src={set5Png}
+                      alt=""
+                      style={{
+                        width: '18px',
+                        height: '18px',
+                        marginRight: '10px',
+                      }}
+                    />
+                    <div>项目模板</div>
+                  </div>
+                  <div className="bg-item-right">
                     <img
                       src={rightArrowPng}
                       alt=""
@@ -712,9 +675,9 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                 />
               </Dialog>
             </div>
-            <div className="bg">
-              <div className="bg-header">
-                <div>
+            {moveType ? (
+              <div className="bg groupCreate">
+                <div className="groupCreate-header">
                   <img
                     src={leftArrowPng}
                     alt=""
@@ -727,137 +690,16 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                       setMoveState('left');
                     }}
                   />
-                  壁纸设置
+                  项目模板
                 </div>
-                <div>
-                  <Switch
-                    checked={theme.randomVisible ? true : false}
-                    onChange={() => {
-                      changeBoard('randomVisible');
-                    }}
-                    name="checkedD"
-                    inputProps={{ 'aria-label': 'secondary checkbox' }}
-                  />
-                </div>
+                <GroupCreate />
               </div>
-              {theme.randomVisible ? (
-                <div
-                  className="contentHeader-set-item"
-                  style={{ margin: '30px 0px 0px 0px' }}
-                >
-                  <div className="contentHeader-set-item-title">
-                    <img
-                      src={set2Png}
-                      alt=""
-                      style={{
-                        width: '15px',
-                        height: '17px',
-                        marginRight: '10px',
-                      }}
-                    />
-                    <div>更新频率</div>
-                  </div>
-                  <div className="contentHeader-set-item-radio">
-                    <input
-                      type="radio"
-                      name="randomType"
-                      value={'1'}
-                      onChange={() => {
-                        changeRandomType('1');
-                      }}
-                      checked={theme.randomType === '1'}
-                    />
-                    分钟
-                    <input
-                      type="radio"
-                      name="randomType"
-                      value={'2'}
-                      onChange={() => {
-                        changeRandomType('2');
-                      }}
-                      checked={theme.randomType === '2'}
-                    />
-                    小时
-                    <input
-                      type="radio"
-                      name="randomType"
-                      value={'3'}
-                      onChange={() => {
-                        changeRandomType('3');
-                      }}
-                      checked={theme.randomType === '3'}
-                    />
-                    日
-                  </div>
-                </div>
-              ) : null}
-              <div
-                className="bg-title"
-                style={{ marginTop: theme.randomVisible ? '10px' : '40px' }}
-              >
-                颜色
-              </div>
-              <div className="bg-container">
-                {color1.map((color1Item: any, color1Index: number) => {
-                  return (
-                    <div
-                      style={{
-                        backgroundColor: color1Item,
-                        border:
-                          theme.backgroundColor === color1Item
-                            ? '3px solid #87B940'
-                            : 'transparent',
-                      }}
-                      key={'color1' + color1Index}
-                      className="bg-item"
-                      onClick={() => {
-                        changeBg('backgroundColor', color1Item);
-                      }}
-                    >
-                      {theme.backgroundColor === color1Item ? (
-                        <div className="bg-point"></div>
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="bg-title">壁纸</div>
-              <div
-                className="bg-container"
-                style={{ height: 'calc(100% - 225px)', overflow: 'auto' }}
-                onScroll={scrollBgLoading}
-              >
-                {themeBg.map((imgBigArr2Item: any, imgBigArr2Index: number) => {
-                  return (
-                    <React.Fragment key={'imgBigArr2' + imgBigArr2Index}>
-                      {imgBigArr2Item.url ? (
-                        <div
-                          style={{
-                            backgroundImage:
-                              'url(' +
-                              imgBigArr2Item.url +
-                              '?imageMogr2/auto-orient/thumbnail/160x160/format/jpg)',
-                            border:
-                              theme.backgroundImg === imgBigArr2Item.url
-                                ? '2px solid #87B940'
-                                : 'transparent',
-                          }}
-                          className="bg-item"
-                          onClick={() => {
-                            changeBg('backgroundImg', imgBigArr2Item);
-                            setChooseWallKey(imgBigArr2Item._key);
-                          }}
-                        >
-                          {theme.backgroundImg === imgBigArr2Item.url ? (
-                            <div className="bg-point"></div>
-                          ) : null}
-                        </div>
-                      ) : null}
-                    </React.Fragment>
-                  );
-                })}
-              </div>
-            </div>
+            ) : (
+              <HeaderBg
+                setMoveState={setMoveState}
+                setChooseWallKey={setChooseWallKey}
+              />
+            )}
           </div>
         </Dialog>
       </div>
@@ -1087,7 +929,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       >
         <MessageBoard type={'header'} />
       </Dialog>
-      <canvas ref={canvasRef} className="appCanvas"></canvas>
+      {/* <canvas ref={canvasRef} className="appCanvas"></canvas> */}
     </React.Fragment>
   );
 };

@@ -67,6 +67,7 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
   useEffect(() => {
     setLoading(false);
     dispatch(setHeaderIndex(0));
+    // dispatch(setHeaderIndex(theme.filterObject.headerIndex));
   }, [headerIndex]);
   useEffect(() => {
     if (workingTaskArray) {

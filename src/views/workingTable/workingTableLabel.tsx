@@ -79,23 +79,25 @@ const WorkingTableLabel: React.FC = (prop) => {
                     labelArray[index][taskItem.labelKey].arr,
                     taskItem
                   );
-                } else {
-                  if (!labelArray[index]['ToDo' + index]) {
-                    labelArray[index]['ToDo' + index] = {
-                      arr: [],
-                      groupObj: item,
-                      labelObj: {
-                        groupKey: item._key,
-                        cardLabelName: 'ToDo',
-                      },
-                      position: [],
-                    };
-                  }
-                  labelArray[index]['ToDo' + index].arr = sortArr(
-                    labelArray[index]['ToDo' + index].arr,
-                    taskItem
-                  );
                 }
+
+                // else {
+                //   if (!labelArray[index]['ToDo' + index]) {
+                //     labelArray[index]['ToDo' + index] = {
+                //       arr: [],
+                //       groupObj: item,
+                //       labelObj: {
+                //         groupKey: item._key,
+                //         cardLabelName: 'ToDo',
+                //       },
+                //       position: [],
+                //     };
+                //   }
+                //   labelArray[index]['ToDo' + index].arr = sortArr(
+                //     labelArray[index]['ToDo' + index].arr,
+                //     taskItem
+                //   );
+                // }
               }
             }
           );
@@ -118,11 +120,17 @@ const WorkingTableLabel: React.FC = (prop) => {
               .filter((arrItem, arrIndex) => {
                 return arrItem.show;
               });
-            item[key].arrlength = item[key].arr.length;
+            item[key].arrlength =
+              item[key].groupObj._key === mainGroupKey &&
+              item[key].labelObj &&
+              !item[key].labelObj._key
+                ? 10000
+                : item[key].arr.length;
           }
           return Object.values(item);
         });
         labelArray = _.sortBy(_.flatten(labelArray), ['arrlength']).reverse();
+        labelArray.forEach(() => {});
         setMainLabelArray(labelArray);
       }
     }
@@ -160,8 +168,7 @@ const WorkingTableLabel: React.FC = (prop) => {
   }, [chooseKey]);
   const sortArr = (arr: object[], item: any) => {
     arr.push(item);
-    arr = _.sortBy(arr, ['taskEndDate']).reverse();
-    // arr = _.sortBy(arr, ['createTime']).reverse();
+    arr = _.sortBy(arr, ['createTime']).reverse();
     arr = _.sortBy(arr, ['finishPercent']);
     return arr;
   };
@@ -304,6 +311,8 @@ const WorkingTableLabel: React.FC = (prop) => {
                     ' / ' +
                     (labelItem.labelObj
                       ? labelItem.labelObj.cardLabelName
+                        ? labelItem.labelObj.cardLabelName
+                        : 'ToDo'
                       : '无标题')
                   }
                   role={labelItem.groupObj.groupRole}
@@ -327,10 +336,10 @@ const WorkingTableLabel: React.FC = (prop) => {
                           <React.Fragment>
                             <Task
                               taskItem={taskItem}
-                              taskIndex={taskIndex}
+                              taskIndex={0}
                               taskInfoIndex={labelIndex}
                               // timeSetStatus={taskIndex > labelItem.arr.length - 3}
-                              myState={labelItem.groupObj._key === mainGroupKey}
+                              // myState={labelItem.groupObj._key === mainGroupKey}
                             />
                           </React.Fragment>
                         ) : null}

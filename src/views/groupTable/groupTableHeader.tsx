@@ -9,6 +9,7 @@ import {
   setMoveState,
   setChatState,
 } from '../../redux/actions/commonActions';
+import { setTheme } from '../../redux/actions/authActions';
 import { setFilterObject } from '../../redux/actions/taskActions';
 import { changeGroupInfo, getGroup } from '../../redux/actions/groupActions';
 import { getGroupMember } from '../../redux/actions/memberActions';
@@ -109,11 +110,14 @@ const GroupTableHeader: React.FC = (prop) => {
     '已归档',
     // '树任务',
   ];
+  const tabArray = ['任务', '日报', '动态', '文档', '活力'];
   const [viewVisible, setViewVisible] = useState(false);
+  const [tabVisible, setTabVisible] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
   const [groupVisible, setGroupVisible] = useState(false);
   const [infoVisible, setInfoVisible] = useState(false);
   const [groupSetVisible, setGroupSetVisible] = useState(false);
+  const [tabIndex, setTabIndex] = useState(0);
   const [vitalityVisible, setVitalityVisible] = useState(false);
   const [groupMemberVisible, setGroupMemberVisible] = useState(false);
   const [sonGroupVisible, setSonGroupVisible] = useState(false);
@@ -130,13 +134,22 @@ const GroupTableHeader: React.FC = (prop) => {
     false,
   ]);
   const [outGroupVisible, setOutGroupVisible] = useState(false);
-  const chooseMemberHeader = (headIndex: number) => {
+  const chooseMemberHeader = async (headIndex: number) => {
     dispatch(setHeaderIndex(headIndex));
     setViewVisible(false);
+    let newFilterObject: any = _.cloneDeep(filterObject);
+    newFilterObject.headerIndex = headIndex;
+    // await api.member.setConfig(groupMemberItem._key, newFilterObject);
+    dispatch(setFilterObject(newFilterObject));
   };
   useEffect(() => {
     if (groupMemberItem) {
       dispatch(setFilterObject(groupMemberItem.config));
+      if (!groupMemberItem.config.headerIndex) {
+        groupMemberItem.config.headerIndex = 0;
+      }
+      // dispatch(setHeaderIndex(groupMemberItem.config.headerIndex));
+      dispatch(setHeaderIndex(0));
     }
   }, [groupMemberItem]);
   useEffect(() => {
@@ -154,7 +167,7 @@ const GroupTableHeader: React.FC = (prop) => {
     //       filterType: ['过期', '今天', '已完成'],
     //     })
     //   );
-    dispatch(setHeaderIndex(0));
+    // dispatch(setHeaderIndex(0));
   }, [headerIndex]);
   useEffect(() => {
     let filterCheckedArray: any = [];
@@ -272,8 +285,8 @@ const GroupTableHeader: React.FC = (prop) => {
       modelUrl: groupInfo.modelUrl
         ? groupInfo.modelUrl
         : theme.backgroundImg
-          ? theme.backgroundImg
-          : '',
+        ? theme.backgroundImg
+        : '',
       templateJson: [
         // {
         //   name: '测试频道1',
@@ -418,7 +431,7 @@ const GroupTableHeader: React.FC = (prop) => {
               onClose={() => {
                 setInfoVisible(false);
               }}
-            // title={'视图切换'}
+              // title={'视图切换'}
             >
               <div className="groupTableHeader-info-container">
                 <div
@@ -513,6 +526,57 @@ const GroupTableHeader: React.FC = (prop) => {
         />
       </Tooltip> */}
         <div className="view-container">
+          <div
+            className="workingTableHeader-logo"
+            style={{ width: '68px' }}
+            onMouseEnter={() => {
+              setTabVisible(true);
+              setViewVisible(false);
+              setFilterVisible(false);
+            }}
+            onClick={() => {
+              setTabVisible(true);
+              setViewVisible(false);
+              setFilterVisible(false);
+            }}
+          >
+            {/* <img src={viewImg[memberHeaderIndex]} alt=""></img> */}
+            <Chip
+              size="small"
+              label={tabArray[tabIndex]}
+              className={classes.chip}
+            />
+            <DropMenu
+              visible={tabVisible}
+              dropStyle={{
+                width: '180px',
+                top: '60px',
+                left: '0px',
+                color: '#333',
+              }}
+              onClose={() => {
+                setTabVisible(false);
+              }}
+              title={'页面切换'}
+              closeType={1}
+            >
+              {tabArray.map((tabItem: any, tabIndex: number) => {
+                return (
+                  <div
+                    className="viewTableHeader-logo"
+                    onClick={() => {
+                      chooseMemberHeader(tabIndex === 0 ? 0 : tabIndex + 6);
+                      setTabIndex(tabIndex);
+                    }}
+                    key={'viewTable' + tabIndex}
+                  >
+                    {/* <img src={viewImgb[viewIndex]} alt=""></img> */}
+                    {tabItem}
+                  </div>
+                );
+              })}
+            </DropMenu>
+          </div>
           {memberHeaderIndex < 5 ? (
             <React.Fragment>
               <div
@@ -520,6 +584,13 @@ const GroupTableHeader: React.FC = (prop) => {
                 style={{ width: '108px' }}
                 onMouseEnter={() => {
                   setViewVisible(true);
+                  setTabVisible(false);
+                  setFilterVisible(false);
+                }}
+                onClick={() => {
+                  setViewVisible(true);
+                  setTabVisible(false);
+                  setFilterVisible(false);
                 }}
               >
                 <img src={viewImg[memberHeaderIndex]} alt=""></img>
@@ -528,40 +599,48 @@ const GroupTableHeader: React.FC = (prop) => {
                   label={viewArray[memberHeaderIndex]}
                   className={classes.chip}
                 />
+                <DropMenu
+                  visible={viewVisible}
+                  dropStyle={{
+                    width: '180px',
+                    top: '60px',
+                    left: memberHeaderIndex < 7 ? '70px' : '0px',
+                    color: '#333',
+                  }}
+                  onClose={() => {
+                    setViewVisible(false);
+                  }}
+                  title={'视图切换'}
+                >
+                  {viewArray.map((viewItem, viewIndex) => {
+                    return (
+                      <div
+                        className="viewTableHeader-logo"
+                        onClick={() => {
+                          chooseMemberHeader(viewIndex);
+                        }}
+                        key={'viewTable' + viewIndex}
+                      >
+                        <img src={viewImgb[viewIndex]} alt=""></img>
+                        {viewItem}
+                      </div>
+                    );
+                  })}
+                </DropMenu>
               </div>
-              <DropMenu
-                visible={viewVisible}
-                dropStyle={{
-                  width: '180px',
-                  top: '60px',
-                  color: '#333',
-                }}
-                onClose={() => {
-                  setViewVisible(false);
-                }}
-                title={'视图切换'}
-              >
-                {viewArray.map((viewItem, viewIndex) => {
-                  return (
-                    <div
-                      className="viewTableHeader-logo"
-                      onClick={() => {
-                        chooseMemberHeader(viewIndex);
-                      }}
-                      key={'viewTable' + viewIndex}
-                    >
-                      <img src={viewImgb[viewIndex]} alt=""></img>
-                      {viewItem}
-                    </div>
-                  );
-                })}
-              </DropMenu>
               {memberHeaderIndex == 0 ? (
                 <React.Fragment>
                   <div
                     className="workingTableHeader-logo"
                     onClick={() => {
                       setFilterVisible(true);
+                      setTabVisible(false);
+                      setViewVisible(false);
+                    }}
+                    onMouseEnter={() => {
+                      setFilterVisible(true);
+                      setTabVisible(false);
+                      setViewVisible(false);
                     }}
                     style={{ width: '40px' }}
                   >
@@ -656,92 +735,12 @@ const GroupTableHeader: React.FC = (prop) => {
                           ) : null}
                         </div>
                       );
-                    })}                    
+                    })}
                   </div>
                 </div>
               </DropMenu>
             </React.Fragment>
           ) : null}
-        </div>
-        <div
-          className="view-tab"
-          onClick={() => {
-            chooseMemberHeader(0);
-          }}
-          style={
-            memberHeaderIndex < 7
-              ? {
-                borderBottom: '3px solid #17B881',
-                marginLeft: '10px',
-              }
-              : { marginLeft: '10px' }
-          }
-        >
-          任务
-        </div>
-        |
-        <div
-          className="view-tab"
-          onClick={() => {
-            chooseMemberHeader(9);
-          }}
-          style={
-            memberHeaderIndex === 9
-              ? {
-                borderBottom: '3px solid #17B881',
-              }
-              : {}
-          }
-        >
-          文档
-        </div>
-        |
-        <div
-          className="view-tab"
-          onClick={() => {
-            chooseMemberHeader(7);
-          }}
-          style={
-            memberHeaderIndex === 7
-              ? {
-                borderBottom: '3px solid #17B881',
-              }
-              : {}
-          }
-        >
-          日报
-        </div>
-        |
-        <div
-          className="view-tab"
-          onClick={() => {
-            chooseMemberHeader(8);
-          }}
-          style={
-            memberHeaderIndex === 8
-              ? {
-                borderBottom: '3px solid #17B881',
-              }
-              : {}
-          }
-        >
-          动态
-        </div>
-        |
-        <div
-          className="view-tab"
-          onClick={() => {
-            chooseMemberHeader(10);
-          }}
-          style={
-            memberHeaderIndex === 10
-              ? {
-                borderBottom: '3px solid #17B881',
-              }
-              : {}
-          }
-        >
-          活力
         </div>
         {/* <Tooltip title="群聊天">
         <img
@@ -805,7 +804,7 @@ const GroupTableHeader: React.FC = (prop) => {
           width: '850px',
           height: '700px',
         }}
-      // showMask={false}
+        // showMask={false}
       >
         <div className="groupSet-tab">
           <div
@@ -817,9 +816,9 @@ const GroupTableHeader: React.FC = (prop) => {
             style={
               groupTabIndex == 0
                 ? {
-                  borderBottom: '2px solid #17B881',
-                  color: '#17B881',
-                }
+                    borderBottom: '2px solid #17B881',
+                    color: '#17B881',
+                  }
                 : {}
             }
           >
@@ -834,9 +833,9 @@ const GroupTableHeader: React.FC = (prop) => {
             style={
               groupTabIndex == 1
                 ? {
-                  borderBottom: '2px solid #17B881',
-                  color: '#17B881',
-                }
+                    borderBottom: '2px solid #17B881',
+                    color: '#17B881',
+                  }
                 : {}
             }
           >
@@ -852,9 +851,9 @@ const GroupTableHeader: React.FC = (prop) => {
             style={
               groupTabIndex == 2
                 ? {
-                  borderBottom: '2px solid #17B881',
-                  color: '#17B881',
-                }
+                    borderBottom: '2px solid #17B881',
+                    color: '#17B881',
+                  }
                 : {}
             }
           >

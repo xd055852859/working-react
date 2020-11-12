@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import './calendar.css';
 import { Checkbox } from '@material-ui/core';
 import CalendarItem from './calendarItem';
+import CalendarInfo from './calendarInfo';
+import { Button } from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
@@ -19,7 +21,7 @@ import {
 import CalendarHeader from './calendarHeader';
 import Loading from '../../components/common/loading';
 import moment from 'moment';
-import _ from 'lodash';
+import _, { truncate } from 'lodash';
 import api from '../../services/api';
 import Dialog from '../../components/common/dialog';
 import rightArrowPng from '../../assets/img/rightArroww.png';
@@ -48,11 +50,14 @@ const Calendar: React.FC<CalendarProps> = (props) => {
   const theme = useTypedSelector((state) => state.auth.theme);
   const [calendarDate, setCalendarDate] = useState<any>([]);
   const [calendarDay, setCalendarDay] = useState(moment());
+  const [calendar, setCalendar] = useState<any>(null);
   const [positionList, setPositionList] = useState<any>([]);
   const [itemVisible, setItemVisible] = useState(false);
+  const [infoVisible, setInfoVisible] = useState(false);
   const [pos, setPos] = useState<number[]>([0, 0]);
   const [targetMonth, setTargetMonth] = useState('');
-  const [taskList, setTaskList] = useState<any>([]);
+  const [taskList, setTaskList] = useState<any>({ arr: [], repeatArr: [] });
+  const [monthTaskList, setMonthTaskList] = useState<any>([]);
   const [taskItem, setTaskItem] = useState<any>(null);
   const [deleteDialogShow, setDeleteDialogShow] = useState(false);
   const [calendarStartTime, setCalendarStartTime] = useState(
@@ -93,13 +98,13 @@ const Calendar: React.FC<CalendarProps> = (props) => {
       dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2], theme.fileDay));
     } else if (workingTaskArray) {
       setLoading(false);
-      getCalendar(moment(calendarStartTime), calendarList);
+      getCalendar(moment(calendarStartTime), taskList);
     }
   }, [executorCheck, creatorCheck, workingTaskArray]);
   useEffect(() => {
     if (calendarList) {
       // setLoading(false);
-      getCalendar(moment(calendarStartTime), calendarList);
+      getCalendar(moment(calendarStartTime), taskList);
       setTargetMonth(
         moment(calendarStartTime).format('YYYY') +
           '年' +
@@ -145,8 +150,8 @@ const Calendar: React.FC<CalendarProps> = (props) => {
   };
   const getCalendar = (targetDate: any, taskList: any) => {
     // 获得当前月的天数  和 第一天的星期数
-    let newTaskList = _.cloneDeep(taskList);
-
+    // let newTaskList = _.cloneDeep(taskList);
+    let newTaskList: any = [];
     let curDays = getMonthDays(targetDate); // 当前天数
     let curWeek = getWeekDays(targetDate.clone()); // 当前月第一天的星期(索引值)
     let upDays = getMonthDays(targetDate.clone().subtract(1, 'month')); // 上月的天数
@@ -169,6 +174,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
           month: 'last',
           day: upDays,
           date: momentDate,
+          week: momentDate.day(),
           startTime: momentDate.startOf('day').valueOf(),
           endTime: momentDate.endOf('day').valueOf(),
         });
@@ -189,6 +195,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
           month: 'next',
           day: nextFirstDate,
           date: momentDate,
+          week: momentDate.day(),
           startTime: momentDate.startOf('day').valueOf(),
           endTime: momentDate.endOf('day').valueOf(),
         });
@@ -216,6 +223,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
           month: 'target',
           day: i - curWeek + 1,
           date: momentDate,
+          week: momentDate.day(),
           startTime: momentDate.startOf('day').valueOf(),
           endTime: momentDate.endOf('day').valueOf(),
         };
@@ -230,7 +238,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
     }
     strDate.forEach((dateItem: any, dateIndex: number) => {
       newTaskList[dateIndex] = [];
-      taskList.forEach((taskItem: any, taskIndex: number) => {
+      taskList.arr.forEach((taskItem: any, taskIndex: number) => {
         if (
           taskItem.taskEndDate >= dateItem.startTime &&
           taskItem.taskEndDate <= dateItem.endTime
@@ -238,38 +246,60 @@ const Calendar: React.FC<CalendarProps> = (props) => {
           newTaskList[dateIndex].push(taskItem);
         }
       });
-      if (executorCheck) {
-        _.flatten(_.cloneDeep(workingTaskArray)).forEach(
-          (taskItem: any, taskIndex: number) => {
-            if (
-              taskItem.taskEndDate >= dateItem.startTime &&
-              taskItem.taskEndDate <= dateItem.endTime &&
-              taskItem.executorKey == userKey
-            ) {
-              newTaskList[dateIndex].push(taskItem);
-            }
-          }
-        );
-      }
-      if (creatorCheck) {
-        _.flatten(_.cloneDeep(workingTaskArray)).forEach(
-          (taskItem: any, taskIndex: number) => {
-            if (
-              taskItem.taskEndDate >= dateItem.startTime &&
-              taskItem.taskEndDate <= dateItem.endTime &&
-              taskItem.creatorKey == userKey &&
-              taskItem.executorKey != userKey
-            ) {
-              newTaskList[dateIndex].push(taskItem);
-            }
-          }
-        );
-      }
-      newTaskList[dateIndex] = _.sortBy(newTaskList[dateIndex], [
-        'taskEndDate',
-      ]);
+      taskList.repeatArr.forEach((taskItem: any, taskIndex: number) => {
+        let findIndex = _.findIndex(taskList.arr, {
+          originalKey: taskItem.key,
+          taskEndDate: dateItem.endTime,
+        });
+        if (
+          taskItem.repeatWeek.indexOf(dateItem.week) !== -1 &&
+          moment().endOf('day').valueOf() <= dateItem.startTime &&
+          taskItem.taskStartDate <= dateItem.startTime &&
+          dateItem.endTime <= taskItem.taskEndDate &&
+          findIndex === -1
+        ) {
+          newTaskList[dateIndex].push({
+            key: taskItem.key,
+            title: taskItem.title,
+            taskStartDate: taskItem.taskStartDate,
+            taskEndDate: taskItem.taskEndDate,
+            repeatWeek: taskItem.repeatWeek,
+          });
+        }
+      });
+      // if (executorCheck) {
+      //   _.flatten(_.cloneDeep(workingTaskArray)).forEach(
+      //     (taskItem: any, taskIndex: number) => {
+      //       if (
+      //         taskItem.taskEndDate >= dateItem.startTime &&
+      //         taskItem.taskEndDate <= dateItem.endTime &&
+      //         taskItem.executorKey == userKey
+      //       ) {
+      //         newTaskList[dateIndex].push(taskItem);
+      //       }
+      //     }
+      //   );
+      // }
+      // if (creatorCheck) {
+      //   _.flatten(_.cloneDeep(workingTaskArray)).forEach(
+      //     (taskItem: any, taskIndex: number) => {
+      //       if (
+      //         taskItem.taskEndDate >= dateItem.startTime &&
+      //         taskItem.taskEndDate <= dateItem.endTime &&
+      //         taskItem.creatorKey == userKey &&
+      //         taskItem.executorKey != userKey
+      //       ) {
+      //         newTaskList[dateIndex].push(taskItem);
+      //       }
+      //     }
+      //   );
+      // }
+      // newTaskList[dateIndex] = _.sortBy(newTaskList[dateIndex], [
+      //   'taskEndDate',
+      // ]);
     });
-    setTaskList(newTaskList);
+    console.log('newTaskList', newTaskList);
+    setMonthTaskList(newTaskList);
     setCalendarDate(strDate);
   };
   // {traditionalDate.GetLunarDay(moment())[1]}
@@ -280,7 +310,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
     let pageX = e.pageX;
     let pageY = e.pageY;
     if ((index + 1) % 7 === 0 && index !== 0) {
-      pageX = pageX -300;
+      pageX = pageX - 300;
       setPos([e.pageX, e.pageY]);
     } else if (index % 7 !== 0) {
       pageX = pageX - 150;
@@ -399,6 +429,35 @@ const Calendar: React.FC<CalendarProps> = (props) => {
     );
     dispatch(setTaskInfo(newTaskItem));
   };
+  const saveCalendar = () => {
+    let newCalendar = _.cloneDeep(calendar);
+    let newTaskList = _.cloneDeep(taskList);
+    console.log(newTaskList);
+    if (newCalendar && newCalendar.title === '') {
+      dispatch(setMessage(true, '请输入日程标题', 'error'));
+      return;
+    }
+    newTaskList.arr.push({
+      title: newCalendar.title,
+      taskEndDate: newCalendar.taskEndDate,
+      originalKey:
+        newCalendar.repeatWeek.length > 0
+          ? newTaskList.repeatArr.length + ''
+          : '',
+    });
+    if (newCalendar.repeatWeek.length > 0) {
+      newTaskList.repeatArr.push({
+        key: newTaskList.repeatArr.length + '',
+        title: newCalendar.title,
+        taskStartDate: newCalendar.taskStartDate,
+        taskEndDate: newCalendar.taskEndDate,
+        repeatWeek: newCalendar.repeatWeek,
+      });
+    }
+    setTaskList(newTaskList);
+    setCalendar(null);
+    getCalendar(moment(calendarStartTime), newTaskList);
+  };
   return (
     <div className="calendar">
       {loading ? <Loading /> : null}
@@ -420,7 +479,18 @@ const Calendar: React.FC<CalendarProps> = (props) => {
               changeMonth(1);
             }}
           />
-          <div className="calendar-choose-check">
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              setInfoVisible(true);
+              setCalendar(null);
+            }}
+            style={{ color: '#fff' }}
+          >
+            创建日程
+          </Button>
+          {/* <div className="calendar-choose-check">
             <Checkbox
               checked={executorCheck}
               onChange={(e) => {
@@ -441,7 +511,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
               className={classes.root}
             />
             指派
-          </div>
+          </div> */}
         </div>
         <div className="calendar-week">
           {weekArr.map((weekItem: any, weekIndex: number) => {
@@ -459,10 +529,10 @@ const Calendar: React.FC<CalendarProps> = (props) => {
                 key={'calendar' + calendarIndex}
                 className="calendar-day-item"
                 onClick={(e) => {
-                  setItemVisible(true);
-                  getMousePos(e, calendarIndex);
-                  setTaskItem(null);
-                  setCalendarDay(moment(calendarItem.startTime));
+                  // setItemVisible(true);
+                  // getMousePos(e, calendarIndex);
+                  // setTaskItem(null);
+                  // setCalendarDay(moment(calendarItem.startTime));
                 }}
                 style={{
                   // backgroundColor:
@@ -489,7 +559,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
                   ) : null}
                 </div>
                 <div className="calendar-day-item-container">
-                  {taskList[calendarIndex].map(
+                  {monthTaskList[calendarIndex].map(
                     (taskItem: any, taskIndex: number) => {
                       return (
                         <div
@@ -509,7 +579,9 @@ const Calendar: React.FC<CalendarProps> = (props) => {
                           }}
                           draggable="true"
                           onClick={(e: any) => {
-                            clickTask(e, taskItem, calendarIndex);
+                            // clickTask(e, taskItem, calendarIndex);
+                            setCalendar(taskItem);
+                            setInfoVisible(true);
                           }}
                           tabIndex={taskItem._key}
                           onKeyDown={taskKeyDown}
@@ -571,6 +643,21 @@ const Calendar: React.FC<CalendarProps> = (props) => {
         calendarEndTime={calendarEndTime}
         taskItem={taskItem}
       />
+      <Dialog
+        visible={infoVisible}
+        onClose={() => {
+          setInfoVisible(false);
+        }}
+        onOK={() => {
+          // deleteTask();
+          saveCalendar();
+          setInfoVisible(false);
+        }}
+        title={'创建日程'}
+        dialogStyle={{ width: '400px', height: '300px' }}
+      >
+        <CalendarInfo setCalendar={setCalendar} taskItem={calendar} />
+      </Dialog>
     </div>
   );
 };

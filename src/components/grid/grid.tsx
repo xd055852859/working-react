@@ -54,11 +54,21 @@ const Grid: React.FC<GridProps> = (prop) => {
         return item;
       });
       getGroupData(groupArray, cardArray);
-    } else {
-      setLoading(true);
+    } else if (
+      (headerIndex === 3 && groupMemberArray) ||
+      (headerIndex !== 3 && memberArray)
+    ) {
       getGridData();
     }
-  }, [headerIndex, groupInfo, labelArray, taskArray, filterObject]);
+  }, [
+    headerIndex,
+    groupInfo,
+    labelArray,
+    taskArray,
+    filterObject,
+    groupMemberArray,
+    memberArray,
+  ]);
   useEffect(() => {
     if (labelRef.current) {
       let clientWidth = labelRef.current.clientWidth;
@@ -66,7 +76,7 @@ const Grid: React.FC<GridProps> = (prop) => {
     }
   }, [labelRef.current]);
   useEffect(() => {
-    console.log('taskNavDay',taskNavDay);
+    console.log('taskNavDay', taskNavDay);
   }, [taskNavDay]);
 
   useEffect(() => {
@@ -91,8 +101,10 @@ const Grid: React.FC<GridProps> = (prop) => {
         obj.targetUKey = targetUserKey;
       }
     }
+    // setLoading(true);
     let gridRes: any = await api.task.allGridGroupTask(obj);
     if (gridRes.msg === 'OK') {
+      // setLoading(false);
       let gridObj: any = _.cloneDeep(gridRes.result);
       let newAllGridChildArray: any = [];
       let newAllGridTaskArray: any = [];
@@ -171,9 +183,7 @@ const Grid: React.FC<GridProps> = (prop) => {
       newTaskNavDay.push({
         userId: item.userId,
         name: item.nickName,
-        avatar: item.avatar
-          ? item.avatar
-          : defaultPersonPng,
+        avatar: item.avatar ? item.avatar : defaultPersonPng,
         allTaskNum: 0,
       });
     });
@@ -201,6 +211,8 @@ const Grid: React.FC<GridProps> = (prop) => {
           groupObj: groupArray[index],
           tabShow: true,
         };
+        console.log(item);
+        // if (item.type === 2) {
         item.forEach((groupItem: any, groupIndex: number) => {
           if (groupItem.labelKey) {
             if (!arr[index][groupItem.labelKey]) {
@@ -226,6 +238,7 @@ const Grid: React.FC<GridProps> = (prop) => {
             arr[index]['ToDo'].arr = sortArr(arr[index]['ToDo'].arr, groupItem);
           }
         });
+        // }
       });
       if (headerIndex == 1) {
         groupArray[0].labelArray.forEach((item: any, index: number) => {
@@ -266,13 +279,13 @@ const Grid: React.FC<GridProps> = (prop) => {
                   return dayItem;
                 }
               );
-              if (arrItem.children && arrItem.children.length > 0) {
-                arrItem.children.forEach(
-                  (childItem: any, childIndex: number) => {
-                    recurrenceData(arrItem.children, childIndex, index, null);
-                  }
-                );
-              }
+              // if (arrItem.children && arrItem.children.length > 0) {
+              //   arrItem.children.forEach(
+              //     (childItem: any, childIndex: number) => {
+              //       recurrenceData(arrItem.children, childIndex, index, null);
+              //     }
+              //   );
+              // }
             });
             item.arrlength = item.arrlength + item[key].arr.length;
           }
@@ -313,6 +326,7 @@ const Grid: React.FC<GridProps> = (prop) => {
     let key = arr[arrIndex];
     let newAllGridChildArray = _.cloneDeep(allGridChildArray);
     let newTaskNavDay = _.cloneDeep(taskNavDay);
+    console.log(newAllGridChildArray);
     arr[arrIndex] = newAllGridChildArray[groupIndex][key];
     arr[arrIndex].dayArr = [];
     newTaskNavDay = newTaskNavDay.map((dayItem: any, dayIndex: number) => {
@@ -491,9 +505,7 @@ const Grid: React.FC<GridProps> = (prop) => {
                       {/* <div slot="title">{dateItem.nickName}</div> */}
                       <img
                         src={
-                          dateItem.avatar
-                            ? dateItem.avatar
-                            : defaultPersonPng
+                          dateItem.avatar ? dateItem.avatar : defaultPersonPng
                         }
                         alt=""
                       />

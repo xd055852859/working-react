@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
+import { Button } from '@material-ui/core';
 import _ from 'lodash';
 import moment from 'moment';
 import { useTypedSelector } from '../../redux/reducer/RootState';
@@ -16,6 +17,7 @@ import messageType7Png from '../../assets/img/messageType7.png';
 import messageType8Png from '../../assets/img/messageType8.png';
 import messageType9Png from '../../assets/img/messageType9.png';
 import messageType10Png from '../../assets/img/messageType10.png';
+import messageType11Png from '../../assets/img/messageType11.png';
 import Loading from '../../components/common/loading';
 interface MessageBoardProps {
   type?: string;
@@ -46,6 +48,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
     messageType8Png,
     messageType9Png,
     messageType10Png,
+    messageType11Png,
   ];
   useEffect(() => {
     if (user && user._key) {
@@ -102,6 +105,27 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
       getMessage(newPage);
     }
   };
+  const changeAddMessage = async (
+    item: any,
+    applyStatus: number,
+    index: number
+  ) => {
+    let newMessageArray = _.cloneDeep(messageArray);
+    let messageRes: any = await api.group.changeAddMessage(
+      item.userKey,
+      item.groupKey,
+      applyStatus,
+      item.applyKey
+    );
+    if (messageRes.msg === 'OK') {
+      newMessageArray[index].data.applyStatus = applyStatus;
+      setMessageArray(newMessageArray);
+      setMessageTotal(messageRes.totalNumber);
+    } else {
+      setLoading(false);
+      dispatch(setMessage(true, messageRes.msg, 'error'));
+    }
+  };
   return (
     <div className="messageBoard">
       {loading ? <Loading /> : null}
@@ -144,6 +168,51 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                     {messageItem.data.commentContent ? (
                       <div className="messageBoard-item-commentContent">
                         {messageItem.data.commentContent}
+                      </div>
+                    ) : null}
+                    {messageItem.data.type === 11 ? (
+                      <div className="messageBoard-item-button">
+                        {messageItem.data.applyStatus ? (
+                          <React.Fragment>
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => {
+                                changeAddMessage(
+                                  messageItem.data,
+                                  1,
+                                  messageIndex
+                                );
+                              }}
+                              style={{ color: '#fff', marginRight: '5px' }}
+                            >
+                              同意
+                            </Button>
+                            <Button
+                              variant="contained"
+                              onClick={() => {
+                                changeAddMessage(
+                                  messageItem.data,
+                                  2,
+                                  messageIndex
+                                );
+                              }}
+                              // style={{ color: '#fff' }}
+                            >
+                              拒绝
+                            </Button>
+                          </React.Fragment>
+                        ) : (
+                          <Button
+                            variant="contained"
+                            disabled
+                            // style={{ color: '#fff' }}
+                          >
+                            {messageItem.data.applyStatus === 1
+                              ? '已拒绝'
+                              : '已同意'}
+                          </Button>
+                        )}
                       </div>
                     ) : null}
                   </div>

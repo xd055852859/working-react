@@ -5,6 +5,7 @@ export interface GroupType {
   groupKey: string;
   groupInfo: any;
   groupRole: any;
+  startId: any;
 }
 
 const defaultState: GroupType = {
@@ -13,13 +14,14 @@ const defaultState: GroupType = {
   groupKey: '',
   groupInfo: null,
   groupRole: null,
+  startId: null,
 };
 
 export const group = (state = defaultState, action: any) => {
   switch (action.type) {
     case actionTypes.GET_GROUP_SUCCESS:
       let groupArray = action.data.filter((item: any, index: number) => {
-        if (item.groupLogo&&item.groupLogo.indexOf('https') === -1) {
+        if (item.groupLogo && item.groupLogo.indexOf('https') === -1) {
           item.groupLogo = item.groupLogo.replace('http', 'https');
         }
         return item.groupName.indexOf('主群') === -1;
@@ -45,6 +47,12 @@ export const group = (state = defaultState, action: any) => {
         ...state,
         groupInfo: action.data,
       };
+    case actionTypes.CHANGE_START_ID:
+      return {
+        ...state,
+        startId: action.startId,
+      };
+
     default:
       return state;
   }

@@ -25,6 +25,7 @@
   width: 100%;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   margin-bottom: 12px;
 }
 .messageBoard-item-img {
@@ -71,4 +72,9 @@
   font-weight: 400;
   color: #8091a0;
   line-height: 20px;
+}
+.messageBoard-item-button {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
 }

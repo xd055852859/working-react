@@ -5,7 +5,6 @@ const uploadFile = {
     if (!uptoken || !file) {
       return;
     }
-
     const domain = 'https://cdn-icare.qingtime.cn/';
     // if (file.size > 52428800) {
     //     message.error("文件过大,请重新选择");
@@ -48,7 +47,7 @@ const uploadFile = {
     // 上传开始
     observable.subscribe(observer);
   },
-  qiniuUpload(uptoken, target, file, isVideo) {
+  qiniuUpload(uptoken, target, file, isVideo, callback = null) {
     let mimeType = [
       'image/png',
       'image/jpeg',
@@ -79,13 +78,17 @@ const uploadFile = {
       },
       complete(res) {
         const url = domain + encodeURIComponent(res.key);
-        if (isVideo) {
-          target.innerHTML = `<video src="${url}" style="width: 600px;" controls="" class="fr-draggable">您的浏览器不支持 HTML5 视频。</video>`;
-        } else {
-          target.src = url;
-        }
         console.log('url', url);
-        return target;
+        if (callback) {
+          callback(url);
+        } else {
+          if (isVideo) {
+            target.innerHTML = `<video src="${url}" style="width: 600px;" controls="" class="fr-draggable">您的浏览器不支持 HTML5 视频。</video>`;
+          } else {
+            target.src = url;
+          }
+          return target;
+        }
       },
     };
     // 上传

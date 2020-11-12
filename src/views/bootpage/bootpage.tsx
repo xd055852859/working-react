@@ -23,6 +23,20 @@ const Bootpage: React.FC = () => {
       setClientHeight(clientHeight);
     }
   }, [bootpageRef]);
+  useEffect(() => {
+    function handle(e: any) {
+      if (
+        e.origin === 'https://account.qingtime.cn' &&
+        e.data.eventName === 'redirect'
+      ) {
+        window.location.href = e.data.data;
+      }
+    }
+    window.addEventListener('message', handle, false);
+    return () => {
+      window.removeEventListener('message', handle);
+    };
+  }, []);
   const toUrl = () => {
     window.open('http://beian.miit.gov.cn/');
   };
@@ -32,7 +46,14 @@ const Bootpage: React.FC = () => {
       history.push('/');
     } else {
       const redirect = `${window.location.protocol}//${window.location.host}`;
-      window.location.href = `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`;
+      // window.location.href = `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`;
+      window.open(
+        `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`,
+        'new',
+        `width=360, height=420, resizable=false, toolbar=no, menubar=no, location=no, status=no, top=${
+          (clientHeight - 420) / 2
+        }, left=${(clientWidth - 360) / 2}`
+      );
     }
   };
   window.onresize = _.debounce(function () {
@@ -44,7 +65,9 @@ const Bootpage: React.FC = () => {
     <div className="bootpage" ref={bootpageRef}>
       <div className="bootpage-logo">
         <img src={bootlogo} alt="" style={{ width: '50px', height: '42px' }} />
-        <a href="https://bbs.working.vip" style={{ marginLeft: '8px' }}>雁行官网</a>
+        <a href="https://bbs.working.vip" style={{ marginLeft: '8px' }}>
+          官网
+        </a>
       </div>
       <div className="bootpage-content">
         <div className="bootpage-image">
@@ -64,7 +87,7 @@ const Bootpage: React.FC = () => {
         </Button>
       </div>
       {/* v-show="videoState"  */}
-      <div
+      {/* <div
         className="bootpage-video"
         style={{
           width: clientHeight + 'px',
@@ -82,7 +105,7 @@ const Bootpage: React.FC = () => {
         >
           您的浏览器不支持 audio 标签。
         </video>
-      </div>
+      </div> */}
       <div
         onClick={() => {
           toUrl();

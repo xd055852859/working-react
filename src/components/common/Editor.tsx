@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import './Editor.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 // Require Editor JS files.
@@ -35,6 +35,8 @@ import 'froala-editor/css/froala_editor.pkgd.min.css';
 import FroalaEditor from 'react-froala-wysiwyg';
 import FroalaEditorView from 'react-froala-wysiwyg/FroalaEditorView';
 import uploadFile from './upload';
+import format from './format';
+import Loading from './loading';
 // import ArticleTree from "./ArticleTree";
 
 interface EditorProps {
@@ -48,7 +50,18 @@ interface EditorProps {
 const Editor: React.FC<EditorProps> = (prop) => {
   const { data, editable, onChange, editorHeight, editorState, setInit } = prop;
   const uptoken = useTypedSelector((state) => state.auth.uploadToken);
+  const [loading, setLoading] = useState(false);
   let selectedFile: any;
+
+  // useEffect(() => {
+  //   let srcReg = /src=[\'\"]?([^\'\"]*)[\'\"]?/i;
+  //   let arr:any = data.match(srcReg);
+  //   if (arr.indexOf('blob') !== -1) {
+  //     setLoading(true);
+  //   } else {
+  //     setLoading(false);
+  //   }
+  // }, [data]);
 
   const events = {
     initialized: function () {
@@ -157,6 +170,7 @@ const Editor: React.FC<EditorProps> = (prop) => {
   };
   return (
     <div style={{ backgroundColor: '#efefef', width: '100%' }}>
+      {/* {loading ? <Loading /> : null} */}
       {editable ? (
         <FroalaEditor config={config} model={data} onModelChange={onChange} />
       ) : (

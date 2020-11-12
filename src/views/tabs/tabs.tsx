@@ -25,15 +25,12 @@ import {
 import { getMember } from '../../redux/actions/memberActions';
 import Contact from '../contact/contact';
 import Dialog from '../../components/common/dialog';
-import GroupSet from './groupSet';
-import GroupModel from './groupModel';
+import GroupCreate from './groupCreate';
 import DropMenu from '../../components/common/dropMenu';
 
 import searchPng from '../../assets/img/search.png';
 import searchbPng from '../../assets/img/searchb.png';
 import addPng from '../../assets/img/contact-add.png';
-import addGroup1Png from '../../assets/img/addGroup1.png';
-import addGroup2Png from '../../assets/img/addGroup2.png';
 import downArrowbPng from '../../assets/img/downArrowb.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
@@ -91,9 +88,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   const [searchInputState, setSearchInputState] = React.useState('');
   // const [memberSortVisible, setMemberSortVisible] = React.useState(false);
   // const [groupSortVisible, setGroupSortVisible] = React.useState(false);
-  const [addVisible, setAddVisible] = React.useState(false);
   const [addGroupVisible, setAddGroupVisible] = React.useState(false);
-  const [addModelVisible, setAddModelVisible] = React.useState(false);
   const [searchList, setSearchList] = React.useState<any>([]);
   const [mainSearchList, setMainSearchList] = React.useState<any>([]);
   const [searchInput, setSearchInput] = React.useState('');
@@ -102,12 +97,10 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   const [joinType, setJoinType] = React.useState(0);
   const [searchIndex, setSearchIndex] = React.useState(0);
   const [searchItem, setSearchItem] = React.useState<any>(null);
-  const [templateKey, setTemplateKey] = React.useState<any>(null);
   const [isHasPassword, setIsHasPassword] = React.useState(false);
   const [inviteVisible, setInviteVisible] = React.useState(false);
   const [page, setPage] = React.useState(1);
   const [total, setTotal] = React.useState(0);
-  const [groupObj, setGroupObj] = React.useState<any>(null);
   const [clientHeight, setClientHeight] = useState(0);
   const tabsRef: React.RefObject<any> = useRef();
   const limit = 30;
@@ -342,35 +335,6 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     }
   };
 
-  const saveGroupSet = (obj: any) => {
-    if (!isNaN(templateKey)) {
-      obj.templateKey = templateKey;
-    }
-    setGroupObj(obj);
-  };
-  const addGroup = async () => {
-    let newGroupObj = _.cloneDeep(groupObj);
-    if (
-      !newGroupObj ||
-      !newGroupObj.groupName ||
-      !newGroupObj.groupName.trim()
-    ) {
-      dispatch(setMessage(true, '请输入群名', 'error'));
-      return;
-    }
-    let groupRes: any = await api.group.addGroup(newGroupObj);
-    if (groupRes.msg === 'OK') {
-      dispatch(setMessage(true, '创建群成功', 'success'));
-      dispatch(setGroupKey(groupRes.result._key));
-      dispatch(getGroupInfo(groupRes.result._key));
-      dispatch(setCommonHeaderIndex(3));
-      dispatch(setMoveState('in'));
-      dispatch(getGroup(3));
-      setAddVisible(false);
-    } else {
-      dispatch(setMessage(true, groupRes.msg, 'error'));
-    }
-  };
   const contactSort = (sortType: number) => {
     // let newTheme = _.cloneDeep(theme);
     // if (contactIndex === 0) {
@@ -636,8 +600,9 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                         <div
                           className="personMember-item-button"
                           onClick={
-                            () => {
+                            (e: any) => {
                               deleteMember(mainSearchItem, mainSearchIndex);
+                              e.stopPropagation();
                             }
                             // addMember(item)
                           }
@@ -648,13 +613,14 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                         <div
                           className="personMember-item-button"
                           onClick={
-                            () => {
+                            (e: any) => {
+                              e.stopPropagation();
                               outGroup(key, searchIndex);
                             }
                             // addMember(item)
                           }
                         >
-                          {/* <div>退出项目</div> */}
+                          <div>退出项目</div>
                         </div>
                       )}
                     </div>
@@ -771,38 +737,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             }}
             title={'新建项目'}
           >
-            <div className="addGroup-container">
-              <div
-                onClick={() => {
-                  setAddVisible(true);
-                }}
-                className="addGroup-item"
-              >
-                <img className="addGroup-item-img" src={addGroup1Png} alt="" />
-                <div className="addGroup-item-title">
-                  <div>空白模板</div>
-                  <div>
-                    创建一个全新的项目。项目的成员、频道、属性可以创建以后自行调整。
-                  </div>
-                </div>
-              </div>
-
-              <div
-                onClick={() => {
-                  setAddModelVisible(true);
-                }}
-                className="addGroup-item"
-              >
-                <img className="addGroup-item-img" src={addGroup2Png} alt="" />
-                <div className="addGroup-item-title">
-                  <div>通过模板</div>
-                  <div>
-                    通过模板创建一个项目。项目的成员、频道、属性可以创建以后自行调整。
-                  </div>
-                </div>
-              </div>
-              {/* <div><img src={addGroup3Png} alt=""/><div><div></div><div></div></div></div> */}
-            </div>
+            <GroupCreate />
           </DropMenu>
           <Dialog
             visible={inviteVisible}
@@ -856,7 +791,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                     口令加群
                   </Button>
                 ) : null}
-                {joinType === 1 ? (
+                {joinType == 1 ? (
                   <Button
                     variant="contained"
                     color="primary"
@@ -870,36 +805,6 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                 ) : null}
               </div>
             </div>
-          </Dialog>
-          <Dialog
-            visible={addVisible}
-            onClose={() => {
-              setAddVisible(false);
-            }}
-            onOK={() => {
-              addGroup();
-            }}
-            title={'添加群'}
-            dialogStyle={{ width: '750px', height: '700px' }}
-          >
-            <GroupSet saveGroupSet={saveGroupSet} type={'创建'} />
-          </Dialog>
-          <Dialog
-            visible={addModelVisible}
-            onClose={() => {
-              setAddModelVisible(false);
-            }}
-            title={'模板创群'}
-            dialogStyle={{ width: '80%', height: '80%' }}
-            footer={false}
-          >
-            <GroupModel
-              toGroupSet={(key: string) => {
-                setAddVisible(true);
-                setAddModelVisible(false);
-                setTemplateKey(key);
-              }}
-            />
           </Dialog>
         </div>
       </ClickAwayListener>

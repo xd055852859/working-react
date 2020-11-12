@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './home.css';
 import logoPng from '../../assets/img/logo.png';
 import boardPng from '../../assets/img/board.png';
@@ -19,6 +19,10 @@ const Home: React.FC<HomeProps> = (props) => {
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const moveState = useTypedSelector((state) => state.common.moveState);
   const theme = useTypedSelector((state) => state.auth.theme);
+
+  useEffect(() => {
+    localStorage.removeItem('page');
+  }, []);
   return (
     <div
       className="home"
@@ -49,7 +53,7 @@ const Home: React.FC<HomeProps> = (props) => {
         style={
           theme.backgroundImg
             ? {
-                backgroundImage: 'url(' + theme.backgroundImg + ')',           
+                backgroundImage: 'url(' + theme.backgroundImg + ')',
               }
             : { backgroundColor: theme.backgroundColor }
         }

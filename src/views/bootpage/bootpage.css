@@ -4,11 +4,15 @@
   position: relative;
   display: flex;
   justify-content: space-between;
+  background-color: #fff;
+  background-image: url('https://cdn-icare.qingtime.cn/1604717995491_workingVip');
+  background-size: cover;
+  background-attachment: fixed;
 }
 
 .bootpage-logo {
   position: absolute;
-  top: 2.4%;
+  top: 30px;
   left: 4%;
   display: flex;
   align-items: center;
@@ -55,14 +59,18 @@
 }
 
 .bootpage-button {
-  width: 200px;
-  height: 60px;
-  font-size: 18px;
-  color: #ffffff;
-  background-color: #FF658F;
+  width: 147px;
+  height: 50px;
+  background: #fdcb0e;
   border-radius: 30px;
-  cursor: pointer;
-  margin-top: 10px;
+  position: fixed;
+  top: 30px;
+  right: 4%;
+  font-size: 18px;
+  font-family: PingFangSC-Medium, PingFang SC;
+  font-weight: 550;
+  color: #333333;
+  line-height: 25px;
 }
 
 .bootpage-video {

@@ -165,7 +165,7 @@ const MemberBoard: React.FC = () => {
         if (
           item.executorKey !== user._key &&
           item.groupName &&
-          item.groupName.indexOf('主群') === -1 &&
+          item.groupName.indexOf('个人事务') === -1 &&
           item.title !== ''
         ) {
           if (!personObj[item.executorKey]) {
@@ -207,7 +207,7 @@ const MemberBoard: React.FC = () => {
           if (
             groupItem.finishPercent === 0 &&
             item.title !== '' &&
-            groupItem.groupName.indexOf('主群') === -1
+            groupItem.groupName.indexOf('个人事务') === -1
           ) {
             if (groupItem.labelKey) {
               if (!arr[index][groupItem.labelKey]) {
@@ -271,7 +271,7 @@ const MemberBoard: React.FC = () => {
   const sortArr = (arr: any, item: any) => {
     item = formatDay(item);
     arr.push(item);
-    arr = _.sortBy(arr, ['taskEndDate']).reverse();
+    arr = _.sortBy(arr, ['createTime']).reverse();
     arr = _.sortBy(arr, ['finishPercent']);
     return arr;
   };
