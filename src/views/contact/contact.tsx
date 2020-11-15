@@ -192,7 +192,7 @@ const Contact: React.FC<ContactProps> = (props) => {
                           item.todayTotalTaskHours < 1
                             ? '0px'
                             : item.todayTotalTaskHours > 10
-                            ? '7px'
+                            ? '8px'
                             : '5px',
                       }}
                     >

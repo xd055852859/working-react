@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 import './bootpage.css';
 import bootpage from '../../assets/img/bootpage.png';
-import bootlogo from '../../assets/img/bootlogo.png';
+import bootlogo from '../../assets/svg/bootlogo.svg';
 import boottitle from '../../assets/img/boottitle.png';
 import { Button } from '@material-ui/core';
 import _ from 'lodash';

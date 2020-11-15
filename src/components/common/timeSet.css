@@ -1,15 +1,9 @@
 .timeSet,
 .timeSet-date {
-  width: 100%;
-  height: 55px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 5px 10px;
   box-sizing: border-box;
-}
-.timeSet {
-  margin-bottom: 10px;
 }
 .timeSet-title {
   width: 100%;
@@ -24,15 +18,12 @@
 }
 .timeSet-time-logo,
 .timeSet-date-logo {
-  width: 45px;
-  height: 40px;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-content: space-between;
 }
 .timeSet-date-logo {
-  width: 18px;
   height: 40px;
 }
 .timeSet-time-logo img,
@@ -42,8 +33,6 @@
   margin-right: 3px;
 }
 .timeSet-time-info {
-  width: 230px;
-  height: 40px;
   display: flex;
   flex-wrap: wrap;
 }
@@ -58,8 +47,6 @@
   z-index: 5;
 }
 .timeSet-date-info {
-  width: 255px;
-  height: 40px;
   display: flex;
   flex-wrap: wrap;
 }
@@ -73,7 +60,6 @@
   text-align: center;
   background-color: #505050;
   margin-right: 5px;
-  margin-bottom: 5px;
   position: relative;
   overflow: hidden;
   cursor: pointer;

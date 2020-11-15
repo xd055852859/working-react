@@ -90,7 +90,6 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
       // newGroupList = _.sortBy(Object.values(newGroupObj), [
       //   'taskNumber',
       // ]).reverse();
-      console.log('newTaskNumber', newTaskNumber);
       setTaskNumber(newTaskNumber);
     }
   }, [selfTaskArray]);

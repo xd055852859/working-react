@@ -396,10 +396,13 @@ input {
 .field-textarea:focus {
   outline: 2px solid #17b881;
 }
+.taskItem-path-container {
+  width: 100%;
+}
 .taskItem-path {
   width: 100%;
   font-size: 8px;
-
+  transform: scale(0.9);
   text-align: left;
   /* margin-left:-20px; */
   /* color: #333; */
@@ -408,5 +411,4 @@ input {
 }
 .taskItem-path > span {
   cursor: pointer;
-    /* transform: scale(0.9); */
 }

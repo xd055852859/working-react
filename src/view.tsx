@@ -6,7 +6,7 @@ import {
   Switch,
   Redirect,
 } from 'react-router-dom';
-import Message from "./components/common/message";
+import Message from './components/common/message';
 
 export default function Pages() {
   const App = Loadable({
@@ -22,8 +22,8 @@ export default function Pages() {
     loader: () => import('./views/content/content'),
     loading: () => null,
   });
-  const Bootpage = Loadable({
-    loader: () => import('./views/bootpage/bootpage'),
+  const Welcome = Loadable({
+    loader: () => import('./views/welcome/welcome'),
     loading: () => null,
   });
   return (
@@ -37,7 +37,7 @@ export default function Pages() {
         />
         <Route path="/home" component={Home} />
         <Route path="/content" component={Content} />
-        <Route path="/bootpage" component={Bootpage} />
+        <Route path="/welcome" component={Welcome} />
 
         {/* <Route path="/404" component={NotFound} />
         <Redirect to="/404" /> */}

@@ -14,6 +14,7 @@ interface timeSetProp {
   endDate?: number;
   percentClick?: any;
   timestate?: string;
+  viewStyle?: string;
 }
 
 const TimeSet: React.FC<timeSetProp> = (prop) => {
@@ -24,6 +25,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
     endDate,
     percentClick,
     timestate,
+    viewStyle,
   } = prop;
   const [timeDate, setTimeDate] = useState<any>([]);
   const [timeWeek, setTimeWeek] = useState<any>([]);
@@ -31,26 +33,9 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
   const [timeDateArray, setTimeDateArray] = useState<any>([]);
   const [timeDateType, setTimeDateType] = useState(0);
   const [dateIndex, setdateIndex] = useState(0);
-  const timeArray = [
-    1,
-    2,
-    3,
-    4,
-    5,
-    6,
-    7,
-    8,
-    9,
-    0.1,
-    0.2,
-    0.3,
-    0.4,
-    0.5,
-    0.6,
-    0.7,
-    0.8,
-    0.9,
-  ];
+  const timeArray = !viewStyle
+    ? [1, 2, 3, 4, 5, 6, 7, 8, 9, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    : [1, 2, 3, 4, 5, 6, 7, 8, 9, 0.1, 0.2, 0.3, 0.4, 0.5];
   useEffect(() => {
     if (timeDate.length === 0) {
       mouthDate();
@@ -74,7 +59,8 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
     //   "星期六",
     //   "星期日",
     // ];
-    for (let i = 0; i < 28; i += 1) {
+    let targetDate = !viewStyle ? 28 : 15;
+    for (let i = 0; i < targetDate; i += 1) {
       timeMonth.push(moment().add(i, 'days').date());
       // weeks[i] = weekString[
       //   this.$moment("2020-03-05")
@@ -117,40 +103,80 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
   };
   return (
     <React.Fragment>
-      <div className="timeSet-title">
-        预计工时 <span>{timeNumber + '小时'}</span>
-      </div>
-      <div className="timeSet">
+      {!viewStyle ? (
+        <div className="timeSet-title">
+          预计工时 <span>{timeNumber + '小时'}</span>
+        </div>
+      ) : null}
+      <div
+        className="timeSet"
+        style={
+          !viewStyle
+            ? {
+                width: '100%',
+                height: '55px',
+                marginBottom: '10px',
+                padding: '5px 10px',
+              }
+            : { height: '30px' }
+        }
+      >
         {!timestate ? (
-          <div className="timeSet-time-logo">
+          <div
+            className="timeSet-time-logo"
+            style={
+              !viewStyle
+                ? { width: '45px', height: '40px' }
+                : {
+                    height: '30px',
+                    alignItems: 'center',
+                    alignContent: 'initial',
+                    margin: '0px 15px',
+                  }
+            }
+          >
             <img
               src={timeSet1Png}
               onClick={() => {
                 percentClick(10);
               }}
+              style={{ marginRight: !viewStyle ? '' : '10px' }}
             />
             <img
               src={timeSet2Png}
               onClick={() => {
                 percentClick(0);
               }}
+              style={{ marginRight: !viewStyle ? '' : '10px' }}
             />
             <img
               src={timeSet3Png}
               onClick={() => {
                 percentClick(1);
               }}
+              style={{ marginRight: !viewStyle ? '' : '10px' }}
             />
             <img
               src={timeSet4Png}
               onClick={() => {
                 percentClick(2);
               }}
-              style={{ width: '17px', height: '16px' }}
+              style={{
+                width: '17px',
+                height: '16px',
+                marginRight: !viewStyle ? '' : '10px',
+              }}
             />
           </div>
         ) : null}
-        <div className="timeSet-time-info">
+        <div
+          className="timeSet-time-info"
+          style={
+            !viewStyle
+              ? { width: '230px', height: '40px' }
+              : { height: '30px', alignItems: 'center' }
+          }
+        >
           {timeArray.map((timeItem: any, timeIndex: number) => {
             return (
               <div
@@ -160,6 +186,9 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                   timeSetClick('hour', timeItem);
                 }}
                 className="timeSet-time-item"
+                style={{
+                  marginBottom: !viewStyle ? '5px' : '0px',
+                }}
               >
                 {timeItem}
                 <div
@@ -179,20 +208,46 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
       {/* v-if="dateType" */}
       {!timestate ? (
         <React.Fragment>
-          <div className="timeSet-title">
-            到期时间<span>{moment(endDate).format('YYYY-MM-DD')}</span>
-          </div>
-          <div className="timeSet-date">
-            <div className="timeSet-date-logo">
+          {!viewStyle ? (
+            <div className="timeSet-title">
+              到期时间<span>{moment(endDate).format('YYYY-MM-DD')}</span>
+            </div>
+          ) : null}
+          <div
+            className="timeSet-date"
+            style={
+              !viewStyle
+                ? { width: '100%', height: '55px', padding: '5px 10px',marginTop:'20px' }
+                : { height: '30px', marginLeft: '10px' }
+            }
+          >
+            <div
+              className="timeSet-date-logo"
+              style={
+                !viewStyle
+                  ? { width: '45px', height: '40px' }
+                  : {
+                      height: '30px',
+                      alignItems: 'center',
+                      alignContent: 'initial',
+                      margin: '0px 15px',
+                    }
+              }
+            >
               <img
                 src={timeSet5Png}
                 onClick={() => {
                   changeTimeDateType(0);
                 }}
+                style={{ marginRight: !viewStyle ? '' : '10px' }}
               />
               <img
                 src={timeSet6Png}
-                style={{ width: '17px', height: '14px' }}
+                style={{
+                  width: '17px',
+                  height: '14px',
+                  marginRight: !viewStyle ? '' : '10px',
+                }}
                 onClick={() => {
                   changeTimeDateType(1);
                 }}
@@ -214,6 +269,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                           : timeWeek[dateTimeIndex] > 4
                           ? '#BABABA'
                           : '#505050',
+                      marginBottom: !viewStyle ? '5px' : '0px',
                     }}
                   >
                     {dateTimeItem}

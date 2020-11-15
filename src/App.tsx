@@ -15,6 +15,9 @@ import {
   getTargetUserInfo,
   getThemeBg,
   setTheme,
+  changeMusic,
+  changeMessageMusic,
+  changeMove,
 } from './redux/actions/authActions';
 import {
   setCommonHeaderIndex,
@@ -37,6 +40,7 @@ import ShowPage from './views/showPage/showPage';
 import TaskInfo from './components/taskInfo/taskInfo';
 
 import closePng from './assets/img/close.png';
+import moveSvg from './assets/svg/move.svg';
 import { setGroupKey } from './redux/actions/groupActions';
 
 const App: React.FC = () => {
@@ -55,11 +59,15 @@ const App: React.FC = () => {
   const taskAction = useTypedSelector((state) => state.task.taskAction);
   const theme = useTypedSelector((state) => state.auth.theme);
   const themeBg = useTypedSelector((state) => state.auth.themeBg);
+  const finishMusic = useTypedSelector((state) => state.auth.finishMusic);
+  const messageMusic = useTypedSelector((state) => state.auth.messageMusic);
+  const finishPos = useTypedSelector((state) => state.auth.finishPos);
   const [intervalTime, setIntervalTime] = useState<any>(null);
   const [bgIntervalTime, setBgIntervalTime] = useState<any>(null);
   const [playAction, setPlayAction] = useState<any>({});
   const [playState, setPlayState] = useState(false);
   const [showType, setShowType] = useState('3');
+  const [finishIndex, setFinishIndex] = useState(0);
   const calendarColor = [
     '#39B98D',
     '#3C8FB5',
@@ -73,6 +81,10 @@ const App: React.FC = () => {
     '#9B9B9B',
   ];
   const pageRef: React.RefObject<any> = useRef();
+  const doneAudioRef: React.RefObject<any> = useRef();
+  const doneMessageRef: React.RefObject<any> = useRef();
+
+  const ballRef: React.RefObject<any> = useRef();
   useEffect(() => {
     // 用户已登录
     if (user && user._key && token && token === localStorage.getItem('token')) {
@@ -140,7 +152,7 @@ const App: React.FC = () => {
         dispatch(getUserInfo(token));
         dispatch(getUploadToken());
       } else {
-        history.push('/bootpage');
+        history.push('/welcome');
       }
       if (getSearchParamValue(location.search, 'token')) {
         window.location.href = window.location.origin + '/';
@@ -215,6 +227,83 @@ const App: React.FC = () => {
   useEffect(() => {
     setPlayAction(_.cloneDeep(taskAction));
   }, [taskAction]);
+  useEffect(() => {
+    if (finishMusic) {
+      doneAudioRef.current.play();
+      dispatch(changeMusic(false));
+    }
+  }, [finishMusic]);
+  useEffect(() => {
+    if (messageMusic) {
+      doneMessageRef.current.play();
+      dispatch(changeMessageMusic(false));
+    }
+  }, [messageMusic]);
+
+  useEffect(() => {
+    if (finishPos.length > 0) {
+      let newFinishIndex = finishIndex;
+      let dom = document.createElement('div');
+      // console.log('XXXXXXXXXXXXXXX', newFinishIndex);
+      // dom.id = newFinishIndex + '';
+
+      console.log(Math.random());
+      dom.style.top = finishPos[1] - 20 + 'px';
+      dom.style.right = pageRef.current.clientWidth - finishPos[0] - 20 + 'px';
+      dom.style.animation =
+        'run-right-right' +
+        newFinishIndex +
+        ' 2s 0.4s 1 linear,run-right-top' +
+        newFinishIndex +
+        ' 2s 0.4s 1 cubic-bezier(' +
+        Math.random().toFixed(2) +
+        ', ' +
+        Math.random().toFixed(2) +
+        ', ' +
+        Math.random().toFixed(2) +
+        ', ' +
+        Math.random().toFixed(2) +
+        ')';
+      //  cubic-bezier(.66,.1,1,.41)';
+
+      dom.style.animationFillMode = 'forwards';
+      let img = new Image();
+      img.src = moveSvg;
+      img.width = 60;
+      img.height = 60;
+      dom.classList.add('ball');
+      // dom.classList.add('run_top_right');
+      dom.appendChild(img);
+      pageRef.current.appendChild(dom);
+      let style: any = document.styleSheets[0];
+      let timer: any = setTimeout(() => {
+        pageRef.current.removeChild(dom);
+        style.deleteRule(style.cssRules.length - 5);
+        style.deleteRule(style.cssRules.length - 4);
+        clearTimeout(timer);
+        timer = null;
+      }, 2800);
+
+      style.insertRule(
+        '@keyframes run-right-top' +
+          newFinishIndex +
+          ' {0% {top: ' +
+          (finishPos[1] - 20) +
+          'px;} 100% {top: 30px}}',
+        0
+      );
+      style.insertRule(
+        '@keyframes run-right-right' +
+          newFinishIndex +
+          '  {0% { right: ' +
+          (pageRef.current.clientWidth - finishPos[0] - 20) +
+          'px;transform: scale(1);} 100% { right: 30px;transform: scale(0.45);}',
+        1
+      );
+      newFinishIndex++;
+      setFinishIndex(newFinishIndex);
+    }
+  }, [finishPos]);
 
   const formatAction = () => {
     const nowTime = moment().valueOf();
@@ -251,7 +340,7 @@ const App: React.FC = () => {
     let newThemeBg = _.cloneDeep(themeBg);
     const randomNum = Math.round(Math.random() * (newThemeBg.length - 1));
     let img = new Image();
-   
+
     img.src = newThemeBg[randomNum].url;
     // img.crossOrigin = 'anonymous'
     // 确定图片加载完成后再进行背景图片切换
@@ -331,6 +420,28 @@ const App: React.FC = () => {
           />
         </div>
       ) : null}
+      <audio
+        ref={doneAudioRef}
+        src="https://cdn-icare.qingtime.cn/1605433190681_workingVip"
+        // muted
+        // controls
+        style={{ position: 'fixed', zIndex: -5, opacity: 0 }}
+      >
+        您的浏览器不支持 audio 标签。
+      </audio>
+      <audio
+        ref={doneMessageRef}
+        src="https://cdn-icare.qingtime.cn/1605432111005_workingVip"
+        // muted
+        // controls
+        style={{ position: 'fixed', zIndex: -5, opacity: 0 }}
+      >
+        您的浏览器不支持 audio 标签。
+      </audio>
+
+      {/* <div className="ball run_top_right" ref={ballRef}>
+        <img src={movePng} />
+      </div> */}
     </div>
   );
 };

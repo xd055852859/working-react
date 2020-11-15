@@ -125,6 +125,17 @@ const auth = {
       perPage: perPage,
     });
   },
+  sendReceipt(noticeKey: string) {
+    return request.post(HOME_URL + '/card/sendReceipt', {
+      token: auth_token,
+      noticeKey: noticeKey,
+    });
+  },
+  batchSendReceipt() {
+    return request.post(HOME_URL + '/card/batchSendReceipt', {
+      token: auth_token,
+    });
+  },
   getWorkingConfigInfo() {
     return request.post(HOME_URL + '/account/getWorkingConfigInfo', {
       token: auth_token,
@@ -280,6 +291,13 @@ const auth = {
   chooseWallPapers(wallKey: string) {
     return request.patch(PNG_URL + '/wallPaper/choose', { wallKey: wallKey });
   },
+  //切换timeosToken
+  switchToken() {
+    return request.get(AUTH_URL + '/account/switchToken', {
+      token: auth_token,
+      appHigh: 36,
+    });
+  },
 };
 const task = {
   getGroupTask(
@@ -341,7 +359,7 @@ const task = {
     return request.patch(HOME_URL + '/card', {
       token: auth_token,
       key: params.key,
-      children: params.children,
+      // children: params.children,
       content: params.content,
       countDownTime: params.countDownTime,
       date: params.date,
@@ -358,14 +376,14 @@ const task = {
       importantStatus: params.importantStatus,
       labelKey: params.labelKey,
       labelName: params.labelName,
-      parentCardKey: params.parentCardKey,
+      // parentCardKey: params.parentCardKey,
       taskEndDate: params.taskEndDate,
       taskStartDate: params.taskStartDate,
       taskType: params.taskType,
       title: params.title,
       todayTaskTime: params.todayTaskTime,
       type: params.type,
-      contract: params.type,
+      contract: params.contract,
     });
   },
   addTask(
@@ -556,6 +574,14 @@ const task = {
     return request.post(HOME_URL + '/card/switchFSTreeTaskRelation', {
       token: auth_token,
       ...params,
+    });
+  },
+  getCardCreate(curPage: number, perPage: number, typeArray?: any) {
+    return request.post(HOME_URL + '/card/getLatelyTaskList', {
+      token: auth_token,
+      curPage: curPage,
+      perPage: perPage,
+      typeArray: typeArray ? typeArray : [1, 2, 6],
     });
   },
 };

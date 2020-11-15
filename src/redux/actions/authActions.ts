@@ -15,6 +15,9 @@ export const actionTypes = {
   SET_THEME_SUCCESS: 'SET_THEME_SUCCESS',
   GET_UPLOAD_TOKEN: 'GET_UPLOAD_TOKEN',
   GET_UPLOAD_TOKEN_SUCCESS: 'GET_UPLOAD_TOKEN_SUCCESS',
+  CHANGE_FINISH_MUSIC: 'CHANGE_FINISH_MUSIC',
+  CHANGE_MESSAGE_MUSIC:'CHANGE_MESSAGE_MUSIC',
+  CHANGE_MOVE: 'CHANGE_MOVE',
 };
 
 export function getUserInfo(token: string | null) {
@@ -81,10 +84,10 @@ export function getThemeSuccess(data: any) {
     data,
   };
 }
-export function getThemeBg(page:number) {
+export function getThemeBg(page: number) {
   return {
     type: actionTypes.GET_THEME_BG,
-    page:page
+    page: page,
   };
 }
 
@@ -118,5 +121,24 @@ export function getUploadTokenSuccess(data: any) {
   return {
     type: actionTypes.GET_UPLOAD_TOKEN_SUCCESS,
     data,
+  };
+}
+export function changeMusic(finishMusic: boolean) {
+  return {
+    type: actionTypes.CHANGE_FINISH_MUSIC,
+    finishMusic,
+  };
+}
+
+export function changeMessageMusic(messageMusic: boolean) {
+  return {
+    type: actionTypes.CHANGE_MESSAGE_MUSIC,
+    messageMusic,
+  };
+}
+export function changeMove(finishPos: any) {
+  return {
+    type: actionTypes.CHANGE_MOVE,
+    finishPos,
   };
 }

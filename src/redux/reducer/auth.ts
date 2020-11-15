@@ -15,6 +15,9 @@ export interface AuthType {
   themeBgTotal: number;
   nowTime: number;
   socket: any;
+  finishMusic: boolean;
+  messageMusic: boolean;
+  finishPos: any;
 }
 
 const defaultState: AuthType = {
@@ -61,6 +64,9 @@ const defaultState: AuthType = {
   themeBgTotal: 0,
   nowTime: 0,
   socket: null,
+  finishMusic: false,
+  messageMusic: false,
+  finishPos: [],
 };
 
 export const auth = (state = defaultState, action: any) => {
@@ -162,6 +168,23 @@ export const auth = (state = defaultState, action: any) => {
         ...state,
         uploadToken: action.data,
       };
+    case actionTypes.CHANGE_FINISH_MUSIC:
+      return {
+        ...state,
+        finishMusic: action.finishMusic,
+      };
+    case actionTypes.CHANGE_MESSAGE_MUSIC:
+      return {
+        ...state,
+        messageMusic: action.messageMusic,
+      };
+
+    case actionTypes.CHANGE_MOVE:
+      return {
+        ...state,
+        finishPos: action.finishPos,
+      };
+
     default:
       return state;
   }

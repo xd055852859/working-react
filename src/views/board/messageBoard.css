@@ -1,5 +1,4 @@
 .messageBoard {
-  width: 360px;
   height: 100%;
   overflow: auto;
   margin-right: 2%;
@@ -14,6 +13,8 @@
   border-bottom: 1px solid rgba(216, 216, 216, 0.4);
   margin-bottom: 5px;
   font-size: 16px;
+  display: flex;
+  justify-content: space-between;
 }
 .messageBoard-item {
   width: 100%;
@@ -44,12 +45,16 @@
   background-color: #fff;
   box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
+  color: #333;
+  position: relative;
 }
 .messageBoard-item-time {
   font-size: 12px;
   font-weight: 400;
   color: #8091a0;
   margin-bottom: 7px;
+  display: flex;
+  align-items: center;
 }
 .messageBoard-item-name1 {
   font-size: 16px;
@@ -77,4 +82,50 @@
   width: 100%;
   display: flex;
   justify-content: flex-end;
+}
+.messageBoard-item-task {
+  width: 100%;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  color: #8091a0;
+}
+.messageBoard-item-task img {
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+  color: #8091a0;
+}
+.messageBoard-item-task-button {
+  width: 55px;
+  height: 55px;
+  line-height: 36px;
+  text-align: center;
+  position: absolute;
+  top: 57px;
+  right: 0px;
+  z-index: 2;
+  background-size: cover;
+  /* background-attachment: fixed; */
+  padding-left: 10px;
+  box-sizing: border-box;
+  cursor: pointer;
+  animation-fill-mode: forwards;
+}
+@keyframes changeSmall {
+  from {
+    width: 55px;
+    height: 55px;
+    opacity: 1;
+    top: 57px;
+    right: 0px;
+  }
+
+  to {
+    width: 0px;
+    height: 0px;
+    opacity: 0;
+    top: 79.5px;
+    right: 22.5px;
+  }
 }

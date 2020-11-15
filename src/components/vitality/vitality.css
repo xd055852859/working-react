@@ -123,9 +123,6 @@
 }
 .vitality-month-title {
   height: 26px;
-  position: absolute;
-  top: 0px;
-  left: 0px;
   line-height: 26px;
   font-size: 16px;
   font-weight: 500;
@@ -134,6 +131,7 @@
   border-radius: 15px;
   background-color: #17b881;
   cursor: pointer;
+  margin: 10px 0px 5px 0px;
 }
 .vitality-month-item {
   width: calc(96% / 7);

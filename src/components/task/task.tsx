@@ -3,6 +3,7 @@ import { useTypedSelector } from '../../redux/reducer/RootState';
 import { TextField, Button, ClickAwayListener } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
+import { changeMusic, changeMove } from '../../redux/actions/authActions';
 import {
   setTaskKey,
   editTask,
@@ -10,6 +11,7 @@ import {
   getGroupTask,
   setChooseKey,
   setTaskInfo,
+  getSelfTask,
 } from '../../redux/actions/taskActions';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
 import { setMessage } from '../../redux/actions/commonActions';
@@ -23,6 +25,7 @@ import ClickOutside from '../common/clickOutside';
 import Dialog from '../common/dialog';
 import DropMenu from '../common/dropMenu';
 import TimeSet from '../common/timeSet';
+// import doneAudio from '../../assets/audio/doneAudio.mp3';
 import unfinishPng from '../../assets/img/unfinish.png';
 import finishPng from '../../assets/img/finish.png';
 import unfinishbPng from '../../assets/img/unfinishb.png';
@@ -34,6 +37,7 @@ import ellipsisbPng from '../../assets/img/ellipsisb.png';
 import taskAddPng from '../../assets/img/contact-plus.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import checkPersonPng from '../../assets/img/checkPerson.png';
+
 interface TaskProps {
   taskItem: any;
   executorKey?: number | string;
@@ -234,7 +238,6 @@ const Task: React.FC<TaskProps> = (props) => {
     // titleRef.current.blur();
     if (taskKey !== '') {
       if (editState) {
-        console.log(newTaskDetail);
         dispatch(
           editTask(
             {
@@ -257,12 +260,16 @@ const Task: React.FC<TaskProps> = (props) => {
       // setAddInput('');
     }
   };
-  const changeFinishPercent = (finishPercent: number) => {
+  const changeFinishPercent = (finishPercent: number, e?: any) => {
     let newTaskDetail = _.cloneDeep(taskDetail);
     // taskDetail.finishPercent = finishPercent !== 0 ? 0 : 1;
     newTaskDetail.finishPercent = finishPercent;
     if (newTaskDetail.finishPercent === 1) {
       newTaskDetail.todayTaskTime = moment().valueOf();
+      dispatch(changeMusic(true));
+      if (e) {
+        dispatch(changeMove([e.pageX, e.pageY]));
+      }
     } else if (newTaskDetail.finishPercent === 0) {
       newTaskDetail.todayTaskTime = 0;
     }
@@ -403,6 +410,17 @@ const Task: React.FC<TaskProps> = (props) => {
       dispatch(setMessage(true, '新增成功', 'success'));
       if (headerIndex == 3) {
         dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+      } else if (headerIndex == 0) {
+        dispatch(
+          getSelfTask(
+            1,
+            user._key,
+            '[0, 1]',
+            1,
+            moment().add(1, 'days').startOf('day').valueOf(),
+            1
+          )
+        );
       } else {
         dispatch(
           getWorkingTableTask(1, user._key, 1, [0, 1, 2], theme.fileDay)
@@ -502,9 +520,10 @@ const Task: React.FC<TaskProps> = (props) => {
                 {taskDetail.finishPercent !== 10 ? (
                   <div
                     className="taskItem-finishIcon"
-                    onClick={() => {
+                    onClick={(e: any) => {
                       changeFinishPercent(
-                        taskDetail.finishPercent !== 0 ? 0 : 1
+                        taskDetail.finishPercent !== 0 ? 0 : 1,
+                        e
                       );
                     }}
                   >
@@ -680,32 +699,44 @@ const Task: React.FC<TaskProps> = (props) => {
                   {taskDetail.path1 &&
                   (taskDetail.type === 6 || taskDetail.type === 1) ? (
                     <div
-                      className="taskItem-path"
-                      style={{ color: bottomtype ? '#fff' : '#888' }}
+                      className="taskItem-path-container"
+                      style={{
+                        backgroundColor:
+                          taskDetail.finishPercent !== 0 || bottomtype
+                            ? 'transparent'
+                            : '#e0e0e0',
+                      }}
                     >
-                      {taskDetail.path1.map(
-                        (pathItem: any, pathIndex: number) => {
-                          return (
-                            <React.Fragment key={'path' + pathIndex}>
-                              <span
-                                onClick={() => {
-                                  if (headerIndex === 3) {
-                                    dispatch(changeStartId(pathItem._key));
-                                    dispatch(setHeaderIndex(4));
-                                  }
-                                }}
-                              >
-                                {pathItem.title}
-                              </span>
-                              <span>
-                                {pathIndex !== taskDetail.path1.length - 1
-                                  ? ' ⇀ '
-                                  : ''}
-                              </span>
-                            </React.Fragment>
-                          );
-                        }
-                      )}
+                      <div
+                        className="taskItem-path"
+                        style={{
+                          color: bottomtype ? '#fff' : '#A1ACB7',
+                        }}
+                      >
+                        {taskDetail.path1.map(
+                          (pathItem: any, pathIndex: number) => {
+                            return (
+                              <React.Fragment key={'path' + pathIndex}>
+                                <span
+                                  onClick={() => {
+                                    if (headerIndex === 3) {
+                                      dispatch(changeStartId(pathItem._key));
+                                      dispatch(setHeaderIndex(4));
+                                    }
+                                  }}
+                                >
+                                  {pathItem.title}
+                                </span>
+                                <span>
+                                  {pathIndex !== taskDetail.path1.length - 1
+                                    ? ' / '
+                                    : ''}
+                                </span>
+                              </React.Fragment>
+                            );
+                          }
+                        )}
+                      </div>
                     </div>
                   ) : null}
                   {!bottomtype && !myState ? (

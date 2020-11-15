@@ -105,6 +105,7 @@ export const task = (state = defaultState, action: any) => {
           );
         }
       }
+      console.log(action.data.cardArray);
       return {
         ...state,
         workingGroupArray: action.data.groupArray,
@@ -126,8 +127,6 @@ export const task = (state = defaultState, action: any) => {
         taskInfo: action.taskInfo,
       };
     case actionTypes.EDIT_TASK_SUCCESS:
-      console.log('编辑成功');
-      console.log(action);
       let taskInfo = _.cloneDeep(action.data[0]);
       let headerIndex = action.data[1];
       if (headerIndex === 0 && state.selfTaskArray) {

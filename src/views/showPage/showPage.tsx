@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './showPage.css';
 import {
   Checkbox,
@@ -12,7 +12,10 @@ import { getSelfTask } from '../../redux/actions/taskActions';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { setTheme } from '../../redux/actions/authActions';
-import { setMessage } from '../../redux/actions/commonActions';
+import {
+  setMessage,
+  setCommonHeaderIndex,
+} from '../../redux/actions/commonActions';
 import format from '../../components/common/format';
 import traditionalDate from '../../components/common/date';
 import moment from 'moment';
@@ -23,11 +26,12 @@ import ClockNew from '../../components/clock/clockNew';
 import HeaderBg from '../../components/headerSet/headerBg';
 // import ClockNew from '../../components/clock/clockNew';
 import infoPng from '../../assets/img/info.png';
-import logoPng from '../../assets/img/logo.png';
+import logoSvg from '../../assets/svg/logo.svg';
 import rightArrowPng from '../../assets/img/rightArrow.png';
 import radioCheckPng from '../../assets/img/radioCheck.png';
 import unradioCheckPng from '../../assets/img/unradioCheck.png';
 import bgImg from '../../assets/img/bgImg.png';
+import { getTokenSourceMapRange } from 'typescript';
 interface ShowPageProps {
   changeShowType: any;
 }
@@ -46,7 +50,9 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
   const [chooseWallKey, setChooseWallKey] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [bg, setBg] = useState<any>('');
-
+  const [menuShow, setMenuShow] = useState(1);
+  const [timeOsToken, setTimeOsToken] = useState(null);
+  const showPageRef: React.RefObject<any> = useRef();
   const year = moment().year();
   const month = moment().month();
   const day = moment().date();
@@ -68,7 +74,10 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
     // getSocket();
     setTimeInterval(interval);
     getPrompt();
+    getToken();
+    dispatch(setCommonHeaderIndex(0));
     localStorage.setItem('page', 'show');
+    localStorage.setItem('headerIndex', '0');
     // getWeather();
     return () => {
       if (timeInterval) {
@@ -84,6 +93,14 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
       localStorage.removeItem('url');
     }
   }, [theme]);
+  const getToken = async () => {
+    let res: any = await api.auth.switchToken();
+    if (res.msg == 'OK') {
+      setTimeOsToken(res.result.token);
+    } else {
+      dispatch(setMessage(true, res.msg, 'error'));
+    }
+  };
   const changeFinishPercentArr = (e: any, type: string) => {
     console.log(e.target.checked);
     let newTheme = _.cloneDeep(theme);
@@ -191,6 +208,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
         }
       }}
       className="showPage-container"
+      ref={showPageRef}
       style={
         bg
           ? {
@@ -316,21 +334,67 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
         ) : null}
         <div className="showPage-task-title">
           <div
-            className="home-header-logo"
+            className="showPage-bigLogo"
             onClick={(e: any) => {
-              window.location.href = window.location.origin + '/';
+              window.top.location.href = window.location.origin + '/';
               // changeShowType();
               e.stopPropagation();
             }}
           >
-            <img src={logoPng} alt="" />
+            <img src={logoSvg} alt="" />
           </div>
         </div>
-        {theme.taskShow ? (
-          <div className="showPage-task-container">
-            <MainBoard showType="showPage" />
+        <div className="showPage-task-menu">
+          <div
+            className="showPage-task-menu-item"
+            style={{
+              borderBottom:
+                menuShow === 0 ? '2px solid #17B881' : '2px solid transparent',
+            }}
+            onClick={() => {
+              setMenuShow(0);
+            }}
+          >
+            我的任务
+          </div>
+          <div
+            className="showPage-task-menu-item"
+            style={{
+              borderBottom:
+                menuShow === 1 ? '2px solid #17B881' : '2px solid transparent',
+              marginLeft: '15px',
+            }}
+            onClick={() => {
+              setMenuShow(1);
+            }}
+          >
+            我的文件
+          </div>
+        </div>
+        {menuShow === 0 ? (
+          theme.taskShow ? (
+            <div className="showPage-task-container">
+              <MainBoard showType="showPage" />
+            </div>
+          ) : null
+        ) : menuShow === 1 ? (
+          <div className="showPage-timeos-container">
+            {timeOsToken ? (
+              <iframe
+                src={
+                  'https://timeos.qingtime.cn/office/login?token=' +
+                  timeOsToken +
+                  '&redirect-router=/office/home/recent&chatToken=5PgR5CuV1awS7deh_NCgqzldKJsv9LgGGK3iHSH5K3z'
+                }
+                style={{
+                  width: '100%',
+                  height: showPageRef.current.clientHeight + 15,
+                }}
+              ></iframe>
+            ) : null}
           </div>
         ) : null}
+
         <img
           src={infoPng}
           alt=""

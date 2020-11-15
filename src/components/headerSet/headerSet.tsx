@@ -13,6 +13,7 @@ import Dialog from '../common/dialog';
 import DropMenu from '../common/dropMenu';
 import Tooltip from '../common/tooltip';
 import ClockIn from '../clockIn/clockIn';
+import Vitality from '../vitality/vitality';
 import Chat from '../../views/chat/chat';
 import HeaderBg from './headerBg';
 import Task from '../task/task';
@@ -35,7 +36,7 @@ import set5Png from '../../assets/img/set5.png';
 import rightArrowPng from '../../assets/img/rightArrow.png';
 import leftArrowPng from '../../assets/img/leftArrow.png';
 import logoutPng from '../../assets/img/logout.png';
-
+import batteryPng from '../../assets/img/battery.png';
 import bgImg from '../../assets/img/bgImg.png';
 import clockInPng from '../../assets/img/clockIn.png';
 import searchPng from '../../assets/img/headerSearch.png';
@@ -78,6 +79,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const theme = useTypedSelector((state) => state.auth.theme);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const groupArray = useTypedSelector((state) => state.group.groupArray);
+  const finishPos = useTypedSelector((state) => state.auth.finishPos);
 
   const memberArray = useTypedSelector((state) => state.member.memberArray);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
@@ -96,7 +98,10 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const [searchInput, setSearchInput] = useState('');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [searchTaskList, setSearchTaskList] = useState([]);
+  const [createPage, setCreatePage] = useState(1);
+  const [createTotal, setCreateTotal] = useState(0);
+  const [createTaskList, setCreateTaskList] = useState<any>([]);
+  const [searchTaskList, setSearchTaskList] = useState<any>([]);
   const [groupIndex, setGroupIndex] = useState(0);
   const [groupVisible, setGroupVisible] = useState(false);
   const [labelIndex, setLabelIndex] = useState(0);
@@ -108,6 +113,8 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const [moveState, setMoveState] = useState('');
   const [moveType, setMoveType] = useState(0);
   const [chooseWallKey, setChooseWallKey] = useState('');
+  const [showVitality, setShowVitality] = useState(false);
+  const [vitalityInfo, setVitalityInfo] = useState<any>(null);
 
   const canvasRef: React.RefObject<any> = useRef();
 
@@ -138,8 +145,24 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   useEffect(() => {
     if (user) {
       setAvatar(user.profile.avatar);
+      getTaskCreate(1);
     }
   }, [user]);
+
+  useEffect(() => {
+    if (finishPos) {
+      let timer1: any = setTimeout(() => {
+        setAvatarShow(true);
+        clearTimeout(timer1);
+        timer1 = null;
+      }, 2000);
+      let timer2: any = setTimeout(() => {
+        setAvatarShow(false);
+        clearTimeout(timer2);
+        timer2 = null;
+      }, 4000);
+    }
+  }, [finishPos]);
   useEffect(() => {
     if (groupArray && groupArray.length > 0) {
       getLabelArray(groupArray[0]._key);
@@ -151,14 +174,22 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       setPage(1);
     }
   }, [searchInput]);
-  const getPng = async () => {
-    let newImgBigArr2: any = [];
-    let res: any = await api.auth.getWallPapers(1);
-    if (res.msg === 'OK') {
-      res.data.forEach((item: any) => {
-        newImgBigArr2.push(decodeURI(item.url));
-      });
-      setImgBigArr2(newImgBigArr2);
+  // const getPng = async () => {
+  //   let newImgBigArr2: any = [];
+  //   let res: any = await api.auth.getWallPapers(1);
+  //   if (res.msg === 'OK') {
+  //     res.data.forEach((item: any) => {
+  //       newImgBigArr2.push(decodeURI(item.url));
+  //     });
+  //     setImgBigArr2(newImgBigArr2);
+  //   } else {
+  //     dispatch(setMessage(true, res.msg, 'error'));
+  //   }
+  // };
+  const getVitalityInfo = async () => {
+    let res: any = await api.auth.getTargetUserInfo(user._key);
+    if (res.msg == 'OK') {
+      setVitalityInfo(res.result);
     } else {
       dispatch(setMessage(true, res.msg, 'error'));
     }
@@ -191,6 +222,22 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       dispatch(setMessage(true, res.msg, 'error'));
     }
   };
+  const getTaskCreate = async (page: number) => {
+    let newCreateTaskList: any = [];
+    if (page === 1) {
+      setCreateTaskList([]);
+    } else {
+      newCreateTaskList = _.cloneDeep(createTaskList);
+    }
+    let res: any = await api.task.getCardCreate(page, limit);
+    if (res.msg === 'OK') {
+      newCreateTaskList.push(...res.result);
+      setCreateTaskList(newCreateTaskList);
+      setCreateTotal(res.totalNumber);
+    } else {
+      dispatch(setMessage(true, res.msg, 'error'));
+    }
+  };
   const scrollSearchLoading = (e: any) => {
     let newPage = page;
     //文档内容实际高度（包括超出视窗的溢出部分）
@@ -208,6 +255,23 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       getTaskSearch(newPage);
     }
   };
+  const scrollCreateLoading = (e: any) => {
+    let newPage = createPage;
+    //文档内容实际高度（包括超出视窗的溢出部分）
+    let scrollHeight = e.target.scrollHeight;
+    //滚动条滚动距离
+    let scrollTop = e.target.scrollTop;
+    //窗口可视范围高度
+    let clientHeight = e.target.clientHeight;
+    if (
+      clientHeight + scrollTop >= scrollHeight - 1 &&
+      createTaskList.length < createTotal
+    ) {
+      newPage = newPage + 1;
+      setCreatePage(newPage);
+      getTaskCreate(newPage);
+    }
+  };
   const getLabelArray = async (groupKey: string) => {
     let newLabelArray = [
       { _key: null, cardLabelName: 'ToDo', executorKey: user._key },
@@ -221,6 +285,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     }
   };
   const addLabelTask = async () => {
+    let newCreateTaskList = _.cloneDeep(createTaskList);
     let addTaskRes: any = await api.task.addTask(
       groupArray[groupIndex]._key,
       groupArray[groupIndex].role,
@@ -231,12 +296,15 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       addInput
     );
     if (addTaskRes.msg === 'OK') {
-      setAddVisible(false);
+      // setAddVisible(false);
       setAddInput('');
       dispatch(setMessage(true, '新增对应群任务成功', 'success'));
       // if (headerIndex === 3) {
       //   dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
       // }
+      newCreateTaskList.unshift(addTaskRes.result);
+      setCreateTaskList(newCreateTaskList);
+
       dispatch(getSelfTask(1, user._key, '[0, 1]'));
     } else {
       dispatch(setMessage(true, addTaskRes.msg, 'error'));
@@ -246,7 +314,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     localStorage.clear();
     socket.emit('logout', user._key);
     dispatch(setMessage(true, '退出登录成功', 'success'));
-    history.push('/bootpage');
+    history.push('/welcome');
   };
   return (
     <React.Fragment>
@@ -369,6 +437,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             onClick={() => {
               setContentSetVisilble(true);
               setAvatarShow(true);
+              getVitalityInfo();
             }}
           >
             <div
@@ -447,6 +516,22 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                   }}
                 >
                   <img src={avatar} alt="" />
+                </div>
+              </div>
+              <div
+                className="contentHeader-set-vitality"
+                onClick={() => {
+                  setShowVitality(true);
+                }}
+              >
+                <div>活力值</div>
+                <img
+                  src={batteryPng}
+                  alt=""
+                  className="contentHeader-set-numImg"
+                />
+                <div style={{ color: '#17B881' }}>
+                  {vitalityInfo && vitalityInfo.energyValueTotal}
                 </div>
               </div>
               <div
@@ -717,8 +802,8 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           top: '65px',
           right: '10px',
           width: '400px',
-          height: '250px',
-          overflow: 'visible',
+          height: createTaskList.length > 0 ? 'calc(100% - 70px)' : '250px',
+          overflow: 'auto',
         }}
         showMask={false}
       >
@@ -847,6 +932,24 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             </div>
           </div>
         ) : null}
+        <div className="addTask-create">最近创建</div>
+        {createTaskList.length > 0 ? (
+          <div
+            className="headerSet-search-info"
+            onScroll={scrollCreateLoading}
+            style={{ height: 'calc(100% - 145px)' }}
+          >
+            {createTaskList.map((taskItem: any, taskIndex: number) => {
+              return (
+                <Task
+                  key={'create' + taskIndex}
+                  taskItem={taskItem}
+                  showGroupName={true}
+                />
+              );
+            })}
+          </div>
+        ) : null}
       </Dialog>
       <Dialog
         visible={searchVisible}
@@ -859,7 +962,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           position: 'fixed',
           top: '65px',
           right: '10px',
-          width: '370px',
+          width: '430px',
           height: searchTaskList.length > 0 ? 'calc(100% - 70px)' : '140px',
           overflow: 'auto',
         }}
@@ -920,8 +1023,8 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
         dialogStyle={{
           position: 'fixed',
           top: '65px',
-          right: '10px',
-          width: '370px',
+          right: '0px',
+          width: '430px',
           height: 'calc(100% - 70px)',
           overflow: 'auto',
         }}
@@ -930,6 +1033,25 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
         <MessageBoard type={'header'} />
       </Dialog>
       {/* <canvas ref={canvasRef} className="appCanvas"></canvas> */}
+      <Dialog
+        visible={showVitality}
+        onClose={() => {
+          setShowVitality(false);
+        }}
+        footer={false}
+        title={'活力值'}
+        dialogStyle={{
+          width: '90%',
+          height: '90%',
+          overflow: 'auto',
+        }}
+      >
+        <Vitality
+          vitalityType={2}
+          vitalityKey={user._key}
+          fatherVitalityInfo={vitalityInfo}
+        />
+      </Dialog>
     </React.Fragment>
   );
 };

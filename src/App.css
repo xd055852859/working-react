@@ -2,23 +2,23 @@
   display: flex;
   position: relative;
 }
-.App-bg2{
+.App-bg2 {
   position: fixed;
-  top:0px;
-  left:0px;
-  right:0px;
-  bottom:0px;
-  z-index:-2;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  z-index: -2;
   background-size: cover;
   background-attachment: fixed;
 }
-.App-bg1{
+.App-bg1 {
   position: fixed;
-  top:0px;
-  left:0px;
-  right:0px;
-  bottom:0px;
-  z-index:-1;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  z-index: -1;
 }
 .home-chat {
   height: 100%;
@@ -115,6 +115,50 @@ textarea {
   z-index: -10;
   opacity: 0;
 }
+/* 定义球的初始值，位置是绝对定位； */
+.ball {
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  position: fixed;
+  right: 30px;
+  top: 20px;
+  z-index: 4;
+  /* background: greenyellow; */
+  /* display: none; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 定义动画的流程 */
+.run_top_right {
+  /* animation: run-right-right 3s 0.4s 1 linear, run-right-top 3s 0.4s 1 ease-out; */
+ 
+}
+
+/* 向上走的动画初始及结尾值 */
+/* @keyframes run-right-top {
+  0% {
+    bottom: 40px;
+  }
+
+  100% {
+    bottom: 800px;
+  }
+} */
+/* 向上右的动画初始及结尾值 */
+/* @keyframes run-right-right {
+  0% {
+    left: 40px;
+    transform: scale(0.7);
+  }
+
+  100% {
+    left: 600px;
+    transform: scale(0.45);
+  }
+} */
 @keyframes moveIn {
   from {
     width: 320px;

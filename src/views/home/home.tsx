@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import './home.css';
-import logoPng from '../../assets/img/logo.png';
+import logoSvg from '../../assets/svg/logo.svg';
 import boardPng from '../../assets/img/board.png';
 import tablePng from '../../assets/img/table.png';
 import chatPng from '../../assets/img/chat.png';
@@ -64,10 +64,10 @@ const Home: React.FC<HomeProps> = (props) => {
           className="home-header-logo"
           onClick={() => {
             const redirect = `${window.location.protocol}//${window.location.host}`;
-            window.location.href = `${redirect}/bootpage`;
+            window.location.href = `${redirect}/welcome`;
           }}
         >
-          <img src={logoPng} alt="" />
+          <img src={logoSvg} alt="" />
         </div>
         <div
           style={

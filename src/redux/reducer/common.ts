@@ -43,7 +43,7 @@ export const common = (state = defaultState, action: any) => {
         const redirect = `${window.location.protocol}//${window.location.host}`;
         // window.location.href = `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`;
         localStorage.clear();
-        window.location.href = `${redirect}/bootpage`;
+        window.location.href = `${redirect}/welcome`;
       }
       return {
         ...state,

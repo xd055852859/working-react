@@ -29,13 +29,13 @@ interface MainBoardItemProps {
 const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
   const user = useTypedSelector((state) => state.auth.user);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
-
+  const dispatch = useDispatch();
   const { mainItem } = props;
   const classes = useStyles();
   let myState = false;
   if (
     mainItem[0].groupName.indexOf('主群') !== -1 &&
-    mainItem[0]._key === mainGroupKey
+    mainItem[0].groupKey === mainGroupKey
   ) {
     mainItem[0].groupName = '个人事务';
     myState = true;
@@ -43,7 +43,18 @@ const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
     mainItem[0].groupName = '他人事务';
     myState = true;
   }
-
+  const changeTask = (taskDetail: any) => {
+    // dispatch(
+    //   getSelfTask(
+    //     1,
+    //     user._key,
+    //     '[0, 1]',
+    //     1,
+    //     moment().add(1, 'days').startOf('day').valueOf(),
+    //     1
+    //   )
+    // );
+  };
   return (
     <React.Fragment>
       <div>
@@ -55,7 +66,7 @@ const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
               className={classes.avatar}
             />
           ) : null}
-          {myState ? '我的清单' : mainItem[0].groupName}
+          {mainItem[0].groupName}
         </div>
       </div>
       <React.Fragment
@@ -68,6 +79,7 @@ const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
             <Task
               taskItem={taskItem}
               key={'task' + taskIndex}
+              changeTask={changeTask}
               // myState={myState}
               // timeSetStatus={taskIndex > mainItem.length - 3}
             />
@@ -159,7 +171,7 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
         //   item.finishPercent === 1 &&
         //   item.todayTaskTime >= startTime &&
         //   item.todayTaskTime <= endTime;
-        if (eval(state) && item.title !== '' && item.taskEndDate) {
+        if (eval(state) && item.taskEndDate) {
           if (item.executorKey === user._key) {
             if (!groupObj[item.groupKey]) {
               groupObj[item.groupKey] = [];
@@ -169,7 +181,7 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
             // this.showTabObj[item.groupKey] = true;
             groupObj[item.groupKey] = _.sortBy(groupObj[item.groupKey], [
               'serialNumber',
-            ]);
+            ]).reverse();
             // groupObj[item.groupKey] = _.sortBy(groupObj[item.groupKey], [
             //   'finishPercent',
             // ]);

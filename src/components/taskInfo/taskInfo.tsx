@@ -153,7 +153,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   useEffect(() => {
     console.log('chooseKey', chooseKey);
     if (chooseKey) {
-      if (taskInfoVisible && !taskInfo && !fatherTaskItem) {
+      if (!taskInfo && !fatherTaskItem) {
         getTaskItem();
       } else if (fatherTaskItem) {
         console.log('fatherTaskItem', fatherTaskItem);

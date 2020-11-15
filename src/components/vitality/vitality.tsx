@@ -15,10 +15,11 @@ import leftArrowPng from '../../assets/img/leftArrow.png';
 interface VitalityProps {
   vitalityType: number;
   vitalityKey: string;
+  fatherVitalityInfo?: any;
 }
 
 const Vitality: React.FC<VitalityProps> = (props) => {
-  let { vitalityType, vitalityKey } = props;
+  let { vitalityType, vitalityKey, fatherVitalityInfo } = props;
   const dispatch = useDispatch();
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const vitalityLogRef: React.RefObject<any> = useRef();
@@ -50,8 +51,16 @@ const Vitality: React.FC<VitalityProps> = (props) => {
     );
   };
   useEffect(() => {
-    getVitalityInfo(vitalityType);
-  }, [vitalityType]);
+    if (!fatherVitalityInfo) {
+      getVitalityInfo(vitalityType);
+    } else {
+      setvitalityInfo(fatherVitalityInfo);
+      getVitalityData({
+        type: vitalityType - 1,
+        targetUGKey: fatherVitalityInfo._key,
+      });
+    }
+  }, [vitalityType, fatherVitalityInfo]);
   const getVitalityInfo = async (vitalityType: number) => {
     let res: any = null;
     if (vitalityType == 3) {
@@ -418,10 +427,7 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                 </div>
                 {monthData.map((item: any, index: number) => {
                   return (
-                    <div
-                      key={'monthData' + index}
-                      className="vitality-month-info"
-                    >
+                    <React.Fragment key={'monthData' + index}>
                       <div
                         className="vitality-month-title"
                         onClick={() => {
@@ -430,36 +436,38 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                       >
                         {monthTitleArr[index]}
                       </div>
-                      {item.map((dayItem: any, dayIndex: number) => {
-                        return (
-                          <div
-                            className="vitality-month-item"
-                            key={'vitality' + index + dayIndex}
-                          >
-                            {/* <template slot="title">分值: {{dayItem.value}} 分</template> */}
-                            <Tooltip title={dayItem.value}>
-                              <div
-                                className="vitality-month-item-day"
-                                style={{
-                                  // backgroundColor: dayItem.color,
-                                  backgroundColor: dayItem.color,
-                                  border: dayItem.date
-                                    ? '1px solid rgba(151, 151, 151, 1)'
-                                    : 0,
-                                }}
-                                onClick={() => {
-                                  if (headerIndex !== 2) {
-                                    getTargetLog(dayItem.startTime);
-                                  }
-                                }}
-                              >
-                                {dayItem.date}
-                              </div>
-                            </Tooltip>
-                          </div>
-                        );
-                      })}
-                    </div>
+                      <div className="vitality-month-info">
+                        {item.map((dayItem: any, dayIndex: number) => {
+                          return (
+                            <div
+                              className="vitality-month-item"
+                              key={'vitality' + index + dayIndex}
+                            >
+                              {/* <template slot="title">分值: {{dayItem.value}} 分</template> */}
+                              <Tooltip title={dayItem.value}>
+                                <div
+                                  className="vitality-month-item-day"
+                                  style={{
+                                    // backgroundColor: dayItem.color,
+                                    backgroundColor: dayItem.color,
+                                    border: dayItem.date
+                                      ? '1px solid rgba(151, 151, 151, 1)'
+                                      : 0,
+                                  }}
+                                  onClick={() => {
+                                    if (headerIndex !== 2) {
+                                      getTargetLog(dayItem.startTime);
+                                    }
+                                  }}
+                                >
+                                  {dayItem.date}
+                                </div>
+                              </Tooltip>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </React.Fragment>
                   );
                 })}
               </div>
