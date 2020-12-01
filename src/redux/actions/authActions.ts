@@ -17,6 +17,8 @@ export const actionTypes = {
   GET_UPLOAD_TOKEN_SUCCESS: 'GET_UPLOAD_TOKEN_SUCCESS',
   CHANGE_FINISH_MUSIC: 'CHANGE_FINISH_MUSIC',
   CHANGE_MESSAGE_MUSIC:'CHANGE_MESSAGE_MUSIC',
+  CHANGE_UNFINISH_MUSIC:'CHANGE_UNFINISH_MUSIC',
+  CHANGE_BATCH_MUSIC:'CHANGE_BATCH_MUSIC',
   CHANGE_MOVE: 'CHANGE_MOVE',
 };
 
@@ -134,6 +136,18 @@ export function changeMessageMusic(messageMusic: boolean) {
   return {
     type: actionTypes.CHANGE_MESSAGE_MUSIC,
     messageMusic,
+  };
+}
+export function changeunMusic(unFinishMusic: boolean) {
+  return {
+    type: actionTypes.CHANGE_UNFINISH_MUSIC,
+    unFinishMusic,
+  };
+}
+export function changeBatchMusic(batchMusic: boolean) {
+  return {
+    type: actionTypes.CHANGE_BATCH_MUSIC,
+    batchMusic,
   };
 }
 export function changeMove(finishPos: any) {

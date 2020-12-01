@@ -17,6 +17,8 @@ export interface AuthType {
   socket: any;
   finishMusic: boolean;
   messageMusic: boolean;
+  unFinishMusic: boolean;
+  batchMusic: boolean;
   finishPos: any;
 }
 
@@ -66,6 +68,8 @@ const defaultState: AuthType = {
   socket: null,
   finishMusic: false,
   messageMusic: false,
+  unFinishMusic: false,
+  batchMusic: false,
   finishPos: [],
 };
 
@@ -177,6 +181,16 @@ export const auth = (state = defaultState, action: any) => {
       return {
         ...state,
         messageMusic: action.messageMusic,
+      };
+    case actionTypes.CHANGE_UNFINISH_MUSIC:
+      return {
+        ...state,
+        unFinishMusic: action.unFinishMusic,
+      };
+    case actionTypes.CHANGE_BATCH_MUSIC:
+      return {
+        ...state,
+        batchMusic: action.batchMusic,
       };
 
     case actionTypes.CHANGE_MOVE:

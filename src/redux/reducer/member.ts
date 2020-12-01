@@ -35,6 +35,7 @@ export const member = (state = defaultState, action: any) => {
       let userIndex = _.findIndex(action.data, {
         userId: localStorage.getItem('userKey'),
       });
+      console.log('userIndex',userIndex)
       let groupMemberItem = action.data[userIndex];
       action.data.forEach((item: any) => {
         if (item.avatar && item.avatar.indexOf('https') === -1) {

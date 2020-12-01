@@ -50,31 +50,4 @@
   box-sizing: border-box;
   align-content: space-between;
 }
-.calendarInfo {
-  width: 100%;
-  height: 100%;
-  padding: 20px 0px;
-  box-sizing: border-box;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-}
-.calendarInfo-week {
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  margin-top: 10px;
-}
-.calendarInfo-week-item {
-  width: 70px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  border: 1px solid #efefef;
-  border-radius: 15px;
-  margin-right: 5px;
-  margin-top: 8px;
-  cursor: pointer;
-  color: #333;
-}
+

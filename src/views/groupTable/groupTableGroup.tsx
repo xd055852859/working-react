@@ -11,8 +11,9 @@ import {
   setChooseKey,
   setTaskKey,
 } from '../../redux/actions/taskActions';
-import { getGroupInfo } from '../../redux/actions/groupActions';
-import { getTheme } from '../../redux/actions/authActions';
+import { changeBatchMusic } from '../../redux/actions/authActions';
+// import { getGroupInfo } from '../../redux/actions/groupActions';
+// import { getTheme } from '../../redux/actions/authActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import './groupTableGroup.css';
 import api from '../../services/api';
@@ -78,12 +79,12 @@ const GroupTableGroup: React.FC = (prop) => {
       getData(labelArray, taskArray, filterObject);
     }
   }, [taskArray, filterObject, labelArray]);
-  useEffect(() => {
-    if (chooseKey) {
-      dispatch(setTaskKey(chooseKey));
-      dispatch(setChooseKey(''));
-    }
-  }, [chooseKey]);
+  // useEffect(() => {
+  //   if (chooseKey) {
+  //     dispatch(setTaskKey(chooseKey));
+  //     dispatch(setChooseKey(''));
+  //   }
+  // }, [chooseKey]);
   const getData = (labelArray: any, taskArray: any, filterObject: any) => {
     let taskNameArr: any = [];
     let labelExecutorArray: any = [];
@@ -196,7 +197,7 @@ const GroupTableGroup: React.FC = (prop) => {
     let labelRes: any = await api.task.changeTaskLabelName(key, labelName);
     if (labelRes.msg === 'OK') {
       dispatch(setMessage(true, '保存成功', 'success'));
-      dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+      dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
     } else {
       dispatch(setMessage(true, labelRes.msg, 'error'));
     }
@@ -296,13 +297,13 @@ const GroupTableGroup: React.FC = (prop) => {
       labelArray[parseInt(destination.droppableId)]._key
     );
     if (taskRes.msg === 'OK') {
-      dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+      dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
     } else {
       dispatch(setMessage(true, taskRes.msg, 'error'));
     }
     let labelRes: any = await api.task.setLabelCardOrder(labelObject);
     if (labelRes.msg === 'OK') {
-      dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+      dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
     } else {
       dispatch(setMessage(true, labelRes.msg, 'error'));
     }
@@ -337,7 +338,7 @@ const GroupTableGroup: React.FC = (prop) => {
     setLabelExecutorArray(newLabelExecutorArray);
     let groupRes: any = await api.group.setLabelOrder(groupKey, labelOrder);
     if (groupRes.msg === 'OK') {
-      dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+      dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
     } else {
       dispatch(setMessage(true, groupRes.msg, 'error'));
     }
@@ -348,8 +349,9 @@ const GroupTableGroup: React.FC = (prop) => {
     });
     let batchRes: any = await api.task.batchTaskArray(cardKeyArray);
     if (batchRes.msg === 'OK') {
+      dispatch(changeBatchMusic(true));
       dispatch(setMessage(true, '归档成功', 'success'));
-      dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+      dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
     } else {
       dispatch(setMessage(true, batchRes.msg, 'error'));
     }
@@ -390,7 +392,7 @@ const GroupTableGroup: React.FC = (prop) => {
         );
         setTaskNameArr(newTaskNameArr);
         await api.group.setLabelOrder(groupKey, labelOrder);
-        dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+        dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
         setLabelVisible(false);
       } else {
         dispatch(setMessage(true, labelRes.msg, 'error'));
@@ -425,7 +427,7 @@ const GroupTableGroup: React.FC = (prop) => {
     if (addTaskRes.msg === 'OK') {
       dispatch(setMessage(true, '新增任务成功', 'success'));
       dispatch(setChooseKey(addTaskRes.result._key));
-      dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+      dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
       setAddTaskVisible(false);
       setAddInput('');
       setLoading(false);
@@ -552,6 +554,7 @@ const GroupTableGroup: React.FC = (prop) => {
                                 batchTaskArray(taskInfo[taskNameindex]);
                               }}
                               changeLabelAvatar={changeLabelAvatar}
+                              arrlength={labelArray.length}
                             />
                           </React.Fragment>
                         </div>
@@ -601,31 +604,47 @@ const GroupTableGroup: React.FC = (prop) => {
                                 style={{ marginTop: '10px' }}
                               >
                                 <Button
-                                  variant="contained"
-                                  color="primary"
-                                  onClick={() => {
-                                    addTask(
-                                      groupInfo,
-                                      labelArray[taskInfoindex]
-                                    );
-                                  }}
-                                  style={{
-                                    marginRight: '10px',
-                                    color: '#fff',
-                                  }}
-                                >
-                                  确定
-                                </Button>
-                                <Button
-                                  variant="contained"
                                   onClick={() => {
                                     setChooseLabelKey('');
                                     setAddTaskVisible(false);
                                     setAddInput('');
                                   }}
+                                  style={{
+                                    marginRight: '10px',
+                                    color: '#efefef',
+                                  }}
                                 >
                                   取消
                                 </Button>
+                                {addInput && !loading ? (
+                                  <Button
+                                    variant="contained"
+                                    color="primary"
+                                    onClick={() => {
+                                      addTask(
+                                        groupInfo,
+                                        labelArray[taskInfoindex]
+                                      );
+                                    }}
+                                    style={{
+                                      marginLeft: '10px',
+                                      color: '#fff',
+                                    }}
+                                  >
+                                    确定
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="contained"
+                                    disabled
+                                    style={{
+                                      marginLeft: '10px',
+                                      color: '#fff',
+                                    }}
+                                  >
+                                    确定
+                                  </Button>
+                                )}
                               </div>
                             </div>
                           ) : null}

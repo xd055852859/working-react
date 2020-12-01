@@ -17,17 +17,22 @@ import {
   setTheme,
   changeMusic,
   changeMessageMusic,
+  changeunMusic,
+  changeBatchMusic,
   changeMove,
 } from './redux/actions/authActions';
 import {
   setCommonHeaderIndex,
   setMoveState,
+  setUnMessageNum,
+  setSocketObj,
 } from './redux/actions/commonActions';
 import {
   setChooseKey,
   changeTaskInfoVisible,
   getCalendarList,
   setTaskKey,
+  setNewTaskArray,
 } from './redux/actions/taskActions';
 
 import HeaderSet from './components/headerSet/headerSet';
@@ -49,6 +54,9 @@ const App: React.FC = () => {
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
   const token = useTypedSelector((state) => state.auth.token);
+  const socket = useTypedSelector((state) => state.auth.socket);
+  const socketObj = useTypedSelector((state) => state.common.socketObj);
+
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const taskInfoVisible = useTypedSelector(
     (state) => state.task.taskInfoVisible
@@ -57,10 +65,18 @@ const App: React.FC = () => {
     (state) => state.task.taskActionArray
   );
   const taskAction = useTypedSelector((state) => state.task.taskAction);
+  const taskArray = useTypedSelector((state) => state.task.taskArray);
+  const selfTaskArray = useTypedSelector((state) => state.task.selfTaskArray);
+  const workingTaskArray = useTypedSelector(
+    (state) => state.task.workingTaskArray
+  );
   const theme = useTypedSelector((state) => state.auth.theme);
   const themeBg = useTypedSelector((state) => state.auth.themeBg);
   const finishMusic = useTypedSelector((state) => state.auth.finishMusic);
   const messageMusic = useTypedSelector((state) => state.auth.messageMusic);
+  const unFinishMusic = useTypedSelector((state) => state.auth.unFinishMusic);
+  const unMessageNum = useTypedSelector((state) => state.common.unMessageNum);
+  const batchMusic = useTypedSelector((state) => state.auth.batchMusic);
   const finishPos = useTypedSelector((state) => state.auth.finishPos);
   const [intervalTime, setIntervalTime] = useState<any>(null);
   const [bgIntervalTime, setBgIntervalTime] = useState<any>(null);
@@ -83,6 +99,8 @@ const App: React.FC = () => {
   const pageRef: React.RefObject<any> = useRef();
   const doneAudioRef: React.RefObject<any> = useRef();
   const doneMessageRef: React.RefObject<any> = useRef();
+  const undoneAudioRef: React.RefObject<any> = useRef();
+  const batchRef: React.RefObject<any> = useRef();
 
   const ballRef: React.RefObject<any> = useRef();
   useEffect(() => {
@@ -154,9 +172,7 @@ const App: React.FC = () => {
       } else {
         history.push('/welcome');
       }
-      if (getSearchParamValue(location.search, 'token')) {
-        window.location.href = window.location.origin + '/';
-      }
+
       const groupKey = getSearchParamValue(location.search, 'groupKey');
       if (groupKey) {
         localStorage.setItem('groupKey', groupKey);
@@ -173,6 +189,13 @@ const App: React.FC = () => {
         localStorage.setItem('showType', showType);
       }
       let url = window.location.href;
+      if (getSearchParamValue(location.search, 'token')) {
+        if (showType) {
+          window.location.href = window.location.origin + '/?showType=1';
+        } else {
+          window.location.href = window.location.origin + '/';
+        }
+      }
       // 自动切换为https
       if (url.indexOf('http://localhost') == -1 && url.indexOf('https') < 0) {
         url = url.replace('http:', 'https:');
@@ -234,28 +257,129 @@ const App: React.FC = () => {
     }
   }, [finishMusic]);
   useEffect(() => {
+    if (unFinishMusic) {
+      undoneAudioRef.current.play();
+      dispatch(changeunMusic(false));
+    }
+  }, [unFinishMusic]);
+  useEffect(() => {
+    if (batchMusic) {
+      batchRef.current.play();
+      dispatch(changeBatchMusic(false));
+    }
+  }, [batchMusic]);
+  useEffect(() => {
     if (messageMusic) {
       doneMessageRef.current.play();
       dispatch(changeMessageMusic(false));
     }
   }, [messageMusic]);
+  useEffect(() => {
+    if (socket) {
+      socket.on('notice', (data: any) => {
+        console.log('data', data);
 
+        let taskData = JSON.parse(data);
+        console.log(taskData);
+        dispatch(setSocketObj({ data: taskData }));
+      });
+    }
+  }, [socket]);
+  useEffect(() => {
+    if (socketObj) {
+      let newUnMessageNum = unMessageNum;
+      let newSelfTaskArray = _.cloneDeep(selfTaskArray);
+      let newWorkingTaskArray = _.cloneDeep(workingTaskArray);
+      let newTaskArray = _.cloneDeep(taskArray);
+      dispatch(setUnMessageNum(newUnMessageNum + 1));
+      if (headerIndex === 0 && newSelfTaskArray) {
+        newSelfTaskArray = newSelfTaskArray.map(
+          (taskItem: any, taskIndex: number) => {
+            if (taskItem._key === socketObj.data.cardKey) {
+              for (let key in taskItem) {
+                if (
+                  socketObj.data[key] &&
+                  key !== 'content' &&
+                  key !== 'type'
+                ) {
+                  if (typeof taskItem[key] === 'number') {
+                    taskItem[key] = parseInt(socketObj.data[key]);
+                  } else if (typeof taskItem[key] === 'boolean') {
+                    taskItem[key] = socketObj.data[key] ? true : false;
+                  } else {
+                    taskItem[key] = socketObj.data[key];
+                  }
+                }
+              }
+            }
+            return taskItem;
+          }
+        );
+        dispatch(setNewTaskArray('selfTaskArray', newSelfTaskArray));
+      } else if (
+        (headerIndex === 1 || headerIndex === 2) &&
+        newWorkingTaskArray
+      ) {
+        newWorkingTaskArray = newWorkingTaskArray.map(
+          (taskItem: any, taskIndex: number) => {
+            taskItem = taskItem.map((item: any, index: number) => {
+              if (item._key === socketObj.data.cardKey) {
+                for (let key in item) {
+                  if (
+                    socketObj.data[key] &&
+                    key !== 'content' &&
+                    key !== 'type'
+                  ) {
+                    if (typeof item[key] === 'number') {
+                      item[key] = parseFloat(socketObj.data[key]);
+                    } else if (typeof item[key] === 'boolean') {
+                      item[key] = socketObj.data[key] ? true : false;
+                    } else {
+                      item[key] = socketObj.data[key];
+                    }
+                  }
+                }
+              }
+              return item;
+            });
+            return taskItem;
+          }
+        );
+        dispatch(setNewTaskArray('workingTaskArray', newWorkingTaskArray));
+      } else if (headerIndex === 3 && newTaskArray) {
+        newTaskArray = newTaskArray.map((taskItem: any, taskIndex: number) => {
+          if (taskItem._key === socketObj.data.cardKey) {
+            for (let key in taskItem) {
+              if (socketObj.data[key] && key !== 'content' && key !== 'type') {
+                if (typeof taskItem[key] === 'number') {
+                  taskItem[key] = parseInt(socketObj.data[key]);
+                } else if (typeof taskItem[key] === 'boolean') {
+                  taskItem[key] = socketObj.data[key] ? true : false;
+                } else {
+                  taskItem[key] = socketObj.data[key];
+                }
+              }
+            }
+          }
+          return taskItem;
+        });
+        console.log(newTaskArray);
+        dispatch(setNewTaskArray('taskArray', newTaskArray));
+      }
+    }
+  }, [socketObj]);
   useEffect(() => {
     if (finishPos.length > 0) {
       let newFinishIndex = finishIndex;
       let dom = document.createElement('div');
-      // console.log('XXXXXXXXXXXXXXX', newFinishIndex);
-      // dom.id = newFinishIndex + '';
-
-      console.log(Math.random());
       dom.style.top = finishPos[1] - 20 + 'px';
       dom.style.right = pageRef.current.clientWidth - finishPos[0] - 20 + 'px';
       dom.style.animation =
         'run-right-right' +
         newFinishIndex +
-        ' 2s 0.4s 1 linear,run-right-top' +
+        ' 1s 0.4s 1 linear,run-right-top' +
         newFinishIndex +
-        ' 2s 0.4s 1 cubic-bezier(' +
+        ' 1s 0.4s 1 cubic-bezier(' +
         Math.random().toFixed(2) +
         ', ' +
         Math.random().toFixed(2) +
@@ -345,7 +469,6 @@ const App: React.FC = () => {
     // img.crossOrigin = 'anonymous'
     // 确定图片加载完成后再进行背景图片切换
     img.onload = function () {
-      // console.log(format.formatColor(canvasRef.current, img));
       newTheme.backgroundImg = newThemeBg[randomNum].url;
       newTheme.backgroundColor = '';
       dispatch(setTheme(newTheme));
@@ -398,7 +521,7 @@ const App: React.FC = () => {
           <HeaderSet />
         </React.Fragment>
       ) : null}
-      {taskInfoVisible ? <TaskInfo /> : null}
+      {taskInfoVisible ? <TaskInfo type="new" /> : null}
       {playState ? (
         <div className="action">
           <div className="action-title">日程提醒</div>
@@ -438,7 +561,24 @@ const App: React.FC = () => {
       >
         您的浏览器不支持 audio 标签。
       </audio>
-
+      <audio
+        ref={undoneAudioRef}
+        src="https://cdn-icare.qingtime.cn/1606524071707_workingVip"
+        // muted
+        // controls
+        style={{ position: 'fixed', zIndex: -5, opacity: 0 }}
+      >
+        您的浏览器不支持 audio 标签。
+      </audio>
+      <audio
+        ref={batchRef}
+        src="https://cdn-icare.qingtime.cn/1605495620233_workingVip"
+        // muted
+        // controls
+        style={{ position: 'fixed', zIndex: -5, opacity: 0 }}
+      >
+        您的浏览器不支持 audio 标签。
+      </audio>
       {/* <div className="ball run_top_right" ref={ballRef}>
         <img src={movePng} />
       </div> */}

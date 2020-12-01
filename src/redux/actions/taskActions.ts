@@ -22,6 +22,7 @@ export const actionTypes = {
   SET_TASK_ACTION: 'SET_TASK_ACTION',
   GET_CALENDAR_LIST: 'GET_CALENDAR_LIST',
   GET_CALENDAR_LIST_SUCCESS: 'GET_CALENDAR_LIST_SUCCESS',
+  SET_NEW_TASK_ARRAY:'SET_NEW_TASK_ARRAY'
 };
 
 export function getGroupTask(
@@ -190,4 +191,7 @@ export function getCalendarList(
 }
 export function getCalendarListSuccess(data: any) {
   return { type: actionTypes.GET_CALENDAR_LIST_SUCCESS, data };
+}
+export function setNewTaskArray(taskArrayType:string,taskArray:any) {
+  return { type: actionTypes.SET_NEW_TASK_ARRAY, taskArrayType:taskArrayType,taskArray:taskArray };
 }

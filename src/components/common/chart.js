@@ -512,7 +512,7 @@ const amChart = {
     series.labels.template.disabled = true;
     series.ticks.template.disabled = true;
 
-    chart.legend.position = 'right';
+    chart.legend.position = 'bottom';
     chart.data = data;
 
     return chart;

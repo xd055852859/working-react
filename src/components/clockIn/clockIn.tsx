@@ -12,7 +12,11 @@ import api from '../../services/api';
 import { setMessage } from '../../redux/actions/commonActions';
 import downArrowbPng from '../../assets/img/downArrowb.png';
 import DropMenu from '../common/dropMenu';
+import Dialog from '../common/dialog';
+import WorkingReport from '../../views/workingTable/workingReport';
+
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
+import reportSvg from '../../assets/svg/report.svg';
 interface ClockInProps {
   visible: boolean;
   onClose: any;
@@ -43,15 +47,16 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
   const [negative, setNegative] = useState('');
   const [expanded, setExpanded] = React.useState<string | false>('panel1');
   const [groupVisible, setGroupVisible] = useState(false);
+  const [showReport, setShowReport] = useState(false);
   const [groupList, setGroupList] = useState<any>([]);
   const [taskNumber, setTaskNumber] = useState(0);
   const [clockInIndex, setClockInIndex] = useState(0);
   useEffect(() => {
-    if (user && user._key) {
+    if (user && user._key && visible) {
       getClockIn();
       getGroupList();
     }
-  }, [user]);
+  }, [user, visible]);
   useEffect(() => {
     if (selfTaskArray) {
       let newGroupList: any = [];
@@ -308,6 +313,15 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
         >
           保存
         </Button> */}
+              <div
+                onClick={() => {
+                  setShowReport(true);
+                }}
+                className="clockIn-report"
+              >
+                <img src={reportSvg} alt="" style={{ marginRight: '5px' }} />
+                <div>日志</div>
+              </div>
               <Button
                 variant="contained"
                 color="primary"
@@ -320,6 +334,21 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
                 {nowTime ? '下班打卡' : '上班打卡'}
               </Button>
             </div>
+            <Dialog
+              visible={showReport}
+              onClose={() => {
+                setShowReport(false);
+              }}
+              footer={false}
+              title={'日志'}
+              dialogStyle={{
+                width: '90%',
+                height: '90%',
+                overflow: 'auto',
+              }}
+            >
+              <WorkingReport headerType={true} />
+            </Dialog>
           </div>
         </ClickAwayListener>
       ) : null}

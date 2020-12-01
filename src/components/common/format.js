@@ -233,7 +233,6 @@ const format = {
         b += data[(img.width * row + col) * 4 + 2];
       }
     }
-    console.log(index);
     // 求取平均值
     r /= img.width * img.height;
     g /= img.width * img.height;
@@ -244,7 +243,6 @@ const format = {
     g = Math.round(g);
     b = Math.round(b);
     let colorLevel = parseInt(r * 0.299 + g * 0.587 + b * 0.114);
-    console.log('色值', colorLevel);
     // return 'rgb(' + r + ',' + g + ',' + b + ')';
   },
   formatJq(year, month, day) {

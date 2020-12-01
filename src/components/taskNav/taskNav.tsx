@@ -31,6 +31,7 @@ interface TaskNavProps {
   chooseLabelKey?: string;
   batchTaskArray?: any;
   changeLabelAvatar?: any;
+  arrlength?: number;
 }
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -65,6 +66,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
     chooseLabelKey,
     batchTaskArray,
     changeLabelAvatar,
+    arrlength,
   } = prop;
   const classes = useStyles();
   const groupKey = useTypedSelector((state) => state.group.groupKey);
@@ -123,11 +125,11 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       dispatch(setMessage(true, '新增任务成功', 'success'));
       dispatch(setChooseKey(addTaskRes.result._key));
       if (headerIndex === 1) {
-        dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
+        dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10]));
       } else if (headerIndex === 2) {
-        dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
+        dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2, 10]));
       } else if (headerIndex === 3) {
-        dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+        dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
       }
       setAddTaskVisible(false);
       setAddInput('');
@@ -137,9 +139,13 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       dispatch(setMessage(true, addTaskRes.msg, 'error'));
     }
   };
-  const changeLabelName = (labelInfo: any) => {
+  const changeLabelName = (labelInfo: any, groupInfo: any) => {
     if (labelName !== name) {
-      api.group.setCardLabel(labelInfo._key, labelName);
+      if (labelInfo._key) {
+        api.group.setCardLabel(labelInfo._key, labelName);
+      } else {
+        api.group.setCardLabel(labelInfo._key, labelName, groupInfo._key);
+      }
     }
     setLabelNameVisible(false);
   };
@@ -174,11 +180,11 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
     if (batchTaskRes.msg === 'OK') {
       dispatch(setMessage(true, '新增成功', 'success'));
       if (headerIndex === 1) {
-        dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
+        dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10]));
       } else if (headerIndex === 2) {
-        dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
+        dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2, 10]));
       } else if (headerIndex === 3) {
-        dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+        dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
       }
       setBatchAddVisible(false);
     } else {
@@ -193,11 +199,11 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
     if (deleteLabelRes.msg === 'OK') {
       dispatch(setMessage(true, '删除成功', 'success'));
       if (headerIndex === 1) {
-        dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
+        dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10]));
       } else if (headerIndex === 2) {
-        dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
+        dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2, 10]));
       } else if (headerIndex === 3) {
-        dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+        dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
       }
       setBatchAddVisible(false);
     } else {
@@ -226,7 +232,9 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
               marginRight: headerIndex === 3 ? '15px' : '0px',
             }}
           >
-            {loading ? <Loading /> : null}
+            {loading ? (
+              <Loading loadingWidth="60px" loadingHeight="60px" />
+            ) : null}
             <div
               className="taskNav-name-info"
               style={{ width: 'calc(100% - 60px)' }}
@@ -336,7 +344,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                   className="taskNav-input"
                   value={labelName}
                   onMouseLeave={() => {
-                    changeLabelName(taskNavArray[1]);
+                    changeLabelName(taskNavArray[1], taskNavArray[0]);
                   }}
                 />
               )}
@@ -494,25 +502,35 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                 style={{ marginTop: '10px' }}
               >
                 <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => {
-                    addTask(taskNavArray[0], taskNavArray[1]);
-                  }}
-                  style={{ marginRight: '10px', color: '#fff' }}
-                >
-                  确定
-                </Button>
-                <Button
-                  variant="contained"
                   onClick={() => {
                     setChooseLabelKey('');
                     setAddTaskVisible(false);
                     setAddInput('');
                   }}
+                  style={{ marginRight: '10px', color: '#efefef' }}
                 >
                   取消
                 </Button>
+                {addInput && !loading ? (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {
+                      addTask(taskNavArray[0], taskNavArray[1]);
+                    }}
+                    style={{ marginLeft: '10px', color: '#fff' }}
+                  >
+                    确定
+                  </Button>
+                ) : (
+                  <Button
+                    variant="contained"
+                    disabled
+                    style={{ marginLeft: '10px', color: '#fff' }}
+                  >
+                    确定
+                  </Button>
+                )}
               </div>
             </div>
           ) : null}

@@ -210,6 +210,15 @@ export const task = (state = defaultState, action: any) => {
         calendarList: action.data,
         taskActionArray: _.cloneDeep(taskActionArray),
       };
+    case actionTypes.SET_NEW_TASK_ARRAY:
+      let obj: any = {};
+      obj = _.cloneDeep(state);
+      obj[action.taskArrayType] = _.cloneDeep(action.taskArray);
+      console.log("?????????",action.taskArrayType);
+      console.log("?????????",action.taskArray);
+      return {
+        ...obj,
+      };
     default:
       return state;
   }

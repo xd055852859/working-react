@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './groupModel.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
-import { Button } from '@material-ui/core';
+import { Button, Checkbox } from '@material-ui/core';
 import Pagination from '@material-ui/lab/Pagination';
 import { useDispatch } from 'react-redux';
 import api from '../../services/api';
@@ -13,7 +13,9 @@ import Editor from '../../components/common/Editor';
 import unfinishbPng from '../../assets/img/unfinishb.png';
 import leftArrowPng from '../../assets/img/leftArrow.png';
 import modelDefaultPng from '../../assets/img/modelDefault.png';
-
+import clickNumSvg from '../../assets/svg/clickNum.svg';
+import useNumSvg from '../../assets/svg/useNum.svg';
+import searchbSvg from '../../assets/svg/searchb.svg';
 interface GroupModelProps {
   toGroupSet: any;
 }
@@ -21,8 +23,8 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     ul: {
       '& .MuiPaginationItem-textPrimary.Mui-selected': {
-        color: '#fff'
-      }
+        color: '#fff',
+      },
     },
   })
 );
@@ -39,7 +41,10 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
   const [modelInfoIndex, setModelInfoIndex] = useState<any>(null);
   const [modelState, setModelState] = useState(false);
   const [modelPage, setModelPage] = useState(1);
+  const [taskCheck, setTaskCheck] = useState(true);
   const [modelTotal, setModelTotal] = useState(0);
+  const [modelInput, setModelInput] = useState('');
+
   const BgColorArray = [
     'rgba(48,191,191,0.3)',
     'rgba(0,170,255,0.3)',
@@ -50,10 +55,16 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
   useEffect(() => {
     getModelType();
   }, []);
+  useEffect(() => {
+    if (modelInput === '') {
+      getModelTypeList(1, '全部');
+    }
+  }, [modelInput]);
+
   const getModelType = async () => {
     let res: any = await api.group.getTemplateTypeList();
     if (res.msg === 'OK') {
-      res.result.unshift('全部')
+      res.result.unshift('全部');
       setModelTypeArr(res.result);
       // setModelType(res.result[0]);
       getModelTypeList(1, null);
@@ -71,8 +82,52 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
       dispatch(setMessage(true, res.msg, 'error'));
     }
   };
+  const searchModel = async (page: number) => {
+    if (modelInput === '') {
+      dispatch(setMessage(true, '请输入搜索内容', 'error'));
+      return;
+    }
+    setModelPage(page);
+    setModelIndex(0);
+    setModelState(false);
+    setModelInfo(null);
+    let res: any = await api.group.getTemplateList(modelInput, page);
+    if (res.msg === 'OK') {
+      setModelTypeList(res.result);
+      setModelTotal(res.totalNumber);
+    } else {
+      dispatch(setMessage(true, res.msg, 'error'));
+    }
+  };
   return (
     <div className="groupModel">
+      <div className="groupModel-search">
+        <input
+          type="text"
+          value={modelInput}
+          placeholder="搜索..."
+          onChange={(e: any) => {
+            setModelInput(e.target.value);
+          }}
+          onKeyDown={(e: any) => {
+            if (e.keyCode === 13) {
+              searchModel(1);
+            }
+          }}
+        />
+        <img
+          src={searchbSvg}
+          alt=""
+          style={{
+            width: '18px',
+            height: '18px',
+            cursor: 'pointer',
+          }}
+          onClick={() => {
+            searchModel(1);
+          }}
+        />
+      </div>
       <div className="groupModel-left">
         {modelTypeArr.map((item: any, index: number) => {
           return (
@@ -96,7 +151,6 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
             </div>
           );
         })}
-
       </div>
       <div className="groupModel-right">
         {!modelState ? (
@@ -115,6 +169,7 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
                     onClick={() => {
                       setModelState(true);
                       setModelInfo(item);
+                      api.group.clickPersonNumber(item._key);
                     }}
                     key={'modelType' + index}
                   >
@@ -134,15 +189,17 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
                               color: '#fff',
                             }}
                             onClick={() => {
-                              toGroupSet(item._key);
+                              toGroupSet(item._key, taskCheck);
                             }}
                           >
                             使用此模板
-                        </Button>
+                          </Button>
                         </div>
                       ) : null}
                     </div>
-                    <div className="groupModel-right-item-name">{item.name}</div>{' '}
+                    <div className="groupModel-right-item-name">
+                      {item.name}
+                    </div>{' '}
                     <div className="groupModel-right-item-description">
                       {item.description
                         .replace(/<[^>]*>|<\/[^>]*>/gm, '')
@@ -152,52 +209,91 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
                 );
               })}
             </div>
-            {modelTotal > 9 ? <div className="groupModel-pagination"> <Pagination className={classes.ul} count={Math.ceil(modelTotal / 9)} color="primary" onChange={(e: any, page: number) => { getModelTypeList(page, modelTypeArr[modelIndex]); setModelPage(page) }} /></div> : null}
-
+            {modelTotal > 9 ? (
+              <div className="groupModel-pagination">
+                {' '}
+                <Pagination
+                  className={classes.ul}
+                  count={Math.ceil(modelTotal / 9)}
+                  color="primary"
+                  onChange={(e: any, page: number) => {
+                    if (modelInput) {
+                      searchModel(page);
+                    } else {
+                      getModelTypeList(page, modelTypeArr[modelIndex]);
+                    }
+                    setModelPage(page);
+                  }}
+                />
+              </div>
+            ) : null}
           </React.Fragment>
         ) : (
-            <div className="groupModel-right-info">
-              <div className="groupModel-right-info-title">
-                <div className="groupModel-right-info-maintitle">
-                  <img
-                    src={leftArrowPng}
-                    alt=""
-                    style={{ width: '7px', height: '11px', cursor: 'pointer' }}
-                    onClick={() => {
-                      setModelState(false);
-                      setModelInfo(null);
-                    }}
-                  />
-                  <div className="groupModel-right-info-name">
-                    {modelInfo.name}
-                  </div>
+          <div className="groupModel-right-info">
+            <div className="groupModel-right-info-title">
+              <div className="groupModel-right-info-maintitle">
+                <img
+                  src={leftArrowPng}
+                  alt=""
+                  style={{ width: '7px', height: '11px', cursor: 'pointer' }}
+                  onClick={() => {
+                    setModelState(false);
+                    setModelInfo(null);
+                  }}
+                />
+                <div className="groupModel-right-info-name">
+                  {modelInfo.name}
                 </div>
+              </div>
+              <div className="groupModel-right-info-button">
+                <img src={useNumSvg} alt="" />
+                <div>
+                  {modelInfo.usePersonNumber ? modelInfo.usePersonNumber : 0}
+                </div>
+                <img src={clickNumSvg} alt="" />
+                <div>
+                  {modelInfo.clickPersonNumber
+                    ? modelInfo.clickPersonNumber + 1
+                    : 1}
+                </div>
+                <Checkbox
+                  checked={taskCheck}
+                  onChange={(e) => {
+                    setTaskCheck(e.target.checked);
+                  }}
+                  color="primary"
+                  // className={classes.root}
+                />
+                含卡片内容
                 <Button
                   variant="contained"
                   color="primary"
                   style={{
                     width: '196px',
                     color: '#fff',
+                    marginLeft: '10px',
                   }}
                   onClick={() => {
-                    toGroupSet(modelInfo._key);
+                    toGroupSet(modelInfo._key, taskCheck);
                   }}
                 >
                   使用此模板
-              </Button>
+                </Button>
               </div>
-              <div className="groupModel-right-container"><div
+            </div>
+            <div className="groupModel-right-container">
+              <div
                 className="groupModel-model"
                 style={
                   theme.backgroundImg
                     ? {
-                      backgroundImage: 'url(' + theme.backgroundImg + ')',
-                    }
+                        backgroundImage: 'url(' + theme.backgroundImg + ')',
+                      }
                     : {
-                      backgroundColor: theme.backgroundColor
-                        ? theme.backgroundColor
-                        : '#3C3C3C',
-                    }
+                        backgroundColor: theme.backgroundColor
+                          ? theme.backgroundColor
+                          : '#3C3C3C',
+                      }
                 }
               >
                 {modelInfo.templateJson.map(
@@ -215,40 +311,42 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
                         >
                           {templateItem.name}
                         </div>
-                        <div className="groupModel-model-taskContainer">
-                          {templateItem.children.map(
-                            (childItem: any, childIndex: number) => {
-                              return (
-                                <div
-                                  key={'child' + childIndex}
-                                  className="groupModel-model-task"
-                                >
-                                  <img
-                                    src={unfinishbPng}
-                                    className="groupModel-model-logo"
-                                  />
-                                  <div className="groupModel-model-task-title">
-                                    {' '}
-                                    {childItem.name}
+                        {taskCheck ? (
+                          <div className="groupModel-model-taskContainer">
+                            {templateItem.children.map(
+                              (childItem: any, childIndex: number) => {
+                                return (
+                                  <div
+                                    key={'child' + childIndex}
+                                    className="groupModel-model-task"
+                                  >
+                                    <img
+                                      src={unfinishbPng}
+                                      className="groupModel-model-logo"
+                                    />
+                                    <div className="groupModel-model-task-title">
+                                      {' '}
+                                      {childItem.name}
+                                    </div>
                                   </div>
-                                </div>
-                              );
-                            }
-                          )}
-                        </div>
+                                );
+                              }
+                            )}
+                          </div>
+                        ) : null}
                       </div>
                     );
                   }
                 )}
               </div>
-                <Editor
-                  // editorHeight={'300px'}
-                  data={modelInfo.description}
-                  editable={false}
-                />
-              </div>
+              <Editor
+                // editorHeight={'300px'}
+                data={modelInfo.description}
+                editable={false}
+              />
             </div>
-          )}
+          </div>
+        )}
       </div>
     </div>
   );

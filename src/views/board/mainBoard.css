@@ -8,11 +8,13 @@
 .mainBoard-maintitle{
   width: 100%;
   height: 45px;
-  padding-bottom: 20px;
-  box-sizing: border-box;
+  /* padding-bottom: 20px; */
+  /* box-sizing: border-box; */
   border-bottom: 1px solid rgba(216, 216, 216, 0.4);
   margin-bottom: 5px;
   font-size:16px;
+  display: flex;
+  align-items: center;
 }
 .mainBoard-title {
   width: 100%;

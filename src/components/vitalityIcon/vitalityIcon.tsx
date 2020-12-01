@@ -8,17 +8,23 @@ import crowngPng from '../../assets/img/crowng.png';
 import sungPng from '../../assets/img/sung.png';
 import moongPng from '../../assets/img/moong.png';
 import stargPng from '../../assets/img/starg.png';
+import crySvg from '../../assets/svg/cry.svg';
 // import { useDispatch } from 'react-redux';
 
 interface VitalityProps {
   vitalityDirection: string;
   vitalityNum: number;
   vitalityStyle?: any;
-  vitalityIconType?:number
+  vitalityIconType?: number;
 }
 
 const VitalityIcon: React.FC<VitalityProps> = (props) => {
-  const { vitalityDirection, vitalityNum,vitalityStyle,vitalityIconType } = props;
+  const {
+    vitalityDirection,
+    vitalityNum,
+    vitalityStyle,
+    vitalityIconType,
+  } = props;
   const [vitalityArray, setvitalityArray] = useState<number[]>([]);
   useEffect(() => {
     const crown = Math.floor(vitalityNum / 10000);
@@ -73,12 +79,45 @@ const VitalityIcon: React.FC<VitalityProps> = (props) => {
     return dom;
   };
   return (
-    <span className="vitalityIcon-info" style={vitalityStyle}>
-      {vitalityImg(vitalityArray[0], vitalityIconType?crowngPng:crownPng, '20px', '17px')}
-      {vitalityImg(vitalityArray[1], vitalityIconType?sungPng:sunPng, '19px', '19px')}
-      {vitalityImg(vitalityArray[2], vitalityIconType?moongPng:moonPng, '16px', '16px')}
-      {vitalityImg(vitalityArray[3], vitalityIconType?stargPng:starPng, '16px', '16px')}
-    </span>
+    <React.Fragment>
+      {vitalityNum > 0 ? (
+        <span className="vitalityIcon-info" style={vitalityStyle}>
+          {vitalityImg(
+            vitalityArray[0],
+            vitalityIconType ? crowngPng : crownPng,
+            '20px',
+            '17px'
+          )}
+          {vitalityImg(
+            vitalityArray[1],
+            vitalityIconType ? sungPng : sunPng,
+            '19px',
+            '19px'
+          )}
+          {vitalityImg(
+            vitalityArray[2],
+            vitalityIconType ? moongPng : moonPng,
+            '16px',
+            '16px'
+          )}
+          {vitalityImg(
+            vitalityArray[3],
+            vitalityIconType ? stargPng : starPng,
+            '16px',
+            '16px'
+          )}
+        </span>
+      ) : (
+        <span className="vitalityIcon-info">
+          <span
+            className="vitalityIcon-img"
+            style={{ width: '20px', height: '20px' }}
+          >
+            <img src={crySvg} />
+          </span>
+        </span>
+      )}
+    </React.Fragment>
   );
 };
 VitalityIcon.defaultProps = {

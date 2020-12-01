@@ -7,6 +7,8 @@ import {
   setTaskKey,
   setChooseKey,
 } from '../../redux/actions/taskActions';
+import { changeBatchMusic } from '../../redux/actions/authActions';
+
 import TaskNav from '../../components/taskNav/taskNav';
 // import { setHeaderIndex } from '../../redux/actions/memberActions';
 import { setMessage } from '../../redux/actions/commonActions';
@@ -160,12 +162,12 @@ const WorkingTableLabel: React.FC = (prop) => {
       setMainLabelArray(labelArray);
     }
   }, [memberHeaderIndex, mainLabelArray.length]);
-  useEffect(() => {
-    if (chooseKey) {
-      dispatch(setTaskKey(chooseKey));
-      dispatch(setChooseKey(''));
-    }
-  }, [chooseKey]);
+  // useEffect(() => {
+  //   if (chooseKey) {
+  //     dispatch(setTaskKey(chooseKey));
+  //     dispatch(setChooseKey(''));
+  //   }
+  // }, [chooseKey]);
   const sortArr = (arr: object[], item: any) => {
     arr.push(item);
     arr = _.sortBy(arr, ['createTime']).reverse();
@@ -210,10 +212,11 @@ const WorkingTableLabel: React.FC = (prop) => {
     let batchRes: any = await api.task.batchTaskArray(cardKeyArray);
     if (batchRes.msg === 'OK') {
       dispatch(setMessage(true, '归档成功', 'success'));
+      dispatch(changeBatchMusic(true));
       if (headerIndex === 1) {
-        dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
+        dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2,10]));
       } else if (headerIndex === 2) {
-        dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
+        dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2,10]));
       }
     } else {
       dispatch(setMessage(true, batchRes.msg, 'error'));

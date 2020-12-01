@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import api from '../../services/api';
 import _ from 'lodash';
 import format from '../../components/common/format';
-
+import { changeBatchMusic } from '../../redux/actions/authActions';
 import { getWorkingTableTask } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
 
@@ -39,10 +39,10 @@ const WorkingTableGroup: React.FC = (prop) => {
   let labelScroll = 0;
   useEffect(() => {
     if (user && user._key && !workingTaskArray && headerIndex === 1) {
-      dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
+      dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2,10]));
     }
     if (targetUserInfo && targetUserInfo._key && headerIndex === 2) {
-      dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
+      dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2,10]));
     }
   }, [user, targetUserInfo]);
   useEffect(() => {
@@ -243,11 +243,12 @@ const WorkingTableGroup: React.FC = (prop) => {
     });
     let batchRes: any = await api.task.batchTaskArray(cardKeyArray);
     if (batchRes.msg === 'OK') {
+      dispatch(changeBatchMusic(true));
       dispatch(setMessage(true, '归档成功', 'success'));
       if (headerIndex === 1) {
-        dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
+        dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2,10]));
       } else if (headerIndex === 2) {
-        dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2]));
+        dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2,10]));
       }
     } else {
       dispatch(setMessage(true, batchRes.msg, 'error'));

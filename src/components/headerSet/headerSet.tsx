@@ -3,7 +3,7 @@ import './headerSet.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useLocation, useHistory } from 'react-router-dom';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import { TextField, Button } from '@material-ui/core';
+import { TextField, Button, Checkbox } from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux';
 import _ from 'lodash';
@@ -20,19 +20,23 @@ import Task from '../task/task';
 import UserCenter from '../userCenter/userCenter';
 import MessageBoard from '../../views/board/messageBoard';
 import GroupCreate from '../../views/tabs/groupCreate';
+import HeaderCreate from './headerCreate';
 import { setTheme } from '../../redux/actions/authActions';
+
 import {
   setMessage,
   setUnMessageNum,
   setChatState,
+  setSocketObj,
 } from '../../redux/actions/commonActions';
-import { getSelfTask } from '../../redux/actions/taskActions';
 
 import set1Png from '../../assets/img/set1.png';
 import set2Png from '../../assets/img/set2.png';
 import set3Png from '../../assets/img/set3.png';
 import set4Png from '../../assets/img/set4.png';
 import set5Png from '../../assets/img/set5.png';
+import set6Svg from '../../assets/svg/set6.svg';
+import set7Svg from '../../assets/svg/set7.svg';
 import rightArrowPng from '../../assets/img/rightArrow.png';
 import leftArrowPng from '../../assets/img/leftArrow.png';
 import logoutPng from '../../assets/img/logout.png';
@@ -47,6 +51,7 @@ import downArrowbPng from '../../assets/img/downArrowb.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 
 import api from '../../services/api';
+import moment from 'moment';
 interface HeaderSetProps {}
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -78,6 +83,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const user = useTypedSelector((state) => state.auth.user);
   const theme = useTypedSelector((state) => state.auth.theme);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+
   const groupArray = useTypedSelector((state) => state.group.groupArray);
   const finishPos = useTypedSelector((state) => state.auth.finishPos);
 
@@ -98,26 +104,24 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const [searchInput, setSearchInput] = useState('');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [createPage, setCreatePage] = useState(1);
-  const [createTotal, setCreateTotal] = useState(0);
-  const [createTaskList, setCreateTaskList] = useState<any>([]);
+
   const [searchTaskList, setSearchTaskList] = useState<any>([]);
   const [groupIndex, setGroupIndex] = useState(0);
-  const [groupVisible, setGroupVisible] = useState(false);
+
   const [labelIndex, setLabelIndex] = useState(0);
   const [labelVisible, setLabelVisible] = useState(false);
   const [labelArray, setLabelArray] = useState<any>([]);
-  const [addInput, setAddInput] = useState('');
+
   const [userVisible, setUserVisible] = useState(false);
   const [imgBigArr2, setImgBigArr2] = useState<any>([]);
   const [moveState, setMoveState] = useState('');
   const [moveType, setMoveType] = useState(0);
   const [chooseWallKey, setChooseWallKey] = useState('');
   const [showVitality, setShowVitality] = useState(false);
+  const [searchCheck, setSearchCheck] = useState(false);
   const [vitalityInfo, setVitalityInfo] = useState<any>(null);
-
+  const [clientWidth, setClientWidth] = useState(1500);
   const canvasRef: React.RefObject<any> = useRef();
-
   // const imgBigArr2 = [
   // 'https://cdn-icare.qingtime.cn/1596679428976_8Big@1x.png',
   // 'https://cdn-icare.qingtime.cn/1596679446272_9Big@1x.png',
@@ -145,7 +149,6 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   useEffect(() => {
     if (user) {
       setAvatar(user.profile.avatar);
-      getTaskCreate(1);
     }
   }, [user]);
 
@@ -163,11 +166,11 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       }, 4000);
     }
   }, [finishPos]);
-  useEffect(() => {
-    if (groupArray && groupArray.length > 0) {
-      getLabelArray(groupArray[0]._key);
-    }
-  }, [groupArray]);
+  // useEffect(() => {
+  //   if (addVisible && groupArray && groupArray.length > 0) {
+  //     getLabelArray(groupArray[0]._key);
+  //   }
+  // }, [groupArray, addVisible]);
   useEffect(() => {
     if (searchInput == '') {
       setSearchTaskList([]);
@@ -186,6 +189,9 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   //     dispatch(setMessage(true, res.msg, 'error'));
   //   }
   // };
+  window.onresize = _.debounce(function () {
+    setClientWidth(document.body.clientWidth);
+  }, 1000);
   const getVitalityInfo = async () => {
     let res: any = await api.auth.getTargetUserInfo(user._key);
     if (res.msg == 'OK') {
@@ -213,7 +219,15 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     } else {
       newSearchTaskList = _.cloneDeep(searchTaskList);
     }
-    let res: any = await api.task.getCardSearch(page, limit, searchInput);
+    let obj: any = {
+      curPage: page,
+      perPage: limit,
+      searchCondition: searchInput,
+    };
+    if (searchCheck) {
+      obj.finishPercentStr = '1,2,3';
+    }
+    let res: any = await api.task.getCardSearch(obj);
     if (res.msg === 'OK') {
       newSearchTaskList.push(...res.result);
       setSearchTaskList(newSearchTaskList);
@@ -222,22 +236,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       dispatch(setMessage(true, res.msg, 'error'));
     }
   };
-  const getTaskCreate = async (page: number) => {
-    let newCreateTaskList: any = [];
-    if (page === 1) {
-      setCreateTaskList([]);
-    } else {
-      newCreateTaskList = _.cloneDeep(createTaskList);
-    }
-    let res: any = await api.task.getCardCreate(page, limit);
-    if (res.msg === 'OK') {
-      newCreateTaskList.push(...res.result);
-      setCreateTaskList(newCreateTaskList);
-      setCreateTotal(res.totalNumber);
-    } else {
-      dispatch(setMessage(true, res.msg, 'error'));
-    }
-  };
+
   const scrollSearchLoading = (e: any) => {
     let newPage = page;
     //文档内容实际高度（包括超出视窗的溢出部分）
@@ -255,61 +254,8 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       getTaskSearch(newPage);
     }
   };
-  const scrollCreateLoading = (e: any) => {
-    let newPage = createPage;
-    //文档内容实际高度（包括超出视窗的溢出部分）
-    let scrollHeight = e.target.scrollHeight;
-    //滚动条滚动距离
-    let scrollTop = e.target.scrollTop;
-    //窗口可视范围高度
-    let clientHeight = e.target.clientHeight;
-    if (
-      clientHeight + scrollTop >= scrollHeight - 1 &&
-      createTaskList.length < createTotal
-    ) {
-      newPage = newPage + 1;
-      setCreatePage(newPage);
-      getTaskCreate(newPage);
-    }
-  };
-  const getLabelArray = async (groupKey: string) => {
-    let newLabelArray = [
-      { _key: null, cardLabelName: 'ToDo', executorKey: user._key },
-    ];
-    let labelRes: any = await api.group.getLabelInfo(groupKey);
-    if (labelRes.msg === 'OK') {
-      newLabelArray.push(...labelRes.result);
-      setLabelArray(newLabelArray);
-    } else {
-      dispatch(setMessage(true, labelRes.msg, 'error'));
-    }
-  };
-  const addLabelTask = async () => {
-    let newCreateTaskList = _.cloneDeep(createTaskList);
-    let addTaskRes: any = await api.task.addTask(
-      groupArray[groupIndex]._key,
-      groupArray[groupIndex].role,
-      labelArray[labelIndex]._key,
-      labelArray[labelIndex].executorKey
-        ? labelArray[labelIndex].executorKey
-        : user._key,
-      addInput
-    );
-    if (addTaskRes.msg === 'OK') {
-      // setAddVisible(false);
-      setAddInput('');
-      dispatch(setMessage(true, '新增对应群任务成功', 'success'));
-      // if (headerIndex === 3) {
-      //   dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
-      // }
-      newCreateTaskList.unshift(addTaskRes.result);
-      setCreateTaskList(newCreateTaskList);
 
-      dispatch(getSelfTask(1, user._key, '[0, 1]'));
-    } else {
-      dispatch(setMessage(true, addTaskRes.msg, 'error'));
-    }
-  };
+
   const logout = async () => {
     localStorage.clear();
     socket.emit('logout', user._key);
@@ -319,63 +265,28 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   return (
     <React.Fragment>
       <div className="contentHeader-set">
-        <Tooltip title="新建任务">
-          <img
-            src={addPng}
-            alt=""
-            style={{
-              width: '40px',
-              height: '40px',
-              marginRight: '15px',
-              cursor: 'pointer',
-              position: 'relative',
-            }}
-            onClick={() => {
-              setAddVisible(true);
-            }}
-          />
-        </Tooltip>
-        <Tooltip title="搜索中心">
-          <img
-            src={searchPng}
-            alt=""
-            style={{
-              width: '40px',
-              height: '40px',
-              marginRight: '15px',
-              cursor: 'pointer',
-            }}
-            onClick={() => {
-              setSearchVisible(true);
-            }}
-          />
-        </Tooltip>
-        <Tooltip title="打卡中心">
-          <img
-            src={clockInPng}
-            alt=""
-            style={{
-              width: '40px',
-              height: '40px',
-              marginRight: '15px',
-              cursor: 'pointer',
-            }}
-            onClick={() => {
-              setClockInVisible(true);
-            }}
-          />
-          <ClockIn
-            visible={clockInVisible}
-            onClose={() => {
-              setClockInVisible(false);
-            }}
-          />
-        </Tooltip>
-        {headerIndex !== 0 ? (
-          <Tooltip title="消息中心">
-            <div style={{ position: 'relative' }}>
+        {(clientWidth > 1100 && headerIndex !== 3) ||
+        (clientWidth > 900 && headerIndex === 3) ? (
+          <React.Fragment>
+            <Tooltip title="新建任务">
               <img
-                src={messagePng}
+                src={addPng}
+                alt=""
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  marginRight: '15px',
+                  cursor: 'pointer',
+                  position: 'relative',
+                }}
+                onClick={() => {
+                  setAddVisible(true);
+                }}
+              />
+            </Tooltip>
+            <Tooltip title="搜索中心">
+              <img
+                src={searchPng}
                 alt=""
                 style={{
                   width: '40px',
@@ -384,53 +295,96 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                   cursor: 'pointer',
                 }}
                 onClick={() => {
-                  setMessageVisible(true);
-                  dispatch(setUnMessageNum(0));
+                  setSearchVisible(true);
                 }}
               />
-              {unMessageNum ? (
-                <div
-                  className="headerSet-unRead"
-                  style={{ borderRadius: unMessageNum < 10 ? '50%' : '20px' }}
-                >
-                  {unMessageNum}
+            </Tooltip>
+            <Tooltip title="打卡中心">
+              <img
+                src={clockInPng}
+                alt=""
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  marginRight: '15px',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  setClockInVisible(true);
+                }}
+              />
+              <ClockIn
+                visible={clockInVisible}
+                onClose={() => {
+                  setClockInVisible(false);
+                }}
+              />
+            </Tooltip>
+            {headerIndex !== 0 ? (
+              <Tooltip title="消息中心">
+                <div style={{ position: 'relative' }}>
+                  <img
+                    src={messagePng}
+                    alt=""
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      marginRight: '15px',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => {
+                      setMessageVisible(true);
+                      dispatch(setUnMessageNum(0));
+                      // dispatch(setSocketObj(null));
+                    }}
+                  />
+                  {unMessageNum ? (
+                    <div
+                      className="headerSet-unRead"
+                      style={{
+                        borderRadius: unMessageNum < 10 ? '50%' : '20px',
+                      }}
+                    >
+                      {unMessageNum}
+                    </div>
+                  ) : null}
                 </div>
-              ) : null}
-            </div>
-          </Tooltip>
+              </Tooltip>
+            ) : null}
+            <Tooltip title="聊天中心">
+              <ClickAwayListener
+                onClickAway={() => {
+                  dispatch(setChatState(false));
+                }}
+              >
+                <div style={{ position: 'relative' }}>
+                  <img
+                    src={chatPng}
+                    alt=""
+                    style={{
+                      width: '40px',
+                      height: '40px',
+                      marginRight: '15px',
+                      cursor: 'pointer',
+                    }}
+                    onClick={() => {
+                      dispatch(setChatState(true));
+                    }}
+                  />
+                  {unChatNum ? (
+                    <div
+                      className="headerSet-unRead"
+                      style={{ borderRadius: unChatNum < 10 ? '50%' : '20px' }}
+                    >
+                      {unChatNum}
+                    </div>
+                  ) : null}
+                  <Chat />
+                </div>
+              </ClickAwayListener>
+            </Tooltip>
+          </React.Fragment>
         ) : null}
-        <Tooltip title="聊天中心">
-          <ClickAwayListener
-            onClickAway={() => {
-              dispatch(setChatState(false));
-            }}
-          >
-            <div style={{ position: 'relative' }}>
-              <img
-                src={chatPng}
-                alt=""
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  marginRight: '15px',
-                  cursor: 'pointer',
-                }}
-                onClick={() => {
-                  dispatch(setChatState(true));
-                }}
-              />
-              {unChatNum ? (
-                <div
-                  className="headerSet-unRead"
-                  style={{ borderRadius: unChatNum < 10 ? '50%' : '20px' }}
-                >
-                  {unChatNum}
-                </div>
-              ) : null}
-              <Chat />
-            </div>
-          </ClickAwayListener>
-        </Tooltip>
         <Tooltip title="用户中心">
           <div
             className="contentHeader-avatar-info"
@@ -509,31 +463,45 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           >
             <div className="contentHeader-set-left">
               <div className="contentHeader-set-title">
-                <div
-                  className="contentHeader-set-avatar"
-                  onClick={() => {
-                    setUserVisible(true);
-                  }}
-                >
+                <div className="contentHeader-set-avatar">
                   <img src={avatar} alt="" />
                 </div>
-              </div>
-              <div
-                className="contentHeader-set-vitality"
-                onClick={() => {
-                  setShowVitality(true);
-                }}
-              >
-                <div>活力值</div>
-                <img
-                  src={batteryPng}
-                  alt=""
-                  className="contentHeader-set-numImg"
-                />
-                <div style={{ color: '#17B881' }}>
-                  {vitalityInfo && vitalityInfo.energyValueTotal}
+                <div
+                  className="contentHeader-set-item contentHeader-set-vitality"
+                  onClick={() => {
+                    setShowVitality(true);
+                  }}
+                >
+                  <div className="contentHeader-set-item-bg-info">
+                    <img
+                      src={set6Svg}
+                      alt=""
+                      style={{
+                        width: '15px',
+                        height: '17px',
+                        marginRight: '10px',
+                        cursor: 'pointer',
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setUserVisible(true);
+                      }}
+                    />
+                    <div>{user.profile.nickName}</div>
+                  </div>
+                  <div className="bg-item-right">
+                    <img
+                      src={batteryPng}
+                      alt=""
+                      className="contentHeader-set-numImg"
+                    />
+                    <div style={{ color: '#17B881', fontSize: '12px' }}>
+                      活力 {vitalityInfo && vitalityInfo.energyValueTotal}
+                    </div>
+                  </div>
                 </div>
               </div>
+
               <div
                 className="contentHeader-set-item"
                 onClick={() => {
@@ -595,7 +563,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                 <div className="contentHeader-set-item-title contentHeader-set-item-bg">
                   <div className="contentHeader-set-item-bg-info">
                     <img
-                      src={set5Png}
+                      src={set7Svg}
                       alt=""
                       style={{
                         width: '18px',
@@ -793,163 +761,23 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
         onClose={() => {
           setAddVisible(false);
         }}
-        onOK={() => {
-          addLabelTask();
-        }}
+        // onOK={() => {
+        //   addLabelTask();
+        // }}
+        footer={false}
         title={'新建任务'}
         dialogStyle={{
           position: 'fixed',
           top: '65px',
-          right: '10px',
-          width: '400px',
-          height: createTaskList.length > 0 ? 'calc(100% - 70px)' : '250px',
+          right: '0px',
+          width: '430px',
+          height: 'calc(100% - 70px)',
           overflow: 'auto',
+          padding: '0px 15px',
         }}
         showMask={false}
       >
-        <div className="headerSet-search-title">
-          <TextField
-            // required
-            id="outlined-basic"
-            variant="outlined"
-            label="添加任务"
-            className={classes.input}
-            style={{ width: '100%' }}
-            value={addInput}
-            onChange={(e) => {
-              setAddInput(e.target.value);
-            }}
-          />
-        </div>
-        {labelArray && labelArray.length > 0 ? (
-          <div className="addTask-container">
-            <div
-              className="addTask-item"
-              onClick={() => {
-                setGroupVisible(true);
-              }}
-            >
-              <div className="addTask-avatar">
-                <img
-                  src={
-                    groupArray[groupIndex].groupLogo
-                      ? groupArray[groupIndex].groupLogo
-                      : defaultGroupPng
-                  }
-                  alt=""
-                />
-              </div>
-              <div>{groupArray[groupIndex].groupName}</div>
-              <img src={downArrowbPng} alt="" className="addTask-logo" />
-              {groupVisible ? (
-                <DropMenu
-                  visible={groupVisible}
-                  dropStyle={{
-                    width: '300px',
-                    height: '350px',
-                    top: '50px',
-                    overflow: 'auto',
-                  }}
-                  onClose={() => {
-                    setGroupVisible(false);
-                  }}
-                  title={'选择项目'}
-                >
-                  <React.Fragment>
-                    {groupArray.map((item: any, index: number) => {
-                      return (
-                        <div
-                          className="chooseItem"
-                          onClick={(e: any) => {
-                            setGroupIndex(index);
-                            getLabelArray(item._key);
-                            setGroupVisible(false);
-                            e.stopPropagation();
-                          }}
-                          key={'group' + index}
-                        >
-                          <div className="addTask-avatar">
-                            <img
-                              src={
-                                item.groupLogo
-                                  ? item.groupLogo
-                                  : defaultGroupPng
-                              }
-                              alt=""
-                            />
-                          </div>
-                          <div>{item.groupName}</div>
-                        </div>
-                      );
-                    })}
-                  </React.Fragment>
-                </DropMenu>
-              ) : null}
-            </div>
-            <div
-              className="addTask-item"
-              onClick={() => {
-                setLabelVisible(true);
-              }}
-            >
-              <div>{labelArray[labelIndex].cardLabelName}</div>
-              <img src={downArrowbPng} alt="" className="addTask-logo" />
-              {labelVisible ? (
-                <DropMenu
-                  visible={labelVisible}
-                  dropStyle={{
-                    width: '100%',
-                    height: '350px',
-                    top: '50px',
-                    overflow: 'auto',
-                  }}
-                  onClose={() => {
-                    setLabelVisible(false);
-                  }}
-                  title={'选择频道'}
-                >
-                  <React.Fragment>
-                    {labelArray.map((item: any, index: number) => {
-                      return (
-                        <div
-                          className="chooseItem"
-                          onClick={(e: any) => {
-                            setLabelIndex(index);
-                            setLabelVisible(false);
-                            e.stopPropagation();
-                          }}
-                          key={'label' + index}
-                        >
-                          <div style={{ textAlign: 'center', width: '100%' }}>
-                            {item.cardLabelName}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </React.Fragment>
-                </DropMenu>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
-        <div className="addTask-create">最近创建</div>
-        {createTaskList.length > 0 ? (
-          <div
-            className="headerSet-search-info"
-            onScroll={scrollCreateLoading}
-            style={{ height: 'calc(100% - 145px)' }}
-          >
-            {createTaskList.map((taskItem: any, taskIndex: number) => {
-              return (
-                <Task
-                  key={'create' + taskIndex}
-                  taskItem={taskItem}
-                  showGroupName={true}
-                />
-              );
-            })}
-          </div>
-        ) : null}
+        <HeaderCreate />
       </Dialog>
       <Dialog
         visible={searchVisible}
@@ -961,9 +789,9 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
         dialogStyle={{
           position: 'fixed',
           top: '65px',
-          right: '10px',
+          right: '0px',
           width: '430px',
-          height: searchTaskList.length > 0 ? 'calc(100% - 70px)' : '140px',
+          height: searchTaskList.length > 0 ? 'calc(100% - 70px)' : '175px',
           overflow: 'auto',
         }}
         showMask={false}
@@ -998,6 +826,20 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           >
             搜索
           </Button>
+        </div>
+        <div>
+          <Checkbox
+            checked={searchCheck}
+            onChange={(e: any) => {
+              setSearchCheck(e.target.checked);
+              if (!e.target.checked) {
+                getTaskSearch(1);
+                setPage(1);
+              }
+            }}
+            color="primary"
+          />
+          已归档任务
         </div>
         {searchTaskList.length > 0 ? (
           <div className="headerSet-search-info" onScroll={scrollSearchLoading}>

@@ -71,7 +71,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
   const [groupLogo, setGroupLogo] = useState('');
   const [modelUrl, setModelUrl] = useState('');
   const [isOpen, setIsOpen] = useState(true);
-  const [joinType, setJoinType] = useState('0');
+  const [joinType, setJoinType] = useState('1');
   const [password, setPassword] = useState('');
   const [question, setQuestion] = useState('');
   const [isHasPassword, setIsHasPassword] = useState(false);
@@ -137,7 +137,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
           : false
       );
       setIsOpen(groupInfo.isOpen ? groupInfo.isOpen : false);
-      setJoinType(groupInfo.joinType ? groupInfo.joinType + '' : '0');
+      setJoinType(groupInfo.joinType ? groupInfo.joinType + '' : '1');
       setPassword(groupInfo.password ? groupInfo.password : '');
       setQuestion(groupInfo.question ? groupInfo.question : '');
       setIsHasPassword(
@@ -273,7 +273,6 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
     <div className="contact-dialog-content">
       <div className="contact-dialog-info">
         <div className="contact-dialog-container">
-
           <div className="contact-name-content" style={{ width: '70%' }}>
             <div className="contact-name-title">群名</div>
             <TextField
@@ -349,9 +348,17 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
           <div className="contact-name-content" style={{ height: '250px' }}>
             <div className="contact-name-title">群概念图</div>
             <div className="contact-model">
-              <img src={plusPng} className="contact-dialog-add" style={{ zIndex: 2 }} />
+              <img
+                src={plusPng}
+                className="contact-dialog-add"
+                style={{ zIndex: 2 }}
+              />
               {modelUrl ? (
-                <img src={modelUrl} className="contact-dialog-groupLogo" style={{ borderRadius: '0px' }} />
+                <img
+                  src={modelUrl}
+                  className="contact-dialog-groupLogo"
+                  style={{ borderRadius: '0px' }}
+                />
               ) : null}
               <input
                 type="file"
@@ -359,7 +366,12 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
                 onChange={uploadModelImg}
                 className="upload-img"
                 disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
-                style={{ width: '100%', height: '100%', top: '0px', left: '0px' }}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  top: '0px',
+                  left: '0px',
+                }}
               />
             </div>
           </div>
@@ -491,7 +503,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
               visible={defaultPowerVisible}
               dropStyle={{
                 width: '300px',
-                height: '125px',
+                height: '100px',
                 top: '40px',
                 left: '100px',
               }}
@@ -502,23 +514,30 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
               <div className="contact-role">
                 {roleArray.map((roleItem: any, roleIndex: number) => {
                   return (
-                    <div
-                      key={'role' + roleIndex}
-                      className="contact-role-item"
-                      onClick={() => {
-                        changeRole(roleItem.role, roleIndex);
-                      }}
-                    >
-                      {roleItem.name}
-                    </div>
+                    <React.Fragment key={'role' + roleIndex}>
+                      {roleIndex > 0 ? (
+                        <div
+                          className="contact-role-item"
+                          onClick={() => {
+                            changeRole(roleItem.role, roleIndex);
+                          }}
+                        >
+                          {roleItem.name}
+                        </div>
+                      ) : null}
+                    </React.Fragment>
                   );
                 })}
               </div>
             </DropMenu>
           </div>
-          <div className="contact-dialog-logo" onClick={() => {
-            setDefaultPngVisible(true)
-          }} style={{ border: groupLogo ? 0 : '1px solid #d9d9d9' }}>
+          <div
+            className="contact-dialog-logo"
+            onClick={() => {
+              setDefaultPngVisible(true);
+            }}
+            style={{ border: groupLogo ? 0 : '1px solid #d9d9d9' }}
+          >
             <img src={plusPng} className="contact-dialog-add" />
             <img src={editImgPng} className="contact-dialog-icon" />
             {groupLogo ? (
@@ -550,19 +569,22 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
             <div className="defaultPng-container">
               {defaultGroupPng.map((defaultItem: any, defaultIndex: number) => {
                 return (
-                  <img key={'defaultPng' + defaultIndex} src={defaultItem} alt="" onClick={() => {
-                    setGroupLogo(defaultItem);
-                    setGroupSet('groupLogo', defaultItem);
-                  }} />
+                  <img
+                    key={'defaultPng' + defaultIndex}
+                    src={defaultItem}
+                    alt=""
+                    onClick={() => {
+                      setGroupLogo(defaultItem);
+                      setGroupSet('groupLogo', defaultItem);
+                    }}
+                  />
                 );
               })}
             </div>
           </DropMenu>
-
         </div>
       </div>
-
-    </div >
+    </div>
   );
 };
 export default GroupSet;

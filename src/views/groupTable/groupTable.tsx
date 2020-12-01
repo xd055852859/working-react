@@ -39,7 +39,7 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
     if (user && user._key && groupKey) {
       dispatch(getGroupMember(groupKey, 4));
       dispatch(getGroupInfo(groupKey));
-      dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+      dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
       dispatch(getTheme());
     }
   }, [user, groupKey]);
@@ -70,10 +70,7 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
       }
     >
       <GroupTableHeader />
-      <div
-        className="groupTableContent"
-        style={memberHeaderIndex === 4 ? { backgroundColor: '#f5f5f5' } : {}}
-      >
+      <div className="groupTableContent">
         {memberHeaderIndex === 0 ? <GroupTableGroup /> : null}
         {memberHeaderIndex === 1 ? <Grid gridState={true} /> : null}
         {memberHeaderIndex === 2 ? <Grid gridState={false} /> : null}

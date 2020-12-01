@@ -1,9 +1,9 @@
 .clockIn {
   position: fixed;
-  width: 400px;
+  width: 430px;
   height: calc(100% - 68px);
-  top: 68px;
-  right: 10px;
+  top: 65px;
+  right: 0px;
   padding: 0px 16px;
   box-sizing: border-box;
   background-color: #fff;
@@ -97,4 +97,9 @@
 .clockInGroup-item-logo {
   width: 24px;
   height: 24px;
+}
+.clockIn-report {
+  display: flex;
+  margin-right: 10px;
+  cursor: pointer;
 }

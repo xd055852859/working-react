@@ -9,7 +9,7 @@ const ClockNew = (props) => {
 
   return (
     <div className="react-clock-container">
-      <Clock value={nowTime} size={'600'} renderMinuteMarks={false} />
+      <Clock value={nowTime} size={600} renderMinuteMarks={false} />
       <div className="react-clock-center"></div>
     </div>
   )

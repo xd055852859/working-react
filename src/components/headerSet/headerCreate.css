@@ -1,0 +1,62 @@
+.headerCreate-title-content {
+  width: 100%;
+  display: inline-block;
+}
+.headerCreate-title,
+.headerCreate-choose-title {
+  border-radius: 6px;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.headerCreate-title {
+  width: 100%;
+}
+.headerCreate-choose-title {
+  width: 150px;
+  height: 35px;
+  padding: 0px 8px;
+  cursor: pointer;
+  position: relative;
+  z-index: 10;
+  border: 1px solid #cecece;
+}
+.headerCreate-title-left {
+  width: calc(100% - 30px);
+  height: 100%;
+  border: 1px solid #cecece;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px;
+  box-sizing: border-box;
+}
+.headerCreate-title-left-left {
+  width: 23%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.headerCreate-title-left-right {
+  width: 75%;
+}
+.headerCreate-title-left-title {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.headerCreate-title-left-title:last-child {
+  margin-bottom: 0px;
+}
+.headerCreate-title-icon {
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+}

@@ -444,25 +444,38 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                               key={'vitality' + index + dayIndex}
                             >
                               {/* <template slot="title">分值: {{dayItem.value}} 分</template> */}
-                              <Tooltip title={dayItem.value}>
-                                <div
-                                  className="vitality-month-item-day"
-                                  style={{
-                                    // backgroundColor: dayItem.color,
-                                    backgroundColor: dayItem.color,
-                                    border: dayItem.date
-                                      ? '1px solid rgba(151, 151, 151, 1)'
-                                      : 0,
-                                  }}
-                                  onClick={() => {
-                                    if (headerIndex !== 2) {
-                                      getTargetLog(dayItem.startTime);
-                                    }
-                                  }}
-                                >
-                                  {dayItem.date}
-                                </div>
-                              </Tooltip>
+                              <div
+                                className="vitality-month-item-day"
+                                style={{
+                                  // backgroundColor: dayItem.color,
+                                  backgroundColor: dayItem.color,
+                                  border: dayItem.date
+                                    ? '1px solid rgba(151, 151, 151, 1)'
+                                    : 0,
+                                }}
+                                onClick={() => {
+                                  if (headerIndex !== 2) {
+                                    getTargetLog(dayItem.startTime);
+                                  }
+                                }}
+                              >
+                                {dayItem.value && dayItem.value != 0 ? (
+                                  <React.Fragment>
+                                    <div
+                                      className="vitality-changeNum-box"
+                                      style={{
+                                        color:
+                                          dayItem.value > 0 ? '#fff' : '#333',
+                                      }}
+                                    >
+                                      {dayItem.value > 0 ? '+' : ''}
+                                      {dayItem.value}
+                                    </div>
+                                    <div className="vitality-changeNum"></div>
+                                  </React.Fragment>
+                                ) : null}
+                                {dayItem.date}
+                              </div>
                             </div>
                           );
                         })}

@@ -13,6 +13,9 @@ const WorkingCanlendar: React.FC<WorkingCanlendarProps> = (prop) => {
   const workingTaskArray = useTypedSelector(
     (state) => state.task.workingTaskArray
   );
+  const taskArray = useTypedSelector((state) => state.task.taskArray);
+  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const [dayCanlendarArray, setDayCanlendarArray] = useState<any>([]);
   const [dateArray, setDateArray] = useState<any>([]);
@@ -21,11 +24,15 @@ const WorkingCanlendar: React.FC<WorkingCanlendarProps> = (prop) => {
   const canlendarRef: React.RefObject<any> = useRef();
 
   useEffect(() => {
-    if (workingTaskArray) {
+    if (workingTaskArray && headerIndex !== 3) {
       getData(workingTaskArray, filterObject);
     }
   }, [workingTaskArray, filterObject]);
-
+  useEffect(() => {
+    if (taskArray && headerIndex === 3) {
+      getData(taskArray, filterObject);
+    }
+  }, [taskArray, filterObject]);
   useEffect(() => {
     if (canlendarRef.current) {
       let clientWidth = canlendarRef.current.clientWidth;
@@ -144,7 +151,12 @@ const WorkingCanlendar: React.FC<WorkingCanlendarProps> = (prop) => {
                   className="dayCanlendar-info-item"
                   key={'taskItem' + taskIndex}
                 >
-                  {taskItem.show ? <Task taskItem={taskItem} timeSetStatus={taskIndex > item[key].length - 3}/> : null}
+                  {taskItem.show ? (
+                    <Task
+                      taskItem={taskItem}
+                      timeSetStatus={taskIndex > item[key].length - 3}
+                    />
+                  ) : null}
                 </div>
               );
             })}

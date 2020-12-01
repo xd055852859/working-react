@@ -29,7 +29,7 @@ import GroupCreate from './groupCreate';
 import DropMenu from '../../components/common/dropMenu';
 
 import searchPng from '../../assets/img/search.png';
-import searchbPng from '../../assets/img/searchb.png';
+import searchbSvg from '../../assets/svg/searchb.svg';
 import addPng from '../../assets/img/contact-add.png';
 import downArrowbPng from '../../assets/img/downArrowb.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
@@ -94,7 +94,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   const [searchInput, setSearchInput] = React.useState('');
   const [question, setQuestion] = React.useState('');
   const [passwordInput, setPasswordInput] = React.useState('');
-  const [joinType, setJoinType] = React.useState(0);
+  const [joinType, setJoinType] = React.useState(1);
   const [searchIndex, setSearchIndex] = React.useState(0);
   const [searchItem, setSearchItem] = React.useState<any>(null);
   const [isHasPassword, setIsHasPassword] = React.useState(false);
@@ -393,7 +393,8 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             }
             className="tabs-tab-nav-item"
           >
-            项目
+            项目 ( {groupArray && groupArray.length > 0 ? groupArray.length : 0}{' '}
+            )
           </div>
           <div
             onClick={() => {
@@ -406,7 +407,8 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             }
             className="tabs-tab-nav-item"
           >
-            队友
+            队友 ({' '}
+            {memberArray && memberArray.length > 0 ? memberArray.length : 0} )
           </div>
           <img
             src={searchPng}
@@ -464,7 +466,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
               }}
             >
               <img
-                src={searchbPng}
+                src={searchbSvg}
                 alt=""
                 style={{
                   width: '18px',
@@ -596,33 +598,36 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                         </div>
                         <div className="personMember-item-name">{name}</div>
                       </div>
-                      {contactIndex ? (
-                        <div
-                          className="personMember-item-button"
-                          onClick={
-                            (e: any) => {
-                              deleteMember(mainSearchItem, mainSearchIndex);
-                              e.stopPropagation();
+                      {
+                        contactIndex ? (
+                          <div
+                            className="personMember-item-button"
+                            onClick={
+                              (e: any) => {
+                                deleteMember(mainSearchItem, mainSearchIndex);
+                                e.stopPropagation();
+                              }
+                              // addMember(item)
                             }
-                            // addMember(item)
-                          }
-                        >
-                          <div>删除好友</div>
-                        </div>
-                      ) : (
-                        <div
-                          className="personMember-item-button"
-                          onClick={
-                            (e: any) => {
-                              e.stopPropagation();
-                              outGroup(key, searchIndex);
-                            }
-                            // addMember(item)
-                          }
-                        >
-                          <div>退出项目</div>
-                        </div>
-                      )}
+                          >
+                            <div>删除好友</div>
+                          </div>
+                        ) : null
+                        // (
+                        //   <div
+                        //     className="personMember-item-button"
+                        //     onClick={
+                        //       (e: any) => {
+                        //         e.stopPropagation();
+                        //         outGroup(key, searchIndex);
+                        //       }
+                        //       // addMember(item)
+                        //     }
+                        //   >
+                        //     <div>退出项目</div>
+                        //   </div>
+                        // )
+                      }
                     </div>
                   );
                 }
@@ -728,7 +733,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             }}
             dropStyle={{
               width: 'calc(100% - 20px)',
-              height: '255px',
+              // height: '255px',
               top: '40px',
               left: '10px',
               color: '#333',

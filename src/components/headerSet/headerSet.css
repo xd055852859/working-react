@@ -39,6 +39,7 @@
   width: 100%;
   object-fit: cover;
 }
+
 .contentHeader-set-item {
   width: 100%;
   height: 40px;
@@ -47,19 +48,28 @@
   justify-content: space-between;
   margin-bottom: 10px;
   position: relative;
+  padding: 8px 10px;
+  box-sizing: border-box;
+}
+.contentHeader-set-vitality {
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  background-color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 0px;
 }
 .contentHeader-set-title {
   width: 100%;
-  height: 120px;
+  height: 150px;
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+  z-index: 1;
 }
 .contentHeader-set-avatar {
-  width: 88px;
-  height: 88px;
-  overflow: hidden;
-  border-radius: 50%;
+  width: 100%;
+  height: 150px;
   cursor: pointer;
 }
 .contentHeader-set-avatar img {
@@ -145,7 +155,7 @@
 }
 .headerSet-search-info {
   width: 100%;
-  height: calc(100% - 40px);
+  height: calc(100% - 100px);
   padding: 0px 10px;
   box-sizing: border-box;
   overflow: auto;
@@ -189,9 +199,10 @@
 }
 .addTask-create {
   width: 100%;
-  height: 20px;
-  line-height: 20px;
+  height: 50px;
+  line-height: 50px;
   font-size: 14px;
+  font-weight: bold;
 }
 .chooseItem {
   width: 100%;
@@ -231,8 +242,6 @@
 .contentHeader-set-left {
   width: 260px;
   height: 100%;
-  padding: 8px 10px;
-  box-sizing: border-box;
 }
 .contentHeader-set-item-radio {
   height: 100%;
@@ -252,18 +261,23 @@
   height: 40px;
   line-height: 40px;
 }
-.contentHeader-set-vitality {
-  width: 100%;
-  height: 30px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
+
 .contentHeader-set-numImg {
   width: 19px;
   height: 12px;
   margin: 0px 5px;
+}
+
+.create-button {
+  width: 100%;
+  height: 55px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 15px;
+  box-sizing: border-box;
 }
 @keyframes avatarSmall {
   from {

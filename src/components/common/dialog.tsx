@@ -39,7 +39,18 @@ const Dialog: React.FC<dialogProp> = (prop) => {
   const dialog = () => {
     return (
       <div className="dialog" style={dialogStyle}>
-        {title ? <div className="dialog-title">{title}</div> : null}
+        {title ? (
+          <div className="dialog-title">
+            {title}
+            {!showMask ? (
+              <img
+                src={closePng}
+                onClick={onClose}
+                style={{ height: '25px', width: '25px', cursor: 'pointer' }}
+              />
+            ) : null}
+          </div>
+        ) : null}
         {showMask ? (
           <img
             src={closePng}

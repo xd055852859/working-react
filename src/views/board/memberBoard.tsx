@@ -36,14 +36,13 @@ interface ProjectBoardItemProps {
 const MemberBoardItem: React.FC<MemberBoardItemProps> = (props) => {
   const { memberItem } = props;
   const classes = useStyles();
+  console.log('memberItem', memberItem);
   return (
     <React.Fragment>
       <div className="memberBoard-title">
         <Avatar
           alt="人头像"
-          src={
-            memberItem[0][0].executorAvatar
-          }
+          src={memberItem[0][0].executorAvatar}
           className={classes.avatar}
         />
         {memberItem[0][0].executorName}
@@ -52,13 +51,13 @@ const MemberBoardItem: React.FC<MemberBoardItemProps> = (props) => {
         return (
           <div key={'memberItem' + index} style={{ width: '100%' }}>
             <div className="memberBoard-group" style={{ marginTop: '5px' }}>
-              <Avatar
-                alt="群头像"
-                src={
-                  item[0].groupLogo
-                }
-                className={classes.logo}
-              />
+              {item[0].groupName.indexOf('主群') === -1 ? (
+                <Avatar
+                  alt="群头像"
+                  src={item[0].groupLogo}
+                  className={classes.logo}
+                />
+              ) : null}
               {item[0].groupName}
             </div>
             <div className="memberBoard-info">
@@ -67,7 +66,7 @@ const MemberBoardItem: React.FC<MemberBoardItemProps> = (props) => {
                   <Task
                     taskItem={taskItem}
                     key={'task' + taskIndex}
-                    timeSetStatus={taskIndex > item.length - 3}
+                    // timeSetStatus={taskIndex > item.length - 3}
                   />
                 );
               })}
@@ -165,7 +164,6 @@ const MemberBoard: React.FC = () => {
         if (
           item.executorKey !== user._key &&
           item.groupName &&
-          item.groupName.indexOf('个人事务') === -1 &&
           item.title !== ''
         ) {
           if (!personObj[item.executorKey]) {
@@ -191,7 +189,6 @@ const MemberBoard: React.FC = () => {
       Object.values(personGroupObj).map((item: any, index: number) => {
         personGroupArray.push(Object.values(item));
       });
-      console.log('xxxxxxxxxxxxxxxxxx', personGroupArray);
       setMemberGroupArray(personGroupArray);
     }
   }, [teamTaskArray, user]);
@@ -207,7 +204,7 @@ const MemberBoard: React.FC = () => {
           if (
             groupItem.finishPercent === 0 &&
             item.title !== '' &&
-            groupItem.groupName.indexOf('个人事务') === -1
+            groupItem.groupName.indexOf('主群') === -1
           ) {
             if (groupItem.labelKey) {
               if (!arr[index][groupItem.labelKey]) {

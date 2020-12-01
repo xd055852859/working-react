@@ -403,6 +403,11 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                   onChange={(e) => {
                     setSearchInput(e.target.value);
                   }}
+                  onKeyDown={(e: any) => {
+                    if (e.keyCode === 13) {
+                      searchMember();
+                    }
+                  }}
                 />
                 <Button
                   variant="contained"

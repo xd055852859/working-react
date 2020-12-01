@@ -109,3 +109,8 @@
 .fileday {
   width: 50px;
 }
+.viewTableHeader-tab {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

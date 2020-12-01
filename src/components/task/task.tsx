@@ -3,7 +3,11 @@ import { useTypedSelector } from '../../redux/reducer/RootState';
 import { TextField, Button, ClickAwayListener } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
-import { changeMusic, changeMove } from '../../redux/actions/authActions';
+import {
+  changeMusic,
+  changeunMusic,
+  changeMove,
+} from '../../redux/actions/authActions';
 import {
   setTaskKey,
   editTask,
@@ -36,8 +40,10 @@ import unimportantPng from '../../assets/img/unimportant.png';
 import ellipsisbPng from '../../assets/img/ellipsisb.png';
 import taskAddPng from '../../assets/img/contact-plus.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import checkPersonPng from '../../assets/img/checkPerson.png';
-
+import messageHandSvg from '../../assets/svg/messageHand.svg';
+import messageunHandSvg from '../../assets/svg/messageunHand.svg';
 interface TaskProps {
   taskItem: any;
   executorKey?: number | string;
@@ -48,6 +54,7 @@ interface TaskProps {
   bottomtype?: string;
   timeSetStatus?: boolean;
   myState?: boolean;
+  createTime?: string;
 }
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -70,6 +77,7 @@ const Task: React.FC<TaskProps> = (props) => {
     bottomtype,
     timeSetStatus,
     myState,
+    createTime,
   } = props;
   const taskKey = useTypedSelector((state) => state.task.taskKey);
   // const addKey = useTypedSelector((state) => state.task.addKey);
@@ -101,6 +109,7 @@ const Task: React.FC<TaskProps> = (props) => {
   const [taskInfoDialogShow, setTaskInfoDialogShow] = useState(false);
   const [addTaskVisible, setAddTaskVisible] = useState(false);
   const [addInput, setAddInput] = useState('');
+  const [avatarShow, setAvatarShow] = useState<any>(null);
 
   const titleRef: React.RefObject<any> = useRef();
   const color = [
@@ -156,7 +165,8 @@ const Task: React.FC<TaskProps> = (props) => {
       editRole =
         (taskItem.groupRole &&
           taskItem.groupRole > 0 &&
-          taskItem.groupRole < 4) ||
+          taskItem.groupRole < 4 &&
+          taskItem.creatorGroupRole >= taskItem.groupRole) ||
         taskItem.creatorKey === user._key ||
         taskItem.executorKey === user._key;
 
@@ -256,6 +266,7 @@ const Task: React.FC<TaskProps> = (props) => {
       // dispatch(setTaskKey(''));
       setTaskExecutorShow(false);
       setTimeSetShow(false);
+      setAvatarShow(null);
       // setAddTaskVisible(false);
       // setAddInput('');
     }
@@ -272,6 +283,7 @@ const Task: React.FC<TaskProps> = (props) => {
       }
     } else if (newTaskDetail.finishPercent === 0) {
       newTaskDetail.todayTaskTime = 0;
+      dispatch(changeunMusic(true));
     }
     setNewDetail(newTaskDetail);
   };
@@ -409,7 +421,7 @@ const Task: React.FC<TaskProps> = (props) => {
       setTaskKey(addTaskRes.result._key);
       dispatch(setMessage(true, '新增成功', 'success'));
       if (headerIndex == 3) {
-        dispatch(getGroupTask(3, groupKey, '[0,1,2]'));
+        dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
       } else if (headerIndex == 0) {
         dispatch(
           getSelfTask(
@@ -423,7 +435,7 @@ const Task: React.FC<TaskProps> = (props) => {
         );
       } else {
         dispatch(
-          getWorkingTableTask(1, user._key, 1, [0, 1, 2], theme.fileDay)
+          getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10], theme.fileDay)
         );
       }
     } else {
@@ -463,9 +475,34 @@ const Task: React.FC<TaskProps> = (props) => {
                   !bottomtype && taskItem._key === taskKey
                     ? '0 0 7px 0 rgba(0, 0, 0, 0.26)'
                     : '',
+                border: createTime ? '1px solid #efefef' : '0px',
               }}
             >
               <React.Fragment>
+                {createTime ? (
+                  <div className="taskItem-groupContainer">
+                    <div className="taskItem-group">
+                      <div
+                        className="taskItem-img"
+                        style={{ marginRight: '5px' }}
+                      >
+                        <img
+                          src={
+                            taskDetail.groupLogo
+                              ? taskDetail.groupLogo
+                              : defaultGroupPng
+                          }
+                        />
+                      </div>
+                      <span>{taskDetail.groupName}</span>
+                      <span>{' / '}</span>
+                      <span>
+                        {taskDetail.labelName ? taskDetail.labelName : 'ToDo'}
+                      </span>
+                    </div>
+                    <div className="taskItem-createTime">{createTime}</div>
+                  </div>
+                ) : null}
                 {!bottomtype && !myState ? (
                   <div
                     className="taskItem-taskType"
@@ -521,10 +558,12 @@ const Task: React.FC<TaskProps> = (props) => {
                   <div
                     className="taskItem-finishIcon"
                     onClick={(e: any) => {
-                      changeFinishPercent(
-                        taskDetail.finishPercent !== 0 ? 0 : 1,
-                        e
-                      );
+                      if (editRole) {
+                        changeFinishPercent(
+                          taskDetail.finishPercent !== 0 ? 0 : 1,
+                          e
+                        );
+                      }
                     }}
                   >
                     <img
@@ -560,7 +599,8 @@ const Task: React.FC<TaskProps> = (props) => {
                         <div
                           className="taskItem-time-hour"
                           style={{
-                            right: taskDetail.hour < 1 ? '5px' : '0px',
+                            right:
+                              (taskDetail.hour + '').length > 1 ? '5px' : '0px',
                           }}
                         >
                           {taskDetail.hour}
@@ -590,7 +630,33 @@ const Task: React.FC<TaskProps> = (props) => {
                     {bottomtype === 'grid' ? (
                       <div
                         className="taskItem-img"
-                        style={{ width: '25px', height: '25px' }}
+                        onMouseEnter={() => {
+                          setAvatarShow(2);
+                        }}
+                        onMouseLeave={() => {
+                          setAvatarShow(1);
+                        }}
+                        style={
+                          avatarShow && editRole && taskKey === taskDetail._key
+                            ? avatarShow === 1
+                              ? {
+                                  animation: 'taskAvatarSmall 500ms',
+                                  // animationFillMode: 'forwards',
+                                  width: '18px',
+                                  height: '18px',
+                                }
+                              : {
+                                  animation: 'taskAvatarBig 500ms',
+                                  // animationFillMode: 'forwards',
+                                  width: '25px',
+                                  height: '25px',
+                                }
+                            : {
+                                // animationFillMode: 'forwards',
+                                width: '18px',
+                                height: '18px',
+                              }
+                        }
                       >
                         <img
                           src={
@@ -661,39 +727,45 @@ const Task: React.FC<TaskProps> = (props) => {
                         {taskDetail.title}
                       </div>
                     )} */}
-                      <div
-                        className="content-editable"
-                        contentEditable={true}
-                        suppressContentEditableWarning
-                      >
-                        {taskDetail.title}
-                      </div>
-                      <textarea
-                        value={taskDetail.title}
-                        onChange={(e: any) => {
-                          changeTitle(e.target.value);
-                        }}
-                        style={{
-                          // height: textHeight + 'px',
-                          width: '100%',
-                          minHeight: '28px',
-                          backgroundColor: bottomtype ? 'transparent' : '',
-                          color: bottomtype ? '#fff' : '#333',
-                          textDecoration:
-                            taskDetail.finishPercent === 2
-                              ? 'line-through #a9a9a9 solid'
-                              : '',
-                        }}
-                        onBlur={cancelTask}
-                        onKeyDown={(e: any) => {
-                          if (e.keyCode === 13) {
-                            plusTask(); // 发送文本
-                            e.preventDefault(); // 阻止浏览器默认换行操作
-                            return false;
-                          }
-                        }}
-                        className="field-textarea"
-                      ></textarea>
+                      {editRole ? (
+                        <React.Fragment>
+                          <div
+                            className="content-editable"
+                            contentEditable={true}
+                            suppressContentEditableWarning
+                          >
+                            {taskDetail.title}
+                          </div>
+                          <textarea
+                            value={taskDetail.title}
+                            onChange={(e: any) => {
+                              changeTitle(e.target.value);
+                            }}
+                            style={{
+                              // height: textHeight + 'px',
+                              width: '100%',
+                              minHeight: '28px',
+                              backgroundColor: bottomtype ? 'transparent' : '',
+                              color: bottomtype ? '#fff' : '#333',
+                              textDecoration:
+                                taskDetail.finishPercent === 2
+                                  ? 'line-through #333 solid'
+                                  : '',
+                            }}
+                            onBlur={cancelTask}
+                            onKeyDown={(e: any) => {
+                              if (e.keyCode === 13) {
+                                plusTask(); // 发送文本
+                                e.preventDefault(); // 阻止浏览器默认换行操作
+                                return false;
+                              }
+                            }}
+                            className="field-textarea"
+                          ></textarea>
+                        </React.Fragment>
+                      ) : (
+                        <div>{taskDetail.title}</div>
+                      )}
                     </div>
                   </div>
                   {taskDetail.path1 &&
@@ -755,28 +827,89 @@ const Task: React.FC<TaskProps> = (props) => {
                             </span>
                           )}
                           <span style={{ flexShrink: 0 }}>
-                            {taskDetail.creatorName.length > 3
-                              ? taskDetail.creatorName.substring(0, 3) + '...'
+                            {taskDetail.creatorName.length > 5
+                              ? taskDetail.creatorName.substring(0, 5) + '...'
                               : taskDetail.creatorName}
                           </span>
+                          <img
+                            src={
+                              taskDetail.finishConfirm
+                                ? messageHandSvg
+                                : messageunHandSvg
+                            }
+                            alt=""
+                            style={{
+                              width: '11px',
+                              height: '10px',
+                              marginLeft: '2px',
+                              marginRight: '2px',
+                              marginBottom: '3px',
+                            }}
+                          />
                           <span>⇀</span>
                           <span style={{ flexShrink: 0 }}>
                             {taskDetail.executorName &&
-                            taskDetail.executorName.length > 3
-                              ? taskDetail.executorName.substring(0, 3) + '...'
+                            taskDetail.executorName.length > 5
+                              ? taskDetail.executorName.substring(0, 5) + '...'
                               : taskDetail.executorName}
                           </span>
+                          <img
+                            src={
+                              taskDetail.assignConfirm
+                                ? messageHandSvg
+                                : messageunHandSvg
+                            }
+                            alt=""
+                            style={{
+                              width: '11px',
+                              height: '10px',
+                              marginLeft: '2px',
+                              marginRight: '2px',
+                              marginBottom: '3px',
+                            }}
+                          />
                         </div>
-                        <div className="taskItem-img-container">
+                        <div
+                          className="taskItem-img-container"
+                          onMouseEnter={() => {
+                            setAvatarShow(2);
+                          }}
+                          onMouseLeave={() => {
+                            setAvatarShow(1);
+                          }}
+                        >
                           <div
                             className="taskItem-img"
                             onClick={chooseExecutor}
+                            style={
+                              avatarShow &&
+                              editRole &&
+                              taskKey === taskDetail._key
+                                ? avatarShow === 1
+                                  ? {
+                                      animation: 'taskAvatarSmall 500ms',
+                                      // animationFillMode: 'forwards',
+                                      width: '18px',
+                                      height: '18px',
+                                    }
+                                  : {
+                                      animation: 'taskAvatarBig 500ms',
+                                      // animationFillMode: 'forwards',
+                                      width: '25px',
+                                      height: '25px',
+                                    }
+                                : {
+                                    // animationFillMode: 'forwards',
+                                    width: '18px',
+                                    height: '18px',
+                                  }
+                            }
                           >
                             <img
                               src={
                                 taskDetail.executorAvatar
                                   ? taskDetail.executorAvatar
-                                  : defaultPerson
+                                  : defaultPersonPng
                               }
                             />
                           </div>
@@ -785,7 +918,7 @@ const Task: React.FC<TaskProps> = (props) => {
                             visible={taskExecutorShow}
                             dropStyle={{
                               width: '260px',
-                              height: '700px',
+                              maxHeight: '600px',
                               top: '18px',
                               left: '-100px',
                             }}
@@ -918,9 +1051,7 @@ const Task: React.FC<TaskProps> = (props) => {
                           <div
                             className="taskItem-check-icon"
                             style={
-                              taskDetail.content !== ''
-                                ? { display: 'flex' }
-                                : {}
+                              taskDetail.hasContent ? { display: 'flex' } : {}
                             }
                             onClick={() => {
                               // dispatch(changeTaskInfoVisible(true));
@@ -961,18 +1092,6 @@ const Task: React.FC<TaskProps> = (props) => {
                 </div>
                 <div className="taskItem-plus-button">
                   <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => {
-                      plusTask();
-                    }}
-                    style={{ marginRight: '10px', color: '#fff' }}
-                    className={classes.button}
-                  >
-                    确定
-                  </Button>
-                  <Button
-                    variant="contained"
                     onClick={() => {
                       setAddTaskVisible(false);
                       setAddInput('');
@@ -981,6 +1100,26 @@ const Task: React.FC<TaskProps> = (props) => {
                   >
                     取消
                   </Button>
+                  {addInput ? (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        plusTask();
+                      }}
+                      style={{ marginLeft: '10px', color: '#fff' }}
+                    >
+                      确定
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      disabled
+                      style={{ marginLeft: '10px', color: '#fff' }}
+                    >
+                      确定
+                    </Button>
+                  )}
                 </div>
               </div>
             ) : null}

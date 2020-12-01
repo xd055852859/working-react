@@ -9,6 +9,7 @@ interface ModelProps {
 
 const Model: React.FC<ModelProps> = (props) => {
   const { } = props;
+  const dispatch = useDispatch();
   const [] = useState<number[]>([]);
   return (
     <div></div>

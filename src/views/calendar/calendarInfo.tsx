@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './calendarItem.css';
+import './calendarInfo.css';
 import { useDispatch } from 'react-redux';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import DateFnsUtils from '@date-io/moment';
@@ -15,10 +15,15 @@ import _ from 'lodash';
 import api from '../../services/api';
 import 'moment/locale/zh-cn';
 import moment from 'moment';
-
+import plusPng from '../../assets/img/contact-plus.png';
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
+import Dialog from '../../components/common/dialog';
+import Tooltip from '../../components/common/tooltip';
 interface CalendarInfoProps {
   taskItem?: any;
   setCalendar: any;
+  calendarColor: any;
+  deleteTask?: any;
 }
 moment.locale('zh-cn');
 const useStyles = makeStyles((theme: Theme) =>
@@ -27,7 +32,7 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '150px',
     },
     dateRoot: {
-      width: '45%',
+      width: '80%',
     },
     input: {
       width: '100%',
@@ -49,44 +54,52 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
-  const { taskItem, setCalendar } = props;
+  const { taskItem, setCalendar, calendarColor, deleteTask } = props;
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const userKey = useTypedSelector((state) => state.auth.userKey);
+  const groupArray = useTypedSelector((state) => state.group.groupArray);
   const classes = useStyles();
   const dispatch = useDispatch();
   const [calendarInfo, setCalendarInfo] = useState<any>({
-    repeatWeek: [],
+    circleData: [],
+    groupKeyArray: [],
     title: '',
-    taskStartDate: moment().startOf('day').valueOf(),
-    taskEndDate: moment().endOf('day').valueOf(),
+    startDay: moment().startOf('day').valueOf(),
+    endDay: moment().endOf('day').valueOf(),
+    type: 2,
+    taskType: 0,
   });
   const [calendarDay, setCalendarDay] = useState(moment());
-  const weekStr = [
-    { name: '星期一', id: 1 },
-    { name: '星期二', id: 2 },
-    { name: '星期三', id: 3 },
-    { name: '星期四', id: 4 },
-    { name: '星期五', id: 5 },
-    { name: '星期六', id: 6 },
-    { name: '星期日', id: 0 },
-  ];
+  const [calendarIndex, setCalendarIndex] = useState(0);
+  const [repeatIndex, setRepeatIndex] = useState(0);
+  const [monthInput, setMonthInput] = useState('');
+  const [dayInput, setDayInput] = useState('');
+  const [groupVisible, setGroupVisible] = useState(false);
+  const [calendarGroup, setCalendarGroup] = useState<any>([]);
+  const weekStr = ['日', '一', '二', '三', '四', '五', '六'];
+  const repeatStr = ['无', '日', '周', '月', '年'];
   useEffect(() => {
     if (taskItem) {
       let newTaskItem = _.cloneDeep(taskItem);
-      if (!newTaskItem.repeatWeek) {
-        newTaskItem.repeatWeek = [];
+      let newCalendarGroup = _.cloneDeep(calendarGroup);
+
+      if (!newTaskItem.circleData) {
+        newTaskItem.circleData = [];
+      }
+      if (!newTaskItem.groupKeyArray) {
+        newTaskItem.groupKeyArray = [];
       }
       setCalendarInfo(newTaskItem);
     }
   }, [taskItem]);
   const changeWeekArr = (num: number) => {
     let newCalendarInfo = _.cloneDeep(calendarInfo);
-    let weekIndex = newCalendarInfo.repeatWeek.indexOf(num);
+    let weekIndex = newCalendarInfo.circleData.indexOf(num);
     if (weekIndex === -1) {
-      newCalendarInfo.repeatWeek.push(num);
+      newCalendarInfo.circleData.push(num);
     } else {
-      newCalendarInfo.repeatWeek.splice(weekIndex, 1);
+      newCalendarInfo.circleData.splice(weekIndex, 1);
     }
     setCalendarInfo(newCalendarInfo);
     setCalendar(newCalendarInfo);
@@ -100,16 +113,33 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
   const changeDate = (date: any, type: string) => {
     let newCalendarInfo = _.cloneDeep(calendarInfo);
     if (type === 'start') {
-      newCalendarInfo.taskStartDate = date.valueOf();
+      newCalendarInfo.startDay = date.valueOf();
     } else if ((type = 'end')) {
-      newCalendarInfo.taskEndDate = date.valueOf();
+      newCalendarInfo.endDay = date.valueOf();
     }
     setCalendarInfo(newCalendarInfo);
     setCalendar(newCalendarInfo);
   };
+  const chooseCalendarGroup = (item: any) => {
+    let newCalendarInfo = _.cloneDeep(calendarInfo);
+    let newCalendarGroup = _.cloneDeep(calendarGroup);
+    let groupIndex = newCalendarGroup.indexOf(item._key);
+    if (groupIndex === -1) {
+      newCalendarGroup.push(item);
+      newCalendarInfo.groupKeyArray.push(item._key);
+    } else {
+      newCalendarGroup.splice(groupIndex, 1);
+      newCalendarInfo.groupKeyArray.splice(groupIndex, 1);
+    }
+
+    setCalendarGroup(newCalendarGroup);
+    setCalendarInfo(newCalendarInfo);
+    setCalendar(newCalendarInfo);
+  };
+
   return (
     <div className="calendarInfo">
-      <div className="calendarItem-title">
+      <div className="calendarInfo-title">
         <TextField
           // required
           id="outlined-basic"
@@ -121,62 +151,283 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
           onChange={changeTitle}
         />
       </div>
-      <MuiPickersUtilsProvider utils={DateFnsUtils}>
-        <KeyboardDatePicker
-          disableToolbar
-          variant="inline"
-          format="yyyy-MM-DD"
-          margin="normal"
-          id="date-picker-inline"
-          // label="开始日期"
-          value={moment(calendarInfo.taskStartDate)}
-          onChange={(date) => {
-            changeDate(date, 'start');
-          }}
-          KeyboardButtonProps={{
-            'aria-label': 'change date',
-          }}
-          className={classes.dateRoot}
-        />
-      </MuiPickersUtilsProvider>
-      <MuiPickersUtilsProvider utils={DateFnsUtils}>
-        <KeyboardDatePicker
-          disableToolbar
-          variant="inline"
-          format="yyyy-MM-DD"
-          margin="normal"
-          id="date-picker-inline"
-          // label="截止日期"
-          value={moment(calendarInfo.taskEndDate)}
-          onChange={(date) => {
-            changeDate(date, 'end');
-          }}
-          KeyboardButtonProps={{
-            'aria-label': 'change date',
-          }}
-          className={classes.dateRoot}
-        />
-      </MuiPickersUtilsProvider>
-      <div className="calendarInfo-week">
-        {weekStr.map((weekItem: any, weekIndex: number) => {
-          return (
-            <div
-              key={'week' + weekIndex}
-              onClick={() => {
-                changeWeekArr(weekItem.id);
-              }}
-              className="calendarInfo-week-item"
-              style={
-                calendarInfo.repeatWeek.indexOf(weekItem.id) !== -1
-                  ? { backgroundColor: '#696969', color: '#fff' }
-                  : {}
-              }
-            >
-              {weekItem.name}
-            </div>
-          );
-        })}
+      <div className="calendarInfo-item">
+        <div className="calendarInfo-item-title">开始时间</div>
+        <MuiPickersUtilsProvider utils={DateFnsUtils}>
+          <KeyboardDatePicker
+            disableToolbar
+            variant="inline"
+            format="yyyy-MM-DD"
+            margin="normal"
+            id="date-picker-inline"
+            // label="开始日期"
+            value={moment(calendarInfo.startDay)}
+            onChange={(date) => {
+              changeDate(date, 'start');
+            }}
+            KeyboardButtonProps={{
+              'aria-label': 'change date',
+            }}
+            className={classes.dateRoot}
+          />
+        </MuiPickersUtilsProvider>
       </div>
+      <div className="calendarInfo-item">
+        <div className="calendarInfo-item-title">结束时间</div>
+        <MuiPickersUtilsProvider utils={DateFnsUtils}>
+          <KeyboardDatePicker
+            disableToolbar
+            variant="inline"
+            format="yyyy-MM-DD"
+            margin="normal"
+            id="date-picker-inline"
+            // label="截止日期"
+            value={moment(calendarInfo.endDay)}
+            onChange={(date) => {
+              changeDate(date, 'end');
+            }}
+            KeyboardButtonProps={{
+              'aria-label': 'change date',
+            }}
+            className={classes.dateRoot}
+          />
+        </MuiPickersUtilsProvider>
+      </div>
+      <div className="calendarInfo-item calendarInfo-repeat-item">
+        <div className="calendarInfo-item-title">重复</div>
+        <div className="calendarInfo-repeat">
+          <div className="calendarInfo-week">
+            {repeatStr.map((repeatItem: any, repeatStrIndex: number) => {
+              return (
+                <div
+                  key={'repeat' + repeatStrIndex}
+                  onClick={() => {
+                    let newCalendarInfo = _.cloneDeep(calendarInfo);
+                    setRepeatIndex(repeatStrIndex);
+                    newCalendarInfo.repeatCircle = repeatStrIndex;
+                    newCalendarInfo.type = repeatStrIndex > 0 ? 1 : 2;
+                    setCalendarInfo(newCalendarInfo);
+                    setCalendar(newCalendarInfo);
+                  }}
+                  className="calendarInfo-week-item"
+                  style={
+                    repeatIndex === repeatStrIndex
+                      ? { backgroundColor: '#17B881', color: '#fff' }
+                      : {}
+                  }
+                >
+                  {repeatItem}
+                </div>
+              );
+            })}
+          </div>
+          {repeatIndex === 4 ? (
+            <div className="calendarInfo-repeat-input">
+              <input
+                type="number"
+                value={monthInput}
+                onChange={(e: any) => {
+                  let newCalendarInfo = _.cloneDeep(calendarInfo);
+                  if (e.target.value > 12) {
+                    e.target.value = 12;
+                  }
+                  setMonthInput(e.target.value);
+                  if (!newCalendarInfo.circleData[0]) {
+                    newCalendarInfo.circleData[0] = {};
+                  }
+                  newCalendarInfo.circleData[0].month =
+                    parseInt(e.target.value) - 1;
+                  setCalendarInfo(newCalendarInfo);
+                  setCalendar(newCalendarInfo);
+                }}
+                max="12"
+              />
+              月
+            </div>
+          ) : null}
+          {repeatIndex >= 3 ? (
+            <div className="calendarInfo-repeat-input">
+              <input
+                type="number"
+                value={dayInput}
+                onChange={(e: any) => {
+                  let newCalendarInfo = _.cloneDeep(calendarInfo);
+                  if (e.target.value > 31) {
+                    e.target.value = 31;
+                  }
+                  setDayInput(e.target.value);
+                  if (repeatIndex === 4) {
+                    if (!newCalendarInfo.circleData[0]) {
+                      newCalendarInfo.circleData[0] = {};
+                    }
+
+                    newCalendarInfo.circleData[0].date = parseInt(
+                      e.target.value
+                    );
+                  } else {
+                    newCalendarInfo.circleData[0] = parseInt(e.target.value);
+                  }
+                  setCalendarInfo(newCalendarInfo);
+                  setCalendar(newCalendarInfo);
+                }}
+                max="31"
+              />
+              日
+            </div>
+          ) : null}
+          {repeatIndex === 2 ? (
+            <div className="calendarInfo-week">
+              {weekStr.map((weekItem: any, weekIndex: number) => {
+                return (
+                  <div
+                    key={'week' + weekIndex}
+                    onClick={() => {
+                      changeWeekArr(weekIndex);
+                    }}
+                    className="calendarInfo-week-item"
+                    style={
+                      calendarInfo.circleData.indexOf(weekIndex) !== -1
+                        ? { backgroundColor: '#17B881', color: '#fff' }
+                        : {}
+                    }
+                  >
+                    {weekItem}
+                  </div>
+                );
+              })}
+            </div>
+          ) : null}
+        </div>
+      </div>
+      <div className="calendarInfo-item">
+        <div className="calendarInfo-item-title">提醒</div>
+        <div className="calendarInfo-item-notice">无</div>
+      </div>
+      <div className="calendarInfo-item">
+        <div className="calendarInfo-item-title">颜色</div>
+        <div className="calendarInfo-item-color">
+          {calendarColor.map((colorItem: any, colorIndex: number) => {
+            return (
+              <div
+                style={{
+                  backgroundColor: colorItem,
+                  width: '25px',
+                  height: '25px',
+                }}
+                key={'color' + colorIndex}
+                className="calendarItem-color-title"
+                onClick={() => {
+                  let newCalendarInfo = _.cloneDeep(calendarInfo);
+                  setCalendarIndex(colorIndex);
+                  newCalendarInfo.taskType = colorIndex;
+                  setCalendarInfo(newCalendarInfo);
+                  setCalendar(newCalendarInfo);
+                }}
+              >
+                {calendarIndex === colorIndex ? (
+                  <div className="calendarItem-color-point"></div>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      {/* <div className="calendarInfo-icon">
+        <div className="calendarInfo-icon-title">图标选择：</div>
+        <div></div>
+      </div> */}
+      {!taskItem ? (
+        <div className="calendarInfo-icon">
+          <div className="calendarInfo-icon-title">复制到日程表：</div>
+          <div className="calendarInfo-icon-container">
+            {calendarGroup.map((iconItem: any, iconIndex: number) => {
+              return (
+                <div className="calendarInfo-group" key={'icon' + iconIndex}>
+                  <div className="calendarInfo-group-item">
+                    <img
+                      src={
+                        iconItem.groupLogo
+                          ? iconItem.groupLogo
+                          : defaultGroupPng
+                      }
+                      alt=""
+                    />
+                  </div>
+                  <Tooltip title={iconItem.groupName}>
+                    <div className="calendarInfo-group-title">
+                      {iconItem.groupName}
+                    </div>
+                  </Tooltip>
+                </div>
+              );
+            })}
+
+            <div
+              className="calendarInfo-group"
+              onClick={() => {
+                setGroupVisible(true);
+              }}
+            >
+              <div className="calendarInfo-group-item calendarInfo-group-add">
+                <img src={plusPng} alt="" />
+              </div>
+              <div className="calendarInfo-group-title">新增</div>
+            </div>
+          </div>
+        </div>
+      ) : null}
+      <Dialog
+        visible={groupVisible}
+        dialogStyle={{
+          position: 'fixed',
+          width: '245px',
+          maxHeight: '90%',
+          bottom: '5%',
+          left: 'calc(50% + 205px)',
+          color: '#333',
+          overflow: 'auto',
+        }}
+        onClose={() => {
+          setGroupVisible(false);
+        }}
+        showMask={false}
+        footer={false}
+      >
+        <div className="calendarInfo-group-box">
+          {groupArray.map((groupItem: any, groupIndex: number) => {
+            return (
+              <div
+                className="calendarInfo-group-box-container"
+                key={'group' + groupIndex}
+                onClick={() => {
+                  chooseCalendarGroup(groupItem);
+                }}
+                style={
+                  calendarGroup.indexOf(groupItem._key) !== -1
+                    ? { backgroundColor: '#efefef' }
+                    : {}
+                }
+              >
+                <div className="calendarInfo-group-box-item">
+                  <img
+                    src={
+                      groupItem.groupLogo
+                        ? groupItem.groupLogo
+                        : defaultGroupPng
+                    }
+                    alt=""
+                  />
+                </div>
+                <Tooltip title={groupItem.groupName}>
+                  <div className="calendarInfo-group-title">
+                    {groupItem.groupName}
+                  </div>
+                </Tooltip>
+              </div>
+            );
+          })}
+        </div>
+      </Dialog>
     </div>
   );
 };

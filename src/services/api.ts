@@ -21,6 +21,7 @@ const request = {
           params: params,
           headers: {
             // 'Content-type': 'application/x-www-form-urlencoded',
+            token: auth_token,
           },
         });
         resolve(response.data);
@@ -118,11 +119,12 @@ const auth = {
       status: status,
     });
   },
-  getMessageList(curPage: number, perPage: number) {
+  getMessageList(curPage: number, perPage: number, isReceipt?: number) {
     return request.post(HOME_URL + '/card/getNoticeList', {
       token: auth_token,
       curPage: curPage,
       perPage: perPage,
+      isReceipt: isReceipt,
     });
   },
   sendReceipt(noticeKey: string) {
@@ -282,7 +284,7 @@ const auth = {
     return request.get(PNG_URL + '/wallPaper', {
       style: 'web',
       page: page,
-      limit: 100,
+      limit: 30,
     });
   },
   viewWallPapers(wallKey: string) {
@@ -358,32 +360,33 @@ const task = {
   editTask(params: any) {
     return request.patch(HOME_URL + '/card', {
       token: auth_token,
-      key: params.key,
-      // children: params.children,
-      content: params.content,
-      countDownTime: params.countDownTime,
-      date: params.date,
-      day: params.day,
-      executorAvatar: params.executorAvatar,
-      executorKey: params.executorKey,
-      executorName: params.executorName,
-      finishPercent: params.finishPercent,
-      followUKeyArray: params.followUKeyArray,
-      groupKey: params.groupKey,
-      groupLogo: params.groupLogo,
-      groupName: params.groupName,
-      hour: params.hour,
-      importantStatus: params.importantStatus,
-      labelKey: params.labelKey,
-      labelName: params.labelName,
-      // parentCardKey: params.parentCardKey,
-      taskEndDate: params.taskEndDate,
-      taskStartDate: params.taskStartDate,
-      taskType: params.taskType,
-      title: params.title,
-      todayTaskTime: params.todayTaskTime,
-      type: params.type,
-      contract: params.contract,
+      ...params,
+      // key: params.key,
+      // // children: params.children,
+      // content: params.content,
+      // countDownTime: params.countDownTime,
+      // date: params.date,
+      // day: params.day,
+      // executorAvatar: params.executorAvatar,
+      // executorKey: params.executorKey,
+      // executorName: params.executorName,
+      // finishPercent: params.finishPercent,
+      // followUKeyArray: params.followUKeyArray,
+      // groupKey: params.groupKey,
+      // groupLogo: params.groupLogo,
+      // groupName: params.groupName,
+      // hour: params.hour,
+      // importantStatus: params.importantStatus,
+      // labelKey: params.labelKey,
+      // labelName: params.labelName,
+      // // parentCardKey: params.parentCardKey,
+      // taskEndDate: params.taskEndDate,
+      // taskStartDate: params.taskStartDate,
+      // taskType: params.taskType,
+      // title: params.title,
+      // todayTaskTime: params.todayTaskTime,
+      // type: params.type,
+      // contract: params.contract,
     });
   },
   addTask(
@@ -430,13 +433,11 @@ const task = {
       groupKey: groupKey,
     });
   },
-  getCardSearch(curPage: number, perPage: number, searchCondition: string) {
+  getCardSearch(params: any) {
     return request.get(HOME_URL + '/card/searchCard', {
       token: auth_token,
       searchType: 1,
-      curPage: curPage,
-      perPage: perPage,
-      searchCondition: searchCondition,
+      ...params,
     });
   },
   addTaskLabel(groupKey: string, cardLabelName: number | string) {
@@ -584,12 +585,40 @@ const task = {
       typeArray: typeArray ? typeArray : [1, 2, 6],
     });
   },
+  getScheduleList(groupKeyArray: any, startTime: number, endTime: number) {
+    return request.post(HOME_URL + '/card/getScheduleList', {
+      token: auth_token,
+      groupKeyArray: groupKeyArray,
+      startTime: startTime,
+      endTime: endTime,
+    });
+  },
+  createSchedule(params: any) {
+    return request.post(HOME_URL + '/card/createSchedule', {
+      token: auth_token,
+      ...params,
+      isWork: 2,
+    });
+  },
+  //批量创建
+  togetherCreateCard(title: string, groupKeyArray: any, labelKey2Array: any) {
+    return request.post(HOME_URL + '/card/togetherCreateCard', {
+      token: auth_token,
+      title: title,
+      groupKeyArray: groupKeyArray,
+      labelKey2Array: labelKey2Array,
+      type: 2,
+      rootType: 0,
+      taskEndDate: moment().endOf('day').valueOf(),
+    });
+  },
 };
 const member = {
-  getMember(groupId: string, sortType?: number) {
+  getMember(groupId: string, sortType?: number, simple?: any) {
     return request.get(HOME_URL + '/groupmember', {
       token: auth_token,
       groupId: groupId,
+      simple: simple,
       sortType: sortType,
     });
   },
@@ -718,10 +747,11 @@ const group = {
     });
   },
   //修改标签名
-  setCardLabel(labelKey: string, newLabelName: string) {
+  setCardLabel(labelKey: string, newLabelName: string, groupKey?: string) {
     return request.patch(HOME_URL + '/card/setLabelProperty', {
       token: auth_token,
       labelKey: labelKey,
+      groupKey: groupKey,
       newLabelName: newLabelName,
     });
   },
@@ -786,12 +816,27 @@ const group = {
       token: auth_token,
     });
   },
+
+  getTemplateList(name: string, curPage: number) {
+    return request.post(HOME_URL + '/group/getTemplateList', {
+      token: auth_token,
+      name: name,
+      curPage: curPage,
+      perPage: 9,
+    });
+  },
   getTemplateListAccordingType(curPage: number, type?: any) {
     return request.post(HOME_URL + '/group/getTemplateListAccordingType', {
       token: auth_token,
       type: type,
       curPage: curPage,
       perPage: 9,
+    });
+  },
+  clickPersonNumber(templateKey: string) {
+    return request.post(HOME_URL + '/group/clickPersonNumber', {
+      token: auth_token,
+      templateKey: templateKey,
     });
   },
   //添加模板
@@ -814,6 +859,13 @@ const group = {
       groupKey: groupKey,
       agreeOrReject: agreeOrReject,
       applyKey: applyKey,
+    });
+  },
+  cloneGroup(oldGroupKey: string, newGroupName: string) {
+    return request.post(HOME_URL + '/group/cloneGroup_working', {
+      token: auth_token,
+      oldGroupKey: oldGroupKey,
+      newGroupName: newGroupName,
     });
   },
 };

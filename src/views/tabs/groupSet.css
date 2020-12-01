@@ -63,7 +63,7 @@
 
 .contact-dialog-content {
   width: 100%;
-  height: calc(100% - 50px);
+  height: calc(100% - 23px);
   display: flex;
   flex-wrap: wrap;
   align-content: space-between;

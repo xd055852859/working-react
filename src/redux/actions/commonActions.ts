@@ -10,6 +10,7 @@ export const actionTypes = {
   SET_CHATSTATE: 'SET_CHATSTATE',
   SET_UNCHATREADNUM: 'SET_UNCHATREADNUM',
   SET_UNMESSAGEREADNUM: 'SET_UNMESSAGEREADNUM',
+  SET_SOCKETOBJ: 'SET_SOCKETOBJ',
 };
 
 export function Failed(error: any) {
@@ -58,7 +59,7 @@ export function setCommonHeaderIndex(headerIndex: number) {
 export function setMoveState(moveState: string) {
   return {
     type: actionTypes.SET_MOVESTATE,
-    moveState:moveState,
+    moveState: moveState,
   };
 }
 export function Loading(loading: boolean) {
@@ -83,5 +84,11 @@ export function setUnMessageNum(unMessageNum: number) {
   return {
     type: actionTypes.SET_UNMESSAGEREADNUM,
     unMessageNum,
+  };
+}
+export function setSocketObj(socketObj: any) {
+  return {
+    type: actionTypes.SET_SOCKETOBJ,
+    socketObj,
   };
 }

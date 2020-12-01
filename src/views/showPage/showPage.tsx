@@ -50,7 +50,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
   const [chooseWallKey, setChooseWallKey] = useState('');
   const [searchInput, setSearchInput] = useState('');
   const [bg, setBg] = useState<any>('');
-  const [menuShow, setMenuShow] = useState(1);
+  const [menuShow, setMenuShow] = useState(0);
   const [timeOsToken, setTimeOsToken] = useState(null);
   const showPageRef: React.RefObject<any> = useRef();
   const year = moment().year();
@@ -209,20 +209,29 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
       }}
       className="showPage-container"
       ref={showPageRef}
-      style={
-        bg
-          ? {
-              backgroundImage: 'url(' + bg + ')',
-              paddingRight: showState === 'left' ? '625px' : '365px',
-            }
-          : {
-              backgroundColor: theme.backgroundColor
-                ? theme.backgroundColor
-                : '#3C3C3C',
-              paddingRight: showState === 'left' ? '625px' : '365px',
-            }
-      }
     >
+      <div
+        className="App-bg1"
+        style={{
+          background: 'rgba(0,0,0,' + theme.grayPencent + ')',
+        }}
+      ></div>
+      <div
+        className="App-bg2"
+        style={
+          bg
+            ? {
+                backgroundImage: 'url(' + bg + ')',
+                paddingRight: showState === 'left' ? '625px' : '365px',
+              }
+            : {
+                backgroundColor: theme.backgroundColor
+                  ? theme.backgroundColor
+                  : '#3C3C3C',
+                paddingRight: showState === 'left' ? '625px' : '365px',
+              }
+        }
+      ></div>
       {theme.searchShow ? (
         <input
           type="text"

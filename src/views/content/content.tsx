@@ -19,38 +19,38 @@ const Content: React.FC<ContentProps> = (props) => {
   // const [createNum, setCreateNum] = useState(0);
   // const [finishNum, setfinishNum] = useState(0);
   const [prompt, setPrompt] = useState();
-  const [timeInterval, setTimeInterval] = useState<any>(null);
-  const [targetInterval, setTargetInterval] = useState<any>(null);
+  // const [timeInterval, setTimeInterval] = useState<any>(null);
+  // const [targetInterval, setTargetInterval] = useState<any>(null);
   useEffect(() => {
-    let interval: any = null;
+    let timeInterval: any = null;
     if (user && headerIndex === 0) {
       formatTime();
       getPrompt();
-      interval = setInterval(formatTime, 60000);
+      timeInterval = setInterval(formatTime, 60000);
       // getSocket();
-      setTimeInterval(interval);
     }
     return () => {
       if (timeInterval) {
         clearInterval(timeInterval);
+        timeInterval = null;
       }
     };
   }, [user, headerIndex]);
-  useEffect(() => {
-    let interval: any = null;
-    if (user && headerIndex === 0) {
-      formatTime();
-      getPrompt();
-      interval = setInterval(formatTime, 60000);
-      // getSocket();
-      setTargetInterval(interval);
-    }
-    return () => {
-      if (targetInterval) {
-        clearInterval(targetInterval);
-      }
-    };
-  }, []);
+  // useEffect(() => {
+  //   let targetInterval: any = null;
+  //   if (user && headerIndex === 0) {
+  //     formatTime();
+  //     getPrompt();
+  //     targetInterval = setInterval(formatTime, 60000);
+  //     // getSocket();
+  //   }
+  //   return () => {
+  //     if (targetInterval) {
+  //       clearInterval(targetInterval);
+  //       targetInterval = null;
+  //     }
+  //   };
+  // }, []);
   const formatTime = () => {
     let hour = moment().hour();
     let minute = moment().minute();

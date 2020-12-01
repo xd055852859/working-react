@@ -16,6 +16,7 @@ export interface Common {
   chatState: boolean;
   unChatNum: number | string;
   unMessageNum: number;
+  socketObj: any;
 }
 
 const defaultState: Common = {
@@ -34,6 +35,7 @@ const defaultState: Common = {
   chatState: false,
   unChatNum: 0,
   unMessageNum: 0,
+  socketObj: null,
 };
 
 export const common = (state = defaultState, action: any) => {
@@ -112,6 +114,11 @@ export const common = (state = defaultState, action: any) => {
       return {
         ...state,
         unMessageNum: action.unMessageNum,
+      };
+    case commonActionTypes.SET_SOCKETOBJ:
+      return {
+        ...state,
+        socketObj: action.socketObj,
       };
     default:
       return state;

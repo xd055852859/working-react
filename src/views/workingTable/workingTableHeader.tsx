@@ -39,7 +39,7 @@ import gridPersonbPng from '../../assets/img/gridPersonb.png';
 import calendarbPng from '../../assets/img/calendarb.png';
 import downArrowPng from '../../assets/img/downArrow.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
-import chatPng from '../../assets/img/chat.png';
+import checkPersonPng from '../../assets/img/checkPerson.png';
 import filterPng from '../../assets/img/filter.png';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -67,15 +67,10 @@ const WorkingTableHeader: React.FC = (prop) => {
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const theme = useTypedSelector((state) => state.auth.theme);
   const dispatch = useDispatch();
-  const viewArray: string[] = [
-    '分频道',
-    '分项目',
-    '时间表',
-    '执行表',
-    '频道流',
-    '项目流',
-    '日历',
-  ];
+  const viewArray: string[] =
+    headerIndex === 1
+      ? ['分频道', '分项目', '时间表', '执行表', '频道流', '项目流', '日历']
+      : ['分频道', '分项目', '时间表', '', '频道流', '项目流', '日历'];
   const tabArray: string[] = ['任务', '日报', '活力'];
   const viewImg: string[] = [
     labelPng,
@@ -299,7 +294,7 @@ const WorkingTableHeader: React.FC = (prop) => {
               }}
               title={'联系人列表'}
             >
-              <Contact contactIndex={1} contactType={true} />
+              <Contact contactIndex={1} contactType={'header'} />
             </DropMenu>
           </div>
         </div>
@@ -336,21 +331,32 @@ const WorkingTableHeader: React.FC = (prop) => {
             onClose={() => {
               setTabVisible(false);
             }}
-            title={'页面切换'}
             closeType={1}
           >
-            {tabArray.map((tabItem: any, tabIndex: number) => {
+            {tabArray.map((tabItem: any, index: number) => {
               return (
                 <div
-                  className="viewTableHeader-logo"
+                  className="viewTableHeader-logo viewTableHeader-tab"
                   onClick={() => {
-                    chooseMemberHeader(tabIndex === 0 ? 0 : tabIndex + 6);
-                    setTabIndex(tabIndex);
+                    chooseMemberHeader(index === 0 ? 0 : index + 6);
+                    setTabIndex(index);
                   }}
-                  key={'viewTable' + tabIndex}
+                  key={'tabTable' + index}
+                  style={{
+                    backgroundColor: tabIndex === index ? '#f0f0f0' : '',
+                  }}
                 >
-                  {/* <img src={viewImgb[viewIndex]} alt=""></img> */}
-                  {tabItem}
+                  <div>{tabItem}</div>
+                  {tabIndex === index ? (
+                    <img
+                      src={checkPersonPng}
+                      alt=""
+                      style={{
+                        width: '20px',
+                        height: '12px',
+                      }}
+                    ></img>
+                  ) : null}
                 </div>
               );
             })}
@@ -393,16 +399,19 @@ const WorkingTableHeader: React.FC = (prop) => {
             >
               {viewArray.map((viewItem, viewIndex) => {
                 return (
-                  <div
-                    className="viewTableHeader-logo"
-                    onClick={() => {
-                      chooseMemberHeader(viewIndex);
-                    }}
-                    key={'viewTable' + viewIndex}
-                  >
-                    <img src={viewImgb[viewIndex]} alt=""></img>
-                    {viewItem}
-                  </div>
+                  <React.Fragment key={'viewTable' + viewIndex}>
+                    {viewItem ? (
+                      <div
+                        className="viewTableHeader-logo"
+                        onClick={() => {
+                          chooseMemberHeader(viewIndex);
+                        }}
+                      >
+                        <img src={viewImgb[viewIndex]} alt=""></img>
+                        {viewItem}
+                      </div>
+                    ) : null}
+                  </React.Fragment>
                 );
               })}
             </DropMenu>
@@ -414,11 +423,6 @@ const WorkingTableHeader: React.FC = (prop) => {
             <div
               className="workingTableHeader-logo"
               onClick={() => {
-                setFilterVisible(true);
-                setTabVisible(false);
-                setViewVisible(false);
-              }}
-              onMouseEnter={() => {
                 setFilterVisible(true);
                 setTabVisible(false);
                 setViewVisible(false);

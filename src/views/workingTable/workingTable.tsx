@@ -50,7 +50,7 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
   useEffect(() => {
     if (user && user._key && headerIndex === 1 && theme.fileDay) {
       setLoading(true);
-      dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2], theme.fileDay));
+      dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2,10], theme.fileDay));
     }
     if (
       targetUserInfo &&
@@ -60,7 +60,7 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
     ) {
       setLoading(true);
       dispatch(
-        getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2], theme.fileDay)
+        getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2,10], theme.fileDay)
       );
     }
   }, [user, targetUserInfo, headerIndex, theme.fileDay]);
@@ -85,7 +85,7 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
         if (addLabelRes.msg === 'OK') {
           dispatch(setMessage(true, '添加私有频道成功', 'success'));
           setInputValue('');
-          dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2]));
+          dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2,10]));
         } else {
           dispatch(setMessage(true, addLabelRes.msg, 'error'));
         }

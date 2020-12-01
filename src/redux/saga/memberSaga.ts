@@ -11,8 +11,9 @@ function* getMember(action: any) {
   try {
     const res = yield call(
       api.member.getMember,
-      action.groupId,
-      action.sortType
+      action.groupId,   
+      action.sortType,
+      action.simple,
     );
     if (res.msg === 'OK') {
       yield put(getMemberSuccess(res.result));

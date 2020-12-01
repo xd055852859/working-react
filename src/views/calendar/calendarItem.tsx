@@ -197,6 +197,8 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
                 className={classes.root}
               />
             </MuiPickersUtilsProvider>
+          </div>
+          <div>
             <TextField
               id="time"
               label="时间"

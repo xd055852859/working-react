@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import './contact.css';
+import { Button } from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux';
 import { useTypedSelector } from '../../redux/reducer/RootState';
+import { setMessage } from '../../redux/actions/commonActions';
 import { getMember } from '../../redux/actions/memberActions';
 import {
   getGroup,
@@ -18,7 +20,8 @@ import {
   getTargetUserInfo,
   // userKeyToGroupKey
 } from '../../redux/actions/authActions';
-
+import Dialog from '../../components/common/dialog';
+import checkPersonPng from '../../assets/img/checkPerson.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import carePng from '../../assets/img/care.png';
@@ -27,7 +30,7 @@ import api from '../../services/api';
 import _ from 'lodash';
 export interface ContactProps {
   contactIndex: number;
-  contactType?: boolean;
+  contactType?: string;
 }
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -47,12 +50,17 @@ const useStyles = makeStyles((theme: Theme) =>
 const Contact: React.FC<ContactProps> = (props) => {
   // const classes = useStyles();
   const { contactIndex, contactType } = props;
-  const [contactArray, setContactArray] = useState([]);
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
   const memberArray = useTypedSelector((state) => state.member.memberArray);
   const groupArray = useTypedSelector((state) => state.group.groupArray);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
+  const [contactArray, setContactArray] = useState([]);
+  const [contactSearchInput, setContactSearchInput] = useState('');
+  const [cloneGroupKey, setCloneGroupKey] = useState('');
+  const [cloneGroupName, setCloneGroupName] = useState('');
+  const [cloneGroupVisible, setCloneGroupVisible] = useState(false);
+  const [cloneGroupIndex, setCloneGroupIndex] = useState<any>(null);
   // const theme = useTypedSelector((state) => state.auth.theme);
   useEffect(() => {
     if (user && user._key) {
@@ -60,8 +68,11 @@ const Contact: React.FC<ContactProps> = (props) => {
         dispatch(getGroup(3, 1));
         setTimeout(() => {
           dispatch(getGroup(3));
-        }, 2000);
-        dispatch(getMember(mainGroupKey));
+        }, 1000);
+        dispatch(getMember(mainGroupKey, 1, 1));
+        setTimeout(() => {
+          dispatch(getMember(mainGroupKey));
+        }, 1000);
       }
       if (groupArray && contactIndex === 0) {
         setContactArray(groupArray);
@@ -70,6 +81,15 @@ const Contact: React.FC<ContactProps> = (props) => {
       }
     }
   }, [groupArray, memberArray, user, contactIndex]);
+  useEffect(() => {
+    if (contactSearchInput === '') {
+      if (groupArray && contactIndex === 0) {
+        setContactArray(groupArray);
+      } else if (memberArray && contactIndex === 1) {
+        setContactArray(memberArray);
+      }
+    }
+  }, [contactSearchInput]);
   const toTargetGroup = async (groupKey: string, index: number) => {
     dispatch(setGroupKey(groupKey));
     dispatch(getGroupInfo(groupKey));
@@ -98,11 +118,63 @@ const Contact: React.FC<ContactProps> = (props) => {
     newContactArray[index].isCare = status === 1 ? true : false;
     setContactArray(newContactArray);
   };
+  const searchGroup = () => {
+    let newContactArray = _.cloneDeep(contactArray);
+    newContactArray = newContactArray.filter((item: any, index: number) => {
+      return item.groupName.indexOf(contactSearchInput) !== -1;
+    });
+    setContactArray(newContactArray);
+  };
+  const cloneGroup = async () => {
+    let cloneRes: any = await api.group.cloneGroup(
+      cloneGroupKey,
+      cloneGroupName + '-副本'
+    );
+    if (cloneRes.msg === 'OK') {
+      dispatch(setMessage(true, '克隆群成功', 'success'));
+      dispatch(setGroupKey(cloneRes.result));
+      dispatch(getGroupInfo(cloneRes.result));
+      dispatch(setCommonHeaderIndex(3));
+      dispatch(setMoveState('in'));
+      await api.group.visitGroupOrFriend(2, cloneRes.result);
+      dispatch(getGroup(3));
+    } else {
+      dispatch(setMessage(true, cloneRes.msg, 'error'));
+    }
+  };
   return (
     <div
       className="contact"
       style={{ height: contactType ? '100%' : 'calc(100% - 60px)' }}
     >
+      {contactType && contactIndex === 0 ? (
+        <div className="contact-search">
+          <input
+            type="text"
+            value={contactSearchInput}
+            onChange={(e: any) => {
+              setContactSearchInput(e.target.value);
+            }}
+            className="contact-search-input"
+            placeholder="请输入群名"
+            onKeyDown={(e: any) => {
+              if (e.keyCode === 13) {
+                searchGroup();
+              }
+            }}
+          />
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              searchGroup();
+            }}
+            className="contact-search-button"
+          >
+            搜索
+          </Button>
+        </div>
+      ) : null}
       {contactArray && contactArray.length > 0
         ? contactArray.map((item: any, index: number) => {
             let name = contactIndex ? item.nickName : item.groupName;
@@ -119,10 +191,23 @@ const Contact: React.FC<ContactProps> = (props) => {
                 className="contact-item"
                 key={'contact' + index}
                 onClick={() => {
-                  contactIndex
-                    ? toTargetUser(key, index)
-                    : toTargetGroup(key, index);
+                  if (contactType === 'create') {
+                    setCloneGroupKey(key);
+                    setCloneGroupName(name);
+                    setCloneGroupIndex(index);
+                    setCloneGroupVisible(true);
+                    // ;
+                  } else {
+                    contactIndex
+                      ? toTargetUser(key, index)
+                      : toTargetGroup(key, index);
+                  }
                 }}
+                style={
+                  cloneGroupIndex === index
+                    ? { backgroundColor: '#f0f0f0' }
+                    : {}
+                }
               >
                 <div className="contact-left">
                   <div className="contact-avatar">
@@ -170,6 +255,16 @@ const Contact: React.FC<ContactProps> = (props) => {
                     )
                   ) : null}
                 </div>
+                {contactType === 'create' && cloneGroupIndex === index ? (
+                  <img
+                    src={checkPersonPng}
+                    alt=""
+                    style={{
+                      width: '20px',
+                      height: '12px',
+                    }}
+                  ></img>
+                ) : null}
                 {item.todayTotalTaskNumber && !contactType ? (
                   <div className="contact-right">
                     {/* <div>
@@ -179,24 +274,28 @@ const Contact: React.FC<ContactProps> = (props) => {
                     <div
                       className="contanct-time-day"
                       style={{
-                        left: item.todayTotalTaskNumber < 10 ? '5px' : '3px',
+                        left:
+                          parseInt(item.todayTotalTaskNumber) < 10
+                            ? '5px'
+                            : '3px',
                       }}
                     >
-                      {item.todayTotalTaskNumber}
+                      {parseInt(item.todayTotalTaskNumber)}
                     </div>
                     <div className="contanct-time"></div>
                     <div
                       className="contanct-time-hour"
                       style={{
                         right:
-                          item.todayTotalTaskHours < 1
+                          parseInt(item.todayTotalTaskHours) < 1
                             ? '0px'
-                            : item.todayTotalTaskHours > 10
-                            ? '8px'
-                            : '5px',
+                            : (parseInt(item.todayTotalTaskHours) + '').length >
+                              1
+                            ? '5px'
+                            : '3px',
                       }}
                     >
-                      {item.todayTotalTaskHours}
+                      {parseInt(item.todayTotalTaskHours)}
                     </div>
                   </div>
                 ) : null}
@@ -204,6 +303,20 @@ const Contact: React.FC<ContactProps> = (props) => {
             );
           })
         : null}
+      <Dialog
+        visible={cloneGroupVisible}
+        onClose={() => {
+          setCloneGroupVisible(false);
+        }}
+        onOK={() => {
+          setCloneGroupVisible(false);
+          cloneGroup();
+        }}
+        title={'克隆群'}
+        dialogStyle={{ width: '400px', height: '200px' }}
+      >
+        <div className="dialog-onlyTitle">是否克隆群:{cloneGroupName}</div>
+      </Dialog>
     </div>
   );
 };

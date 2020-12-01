@@ -75,9 +75,6 @@ const Grid: React.FC<GridProps> = (prop) => {
       setAvatarHeight(clientWidth);
     }
   }, [labelRef.current]);
-  useEffect(() => {
-    console.log('taskNavDay', taskNavDay);
-  }, [taskNavDay]);
 
   useEffect(() => {
     if (allGridTaskArray) {
@@ -200,7 +197,13 @@ const Grid: React.FC<GridProps> = (prop) => {
     let arr: any = [];
     let newTaskNavDay: any = [];
     if (taskNavDay) {
-      newTaskNavDay = _.cloneDeep(taskNavDay);
+      console.log(taskNavDay);
+      newTaskNavDay = _.cloneDeep(taskNavDay).map(
+        (taskNavItem: any) => {
+          taskNavItem.allTaskNum = 0;
+          return taskNavItem;
+        }
+      );
     } else {
       newTaskNavDay = formatData()[0];
     }
@@ -270,7 +273,11 @@ const Grid: React.FC<GridProps> = (prop) => {
                     ? arrItem.taskEndDate >= dayItem.startTime &&
                       arrItem.taskEndDate <= dayItem.endTime
                     : dayItem.userId == arrItem.executorKey;
-                  if (state) {
+                  if (
+                    state &&
+                    arrItem.finishPercent !== 2 &&
+                    arrItem.type === 2
+                  ) {
                     arrItem.dayArr.push(arrItem.hour);
                     dayItem.allTaskNum = dayItem.allTaskNum + arrItem.hour;
                   } else {
@@ -334,7 +341,11 @@ const Grid: React.FC<GridProps> = (prop) => {
         ? arr[arrIndex].taskEndDate >= dayItem.startTime &&
           arr[arrIndex].taskEndDate < dayItem.endTime
         : dayItem.userId == arr[arrIndex].executorKey;
-      if (state) {
+      if (
+        state &&
+        arr[arrIndex].finishPercent !== 2 &&
+        arr[arrIndex].type === 2
+      ) {
         arr[arrIndex].dayArr.push(arr[arrIndex].hour);
         dayItem.allTaskNum = dayItem.allTaskNum + arr[arrIndex].hour;
       } else {

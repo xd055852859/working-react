@@ -4,9 +4,10 @@ import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import Button from '@material-ui/core/Button';
 import { useDispatch } from 'react-redux';
-import bgWSvg from '../../assets/svg/bg-white.svg'
-import cloudSvg from '../../assets/svg/clouds.svg'
-import welcomeSvg from '../../assets/svg/welcome.svg'
+import bgWSvg from '../../assets/svg/bg-white.svg';
+import cloudSvg from '../../assets/svg/clouds.svg';
+import welcomeSvg from '../../assets/svg/welcome.svg';
+import welcomeSmallSvg from '../../assets/svg/welcomeSmall.svg';
 // import { loginByToken } from "../../redux/actions/authActions";
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -16,8 +17,7 @@ const useStyles = makeStyles((theme: Theme) =>
       height: '100%',
       overflow: 'hidden',
       backgroundColor: '#FFF',
-      backgroundImage: 'url('+bgWSvg+')',
-      backgroundSize: 'contain',
+      backgroundImage: 'url(' + bgWSvg + ')',
       backgroundPosition: 'bottom',
       backgroundRepeat: 'no-repeat',
     },
@@ -30,20 +30,14 @@ const useStyles = makeStyles((theme: Theme) =>
       textAlign: 'center',
     },
     logo: {
-      width: '686px',
-      height: '144px',
-      backgroundImage:
-        'url('+welcomeSvg+')',
-      backgroundSize: 'cover',
       backgroundPosition: 'center',
       position: 'absolute',
-      left: 'calc(50% - 341px)',
-      top: 'calc(45vh - 50px)',
+      backgroundRepeat: 'no-repeat',
     },
     cloud: {
       width: '800px',
       height: '300px',
-      backgroundImage: 'url('+cloudSvg+')',
+      backgroundImage: 'url(' + cloudSvg + ')',
       backgroundRepeat: 'no-repeat',
       backgroundPosition: 'center',
       backgroundSize: 'contain',
@@ -54,7 +48,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     '@keyframes slidein': {
       from: { left: '0px' },
-      to: { left: '100vw' },
+      to: { left: '100%' },
     },
   })
 );
@@ -114,27 +108,48 @@ export default function Welcome() {
   };
 
   return (
-    <div className={classes.welcome} ref={bootpageRef}>
+    <div
+      className={classes.welcome}
+      ref={bootpageRef}
+      style={{ backgroundSize: clientWidth > 500 ? 'contain' : '400px 300px' }}
+    >
       <Button
         variant="contained"
         size="large"
         style={{
           backgroundColor: '#FF658F',
           color: '#FFF',
-          width: '154px',
-          height: '50px',
+          width: clientWidth > 500 ? '154px' : '140px',
+          height: clientWidth > 500 ? '50px' : '40px',
           borderRadius: '30px',
           position: 'absolute',
-          top: '38px',
-          right: '132px',
+          top: '32px',
+          right: clientWidth > 500 ? '132px' : '32px',
         }}
         onClick={toLogin}
       >
         开始
       </Button>
       <div className={classes.cloud}></div>
-      <div className={classes.logo}></div>
-      <span className={classes.ICPLicensing} onClick={() => toUrl}>
+      <div
+        className={classes.logo}
+        style={{
+          backgroundSize: clientWidth > 500 ? 'cover' : 'contain',
+          left: clientWidth > 500 ? 'calc(50% - 341px)' : 'calc(50% - 150px)',
+          top: clientWidth > 500 ? 'calc(45vh - 50px)' : 'calc(50% - 80px)',
+          width: clientWidth > 500 ? '686px' : '300px',
+          height: clientWidth > 500 ? '144px' : '160px',
+          backgroundImage:
+            'url(' + (clientWidth > 500 ? welcomeSvg : welcomeSmallSvg) + ')',
+        }}
+      ></div>
+      <span
+        className={classes.ICPLicensing}
+        onClick={() => {
+          toUrl();
+        }}
+        style={{ cursor: 'pointer' }}
+      >
         ©2020 江苏时光信息科技有限公司 Qingtime All Rights Reserved
         苏ICP备15006448号
       </span>

@@ -35,7 +35,7 @@ const Tooltip: React.FC<TooltipProp> = (prop) => {
           style={{
             top: pos[0] + 'px',
             left: pos[1] + 'px',
-            width: title.length * 16 + 'px',
+            // width: title.length * 16 + 'px',
           }}
         >
           {title}

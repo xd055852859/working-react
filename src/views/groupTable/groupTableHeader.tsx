@@ -28,6 +28,7 @@ import Vitality from '../../components/vitality/vitality';
 import api from '../../services/api';
 import HeaderFilter from '../../components/headerFilter/headerFilter';
 import VitalityIcon from '../../components/vitalityIcon/vitalityIcon';
+import checkPersonPng from '../../assets/img/checkPerson.png';
 import Contact from '../../views/contact/contact';
 import boardPng from '../../assets/img/board.png';
 import labelPng from '../../assets/img/label.png';
@@ -381,7 +382,7 @@ const GroupTableHeader: React.FC = (prop) => {
           <DropMenu
             visible={groupVisible}
             dropStyle={{
-              width: '250px',
+              width: '300px',
               height: '500px',
               top: '55px',
               left: '0px',
@@ -393,7 +394,7 @@ const GroupTableHeader: React.FC = (prop) => {
             }}
             title={'群列表'}
           >
-            <Contact contactIndex={0} contactType={true} />
+            <Contact contactIndex={0} contactType={'header'} />
           </DropMenu>
         </div>
         {/* <div
@@ -557,21 +558,32 @@ const GroupTableHeader: React.FC = (prop) => {
               onClose={() => {
                 setTabVisible(false);
               }}
-              title={'页面切换'}
               closeType={1}
             >
-              {tabArray.map((tabItem: any, tabIndex: number) => {
+              {tabArray.map((tabItem: any, index: number) => {
                 return (
                   <div
-                    className="viewTableHeader-logo"
+                    className="viewTableHeader-logo  viewTableHeader-tab"
                     onClick={() => {
-                      chooseMemberHeader(tabIndex === 0 ? 0 : tabIndex + 6);
-                      setTabIndex(tabIndex);
+                      chooseMemberHeader(index === 0 ? 0 : index + 6);
+                      setTabIndex(index);
                     }}
-                    key={'viewTable' + tabIndex}
+                    key={'tabTable' + index}
+                    style={{
+                      backgroundColor: tabIndex === index ? '#f0f0f0' : '',
+                    }}
                   >
-                    {/* <img src={viewImgb[viewIndex]} alt=""></img> */}
-                    {tabItem}
+                    <div>{tabItem}</div>
+                    {tabIndex === index ? (
+                      <img
+                        src={checkPersonPng}
+                        alt=""
+                        style={{
+                          width: '20px',
+                          height: '12px',
+                        }}
+                      ></img>
+                    ) : null}
                   </div>
                 );
               })}

@@ -7,7 +7,6 @@ import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import rightArrowPng from '../../assets/img/rightArrow.png';
 
-
 import moment from 'moment';
 import _ from 'lodash';
 interface GroupTableTreeItemProps {
@@ -21,7 +20,7 @@ const GroupTableTreeItem: React.FC<GroupTableTreeItemProps> = (props) => {
   const [timeSetVisible, setTimeSetVisible] = useState(false);
   const [taskItem, setTaskItem] = useState<any>({});
   const [executorVisible, setExecutorVisible] = useState(false);
- 
+
   useEffect(() => {
     // 用户已登录
     if (taskDetail) {
@@ -36,7 +35,7 @@ const GroupTableTreeItem: React.FC<GroupTableTreeItemProps> = (props) => {
   };
   return (
     <div className="groupTableTreeItem">
-      <div
+      {/* <div
         className="groupTableTreeItem-item"
         onClick={() => {
           setTimeSetVisible(true);
@@ -53,7 +52,7 @@ const GroupTableTreeItem: React.FC<GroupTableTreeItemProps> = (props) => {
       >
         <div className="groupTableTreeItem-title">任务执行人</div>
         <img src={rightArrowPng} alt="" />
-      </div>
+      </div> */}
       <div className="groupTableTreeItem-item">
         <div className="groupTableTreeItem-title">切换任务</div>
         <Switch

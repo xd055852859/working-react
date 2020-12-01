@@ -20,7 +20,9 @@ import defaultPersonPng from '../../assets/img/defaultPerson.png';
 // import Editor from '../../components/common/Editor';
 import Task from '../../components/task/task';
 
-export interface WorkingReportProps {}
+export interface WorkingReportProps {
+  headerType?: boolean;
+}
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -56,6 +58,7 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 const WorkingReport: React.FC<WorkingReportProps> = (props) => {
+  const { headerType } = props;
   const dispatch = useDispatch();
   const classes = useStyles();
   const user = useTypedSelector((state) => state.auth.user);
@@ -90,21 +93,38 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
 
   useEffect(() => {
     if (user && user._key) {
-      if (headerIndex == 3 && taskArray) {
-        getData(taskArray);
-      } else if (headerIndex == 1 && workingTaskArray) {
+      if (!headerType) {
+        if (headerIndex == 3 && taskArray && !headerType) {
+          getData(taskArray);
+        } else if (headerIndex == 1 && workingTaskArray) {
+          getDiaryList(
+            moment().subtract(theme.fileDay, 'days').startOf('day').valueOf(),
+            moment().endOf('day').valueOf()
+          );
+        } else if (
+          headerIndex == 2 &&
+          workingTaskArray &&
+          targetUserInfo &&
+          !headerType
+        ) {
+          getDiaryList(
+            moment().subtract(theme.fileDay, 'days').startOf('day').valueOf(),
+            moment().endOf('day').valueOf()
+          );
+        }
+      } else {
         getDiaryList(
-          moment().subtract(30, 'days').startOf('day').valueOf(),
-          moment().endOf('day').valueOf()
-        );
-      } else if (headerIndex == 2 && workingTaskArray && targetUserInfo) {
-        getDiaryList(
-          moment().subtract(30, 'days').startOf('day').valueOf(),
+          moment().subtract(theme.fileDay, 'days').startOf('day').valueOf(),
           moment().endOf('day').valueOf()
         );
       }
     }
   }, [user, workingTaskArray, taskArray, targetUserInfo]);
+  useEffect(() => {
+    if (user && user._key && headerType) {
+      dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2,10], theme.fileDay));
+    }
+  }, [headerType]);
   const chooseDiary = async (index: number) => {
     setDiaryIndex(index);
     setContentKey(dateArray[index]._key);
@@ -137,7 +157,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     let newPersonArray = _.cloneDeep(personArray);
     let newDiaryKey: string | number = '';
     let arr: any = [];
-    for (let i = 30; i >= 0; i--) {
+    for (let i = theme.fileDay; i >= 0; i--) {
       arr.push({
         start: moment().subtract(i, 'days').startOf('day').valueOf(),
         end: moment().subtract(i, 'days').endOf('day').valueOf(),
@@ -159,7 +179,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       }
     });
     newPersonArray = Object.values(newPersonObj);
-    if (headerIndex == 3) {
+    if (headerIndex == 3 && !headerType) {
       if (chooseDiaryKey) {
         setDiaryKey(chooseDiaryKey);
         newDiaryKey = chooseDiaryKey;
@@ -167,13 +187,14 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
         setDiaryKey('全部');
         newDiaryKey = '全部';
       }
-    } else if (headerIndex == 1) {
+    } else if (headerIndex == 1 || headerType) {
       setDiaryKey(user._key);
       newDiaryKey = user._key;
     } else if (headerIndex == 2) {
       setDiaryKey(targetUserInfo._key);
       newDiaryKey = targetUserInfo._key;
     }
+    console.log(taskArray);
     arr.forEach((item: any, index: number) => {
       newDateArray[index] = {
         creatorArr: [],
@@ -258,6 +279,9 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     setDayCanlendarArray(newDayCanlendarArray);
     newPersonArray.unshift({ key: '全部', avatar: '', name: '全部' });
     setPersonArray(newPersonArray);
+    console.log(newDateArray);
+    console.log(newDayCanlendarArray);
+    console.log(newPersonArray);
   };
   const getDiaryNote = async (startTime: number, diaryKey: any) => {
     console.log('???????????', moment(startTime).format('YYYY-MM-DD'));
@@ -287,7 +311,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
   };
   const getDiaryList = async (startTime: number, endTime: number) => {
     let res: any = await api.auth.getDiaryList(
-      headerIndex == 1 ? user._key : targetUserInfo._key,
+      headerIndex == 1 || headerType ? user._key : targetUserInfo._key,
       startTime,
       endTime
     );
@@ -507,7 +531,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     );
     if (addTaskRes.msg === 'OK') {
       dispatch(setMessage(true, '新增任务成功', 'success'));
-      dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2], theme.fileDay));
+      dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2,10], theme.fileDay));
     } else {
       dispatch(setMessage(true, addTaskRes.msg, 'error'));
     }
@@ -557,7 +581,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
             {headerIndex != 3 ? (
               <h2>
                 一、任务看板
-                {headerIndex === 1 ? (
+                {headerIndex === 1 || headerType ? (
                   <React.Fragment>
                     <Button
                       variant="contained"
@@ -665,7 +689,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
               </React.Fragment>
             )}
 
-            {headerIndex != 3 ? (
+            {headerIndex != 3 || headerType ? (
               <React.Fragment>
                 <h2>二、工作日志</h2>
                 <div className="diary-content-pn">
@@ -674,7 +698,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                     <div>审视</div>
                   </div>
                   <div className="diary-content-info">
-                    {headerIndex == 1 ? (
+                    {headerIndex == 1 || headerType ? (
                       <textarea
                         value={positive}
                         placeholder="成绩,收获,价值创造"
@@ -686,7 +710,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                     ) : (
                       <div className="diary-content-textarea">{positive}</div>
                     )}
-                    {headerIndex == 1 ? (
+                    {headerIndex == 1 || headerType ? (
                       <textarea
                         value={negative}
                         placeholder="困难，挑战，潜在问题"
@@ -701,7 +725,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                   </div>
                 </div>
                 <h2>三、随记</h2>
-                {headerIndex == 1 ? (
+                {headerIndex == 1 || headerType ? (
                   <textarea
                     value={note}
                     placeholder="随记"
@@ -827,7 +851,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       </div>
 
       <DropMenu
-        visible={headerIndex === 3}
+        visible={headerIndex === 3 && !headerType}
         dropStyle={{
           width: '45px',
           maxHeight: '800px',
