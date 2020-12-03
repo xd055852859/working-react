@@ -28,6 +28,7 @@ import carePng from '../../assets/img/care.png';
 import uncarePng from '../../assets/img/uncare.png';
 import api from '../../services/api';
 import _ from 'lodash';
+import theme from '@amcharts/amcharts4/themes/animated';
 export interface ContactProps {
   contactIndex: number;
   contactType?: string;
@@ -61,6 +62,8 @@ const Contact: React.FC<ContactProps> = (props) => {
   const [cloneGroupName, setCloneGroupName] = useState('');
   const [cloneGroupVisible, setCloneGroupVisible] = useState(false);
   const [cloneGroupIndex, setCloneGroupIndex] = useState<any>(null);
+  const theme = useTypedSelector((state) => state.auth.theme);
+
   // const theme = useTypedSelector((state) => state.auth.theme);
   useEffect(() => {
     if (user && user._key) {
@@ -94,14 +97,18 @@ const Contact: React.FC<ContactProps> = (props) => {
     dispatch(setGroupKey(groupKey));
     dispatch(getGroupInfo(groupKey));
     dispatch(setCommonHeaderIndex(3));
-    dispatch(setMoveState('in'));
+    if (!theme.moveState) {
+      dispatch(setMoveState('in'));
+    }
     await api.group.visitGroupOrFriend(2, groupKey);
     dispatch(getGroup(3));
   };
   const toTargetUser = async (targetUserKey: string, index: number) => {
     dispatch(getTargetUserInfo(targetUserKey));
     dispatch(setCommonHeaderIndex(2));
-    dispatch(setMoveState('in'));
+    if (!theme.moveState) {
+      dispatch(setMoveState('in'));
+    }
     await api.group.visitGroupOrFriend(1, targetUserKey);
     dispatch(getMember(mainGroupKey));
   };
@@ -118,24 +125,29 @@ const Contact: React.FC<ContactProps> = (props) => {
     newContactArray[index].isCare = status === 1 ? true : false;
     setContactArray(newContactArray);
   };
-  const searchGroup = () => {
-    let newContactArray = _.cloneDeep(contactArray);
+  const searchGroup = (input?: string) => {
+    let newContactArray = _.cloneDeep(groupArray);
+    let searchInput = input ? input : contactSearchInput;
     newContactArray = newContactArray.filter((item: any, index: number) => {
-      return item.groupName.indexOf(contactSearchInput) !== -1;
+      return (
+        item.groupName.toUpperCase().indexOf(searchInput.toUpperCase()) !== -1
+      );
     });
     setContactArray(newContactArray);
   };
   const cloneGroup = async () => {
     let cloneRes: any = await api.group.cloneGroup(
       cloneGroupKey,
-      cloneGroupName + '-副本'
+      cloneGroupName + '_副本'
     );
     if (cloneRes.msg === 'OK') {
       dispatch(setMessage(true, '克隆群成功', 'success'));
       dispatch(setGroupKey(cloneRes.result));
       dispatch(getGroupInfo(cloneRes.result));
       dispatch(setCommonHeaderIndex(3));
-      dispatch(setMoveState('in'));
+      if (!theme.moveState) {
+        dispatch(setMoveState('in'));
+      }
       await api.group.visitGroupOrFriend(2, cloneRes.result);
       dispatch(getGroup(3));
     } else {
@@ -154,6 +166,7 @@ const Contact: React.FC<ContactProps> = (props) => {
             value={contactSearchInput}
             onChange={(e: any) => {
               setContactSearchInput(e.target.value);
+              searchGroup(e.target.value);
             }}
             className="contact-search-input"
             placeholder="请输入群名"

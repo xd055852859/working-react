@@ -24,24 +24,14 @@
   border: 1px solid #cecece;
 }
 .headerCreate-title-left {
-  width: calc(100% - 30px);
+  width: 100%;
   height: 100%;
   border: 1px solid #cecece;
   border-radius: 6px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 5px;
   box-sizing: border-box;
-}
-.headerCreate-title-left-left {
-  width: 23%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.headerCreate-title-left-right {
-  width: 75%;
 }
 .headerCreate-title-left-title {
   width: 100%;
@@ -59,4 +49,19 @@
   width: 25px;
   height: 25px;
   cursor: pointer;
+}
+.headerCreate-title-avatar {
+  width: 30px;
+  height: 30px;
+  overflow: hidden;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+.headerCreate-title-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.headerCreate-title-left-left {
+  margin-right: 5px;
 }

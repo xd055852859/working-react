@@ -71,7 +71,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 16px;
+  padding: 8px;
   box-sizing: border-box;
   cursor: pointer;
   overflow: hidden;
@@ -264,7 +264,7 @@
   display: none;
   align-items: center;
   justify-content: center;
-  margin-right: 7px;
+  margin-right: 4px;
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -429,6 +429,13 @@ input {
   height: 100%;
   display: flex;
   align-items: center;
+}
+.task-executor-dropMenu-follow{
+  width: 21px;
+  height:100%;
+  display: flex;
+  align-items: center;
+  margin-right:5px;
 }
 @keyframes taskAvatarSmall {
   from {

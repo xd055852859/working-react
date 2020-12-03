@@ -104,17 +104,16 @@ const WorkingTableLabel: React.FC = (prop) => {
             }
           );
         });
-        let arr = [];
-        // workingGroupArray[0].labelArray.forEach((item: any, index: number) => {
-        //   if (Object.keys(labelArray[0]).indexOf(item._key) === -1) {
-        //     labelArray[0][item._key] = {
-        //       arr: [],
-        //       groupObj: workingGroupArray[0],
-        //       labelObj: item,
-        //       position: [],
-        //     };
-        //   }
-        // });
+        workingGroupArray[0].labelArray.forEach((item: any, index: number) => {
+          if (Object.keys(labelArray[0]).indexOf(item._key) === -1) {
+            labelArray[0][item._key] = {
+              arr: [],
+              groupObj: workingGroupArray[0],
+              labelObj: item,
+              position: [],
+            };
+          }
+        });
         labelArray = labelArray.map((item: any, index: number) => {
           for (let key in item) {
             item[key].arr = format
@@ -132,7 +131,6 @@ const WorkingTableLabel: React.FC = (prop) => {
           return Object.values(item);
         });
         labelArray = _.sortBy(_.flatten(labelArray), ['arrlength']).reverse();
-        console.log(labelArray);
         setMainLabelArray(labelArray);
       }
     }
@@ -214,9 +212,16 @@ const WorkingTableLabel: React.FC = (prop) => {
       dispatch(setMessage(true, '归档成功', 'success'));
       dispatch(changeBatchMusic(true));
       if (headerIndex === 1) {
-        dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2,10]));
+        dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10]));
       } else if (headerIndex === 2) {
-        dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2,10]));
+        dispatch(
+          getWorkingTableTask(
+            user._key === targetUserInfo._key ? 4 : 2,
+            targetUserInfo._key,
+            1,
+            [0, 1, 2, 10]
+          )
+        );
       }
     } else {
       dispatch(setMessage(true, batchRes.msg, 'error'));

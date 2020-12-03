@@ -19,8 +19,12 @@ import _ from 'lodash';
 
 import downArrowbPng from '../../assets/img/downArrowb.png';
 import addCreateSvg from '../../assets/svg/addCreate.svg';
-import minusCreateSvg from '../../assets/svg/minusCreate.svg';
-interface HeaderCreateProps {}
+import unaddCreateSvg from '../../assets/svg/unaddCreate.svg';
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
+// import minusCreateSvg from '../../assets/svg/minusCreate.svg';
+interface HeaderCreateProps {
+  visible: boolean;
+}
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     button: {
@@ -46,7 +50,7 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
-  const {} = props;
+  const { visible } = props;
   const classes = useStyles();
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
@@ -63,15 +67,33 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
   const [groupChooseArray, setGroupChooseArray] = useState<any>([]);
   const [labelChooseArray, setLabelChooseArray] = useState<any>([]);
   const [groupChooseIndex, setGroupChooseIndex] = useState<any>(0);
+  const [chooseIndex, setChooseIndex] = useState<any>(0);
+  const [addState, setAddState] = useState(false);
+
   const limit = 10;
 
   const createRef: React.RefObject<any> = useRef();
   useEffect(() => {
-    if (user) {
+    if (user && groupArray && groupArray[0]._key && visible) {
       getTaskCreate(1);
+      getLabelArray(groupArray[0]._key);
     }
-  }, [user]);
-
+  }, [user, groupArray, visible]);
+  const getLabelArray = async (groupKey: string) => {
+    let newGroupChooseArray = [];
+    let newLabelChooseArray = [];
+    let labelRes: any = await api.group.getLabelInfo(groupKey);
+    if (labelRes.msg === 'OK') {
+      newGroupChooseArray.push(groupArray[0]);
+      newLabelChooseArray.push([labelRes.result[0]]);
+      newGroupChooseArray[0].index = 0;
+      newLabelChooseArray[0][0].index = 0;
+      setGroupChooseArray(newGroupChooseArray);
+      setLabelChooseArray(newLabelChooseArray);
+    } else {
+      dispatch(setMessage(true, labelRes.msg, 'error'));
+    }
+  };
   const scrollCreateLoading = (e: any) => {
     let newPage = createPage;
     //文档内容实际高度（包括超出视窗的溢出部分）
@@ -124,17 +146,31 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
       dispatch(setMessage(true, '新增对应群任务成功', 'success'));
       if (createTaskList) {
         let newCreateTaskList = _.cloneDeep(createTaskList);
+        let newGroupChooseArray = _.cloneDeep(groupChooseArray);
+        let newLabelChooseArray = _.cloneDeep(labelChooseArray);
+        let groupChooseItem = _.cloneDeep(newGroupChooseArray)[0];
+        let labelChooseItem = _.cloneDeep(newLabelChooseArray)[0];
         newCreateTaskList.unshift(...addTaskRes.result);
         setCreateTaskList(newCreateTaskList);
-        setGroupChooseArray([]);
-        setLabelChooseArray([]);
+        newGroupChooseArray = [groupChooseItem];
+        newLabelChooseArray = [labelChooseItem];
+        setGroupChooseArray(newGroupChooseArray);
+        setLabelChooseArray(newLabelChooseArray);
       }
+      setAddInput('');
       if (headerIndex === 0) {
         dispatch(getSelfTask(1, user._key, '[0, 1]'));
       } else if (headerIndex === 1) {
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10]));
       } else if (headerIndex === 2) {
-        dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2, 10]));
+        dispatch(
+          getWorkingTableTask(
+            user._key === targetUserInfo._key ? 4 : 2,
+            targetUserInfo._key,
+            1,
+            [0, 1, 2, 10]
+          )
+        );
       } else if (headerIndex === 3) {
         dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
       }
@@ -143,11 +179,13 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
     }
   };
   const changeGroupArray = (groupArray: any, labelArray: any) => {
+    console.log(groupArray);
+    console.log(labelArray);
     if (labelArray.length > 0) {
       let newGroupChooseArray = _.cloneDeep(groupChooseArray);
       let newLabelChooseArray = _.cloneDeep(labelChooseArray);
-      newGroupChooseArray.push(groupArray);
-      newLabelChooseArray.push(labelArray);
+      newGroupChooseArray[chooseIndex] = groupArray;
+      newLabelChooseArray[chooseIndex] = labelArray;
       setGroupChooseArray(newGroupChooseArray);
       setLabelChooseArray(newLabelChooseArray);
     }
@@ -181,77 +219,101 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
         {groupChooseArray.map((item: any, index: number) => {
           return (
             <div className="headerCreate-title" key={'groupChoose' + index}>
-              <div className="headerCreate-title-left">
+              <div
+                className="headerCreate-title-left"
+                onClick={() => {
+                  setGroupVisible(true);
+                  setChooseIndex(index);
+                }}
+              >
+                <div className="headerCreate-title-avatar">
+                  <img
+                    src={item.groupLogo ? item.groupLogo : defaultGroupPng}
+                    alt=""
+                  />
+                </div>
                 <div className="headerCreate-title-left-left">
-                  {item.groupName}
+                  {item.groupName} /
                 </div>
                 <div className="headerCreate-title-left-right">
-                  {labelChooseArray[index]
-                    ? labelChooseArray[index].map(
-                        (labelItem: any, labelIndex: number) => {
-                          return (
-                            <div
-                              key={'labelChoose' + labelIndex}
-                              className="headerCreate-title-left-title"
-                            >
-                              {labelItem.cardLabelName
-                                ? labelItem.cardLabelName
-                                : labelItem._key
-                                ? ''
-                                : 'ToDo'}
-                              (
-                              {labelItem.executorNickName
-                                ? labelItem.executorNickName
-                                : '无默认执行人'}
-                              )
-                            </div>
-                          );
-                        }
+                  {labelChooseArray[index] ? (
+                    <div className="headerCreate-title-left-title">
+                      {labelChooseArray[index][0].cardLabelName
+                        ? labelChooseArray[index][0].cardLabelName
+                        : labelChooseArray[index][0]._key
+                        ? ''
+                        : 'ToDo'}
+                      (
+                      {labelChooseArray[index][0].executorNickName
+                        ? labelChooseArray[index][0].executorNickName
+                        : '无默认执行人'}
                       )
-                    : null}
+                    </div>
+                  ) : null}
                 </div>
               </div>
-              <img
-                src={minusCreateSvg}
-                alt=""
-                className="headerCreate-title-icon"
-                onClick={() => {
-                  minusGroupArray(index);
-                }}
-              />
+
+              {/*  */}
             </div>
           );
         })}
-
-        <div
-          className="headerCreate-choose-title"
-          onClick={() => {
-            setGroupVisible(true);
+        {/* <div style={{ position: 'relative' }}> */}
+        {/* <div
+            className="headerCreate-choose-title"
+            onClick={() => {
+              setGroupVisible(true);
+            }}
+          >
+            请选择项目/频道
+            <img
+              src={downArrowbPng}
+              alt=""
+              style={{ width: '11px', height: '7px', marginLeft: '8px' }}
+            />
+          </div> */}
+        <CreateMoreTask
+          visible={groupVisible}
+          createStyle={{
+            position: 'absolute',
+            top: 155 + chooseIndex * 40 + 'px',
+            left: '15px',
+            height: '400px',
           }}
-        >
-          请选择项目/频道
-          <img
-            src={downArrowbPng}
-            alt=""
-            style={{ width: '11px', height: '7px', marginLeft: '8px' }}
-          />
-          <CreateMoreTask
-            visible={groupVisible}
-            createStyle={{
-              position: 'absolute',
-              top: '40px',
-              left: '0px',
-              height: '400px',
-            }}
-            changeGroupArray={changeGroupArray}
-            onClose={() => {
-              setGroupVisible(false);
-            }}
-            taskWidth={400}
-          />
-        </div>
+          changeGroupArray={changeGroupArray}
+          onClose={() => {
+            setGroupVisible(false);
+          }}
+          groupIndex={
+            chooseIndex < groupChooseArray.length &&
+            groupChooseArray[chooseIndex]
+              ? groupChooseArray[chooseIndex].index
+              : 0
+          }
+          labelIndex={
+            chooseIndex < groupChooseArray.length &&
+            labelChooseArray[chooseIndex]
+              ? labelChooseArray[chooseIndex][0].index
+              : 0
+          }
+        />
+        {/* </div> */}
       </div>
       <div className="create-button">
+        <img
+          src={addState ? addCreateSvg : unaddCreateSvg}
+          alt=""
+          className="headerCreate-title-icon"
+          onClick={() => {
+            setGroupVisible(true);
+            setChooseIndex(groupChooseArray.length);
+          }}
+          onMouseEnter={() => {
+            setAddState(true);
+          }}
+          onMouseLeave={() => {
+            setAddState(false);
+          }}
+        />
         {addInput ? (
           <Button
             variant="contained"
@@ -262,7 +324,7 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
             }}
             style={{ marginLeft: '10px', color: '#fff' }}
           >
-            保存任务
+            保存
           </Button>
         ) : (
           <Button
@@ -270,7 +332,7 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
             disabled
             style={{ marginLeft: '10px', color: '#fff' }}
           >
-            保存任务
+            保存
           </Button>
         )}
       </div>

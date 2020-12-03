@@ -34,6 +34,7 @@ import messageType18Png from '../../assets/img/messageType18.png';
 import messageType19Png from '../../assets/img/messageType19.png';
 import messageType20Svg from '../../assets/svg/messageType20.svg';
 import messageType21Svg from '../../assets/svg/messageType21.svg';
+import messageType22Svg from '../../assets/svg/messageType22.svg';
 import messageunFinishSvg from '../../assets/svg/messageunFinish.svg';
 import messageFinishSvg from '../../assets/svg/messageFinish.svg';
 import messageButtonSvg from '../../assets/svg/messageButton.svg';
@@ -84,6 +85,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
     messageType19Png,
     messageType20Svg,
     messageType21Svg,
+    messageType22Svg,
   ];
   useEffect(() => {
     if (user && user._key) {
@@ -221,7 +223,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
               }}
               color="primary"
             />
-            签收任务
+            只看待签收
           </div>
           {messageNum ? (
             <Button
@@ -267,7 +269,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                       alt=""
                     />
                   </div>
-                  {messageItem.data.cardKey ? (
+                  {messageItem.data.cardKey && messageItem.data.type !== 22 ? (
                     <div
                       className="messageBoard-item-container"
                       onClick={() => {
@@ -320,7 +322,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                             </span>
                           </div>
                         </div>
-                        <div>
+                        <div style={{ color: '#333', marginTop: '2px' }}>
                           {moment(parseInt(messageItem.data.time)).fromNow()}
                         </div>
                       </div>

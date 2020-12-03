@@ -121,11 +121,6 @@ const App: React.FC = () => {
         : '1';
 
       if (headerIndex) {
-        if (headerIndex == '3' || headerIndex == '2') {
-          dispatch(setMoveState('in'));
-        } else {
-          dispatch(setMoveState('out'));
-        }
         if (headerIndex == '5') {
           if (theme && !theme.calendarVisible) {
             headerIndex = '0';
@@ -203,6 +198,15 @@ const App: React.FC = () => {
       }
     }
   }, [history, dispatch, location.search, user, token]);
+  useEffect(() => {
+    if (theme.moveState) {
+      dispatch(setMoveState(''));
+    } else if (headerIndex == '3' || headerIndex == '2') {
+      dispatch(setMoveState('in'));
+    } else {
+      dispatch(setMoveState('out'));
+    }
+  }, [theme]);
   useEffect(() => {
     if (taskActionArray.length > 0) {
       clearInterval(intervalTime);

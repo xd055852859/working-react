@@ -27,7 +27,7 @@ import Contact from '../contact/contact';
 import Dialog from '../../components/common/dialog';
 import GroupCreate from './groupCreate';
 import DropMenu from '../../components/common/dropMenu';
-
+import Loading from '../../components/common/loading';
 import searchPng from '../../assets/img/search.png';
 import searchbSvg from '../../assets/svg/searchb.svg';
 import addPng from '../../assets/img/contact-add.png';
@@ -102,6 +102,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   const [page, setPage] = React.useState(1);
   const [total, setTotal] = React.useState(0);
   const [clientHeight, setClientHeight] = useState(0);
+  const [loading, setLoading] = useState(false);
   const tabsRef: React.RefObject<any> = useRef();
   const limit = 30;
   useEffect(() => {
@@ -116,58 +117,74 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       setClientHeight(clientHeight);
     }
   }, [tabsRef.current]);
-  useEffect(() => {
-    if (searchInput) {
-      let newMainSearchList = [];
-      if (contactIndex === 1) {
-        newMainSearchList = memberArray.filter(
-          (memberItem: any, memberIndex: number) => {
-            if (memberItem.nickName.indexOf(searchInput) != -1) {
-              return memberItem;
-            }
-          }
-        );
-      } else if (contactIndex === 0) {
-        newMainSearchList = groupArray.filter(
-          (groupItem: any, groupIndex: number) => {
-            if (groupItem.groupName.indexOf(searchInput) != -1) {
-              return groupItem;
-            }
-          }
-        );
-      }
-      setMainSearchList(newMainSearchList);
-    }
-  }, [memberArray, groupArray]);
+  // useEffect(() => {
+  //   if (searchInput) {
+  //     let newMainSearchList = [];
+  //     if (contactIndex === 1) {
+  //       newMainSearchList = memberArray.filter(
+  //         (memberItem: any, memberIndex: number) => {
+  //           if (memberItem.nickName.indexOf(searchInput) != -1) {
+  //             return memberItem;
+  //           }
+  //         }
+  //       );
+  //     } else if (contactIndex === 0) {
+  //       newMainSearchList = groupArray.filter(
+  //         (groupItem: any, groupIndex: number) => {
+  //           if (groupItem.groupName.indexOf(searchInput) != -1) {
+  //             return groupItem;
+  //           }
+  //         }
+  //       );
+  //     }
+  //     setMainSearchList(newMainSearchList);
+  //   }
+  // }, [memberArray, groupArray]);
   const changeInput = (e: any) => {
     setSearchInput(e.target.value);
+    searchMsg(e.target.value);
   };
   const changePasswordInput = (e: any) => {
     setPasswordInput(e.target.value);
   };
-  const searchMsg = () => {
+  const searchMsg = (input?: string) => {
     let newMainSearchList = [];
-    if (searchInput !== '') {
+    let msgInput = input ? input : searchInput;
+    if (msgInput !== '') {
       if (contactIndex === 1) {
         newMainSearchList = memberArray.filter(
           (memberItem: any, memberIndex: number) => {
-            if (memberItem.nickName.indexOf(searchInput) != -1) {
+            if (
+              memberItem.nickName
+                .toUpperCase()
+                .indexOf(msgInput.toUpperCase()) != -1
+            ) {
               return memberItem;
             }
           }
         );
-        getSearchPerson(page);
       } else if (contactIndex === 0) {
         newMainSearchList = groupArray.filter(
           (groupItem: any, groupIndex: number) => {
-            if (groupItem.groupName.indexOf(searchInput) != -1) {
+            if (
+              groupItem.groupName
+                .toUpperCase()
+                .indexOf(msgInput.toUpperCase()) != -1
+            ) {
               return groupItem;
             }
           }
         );
-        getSearchGroup(page);
       }
       setMainSearchList(newMainSearchList);
+      setSearchVisible(true);
+      setSearchAllVisible(false);
+      // if (searchAllVisible) {
+      //   contactIndex ? getSearchPerson(1) : getSearchGroup(1);
+      // }
+    } else {
+      dispatch(setMessage(true, '请输入搜索内容', 'error'));
+      return;
     }
   };
   const getSearchPerson = async (page: number) => {
@@ -177,7 +194,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     } else {
       newSearchList = _.cloneDeep(searchList);
     }
-
+    setLoading(true);
     let res: any = await api.member.searchUserNew(searchInput, page, limit);
     if (res.msg === 'OK') {
       res.result.forEach((searchItem: any) => {
@@ -188,8 +205,10 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       });
       setSearchList(newSearchList);
       setTotal(res.totalNumber);
+      setLoading(false);
     } else {
       dispatch(setMessage(true, res.msg, 'error'));
+      setLoading(false);
     }
   };
   const getSearchGroup = async (page: number) => {
@@ -351,14 +370,18 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     dispatch(setGroupKey(groupKey));
     dispatch(getGroupInfo(groupKey));
     dispatch(setCommonHeaderIndex(3));
-    dispatch(setMoveState('in'));
+    if (!theme.moveState) {
+      dispatch(setMoveState('in'));
+    }
   };
   const toTargetUser = (targetUserKey: string) => {
     // dispatch(setTargetUserKey(targetUserKey));
     // dispatch(userKeyToGroupKey(targetUserKey));
     dispatch(getTargetUserInfo(targetUserKey));
     dispatch(setCommonHeaderIndex(2));
-    dispatch(setMoveState('in'));
+    if (!theme.moveState) {
+      dispatch(setMoveState('in'));
+    }
   };
   return (
     <div
@@ -453,16 +476,20 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
               value={searchInput}
               onKeyDown={(e: any) => {
                 if (e.keyCode === 13) {
-                  searchMsg();
-                  setSearchVisible(true);
+                  if (searchInput !== '') {
+                    searchMsg();
+                    setSearchVisible(true);
+                  }
                 }
               }}
             />
             <div
               className="search-icon-container"
               onClick={() => {
-                searchMsg();
-                setSearchVisible(true);
+                if (searchInput !== '') {
+                  searchMsg();
+                  setSearchVisible(true);
+                }
               }}
             >
               <img
@@ -645,7 +672,9 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                   className="search-all-icon"
                   onClick={() => {
                     setSearchAllVisible(true);
+                    contactIndex ? getSearchPerson(page) : getSearchGroup(page);
                   }}
+                  style={{ cursor: 'pointer' }}
                 >
                   全平台搜索
                   <img
@@ -660,6 +689,9 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                     className="personMember-container"
                     onScroll={scrollSearchLoading}
                   >
+                    {loading ? (
+                      <Loading loadingWidth="50px" loadingHeight="50px" />
+                    ) : null}
                     {searchList.map((searchItem: any, searchIndex: number) => {
                       let name = contactIndex
                         ? searchItem.nickName
@@ -675,14 +707,11 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                         ? searchItem.userId
                         : searchItem._key;
                       return (
-                        <React.Fragment>
+                        <React.Fragment key={'search' + searchIndex}>
                           {(contactIndex === 1 &&
                             !searchItem.isMyMainGroupMember) ||
                           (contactIndex === 0 && !searchItem.isGroupMember) ? (
-                            <div
-                              key={'search' + searchIndex}
-                              className="personMember-item"
-                            >
+                            <div className="personMember-item">
                               <div className="personMember-item-title">
                                 <div className="personMember-item-avatar">
                                   <img src={avatar} alt="" />

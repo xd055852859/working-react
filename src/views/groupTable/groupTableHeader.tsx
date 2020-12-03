@@ -256,7 +256,9 @@ const GroupTableHeader: React.FC = (prop) => {
       dispatch(setMessage(true, '解散群组成功', 'success'));
       dispatch(getGroup(3));
       dispatch(setCommonHeaderIndex(1));
-      dispatch(setMoveState('out'));
+      if (!theme.moveState) {
+        dispatch(setMoveState('out'));
+      }
     } else {
       dispatch(setMessage(true, groupRes.msg, 'error'));
     }
@@ -336,7 +338,9 @@ const GroupTableHeader: React.FC = (prop) => {
       dispatch(setMessage(true, '退出项目成功', 'success'));
       dispatch(getGroup(3));
       dispatch(setCommonHeaderIndex(1));
-      dispatch(setMoveState('out'));
+      if (!theme.moveState) {
+        dispatch(setMoveState('out'));
+      }
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }

@@ -39,6 +39,7 @@ import Dialog from '../common/dialog';
 import TimeSet from '../common/timeSet';
 import Editor from '../common/Editor';
 import uploadFile from '../common/upload';
+import Loading from '../common/loading';
 import CreateMoreTask from '../createMoreTask/createMoreTask';
 
 interface TaskInfoProps {
@@ -129,6 +130,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   const [groupVisible, setGroupVisible] = useState(false);
   const [labelIndex, setLabelIndex] = useState(0);
   const [labelVisible, setLabelVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
   const color = [
     '#6FD29A',
     '#21ABE4',
@@ -219,12 +221,14 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   //   }
   // }, [chooseKey]);
   const getTaskItem = async () => {
+    setLoading(true);
     let taskItemRes: any = await api.task.getTaskInfo(chooseKey);
     if (taskItemRes.msg === 'OK') {
       let taskInfo = _.cloneDeep(taskItemRes.result);
-      console.log(taskInfo);
+      setLoading(false);
       changeTaskInfo(taskInfo);
     } else {
+      setLoading(false);
       dispatch(setMessage(true, taskItemRes.msg, 'error'));
     }
   };
@@ -242,11 +246,14 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
         setTaskTypeIndex(index);
       }
     });
+    setLoading(true);
     let taskItemRes: any = await api.task.getTaskInfo(chooseKey);
     if (taskItemRes.msg === 'OK') {
+      setLoading(false);
       taskInfo.content = _.cloneDeep(taskItemRes.result).content;
       setTaskItem(taskInfo);
     } else {
+      setLoading(false);
       dispatch(setMessage(true, taskItemRes.msg, 'error'));
     }
     setEditRole(
@@ -518,6 +525,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       }}
     >
       <div className="taskInfo">
+        {loading ? <Loading loadingHeight="90px" loadingWidth="90px" /> : null}
         {taskItem ? (
           <React.Fragment>
             <div className="taskInfo-mainTitle">
@@ -581,11 +589,13 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                             <div
                               className="task-executor-dropMenu-container"
                               key={'taskMember' + taskMemberIndex}
-                              style={
-                                taskItem.executorKey === taskMemberItem.userId
-                                  ? { background: '#F0F0F0' }
-                                  : {}
-                              }
+                              style={{
+                                background:
+                                  taskItem.executorKey === taskMemberItem.userId
+                                    ? '#F0F0F0'
+                                    : '',
+                                justifyContent: 'flex-start',
+                              }}
                               onClick={() => {
                                 changeExecutor(
                                   taskMemberItem.userId,
@@ -677,7 +687,6 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                         setMoveTaskVisible(false);
                       }}
                       moreTitle={taskItem.title}
-                      taskWidth={260}
                     />
                   </DropMenu>
                 </div>
@@ -845,7 +854,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                   </DropMenu>
                 </div>
               </div>
-              <div className="taskInfo-item">
+              {/* <div className="taskInfo-item">
                 <div className="taskInfo-item-title">关注</div>
                 <div className="taskInfo-item-follow"></div>
                 {editable && !localStorage.getItem('page') ? (
@@ -861,7 +870,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     保存
                   </Button>
                 ) : null}
-              </div>
+              </div> */}
               {!localStorage.getItem('page') ? (
                 <div
                   onClick={() => {
@@ -870,6 +879,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                   style={
                     !editable ? { cursor: 'pointer', margin: '30px 0px' } : {}
                   }
+                  className="taskInfo-Editor"
                 >
                   {!editable ? (
                     taskItem.content ? (

@@ -24,12 +24,16 @@ import api from '../../services/api';
 import MainBoard from '../board/mainBoard';
 import ClockNew from '../../components/clock/clockNew';
 import HeaderBg from '../../components/headerSet/headerBg';
+import Dialog from '../../components/common/dialog';
 // import ClockNew from '../../components/clock/clockNew';
+import HeaderCreate from '../../components/headerSet/headerCreate';
 import infoPng from '../../assets/img/info.png';
 import logoSvg from '../../assets/svg/logo.svg';
 import rightArrowPng from '../../assets/img/rightArrow.png';
 import radioCheckPng from '../../assets/img/radioCheck.png';
 import unradioCheckPng from '../../assets/img/unradioCheck.png';
+import showAddSvg from '../../assets/svg/showAdd.svg';
+import { getGroup } from '../../redux/actions/groupActions';
 import bgImg from '../../assets/img/bgImg.png';
 import { getTokenSourceMapRange } from 'typescript';
 interface ShowPageProps {
@@ -52,6 +56,8 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
   const [bg, setBg] = useState<any>('');
   const [menuShow, setMenuShow] = useState(0);
   const [timeOsToken, setTimeOsToken] = useState(null);
+  const [addVisible, setAddVisible] = useState(false);
+  const [weatherObj, setWeatherObj] = useState<any>({});
   const showPageRef: React.RefObject<any> = useRef();
   const year = moment().year();
   const month = moment().month();
@@ -73,9 +79,6 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
     }, 1000);
     // getSocket();
     setTimeInterval(interval);
-    getPrompt();
-    getToken();
-    dispatch(setCommonHeaderIndex(0));
     localStorage.setItem('page', 'show');
     localStorage.setItem('headerIndex', '0');
     // getWeather();
@@ -85,6 +88,22 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
       }
     };
   }, []);
+  useEffect(() => {
+    if (user) {
+      getPrompt();
+      getToken();
+      dispatch(setCommonHeaderIndex(0));
+      dispatch(getGroup(3));
+      if (
+        parseInt(user.profile.lo) !== user.profile.lo &&
+        parseInt(user.profile.la) !== user.profile.la &&
+        user.profile.la &&
+        user.profile.lo
+      ) {
+        getWeather();
+      }
+    }
+  }, [user]);
   useEffect(() => {
     if (theme.backgroundImg) {
       localStorage.setItem('url', theme.backgroundImg);
@@ -141,58 +160,19 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
       dispatch(setMessage(true, promptRes.msg, 'error'));
     }
   };
-  const getPosition = () => {
-    return new Promise((resolve, reject) => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          function (position) {
-            let latitude = position.coords.latitude;
-            let longitude = position.coords.longitude;
-            let data = {
-              latitude: latitude,
-              longitude: longitude,
-            };
-            resolve(data);
-          },
-          function () {
-            reject(arguments);
-          }
-        );
-      } else {
-        reject('你的浏览器不支持当前地理位置信息获取');
-      }
-    });
-  };
-  const getWeather = async () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        function (position) {
-          console.log(position.coords.longitude);
-          console.log(position.coords.latitude);
-        },
-        function (e) {
-          throw e.message;
-        }
-      );
-    }
-    let result: any = await getPosition();
-    if (result) {
-      // let queryData = {
-      //   longtitude: String(result.longitude).match(/\d+\.\d{0,6}/)[0],
-      //   latitude: String(result.latitude).match(/\d+\.\d{0,6}/)[0],
-      //   channelType: '00'
-      // }
 
-      console.log(result);
+  const getWeather = async () => {
+    let newWeatherObj: any = {};
+    let weatherRes: any = await api.common.getWeather(
+      user.profile.lo,
+      user.profile.la
+    );
+    if (weatherRes.msg === 'OK') {
+      newWeatherObj = _.cloneDeep(weatherRes.result);
+      setWeatherObj(newWeatherObj);
+    } else {
+      dispatch(setMessage(true, weatherRes.msg, 'error'));
     }
-    // let weatherRes: any = await api.common.getWeather();
-    // if (weatherRes.msg === 'OK') {
-    //   // setPrompt(promptRes.result.content);
-    //   console.log(weatherRes);
-    //   // dispatch(setMessage(true, '申请加群成功', 'success'));
-    // } else {
-    //   dispatch(setMessage(true, weatherRes.msg, 'error'));
-    // }
   };
   const onKeyDownchange = (e: any) => {
     if (e.keyCode == 13) {
@@ -232,7 +212,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
               }
         }
       ></div>
-      {theme.searchShow ? (
+      {theme.searchShow !== false ? (
         <input
           type="text"
           className="showPage-input"
@@ -246,9 +226,67 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
           }}
         />
       ) : null}
+      {theme.weatherShow !== false &&
+      parseInt(user.profile.lo) !== user.profile.lo &&
+      parseInt(user.profile.la) !== user.profile.la &&
+      user.profile.la &&
+      user.profile.lo ? (
+        <div
+          className="showPage-weather"
+          style={{ left: theme.searchShow !== false ? '280px' : '10px' }}
+        >
+          <div className="showPage-weather-item">
+            <div className="showPage-weather-item-top">
+              {weatherObj.basic && weatherObj.basic.province}
+            </div>
+            <div className="showPage-weather-item-bottom">
+              {weatherObj.basic && weatherObj.basic.city}
+            </div>
+          </div>
+          <div className="showPage-weather-item">
+            <div className="showPage-weather-item-top">
+              {weatherObj.now &&
+                weatherObj.now.condition &&
+                weatherObj.now.condition.description}
+            </div>
+            <div className="showPage-weather-item-img">
+              <img
+                src={
+                  weatherObj.now && weatherObj.now.condition
+                    ? require('../../assets/weather/w' +
+                        weatherObj.now.condition.code +
+                        '@3x.png')
+                    : null
+                }
+                alt=""
+              />
+            </div>
+          </div>
+          <div className="showPage-weather-item">
+            <div className="showPage-weather-item-top">温度</div>
+            <div className="showPage-weather-item-bottom">
+              {weatherObj.now && weatherObj.now.temperature}
+              <div className="showPage-weather-icon">℃</div>
+            </div>
+          </div>
+          <div className="showPage-weather-item">
+            <div className="showPage-weather-item-top">湿度</div>
+            <div className="showPage-weather-item-bottom">
+              {weatherObj.now && weatherObj.now.humidity}
+              <div className="showPage-weather-icon">%</div>
+            </div>
+          </div>
+          <div className="showPage-weather-item">
+            <div className="showPage-weather-item-top">PM2.5</div>
+            <div className="showPage-weather-item-bottom">
+              {weatherObj.now && weatherObj.now.aqi && weatherObj.now.aqi.pm25}
+            </div>
+          </div>
+        </div>
+      ) : null}
       <div className="showPage-clock">
         <div className="showPage-time">
-          {theme.timeShow ? (
+          {theme.timeShow !== false ? (
             <div className="showPage-time-title">
               {moment(nowTime).format('HH')}
               <span
@@ -276,9 +314,9 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
                 ' 星期' +
                 weekStr[week] +
                 ' '}
-              {!theme.timeShow ? moment(nowTime).format('HH:mm') : ''}
+              {!theme.timeShow !== false ? moment(nowTime).format('HH:mm') : ''}
             </div>
-            {theme.cDayShow ? (
+            {theme.cDayShow !== false ? (
               <div>
                 {' 农历 ' +
                   format.formatJq(year, month, day) +
@@ -322,7 +360,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
             : { right: '0px' }
         }
       >
-        {theme.taskShow ? (
+        {theme.taskShow !== false ? (
           //    <div
           //     className="showPage-bg1"
           //     style={{
@@ -381,7 +419,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
           </div>
         </div>
         {menuShow === 0 ? (
-          theme.taskShow ? (
+          theme.taskShow !== false ? (
             <div className="showPage-task-container">
               <MainBoard showType="showPage" />
             </div>
@@ -403,7 +441,16 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
             ) : null}
           </div>
         ) : null}
-
+        <img
+          src={showAddSvg}
+          alt=""
+          className="showPage-logo"
+          style={{ top: '24px', right: '45px', height: '20px', width: '20px' }}
+          onClick={(e: any) => {
+            setAddVisible(true);
+            e.stopPropagation();
+          }}
+        />
         <img
           src={infoPng}
           alt=""
@@ -503,7 +550,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
             <div className="showPage-set-title">
               农历显示
               <Switch
-                checked={theme.cDayShow ? true : false}
+                checked={theme.cDayShow !== false ? true : false}
                 onChange={() => {
                   changeBoard('cDayShow');
                 }}
@@ -514,7 +561,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
             <div className="showPage-set-title">
               任务看板
               <Switch
-                checked={theme.taskShow ? true : false}
+                checked={theme.taskShow !== false ? true : false}
                 onChange={() => {
                   changeBoard('taskShow');
                 }}
@@ -562,7 +609,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
             <div className="showPage-set-title">
               搜索引擎
               <Switch
-                checked={theme.searchShow ? true : false}
+                checked={theme.searchShow !== false ? true : false}
                 onChange={() => {
                   changeBoard('searchShow');
                 }}
@@ -570,6 +617,22 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
                 inputProps={{ 'aria-label': 'secondary checkbox' }}
               />
             </div>
+            {parseInt(user.profile.lo) !== user.profile.lo &&
+            parseInt(user.profile.la) !== user.profile.la &&
+            user.profile.la &&
+            user.profile.lo ? (
+              <div className="showPage-set-title">
+                天气情况
+                <Switch
+                  checked={theme.weatherShow !== false ? true : false}
+                  onChange={() => {
+                    changeBoard('weatherShow');
+                  }}
+                  name="checkedB"
+                  inputProps={{ 'aria-label': 'secondary checkbox' }}
+                />
+              </div>
+            ) : null}
           </div>
           <HeaderBg
             setMoveState={setMoveState}
@@ -577,6 +640,29 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
           />
         </div>
       </div>
+      <Dialog
+        visible={addVisible}
+        onClose={() => {
+          setAddVisible(false);
+        }}
+        // onOK={() => {
+        //   addLabelTask();
+        // }}
+        footer={false}
+        title={'新建任务'}
+        dialogStyle={{
+          position: 'fixed',
+          top: '65px',
+          right: '0px',
+          width: '430px',
+          height: 'calc(100% - 70px)',
+          overflow: 'auto',
+          padding: '0px 15px',
+        }}
+        showMask={false}
+      >
+        <HeaderCreate visible={addVisible}/>
+      </Dialog>
     </div>
   );
 };

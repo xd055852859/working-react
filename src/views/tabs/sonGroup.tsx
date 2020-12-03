@@ -14,7 +14,7 @@ import { setMessage, setMoveState } from '../../redux/actions/commonActions';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import closePng from '../../assets/img/taskClose.png';
 export interface SonGroupProps {
-  onClose:any
+  onClose: any;
 }
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -42,14 +42,14 @@ const useStyles = makeStyles((theme: Theme) =>
 const SonGroup: React.FC<SonGroupProps> = (props) => {
   // const location = useLocation();
   // const history = useHistory();
-  const {onClose} = props;
+  const { onClose } = props;
   const classes = useStyles();
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const [sonGroupList, setSonGroupList] = useState<any>([]);
   const [myGroupList, setMyGroupList] = useState<any>([]);
-
+  const theme = useTypedSelector((state) => state.auth.theme);
   // const roleTypeArr = ['群主', '管理员', '编辑', '作者', '群成员'];
   useEffect(() => {
     if (user && user._key) {
@@ -73,7 +73,9 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
   const toTargetGroup = (groupKey: string) => {
     dispatch(setGroupKey(groupKey));
     dispatch(getGroupInfo(groupKey));
-    dispatch(setMoveState('in'));
+    if (!theme.moveState) {
+      dispatch(setMoveState('in'));
+    }
     onClose();
   };
   const setChildGroup = async (sonGroupKey: string, item: any) => {

@@ -85,6 +85,11 @@
   align-items: center;
   position: relative;
 }
+.taskInfo-Editor {
+  border: 1px solid #efefef;
+  padding: 5px;
+  box-sizing: border-box;
+}
 .taskInfo-item-title {
   width: 30px;
   height: 100%;

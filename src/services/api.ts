@@ -83,13 +83,13 @@ const request = {
   },
 };
 const common = {
-  // getWeather() {
-  //   return request.get('http://api.map.baidu.com/telematics/v3/weather?location=北京&output=json&ak=H7W5CxI0BPzKtwGcBHmpGPAz50xP1Qjw', {
-  //     // version: 'v1',
-  //     // appid: '59913919',
-  //     // appsecret: 'G5ncbD3n',
-  //   });
-  // },
+  getWeather(lo: number, la: number) {
+    return request.get(HOME_URL + '/weather/weatherSingleNoToken', {
+      lo: lo,
+      la: la,
+      detail: 0,
+    });
+  },
 };
 const auth = {
   getUserInfo(token: string) {
@@ -284,7 +284,7 @@ const auth = {
     return request.get(PNG_URL + '/wallPaper', {
       style: 'web',
       page: page,
-      limit: 30,
+      limit: 100,
     });
   },
   viewWallPapers(wallKey: string) {

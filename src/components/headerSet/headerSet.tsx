@@ -209,10 +209,10 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const searchTask = () => {
     if (searchInput !== '') {
       // this.getSearchList({ param: { name: this.searchInput }, type: 1 })
-      getTaskSearch(page);
+      getTaskSearch(page, searchCheck);
     }
   };
-  const getTaskSearch = async (page: number) => {
+  const getTaskSearch = async (page: number, check: boolean) => {
     let newSearchTaskList: any = [];
     if (page === 1) {
       setSearchTaskList([]);
@@ -224,7 +224,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       perPage: limit,
       searchCondition: searchInput,
     };
-    if (searchCheck) {
+    if (check) {
       obj.finishPercentStr = '1,2,3';
     }
     let res: any = await api.task.getCardSearch(obj);
@@ -251,10 +251,9 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     ) {
       newPage = newPage + 1;
       setPage(newPage);
-      getTaskSearch(newPage);
+      getTaskSearch(newPage, searchCheck);
     }
   };
-
 
   const logout = async () => {
     localStorage.clear();
@@ -777,7 +776,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
         }}
         showMask={false}
       >
-        <HeaderCreate />
+        <HeaderCreate visible={addVisible}/>
       </Dialog>
       <Dialog
         visible={searchVisible}
@@ -832,10 +831,8 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             checked={searchCheck}
             onChange={(e: any) => {
               setSearchCheck(e.target.checked);
-              if (!e.target.checked) {
-                getTaskSearch(1);
-                setPage(1);
-              }
+              getTaskSearch(1, e.target.checked);
+              setPage(1);
             }}
             color="primary"
           />

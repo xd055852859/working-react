@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './tabs.css';
 import { useDispatch } from 'react-redux';
+import { useTypedSelector } from '../../redux/reducer/RootState';
 import _ from 'lodash';
 import api from '../../services/api';
 
@@ -27,7 +28,7 @@ export interface GroupCreateProps {}
 const GroupCreate: React.FC<GroupCreateProps> = (props) => {
   const dispatch = useDispatch();
   // const classes = useStyles();
-
+  const theme = useTypedSelector((state) => state.auth.theme);
   const [addVisible, setAddVisible] = React.useState(false);
   const [addModelVisible, setAddModelVisible] = React.useState(false);
   const [addGroupVisible, setAddGroupVisible] = React.useState(false);
@@ -36,6 +37,7 @@ const GroupCreate: React.FC<GroupCreateProps> = (props) => {
   const [taskCheck, setTaskCheck] = React.useState(true);
   const [groupObj, setGroupObj] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(false);
+  
   const saveGroupSet = (obj: any) => {
     if (!isNaN(templateKey)) {
       obj.templateKey = templateKey;
@@ -61,7 +63,9 @@ const GroupCreate: React.FC<GroupCreateProps> = (props) => {
       dispatch(setGroupKey(groupRes.result._key));
       dispatch(getGroupInfo(groupRes.result._key));
       dispatch(setCommonHeaderIndex(3));
-      dispatch(setMoveState('in'));
+      if (!theme.moveState) {
+        dispatch(setMoveState('in'));
+      }
       dispatch(getGroup(3));
       setAddVisible(false);
     } else {
@@ -105,7 +109,7 @@ const GroupCreate: React.FC<GroupCreateProps> = (props) => {
           onClose={() => {
             setAddGroupVisible(false);
           }}
-          title={'模板创群'}
+          title={'克隆项目'}
           dropStyle={{
             width: '100%',
             height: '450px',

@@ -5,11 +5,14 @@ import boardPng from '../../assets/img/board.png';
 import tablePng from '../../assets/img/table.png';
 import chatPng from '../../assets/img/chat.png';
 import calendarPng from '../../assets/img/calendarHome.png';
+import fixIconSvg from '../../assets/svg/fixIcon.svg';
+import unfixIconSvg from '../../assets/svg/unfixIcon.svg';
 import Tabs from '../tabs/tabs';
 import { useDispatch } from 'react-redux';
 import { setCommonHeaderIndex } from '../../redux/actions/commonActions';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-
+import { setTheme } from '../../redux/actions/authActions';
+import _ from 'lodash';
 export interface HomeProps {}
 
 const Home: React.FC<HomeProps> = (props) => {
@@ -23,6 +26,11 @@ const Home: React.FC<HomeProps> = (props) => {
   useEffect(() => {
     localStorage.removeItem('page');
   }, []);
+  const changeBoard = (type: string, bool: boolean) => {
+    let newTheme = _.cloneDeep(theme);
+    newTheme[type] = bool;
+    dispatch(setTheme(newTheme));
+  };
   return (
     <div
       className="home"
@@ -62,12 +70,31 @@ const Home: React.FC<HomeProps> = (props) => {
       <div className="home-header">
         <div
           className="home-header-logo"
-          onClick={() => {
-            const redirect = `${window.location.protocol}//${window.location.host}`;
-            window.location.href = `${redirect}/welcome`;
-          }}
+          // onClick={() => {
+          //   const redirect = `${window.location.protocol}//${window.location.host}`;
+          //   window.location.href = `${redirect}/welcome`;
+          // }}
         >
           <img src={logoSvg} alt="" />
+          {theme.moveState ? (
+            <img
+              src={fixIconSvg}
+              alt=""
+              style={{ width: '18px', height: '18px' }}
+              onClick={() => {
+                changeBoard('moveState', false);
+              }}
+            />
+          ) : (
+            <img
+              src={unfixIconSvg}
+              alt=""
+              style={{ width: '18px', height: '18px' }}
+              onClick={() => {
+                changeBoard('moveState', true);
+              }}
+            />
+          )}
         </div>
         <div
           style={

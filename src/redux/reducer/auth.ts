@@ -46,7 +46,9 @@ const defaultState: AuthType = {
     taskShow: true,
     timeShow: true,
     searchShow: true,
+    weatherShow: true,
     grayPencent: 0,
+    moveState: false,
     filterObject: {
       groupKey: null,
       groupName: '',

@@ -61,16 +61,13 @@ const WorkingTableHeader: React.FC = (prop) => {
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const memberArray = useTypedSelector((state) => state.member.memberArray);
+  const user = useTypedSelector((state) => state.auth.user);
   const userKey = useTypedSelector((state) => state.auth.userKey);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const targetUserKey = useTypedSelector((state) => state.auth.targetUserKey);
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const theme = useTypedSelector((state) => state.auth.theme);
   const dispatch = useDispatch();
-  const viewArray: string[] =
-    headerIndex === 1
-      ? ['分频道', '分项目', '时间表', '执行表', '频道流', '项目流', '日历']
-      : ['分频道', '分项目', '时间表', '', '频道流', '项目流', '日历'];
   const tabArray: string[] = ['任务', '日报', '活力'];
   const viewImg: string[] = [
     labelPng,
@@ -115,7 +112,15 @@ const WorkingTableHeader: React.FC = (prop) => {
   ]);
   const [fileState, setFileState] = useState(true);
   const [fileInput, setFileInput] = useState('7');
-
+  const [viewArray, setViewArray] = useState<any>([
+    '分频道',
+    '分项目',
+    '时间表',
+    '执行表',
+    '频道流',
+    '项目流',
+    '日历',
+  ]);
   const chooseMemberHeader = (headIndex: number) => {
     dispatch(setHeaderIndex(headIndex));
     setViewVisible(false);
@@ -136,6 +141,22 @@ const WorkingTableHeader: React.FC = (prop) => {
       }
     }
   }, [memberArray, userKey, targetUserKey]);
+  useEffect(() => {
+    if (
+      headerIndex &&
+      user &&
+      user._key &&
+      targetUserInfo &&
+      targetUserInfo._key
+    )
+      setViewArray(
+        headerIndex === 1
+          ? ['分频道', '分项目', '时间表', '执行表', '频道流', '项目流', '日历']
+          : user._key !== targetUserInfo._key
+          ? ['分频道', '分项目', '时间表', '', '频道流', '项目流', '日历']
+          : ['分频道', '分项目', '', '', '频道流', '项目流', '']
+      );
+  }, [headerIndex, user, targetUserInfo]);
   useEffect(() => {
     dispatch(setFilterObject(theme.filterObject));
     // dispatch(setHeaderIndex(theme.filterObject.headerIndex));
@@ -246,7 +267,9 @@ const WorkingTableHeader: React.FC = (prop) => {
       <div
         className="workingTableHeader-logo"
         onClick={() => {
-          dispatch(setMoveState('out'));
+          if (!theme.moveState) {
+            dispatch(setMoveState('out'));
+          }
           dispatch(setCommonHeaderIndex(1));
         }}
       >
@@ -397,7 +420,7 @@ const WorkingTableHeader: React.FC = (prop) => {
               title={'视图切换'}
               closeType={1}
             >
-              {viewArray.map((viewItem, viewIndex) => {
+              {viewArray.map((viewItem: any, viewIndex: number) => {
                 return (
                   <React.Fragment key={'viewTable' + viewIndex}>
                     {viewItem ? (

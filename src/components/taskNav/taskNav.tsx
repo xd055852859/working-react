@@ -127,7 +127,14 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       if (headerIndex === 1) {
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10]));
       } else if (headerIndex === 2) {
-        dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2, 10]));
+        dispatch(
+          getWorkingTableTask(
+            user._key === targetUserInfo._key ? 4 : 2,
+            targetUserInfo._key,
+            1,
+            [0, 1, 2, 10]
+          )
+        );
       } else if (headerIndex === 3) {
         dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
       }
@@ -182,7 +189,14 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       if (headerIndex === 1) {
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10]));
       } else if (headerIndex === 2) {
-        dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2, 10]));
+        dispatch(
+          getWorkingTableTask(
+            user._key === targetUserInfo._key ? 4 : 2,
+            targetUserInfo._key,
+            1,
+            [0, 1, 2, 10]
+          )
+        );
       } else if (headerIndex === 3) {
         dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
       }
@@ -201,7 +215,14 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       if (headerIndex === 1) {
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10]));
       } else if (headerIndex === 2) {
-        dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2, 10]));
+        dispatch(
+          getWorkingTableTask(
+            user._key === targetUserInfo._key ? 4 : 2,
+            targetUserInfo._key,
+            1,
+            [0, 1, 2, 10]
+          )
+        );
       } else if (headerIndex === 3) {
         dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
       }
@@ -332,7 +353,9 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                     }
                   }}
                 >
-                  {labelName.split('_')[0]}
+                  {labelName.split('_')[1] !== '副本' && labelName.split('_')[1]
+                    ? labelName.split('_')[0] + '/' + labelName.split('/')[1]
+                    : labelName}
                 </div>
               ) : (
                 <input

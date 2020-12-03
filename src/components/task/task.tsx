@@ -44,6 +44,9 @@ import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import checkPersonPng from '../../assets/img/checkPerson.png';
 import messageHandSvg from '../../assets/svg/messageHand.svg';
 import messageunHandSvg from '../../assets/svg/messageunHand.svg';
+import deleteIconSvg from '../../assets/svg/deleteIcon.svg';
+import eyeSvg from '../../assets/svg/eye.svg';
+import uneyeSvg from '../../assets/svg/uneye.svg';
 interface TaskProps {
   taskItem: any;
   executorKey?: number | string;
@@ -110,6 +113,7 @@ const Task: React.FC<TaskProps> = (props) => {
   const [addTaskVisible, setAddTaskVisible] = useState(false);
   const [addInput, setAddInput] = useState('');
   const [avatarShow, setAvatarShow] = useState<any>(null);
+  const [followIndex, setFollowIndex] = useState<any>(null);
 
   const titleRef: React.RefObject<any> = useRef();
   const color = [
@@ -165,8 +169,8 @@ const Task: React.FC<TaskProps> = (props) => {
       editRole =
         (taskItem.groupRole &&
           taskItem.groupRole > 0 &&
-          taskItem.groupRole < 4 &&
-          taskItem.creatorGroupRole >= taskItem.groupRole) ||
+          taskItem.groupRole < 4) ||
+        // && taskItem.creatorGroupRole >= taskItem.groupRole
         taskItem.creatorKey === user._key ||
         taskItem.executorKey === user._key;
 
@@ -374,11 +378,11 @@ const Task: React.FC<TaskProps> = (props) => {
     }
     setNewDetail(newTaskDetail);
   };
-  const taskKeyDown = (e: any) => {
-    if (e.keyCode === 46) {
-      setDeleteDialogShow(true);
-    }
-  };
+  // const taskKeyDown = (e: any) => {
+  //   if (e.keyCode === 46) {
+  //     setDeleteDialogShow(true);
+  //   }
+  // };
   const deleteTask = async () => {
     setTaskShow(false);
     setDeleteDialogShow(false);
@@ -458,7 +462,7 @@ const Task: React.FC<TaskProps> = (props) => {
               className="taskItem"
               onClick={chooseTask}
               tabIndex={taskItem._key}
-              onKeyDown={taskKeyDown}
+              // onKeyDown={taskKeyDown}
               style={{
                 background: bottomtype
                   ? 'transparent'
@@ -827,8 +831,8 @@ const Task: React.FC<TaskProps> = (props) => {
                             </span>
                           )}
                           <span style={{ flexShrink: 0 }}>
-                            {taskDetail.creatorName.length > 5
-                              ? taskDetail.creatorName.substring(0, 5) + '...'
+                            {taskDetail.creatorName.length > 4
+                              ? taskDetail.creatorName.substring(0, 4) + '...'
                               : taskDetail.creatorName}
                           </span>
                           <img
@@ -849,8 +853,8 @@ const Task: React.FC<TaskProps> = (props) => {
                           <span>⇀</span>
                           <span style={{ flexShrink: 0 }}>
                             {taskDetail.executorName &&
-                            taskDetail.executorName.length > 5
-                              ? taskDetail.executorName.substring(0, 5) + '...'
+                            taskDetail.executorName.length > 4
+                              ? taskDetail.executorName.substring(0, 4) + '...'
                               : taskDetail.executorName}
                           </span>
                           <img
@@ -920,12 +924,12 @@ const Task: React.FC<TaskProps> = (props) => {
                               width: '260px',
                               maxHeight: '600px',
                               top: '18px',
-                              left: '-100px',
+                              left: '-110px',
                             }}
                             onClose={() => {
                               setTaskExecutorShow(false);
                             }}
-                            title={'分配任务'}
+                            title={'执行人'}
                           >
                             <div className="task-executor-dropMenu-info">
                               {taskMemberArray.map(
@@ -951,35 +955,53 @@ const Task: React.FC<TaskProps> = (props) => {
                                           taskMemberIndex
                                         );
                                       }}
+                                      onMouseEnter={() => {
+                                        setFollowIndex(taskMemberIndex);
+                                      }}
                                     >
                                       <div className="task-executor-dropMenu-left">
                                         <div
-                                          className="task-executor-dropMenu-img"
-                                          style={
-                                            (taskDetail.followUKeyArray &&
-                                              taskDetail.followUKeyArray.indexOf(
-                                                taskMemberItem.userId
-                                              ) !== -1) ||
-                                            taskDetail.executorKey ===
-                                              taskMemberItem.userId ||
-                                            taskDetail.creatorKey ===
-                                              taskMemberItem.userId
-                                              ? { border: '3px solid #17b881' }
-                                              : {}
-                                          }
+                                          className="task-executor-dropMenu-follow"
+                                          onClick={(e: any) => {
+                                            e.stopPropagation();
+                                            changeFollow(taskMemberItem.userId);
+                                          }}
                                         >
+                                          {(taskDetail.followUKeyArray &&
+                                            taskDetail.followUKeyArray.indexOf(
+                                              taskMemberItem.userId
+                                            ) !== -1) ||
+                                          taskDetail.executorKey ===
+                                            taskMemberItem.userId ||
+                                          taskDetail.creatorKey ===
+                                            taskMemberItem.userId ? (
+                                            <img
+                                              src={eyeSvg}
+                                              alt=""
+                                              style={{
+                                                width: '21px',
+                                                height: '13px',
+                                              }}
+                                            />
+                                          ) : followIndex ===
+                                            taskMemberIndex ? (
+                                            <img
+                                              src={uneyeSvg}
+                                              alt=""
+                                              style={{
+                                                width: '21px',
+                                                height: '13px',
+                                              }}
+                                            />
+                                          ) : null}
+                                        </div>
+                                        <div className="task-executor-dropMenu-img">
                                           <img
                                             src={
                                               taskMemberItem.avatar
                                                 ? taskMemberItem.avatar
                                                 : defaultPersonPng
                                             }
-                                            onClick={(e: any) => {
-                                              e.stopPropagation();
-                                              changeFollow(
-                                                taskMemberItem.userId
-                                              );
-                                            }}
                                           />
                                         </div>
                                         <div>{taskMemberItem.nickName}</div>
@@ -1018,6 +1040,19 @@ const Task: React.FC<TaskProps> = (props) => {
                               src={taskAddPng}
                               alt=""
                               style={{ height: '18px', width: '18px' }}
+                            />
+                          </div>
+                        ) : null}
+                        {editRole &&
+                        taskDetail.creatorGroupRole <= taskDetail.groupRole ? (
+                          <div className="taskItem-check-icon">
+                            <img
+                              src={deleteIconSvg}
+                              alt="删除"
+                              onClick={() => {
+                                setDeleteDialogShow(true);
+                              }}
+                              style={{ height: '18px', width: '19px' }}
                             />
                           </div>
                         ) : null}

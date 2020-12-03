@@ -7,7 +7,7 @@ import { setMessage } from '../../redux/actions/commonActions';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import checkPersonPng from '../../assets/img/checkPerson.png';
-import leftArrowPng from '../../assets/img/leftArrow.png';
+import rightArrowPng from '../../assets/img/rightArrow.png';
 import closePng from '../../assets/img/close.png';
 import { useDispatch } from 'react-redux';
 import {
@@ -22,8 +22,9 @@ interface CreateMoreTaskProps {
   moreTitle?: string | undefined;
   onClose?: any;
   createStyle?: any;
-  taskWidth: number;
   changeGroupArray?: any;
+  groupIndex?: number;
+  labelIndex?: number;
 }
 
 const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
@@ -32,8 +33,9 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
     moreTitle,
     onClose,
     createStyle,
-    taskWidth,
     changeGroupArray,
+    labelIndex,
+    groupIndex,
   } = props;
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
@@ -44,15 +46,21 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
   const [labelArray, setLabelArray] = useState<any>([]);
   const [labelChooseArray, setLabelChooseArray] = useState<any>([]);
   const [groupChooseIndex, setGroupChooseIndex] = useState<any>(0);
-  const [moveState, setMoveState] = useState('');
+  const [labelChooseIndex, setLabelChooseIndex] = useState<any>(0);
+  const [moveState, setMoveState] = useState<any>(null);
   useEffect(() => {
-    if (visible && groupArray && groupArray.length > 0 && !changeGroupArray) {
-      // getLabelArray(groupArray[0]._key);
-      let newLabelChooseArray: any = [];
-      groupArray.map((item: any, index: number) => {
-        newLabelChooseArray.push([]);
-      });
-      setLabelChooseArray(newLabelChooseArray);
+    if (visible && groupArray && groupArray[0]._key) {
+      getLabelArray(groupArray[0]._key);
+      console.log(labelIndex, groupIndex);
+      setLabelChooseIndex(labelIndex);
+      setGroupChooseIndex(groupIndex);
+      if (!changeGroupArray) {
+        let newLabelChooseArray: any = [];
+        groupArray.map((item: any, index: number) => {
+          newLabelChooseArray.push([]);
+        });
+        setLabelChooseArray(newLabelChooseArray);
+      }
     }
   }, [groupArray, visible]);
   const getLabelArray = async (groupKey: string) => {
@@ -87,7 +95,14 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
       } else if (headerIndex === 1) {
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10]));
       } else if (headerIndex === 2) {
-        dispatch(getWorkingTableTask(2, targetUserInfo._key, 1, [0, 1, 2, 10]));
+        dispatch(
+          getWorkingTableTask(
+            targetUserInfo._key === user._key ? 4 : 2,
+            targetUserInfo._key,
+            1,
+            [0, 1, 2, 10]
+          )
+        );
       } else if (headerIndex === 3) {
         dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
       }
@@ -96,218 +111,194 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
       dispatch(setMessage(true, addTaskRes.msg, 'error'));
     }
   };
-  const chooseLabel = (labelItem: any) => {
+  const chooseLabel = (labelItem: any, index: number) => {
     let newLabelChooseArray = _.cloneDeep(labelChooseArray);
+    let newGroupArray = _.cloneDeep(groupArray);
     let labelIndex: number = newLabelChooseArray.indexOf(labelItem._key);
+    labelItem.index = index;
     if (labelIndex === -1) {
       newLabelChooseArray.push(labelItem);
     } else {
       newLabelChooseArray.splice(labelIndex);
     }
-    setLabelChooseArray(newLabelChooseArray);
+    // setLabelChooseArray(newLabelChooseArray);
+    newGroupArray[groupChooseIndex].index = groupChooseIndex;
+    changeGroupArray(newGroupArray[groupChooseIndex], newLabelChooseArray);
+    setMoveState(null);
+    setLabelChooseArray([]);
+    onClose();
   };
   return (
     <React.Fragment>
       {visible && groupArray ? (
         <ClickAwayListener
           onClickAway={() => {
-            changeGroupArray(groupArray[groupChooseIndex], labelChooseArray);
+            // changeGroupArray(groupArray[groupChooseIndex], labelChooseArray);
             onClose();
-            setMoveState('left');
+            setMoveState(null);
             setLabelChooseArray([]);
           }}
         >
-          <div
-            className="createMoreTask"
-            style={{ ...createStyle, width: taskWidth + 'px' }}
-          >
-            <div
-              className="createMoreTask-container"
-              style={{
-                animation:
-                  moveState === 'right'
-                    ? taskWidth === 260
-                      ? 'moveRight 500ms'
-                      : 'moveBigRight 500ms'
-                    : moveState === 'left'
-                    ? taskWidth === 260
-                      ? 'moveRight 500ms'
-                      : 'moveBigRight 500ms'
-                    : '',
-                // animationFillMode: 'forwards',
-                left: moveState === 'right' ? -taskWidth + 'px' : '0px',
-                width: taskWidth * 2 + 'px',
-              }}
-            >
-              <div
-                className="createMoreTask-left"
-                style={{ width: taskWidth + 'px' }}
-              >
-                {!changeGroupArray ? (
-                  <div className="createMoreTask-right-header">
-                    项目列表
-                    <div style={{ display: 'flex', alignItems: 'center' }}>
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        onClick={() => {
-                          addMoreTask();
-                        }}
-                        style={{
-                          marginLeft: '10px',
-                          color: '#fff',
-                          height: '25px',
-                        }}
-                      >
-                        复制任务
-                      </Button>
-                      <img
-                        src={closePng}
-                        onClick={onClose}
-                        style={{
-                          height: '25px',
-                          width: '25px',
-                          cursor: 'pointer',
-                        }}
-                      />
-                    </div>
-                  </div>
-                ) : null}
-                <div className="createMoreTask-left-container">
-                  {groupArray.length > 0
-                    ? groupArray.map((item: any, index: number) => {
-                        return (
-                          <div
-                            className="createMoreTask-item"
-                            onClick={(e: any) => {
-                              setMoveState('right');
-                              getLabelArray(item._key);
-                              setGroupChooseIndex(index);
-                            }}
-                            key={'group' + index}
-                          >
-                            <div className="createMoreTask-item-title">
-                              <div className="createMoreTask-avatar">
-                                <img
-                                  src={
-                                    item.groupLogo
-                                      ? item.groupLogo
-                                      : defaultGroupPng
-                                  }
-                                  alt=""
-                                />
-                              </div>
-                              <div>{item.groupName}</div>
-                            </div>
-                            {!changeGroupArray &&
-                            labelChooseArray[index] &&
-                            labelChooseArray[index].length > 0 ? (
-                              <img
-                                src={checkPersonPng}
-                                alt=""
-                                className="createMoreTask-logo"
-                              />
-                            ) : null}
-                          </div>
-                        );
-                      })
-                    : null}
+          <div className="createMoreTask" style={{ ...createStyle }}>
+            <div className="createMoreTask-left">
+              {/* <div className="createMoreTask-right-header">
+                项目列表
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <img
+                    src={closePng}
+                    onClick={onClose}
+                    style={{
+                      height: '25px',
+                      width: '25px',
+                      cursor: 'pointer',
+                    }}
+                  />
                 </div>
-              </div>
-              <div
-                className="createMoreTask-right"
-                style={{ width: taskWidth + 'px' }}
-              >
-                {!changeGroupArray ? (
-                  <div className="createMoreTask-right-header">
-                    <img
-                      src={leftArrowPng}
-                      alt=""
-                      style={{
-                        width: '7px',
-                        height: '11px',
-                        marginRight: '10px',
-                      }}
-                      onClick={() => {
-                        setMoveState('left');
-                      }}
-                    />
-                  </div>
-                ) : null}
-                <div className="createMoreTask-right-container">
-                  {labelArray.map((item: any, index: number) => {
-                    return (
-                      <div
-                        className="createMoreTask-item"
-                        onClick={(e: any) => {
-                          if (changeGroupArray) {
-                            chooseLabel(item);
-                          } else {
-                            let newLabelChooseArray = _.cloneDeep(
-                              labelChooseArray
-                            );
-                            let labelIndex: number = newLabelChooseArray[
-                              groupChooseIndex
-                            ].indexOf(item._key);
-                            if (labelIndex === -1) {
-                              newLabelChooseArray[groupChooseIndex].push(
-                                item._key
-                              );
-                            } else {
-                              newLabelChooseArray[groupChooseIndex].splice(
-                                labelIndex
-                              );
-                            }
-                            setLabelChooseArray(newLabelChooseArray);
+              </div> */}
+              <div className="createMoreTask-left-container">
+                {groupArray.length > 0
+                  ? groupArray.map((item: any, index: number) => {
+                      return (
+                        <div
+                          className="createMoreTask-item"
+                          onClick={(e: any) => {
+                            setMoveState('right');
+                            getLabelArray(item._key);
+                            setGroupChooseIndex(index);
+                          }}
+                          key={'group' + index}
+                          style={
+                            groupChooseIndex === index
+                              ? {
+                                  background: '#F0F0F0',
+                                  color: '#17B881',
+                                }
+                              : {}
                           }
-                        }}
-                        key={'label' + index}
-                      >
-                        <div className="createMoreTask-item-title">
-                          {item.cardLabelName ? item.cardLabelName : 'ToDo'}
-                          <div
-                            className="createMoreTask-item-name"
-                            style={{ marginLeft: '15px' }}
-                          >
+                        >
+                          <div className="createMoreTask-item-title">
                             <div className="createMoreTask-avatar">
                               <img
                                 src={
-                                  item.executorAvatar
-                                    ? item.executorAvatar
-                                    : defaultPersonPng
+                                  item.groupLogo
+                                    ? item.groupLogo
+                                    : defaultGroupPng
                                 }
                                 alt=""
                               />
                             </div>
-                            {item.executorNickName
-                              ? item.executorNickName
-                              : '无默认执行人'}
+                            <div>{item.groupName}</div>
                           </div>
-                        </div>
-                        {!changeGroupArray ? (
-                          labelChooseArray[groupChooseIndex] &&
-                          labelChooseArray[groupChooseIndex].indexOf(
-                            item._key
-                          ) !== -1 ? (
+                          {groupChooseIndex === index ? (
                             <img
-                              src={checkPersonPng}
+                              src={rightArrowPng}
                               alt=""
-                              className="createMoreTask-logo"
+                              style={{
+                                width: '7px',
+                                height: '11px',
+                              }}
                             />
-                          ) : null
-                        ) : labelChooseArray &&
-                          _.findIndex(labelChooseArray, { _key: item._key }) !==
-                            -1 ? (
-                          <img
-                            src={checkPersonPng}
-                            alt=""
-                            className="createMoreTask-logo"
-                          />
-                        ) : null}
+                          ) : null}
+                        </div>
+                      );
+                    })
+                  : null}
+              </div>
+            </div>
+            <div className="createMoreTask-right">
+              {/* <div className="createMoreTask-right-header">
+                <img
+                  src={leftArrowPng}
+                  alt=""
+                  style={{
+                    width: '7px',
+                    height: '11px',
+                    marginRight: '10px',
+                  }}
+                  onClick={() => {
+                    setMoveState('left');
+                  }}
+                />
+                {!changeGroupArray ? (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {
+                      addMoreTask();
+                    }}
+                    style={{
+                      marginLeft: '10px',
+                      color: '#fff',
+                      height: '25px',
+                    }}
+                  >
+                    复制任务
+                  </Button>
+                ) : null}
+              </div> */}
+              <div className="createMoreTask-right-container">
+                {labelArray.map((item: any, index: number) => {
+                  return (
+                    <div
+                      className="createMoreTask-item"
+                      onClick={(e: any) => {
+                        if (changeGroupArray) {
+                          chooseLabel(item, index);
+                        } else {
+                          let newLabelChooseArray = _.cloneDeep(
+                            labelChooseArray
+                          );
+                          let labelIndex: number = newLabelChooseArray[
+                            groupChooseIndex
+                          ].indexOf(item._key);
+                          if (labelIndex === -1) {
+                            newLabelChooseArray[groupChooseIndex].push(
+                              item._key
+                            );
+                          } else {
+                            newLabelChooseArray[groupChooseIndex].splice(
+                              labelIndex
+                            );
+                          }
+                          setLabelChooseArray(newLabelChooseArray);
+                        }
+                      }}
+                      key={'label' + index}
+                      style={
+                        labelChooseIndex === index
+                          ? { background: '#F0F0F0' }
+                          : {}
+                      }
+                    >
+                      <div className="createMoreTask-item-title">
+                        <div
+                          className="createMoreTask-item-label"
+                          style={
+                            labelChooseIndex === index
+                              ? {
+                                  color: '#17B881',
+                                }
+                              : {}
+                          }
+                        >
+                          {item.cardLabelName ? item.cardLabelName : 'ToDo'}
+                        </div>
+                        <div
+                          className="createMoreTask-item-name"
+                          style={{
+                            marginLeft: '10px',
+                            color: '#999',
+                            fontSize: '12px',
+                          }}
+                        >
+                          {item.executorNickName
+                            ? item.executorNickName
+                            : '无默认执行人'}
+                        </div>
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
