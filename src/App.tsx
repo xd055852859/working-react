@@ -177,7 +177,7 @@ const App: React.FC = () => {
       const shareKey = getSearchParamValue(location.search, 'shareKey');
       if (shareKey) {
         localStorage.setItem('shareKey', shareKey);
-        window.location.href = window.location.origin + '/';
+        window.location.href = window.location.origin + '/?showType=1';
       }
       const showType = getSearchParamValue(location.search, 'showType');
       if (showType) {
@@ -235,10 +235,10 @@ const App: React.FC = () => {
         theme.randomType === '1'
           ? 60000
           : theme.randomType === '2'
-          ? 3600000
-          : theme.randomType === '3'
-          ? 86400000
-          : 60000;
+            ? 3600000
+            : theme.randomType === '3'
+              ? 86400000
+              : 60000;
       randomBg();
       newIntervalTime = setInterval(randomBg, randomTime);
       setBgIntervalTime(newIntervalTime);
@@ -414,18 +414,18 @@ const App: React.FC = () => {
 
       style.insertRule(
         '@keyframes run-right-top' +
-          newFinishIndex +
-          ' {0% {top: ' +
-          (finishPos[1] - 20) +
-          'px;} 100% {top: 30px}}',
+        newFinishIndex +
+        ' {0% {top: ' +
+        (finishPos[1] - 20) +
+        'px;} 100% {top: 30px}}',
         0
       );
       style.insertRule(
         '@keyframes run-right-right' +
-          newFinishIndex +
-          '  {0% { right: ' +
-          (pageRef.current.clientWidth - finishPos[0] - 20) +
-          'px;transform: scale(1);} 100% { right: 30px;transform: scale(0.45);}',
+        newFinishIndex +
+        '  {0% { right: ' +
+        (pageRef.current.clientWidth - finishPos[0] - 20) +
+        'px;transform: scale(1);} 100% { right: 30px;transform: scale(0.45);}',
         1
       );
       newFinishIndex++;
@@ -454,10 +454,10 @@ const App: React.FC = () => {
       theme.randomType === '1'
         ? 60000
         : theme.randomType === '2'
-        ? 3600000
-        : theme.randomType === '3'
-        ? 86400000
-        : 60000;
+          ? 3600000
+          : theme.randomType === '3'
+            ? 86400000
+            : 60000;
     if (!localTime || parseInt(localTime) + randomTime <= moment().valueOf()) {
       changeBg();
       localStorage.setItem('localTime', moment().valueOf() + '');
@@ -497,13 +497,13 @@ const App: React.FC = () => {
         style={
           theme.backgroundImg
             ? {
-                backgroundImage: 'url(' + theme.backgroundImg + ')',
-              }
+              backgroundImage: 'url(' + theme.backgroundImg + ')',
+            }
             : {
-                backgroundColor: theme.backgroundColor
-                  ? theme.backgroundColor
-                  : '#3C3C3C',
-              }
+              backgroundColor: theme.backgroundColor
+                ? theme.backgroundColor
+                : '#3C3C3C',
+            }
         }
       ></div>
       {showType === '2' ? (

@@ -384,6 +384,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
               style={{
                 borderBottom: chooseIndex === 1 ? '2px solid #17B881' : 'none',
                 cursor: 'pointer',
+                position:'relative'
               }}
             >
               申请人({joinMemberList.length})

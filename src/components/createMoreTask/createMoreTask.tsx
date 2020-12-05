@@ -25,6 +25,8 @@ interface CreateMoreTaskProps {
   changeGroupArray?: any;
   groupIndex?: number;
   labelIndex?: number;
+  labelArray?: any,
+  groupArray?: any
 }
 
 const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
@@ -36,24 +38,32 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
     changeGroupArray,
     labelIndex,
     groupIndex,
+    labelArray,
+    groupArray
   } = props;
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
-  const groupArray = useTypedSelector((state) => state.group.groupArray);
+  // const groupArray = useTypedSelector((state) => state.group.groupArray);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
-  const [labelArray, setLabelArray] = useState<any>([]);
-  const [labelChooseArray, setLabelChooseArray] = useState<any>([]);
+  const [labelChooseArray, setLabelChooseArray] = useState<any>([{
+    executorAvatar: "",
+    executorKey: "",
+    executorName: "",
+    labelKey: null,
+    labelName: "Todo",
+  }]);
   const [groupChooseIndex, setGroupChooseIndex] = useState<any>(0);
   const [labelChooseIndex, setLabelChooseIndex] = useState<any>(0);
   const [moveState, setMoveState] = useState<any>(null);
   useEffect(() => {
-    if (visible && groupArray && groupArray[0]._key) {
-      getLabelArray(groupArray[0]._key);
-      console.log(labelIndex, groupIndex);
+    if (visible) {
       setLabelChooseIndex(labelIndex);
       setGroupChooseIndex(groupIndex);
+      console.log(labelArray[0]);
+      console.log(labelIndex);
+      console.log(groupIndex);
       if (!changeGroupArray) {
         let newLabelChooseArray: any = [];
         groupArray.map((item: any, index: number) => {
@@ -62,17 +72,7 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
         setLabelChooseArray(newLabelChooseArray);
       }
     }
-  }, [groupArray, visible]);
-  const getLabelArray = async (groupKey: string) => {
-    let newLabelArray = [];
-    let labelRes: any = await api.group.getLabelInfo(groupKey);
-    if (labelRes.msg === 'OK') {
-      newLabelArray.push(...labelRes.result);
-      setLabelArray(newLabelArray);
-    } else {
-      dispatch(setMessage(true, labelRes.msg, 'error'));
-    }
-  };
+  }, [visible]);
   const addMoreTask = async () => {
     let groupArr: any = [];
     let labelArr: any = _.cloneDeep(labelChooseArray).filter(
@@ -114,7 +114,7 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
   const chooseLabel = (labelItem: any, index: number) => {
     let newLabelChooseArray = _.cloneDeep(labelChooseArray);
     let newGroupArray = _.cloneDeep(groupArray);
-    let labelIndex: number = newLabelChooseArray.indexOf(labelItem._key);
+    let labelIndex: number = newLabelChooseArray.indexOf(labelItem.labelKey);
     labelItem.index = index;
     if (labelIndex === -1) {
       newLabelChooseArray.push(labelItem);
@@ -123,6 +123,7 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
     }
     // setLabelChooseArray(newLabelChooseArray);
     newGroupArray[groupChooseIndex].index = groupChooseIndex;
+    console.log("?????", newLabelChooseArray)
     changeGroupArray(newGroupArray[groupChooseIndex], newLabelChooseArray);
     setMoveState(null);
     setLabelChooseArray([]);
@@ -158,50 +159,49 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
               <div className="createMoreTask-left-container">
                 {groupArray.length > 0
                   ? groupArray.map((item: any, index: number) => {
-                      return (
-                        <div
-                          className="createMoreTask-item"
-                          onClick={(e: any) => {
-                            setMoveState('right');
-                            getLabelArray(item._key);
-                            setGroupChooseIndex(index);
-                          }}
-                          key={'group' + index}
-                          style={
-                            groupChooseIndex === index
-                              ? {
-                                  background: '#F0F0F0',
-                                  color: '#17B881',
-                                }
-                              : {}
-                          }
-                        >
-                          <div className="createMoreTask-item-title">
-                            <div className="createMoreTask-avatar">
-                              <img
-                                src={
-                                  item.groupLogo
-                                    ? item.groupLogo
-                                    : defaultGroupPng
-                                }
-                                alt=""
-                              />
-                            </div>
-                            <div>{item.groupName}</div>
-                          </div>
-                          {groupChooseIndex === index ? (
+                    return (
+                      <div
+                        className="createMoreTask-item"
+                        onMouseEnter={(e: any) => {
+                          // setMoveState('right');
+                          setGroupChooseIndex(index);
+                        }}
+                        key={'group' + index}
+                        style={
+                          groupChooseIndex === index
+                            ? {
+                              background: '#F0F0F0',
+                              color: '#17B881',
+                            }
+                            : {}
+                        }
+                      >
+                        <div className="createMoreTask-item-title">
+                          <div className="createMoreTask-avatar">
                             <img
-                              src={rightArrowPng}
+                              src={
+                                item.groupLogo
+                                  ? item.groupLogo
+                                  : defaultGroupPng
+                              }
                               alt=""
-                              style={{
-                                width: '7px',
-                                height: '11px',
-                              }}
                             />
-                          ) : null}
+                          </div>
+                          <div>{item.groupName}</div>
                         </div>
-                      );
-                    })
+                        {groupChooseIndex === index ? (
+                          <img
+                            src={rightArrowPng}
+                            alt=""
+                            style={{
+                              width: '7px',
+                              height: '11px',
+                            }}
+                          />
+                        ) : null}
+                      </div>
+                    );
+                  })
                   : null}
               </div>
             </div>
@@ -237,12 +237,13 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
                 ) : null}
               </div> */}
               <div className="createMoreTask-right-container">
-                {labelArray.map((item: any, index: number) => {
+                {labelArray[groupChooseIndex].map((item: any, index: number) => {
                   return (
                     <div
                       className="createMoreTask-item"
                       onClick={(e: any) => {
                         if (changeGroupArray) {
+                          console.log(11111111111);
                           chooseLabel(item, index);
                         } else {
                           let newLabelChooseArray = _.cloneDeep(
@@ -264,24 +265,24 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
                         }
                       }}
                       key={'label' + index}
-                      style={
-                        labelChooseIndex === index
-                          ? { background: '#F0F0F0' }
-                          : {}
-                      }
+                    // style={
+                    //   labelChooseIndex === index
+                    //     ? { background: '#F0F0F0' }
+                    //     : {}
+                    // }
                     >
                       <div className="createMoreTask-item-title">
                         <div
                           className="createMoreTask-item-label"
-                          style={
-                            labelChooseIndex === index
-                              ? {
-                                  color: '#17B881',
-                                }
-                              : {}
-                          }
+                        // style={
+                        //   labelChooseIndex === index
+                        //     ? {
+                        //       color: '#17B881',
+                        //     }
+                        //     : {}
+                        // }
                         >
-                          {item.cardLabelName ? item.cardLabelName : 'ToDo'}
+                          {item.labelName ? item.labelName : 'ToDo'}
                         </div>
                         <div
                           className="createMoreTask-item-name"
@@ -291,8 +292,8 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
                             fontSize: '12px',
                           }}
                         >
-                          {item.executorNickName
-                            ? item.executorNickName
+                          {item.executorName
+                            ? item.executorName
                             : '无默认执行人'}
                         </div>
                       </div>
@@ -307,5 +308,6 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
     </React.Fragment>
   );
 };
-CreateMoreTask.defaultProps = {};
+CreateMoreTask.defaultProps = { labelArray: [], groupArray: [] };
+
 export default CreateMoreTask;

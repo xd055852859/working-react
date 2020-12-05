@@ -13,7 +13,7 @@ import { setCommonHeaderIndex } from '../../redux/actions/commonActions';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { setTheme } from '../../redux/actions/authActions';
 import _ from 'lodash';
-export interface HomeProps {}
+export interface HomeProps { }
 
 const Home: React.FC<HomeProps> = (props) => {
   // const location = useLocation();
@@ -37,17 +37,17 @@ const Home: React.FC<HomeProps> = (props) => {
       style={
         moveState === 'in'
           ? {
-              animation: 'moveIn 500ms',
-              // animationFillMode: 'forwards',
-              width: '0px',
-            }
+            animation: 'moveIn 500ms',
+            // animationFillMode: 'forwards',
+            width: '0px',
+          }
           : moveState === 'out'
-          ? {
+            ? {
               animation: 'moveOut 500ms',
               // animationFillMode: 'forwards',
               width: '320px',
             }
-          : { width: '320px' }
+            : { width: '320px' }
       }
     >
       <div
@@ -61,8 +61,8 @@ const Home: React.FC<HomeProps> = (props) => {
         style={
           theme.backgroundImg
             ? {
-                backgroundImage: 'url(' + theme.backgroundImg + ')',
-              }
+              backgroundImage: 'url(' + theme.backgroundImg + ')',
+            }
             : { backgroundColor: theme.backgroundColor }
         }
       ></div>
@@ -70,41 +70,31 @@ const Home: React.FC<HomeProps> = (props) => {
       <div className="home-header">
         <div
           className="home-header-logo"
-          // onClick={() => {
-          //   const redirect = `${window.location.protocol}//${window.location.host}`;
-          //   window.location.href = `${redirect}/welcome`;
-          // }}
+        // onClick={() => {
+        //   const redirect = `${window.location.protocol}//${window.location.host}`;
+        //   window.location.href = `${redirect}/welcome`;
+        // }}
         >
           <img src={logoSvg} alt="" />
           {theme.moveState ? (
             <img
               src={fixIconSvg}
               alt=""
-              style={{ width: '18px', height: '18px' }}
+              style={{ width: '30px', height: '30px' }}
               onClick={() => {
                 changeBoard('moveState', false);
               }}
             />
           ) : (
-            <img
-              src={unfixIconSvg}
-              alt=""
-              style={{ width: '18px', height: '18px' }}
-              onClick={() => {
-                changeBoard('moveState', true);
-              }}
-            />
-          )}
-        </div>
-        <div
-          style={
-            headerIndex === 1 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
-          }
-          className="home-header-item"
-          onClick={() => dispatch(setCommonHeaderIndex(1))}
-        >
-          <img src={boardPng} alt="" className="home-header-item-logo" />
-          我的工作台
+              <img
+                src={unfixIconSvg}
+                alt=""
+                style={{ width: '30px', height: '30px' }}
+                onClick={() => {
+                  changeBoard('moveState', true);
+                }}
+              />
+            )}
         </div>
         <div
           className="home-header-item"
@@ -115,6 +105,16 @@ const Home: React.FC<HomeProps> = (props) => {
         >
           <img src={tablePng} alt="" className="home-header-item-logo" />
           看板
+        </div>
+        <div
+          style={
+            headerIndex === 1 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
+          }
+          className="home-header-item"
+          onClick={() => dispatch(setCommonHeaderIndex(1))}
+        >
+          <img src={boardPng} alt="" className="home-header-item-logo" />
+          我的工作
         </div>
         {theme && theme.calendarVisible ? (
           <div

@@ -122,7 +122,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
   }, [user, workingTaskArray, taskArray, targetUserInfo]);
   useEffect(() => {
     if (user && user._key && headerType) {
-      dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2,10], theme.fileDay));
+      dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10], theme.fileDay));
     }
   }, [headerType]);
   const chooseDiary = async (index: number) => {
@@ -206,7 +206,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       taskArray.forEach((taskItem: any, taskIndex: number) => {
         if (
           taskItem.taskEndDate >= item.start &&
-          taskItem.taskEndDate <= item.end
+          taskItem.taskEndDate <= item.end && taskItem.type === 2
         ) {
           if (newDiaryKey == '全部') {
             newDateArray[index].executorArr.push(taskItem);
@@ -230,7 +230,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     newDateArray.forEach((item: any, index: number) => {
       newDayCanlendarArray[index] = {};
       item.executorArr.forEach((taskItem: any, taskIndex: number) => {
-        if (taskItem.executorKey) {
+        if (taskItem.executorKey && taskItem.type === 2) {
           if (!newDayCanlendarArray[index][taskItem.executorKey]) {
             newDayCanlendarArray[index][taskItem.executorKey] = {};
           }
@@ -246,7 +246,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
         }
       });
       item.creatorArr.forEach((taskItem: any, taskIndex: number) => {
-        if (taskItem.creatorKey) {
+        if (taskItem.creatorKey && taskItem.type === 2) {
           if (!newDayCanlendarArray[index][taskItem.creatorKey]) {
             newDayCanlendarArray[index][taskItem.creatorKey] = {};
           }
@@ -284,7 +284,6 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     console.log(newPersonArray);
   };
   const getDiaryNote = async (startTime: number, diaryKey: any) => {
-    console.log('???????????', moment(startTime).format('YYYY-MM-DD'));
     if (diaryKey) {
       let noteRes: any = await api.auth.getNote(diaryKey, startTime);
       if (noteRes.msg == 'OK') {
@@ -388,9 +387,9 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                 <div
                   key={'allDate' + index}
                   className="diary-container-item"
-                  // onClick={() => {
-                  //   setDiaryIndex(diaryIndex);
-                  // }}
+                // onClick={() => {
+                //   setDiaryIndex(diaryIndex);
+                // }}
                 >
                   <Task
                     taskItem={item}
@@ -404,27 +403,27 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
           )}
           <div className="diary-container-title">2. 创建任务</div>
           {dayCanlendarItem[dayKey].creatorArr &&
-          dayCanlendarItem[dayKey].creatorArr.length > 0
+            dayCanlendarItem[dayKey].creatorArr.length > 0
             ? dayCanlendarItem[dayKey].creatorArr.map(
-                (item: any, index: number) => {
-                  return (
-                    <div
-                      key={'allDate' + index}
-                      className="diary-container-item"
-                      // onClick={() => {
-                      //   setDiaryIndex(diaryIndex);
-                      // }}
-                    >
-                      <Task
-                        taskItem={item}
-                        timeSetStatus={
-                          index > dayCanlendarItem[dayKey].creatorArr.length - 3
-                        }
-                      />
-                    </div>
-                  );
-                }
-              )
+              (item: any, index: number) => {
+                return (
+                  <div
+                    key={'allDate' + index}
+                    className="diary-container-item"
+                  // onClick={() => {
+                  //   setDiaryIndex(diaryIndex);
+                  // }}
+                  >
+                    <Task
+                      taskItem={item}
+                      timeSetStatus={
+                        index > dayCanlendarItem[dayKey].creatorArr.length - 3
+                      }
+                    />
+                  </div>
+                );
+              }
+            )
             : null}
         </React.Fragment>
       );
@@ -531,7 +530,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     );
     if (addTaskRes.msg === 'OK') {
       dispatch(setMessage(true, '新增任务成功', 'success'));
-      dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2,10], theme.fileDay));
+      dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10], theme.fileDay));
     } else {
       dispatch(setMessage(true, addTaskRes.msg, 'error'));
     }
@@ -563,14 +562,14 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                       <span>({item.executorArr.length})</span>
                     </div>
                   ) : (
-                    <a href={'#diaryall' + index} className="diary-menu-item">
-                      <span style={{ marginRight: '10px' }}>
-                        {item.date[0]}
-                      </span>
-                      <span>{item.date[1]}</span>
-                      <span>({item.executorArr.length})</span>
-                    </a>
-                  )}
+                      <a href={'#diaryall' + index} className="diary-menu-item">
+                        <span style={{ marginRight: '10px' }}>
+                          {item.date[0]}
+                        </span>
+                        <span>{item.date[1]}</span>
+                        <span>({item.executorArr.length})</span>
+                      </a>
+                    )}
                 </React.Fragment>
               );
             })}
@@ -611,83 +610,84 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
               <React.Fragment>
                 <div className="diary-container-title">1. 执行任务</div>
                 {dayCanlendarArray[diaryIndex][diaryKey] &&
-                dayCanlendarArray[diaryIndex][diaryKey].executorArr &&
-                dayCanlendarArray[diaryIndex][diaryKey].executorArr.length > 0
+                  dayCanlendarArray[diaryIndex][diaryKey].executorArr &&
+                  dayCanlendarArray[diaryIndex][diaryKey].executorArr.length > 0
                   ? dayCanlendarArray[diaryIndex][diaryKey].executorArr.map(
-                      (taskItem: any, taskIndex: number) => {
-                        return (
-                          <div
-                            key={'date' + taskIndex}
-                            className="diary-container-item"
-                            // onClick={() => {
-                            //   setDiaryIndex(diaryIndex);
-                            // }}
-                          >
-                            <Task
-                              taskItem={taskItem}
-                              timeSetStatus={
-                                taskIndex >
-                                dayCanlendarArray[diaryIndex][diaryKey]
-                                  .executorArr.length -
-                                  3
-                              }
-                            />
-                          </div>
-                        );
-                      }
-                    )
+                    (taskItem: any, taskIndex: number) => {
+                      return (
+                        <div
+                          key={'date' + taskIndex}
+                          className="diary-container-item"
+                        // onClick={() => {
+                        //   setDiaryIndex(diaryIndex);
+                        // }}
+                        >
+                          <Task
+                            taskItem={taskItem}
+                            timeSetStatus={
+                              taskIndex >
+                              dayCanlendarArray[diaryIndex][diaryKey]
+                                .executorArr.length -
+                              3
+                            }
+                          />
+                        </div>
+                      );
+                    }
+                  )
                   : null}
                 <div className="diary-container-title">2. 创建任务</div>
                 {dayCanlendarArray[diaryIndex][diaryKey] &&
-                dayCanlendarArray[diaryIndex][diaryKey].creatorArr &&
-                dayCanlendarArray[diaryIndex][diaryKey].creatorArr.length > 0
+                  dayCanlendarArray[diaryIndex][diaryKey].creatorArr &&
+                  dayCanlendarArray[diaryIndex][diaryKey].creatorArr.length > 0
                   ? dayCanlendarArray[diaryIndex][diaryKey].creatorArr.map(
-                      (taskItem: any, taskIndex: number) => {
-                        return (
-                          <div
-                            key={'date' + taskIndex}
-                            className="diary-container-item"
-                            // onClick={() => {
-                            //   setDiaryIndex(diaryIndex);
-                            // }}
-                          >
-                            <Task
-                              taskItem={taskItem}
-                              timeSetStatus={
-                                taskIndex >
-                                dayCanlendarArray[diaryIndex][diaryKey]
-                                  .creatorArr.length -
-                                  3
-                              }
-                            />
-                          </div>
-                        );
-                      }
-                    )
+                    (taskItem: any, taskIndex: number) => {
+                      return (
+                        <div
+                          key={'date' + taskIndex}
+                          className="diary-container-item"
+                        // onClick={() => {
+                        //   setDiaryIndex(diaryIndex);
+                        // }}
+                        >
+                          <Task
+                            taskItem={taskItem}
+                            timeSetStatus={
+                              taskIndex >
+                              dayCanlendarArray[diaryIndex][diaryKey]
+                                .creatorArr.length -
+                              3
+                            }
+                          />
+                        </div>
+                      );
+                    }
+                  )
                   : null}
               </React.Fragment>
             ) : (
-              <React.Fragment>
-                {dayCanlendarArray.map(
-                  (dayCanlendarItem: any, dayCanlendarIndex: number) => {
-                    return (
-                      <div>
-                        <a
-                          id={'diaryall' + dayCanlendarIndex}
-                          className="diaryall-a"
-                        ></a>
-                        <div className="diaryall-title">
-                          {moment(dateArray[dayCanlendarIndex].start).format(
-                            'YYYY年MM月DD日'
-                          )}
+                <React.Fragment>
+                  {dayCanlendarArray.map(
+                    (dayCanlendarItem: any, dayCanlendarIndex: number) => {
+                      return (
+                        <div>
+                          <a
+                            id={'diaryall' + dayCanlendarIndex}
+                            className="diaryall-a"
+                            key={"dayCanlendar" + dayCanlendarIndex}
+                          ></a>
+                          <div className="diaryall-title">
+                            {moment(dateArray[dayCanlendarIndex].start).format(
+                              'YYYY年MM月DD日'
+                            )}
+                          </div>
+                          {getAllReport(dayCanlendarItem, dayCanlendarIndex)}
                         </div>
-                        {getAllReport(dayCanlendarItem, dayCanlendarIndex)}
-                      </div>
-                    );
-                  }
-                )}
-              </React.Fragment>
-            )}
+                      );
+                    }
+                  )}
+                </React.Fragment>
+              )}
 
             {headerIndex != 3 || headerType ? (
               <React.Fragment>
@@ -708,8 +708,8 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                         }}
                       />
                     ) : (
-                      <div className="diary-content-textarea">{positive}</div>
-                    )}
+                        <div className="diary-content-textarea">{positive}</div>
+                      )}
                     {headerIndex == 1 || headerType ? (
                       <textarea
                         value={negative}
@@ -720,8 +720,8 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                         }}
                       />
                     ) : (
-                      <div className="diary-content-textarea">{negative}</div>
-                    )}
+                        <div className="diary-content-textarea">{negative}</div>
+                      )}
                   </div>
                 </div>
                 <h2>三、随记</h2>
@@ -735,8 +735,8 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                     }}
                   />
                 ) : (
-                  <div className="diary-textarea">{note}</div>
-                )}
+                    <div className="diary-textarea">{note}</div>
+                  )}
                 {/* 可能不存在打卡key */}
                 {contentKey ? (
                   <React.Fragment>
@@ -880,31 +880,31 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                         style={
                           item.key === diaryKey
                             ? {
-                                backgroundColor: '#17B881',
-                                color: '#fff',
-                              }
+                              backgroundColor: '#17B881',
+                              color: '#fff',
+                            }
                             : {}
                         }
                       >
                         全部
                       </div>
                     ) : (
-                      <div
-                        className="diary-avatar"
-                        onClick={() => {
-                          choosePerson(item.key, index);
-                        }}
-                        style={
-                          item.key === diaryKey
-                            ? {
+                        <div
+                          className="diary-avatar"
+                          onClick={() => {
+                            choosePerson(item.key, index);
+                          }}
+                          style={
+                            item.key === diaryKey
+                              ? {
                                 border: '2px solid #17B881',
                               }
-                            : {}
-                        }
-                      >
-                        <img src={item.avatar} alt="" />
-                      </div>
-                    )}
+                              : {}
+                          }
+                        >
+                          <img src={item.avatar} alt="" />
+                        </div>
+                      )}
                   </React.Fragment>
                 );
               })}

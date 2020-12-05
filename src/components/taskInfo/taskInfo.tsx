@@ -33,6 +33,9 @@ import {
   editTask,
   changeTaskInfoVisible,
   setChooseKey,
+  getSelfTask,
+  getWorkingTableTask,
+  getGroupTask,
 } from '../../redux/actions/taskActions';
 import DropMenu from '../common/dropMenu';
 import Dialog from '../common/dialog';
@@ -89,9 +92,11 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   const classes = useStyles();
   const dispatch = useDispatch();
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const chooseKey = useTypedSelector((state) => state.task.chooseKey);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const taskKey = useTypedSelector((state) => state.task.taskKey);
+  const groupKey = useTypedSelector((state) => state.group.groupKey);
   const uptoken = useTypedSelector((state) => state.auth.uploadToken);
   const titleRef: React.RefObject<any> = useRef();
   const taskInfo = useTypedSelector((state) => state.task.taskInfo);
@@ -131,6 +136,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   const [labelIndex, setLabelIndex] = useState(0);
   const [labelVisible, setLabelVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [deleteDialogShow, setDeleteDialogShow] = useState(false);
   const color = [
     '#6FD29A',
     '#21ABE4',
@@ -260,8 +266,8 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       (taskInfo.groupRole &&
         taskInfo.groupRole > 0 &&
         taskInfo.groupRole < 4) ||
-        taskInfo.creatorKey === user._key ||
-        taskInfo.executorKey === user._key
+      taskInfo.creatorKey === user._key ||
+      taskInfo.executorKey === user._key
     );
     setCountDownTime(taskInfo.countDownTime);
     getTaskMemberArray(taskInfo.groupKey);
@@ -409,6 +415,38 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       dispatch(setMessage(true, deleteRes.msg, 'error'));
     }
   };
+  const deleteTask = async () => {
+    setDeleteDialogShow(false);
+    dispatch(changeTaskInfoVisible(false));
+    if (onClose) {
+      onClose();
+    }
+    let deleteRes: any = await api.task.deleteTask(
+      taskItem._key,
+      taskItem.groupKey
+    );
+    if (deleteRes.msg === 'OK') {
+      dispatch(setMessage(true, '删除成功', 'success'));
+      if (headerIndex === 0) {
+        dispatch(getSelfTask(1, user._key, '[0, 1]'));
+      } else if (headerIndex === 1) {
+        dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10]));
+      } else if (headerIndex === 2) {
+        dispatch(
+          getWorkingTableTask(
+            targetUserInfo._key === user._key ? 4 : 2,
+            targetUserInfo._key,
+            1,
+            [0, 1, 2, 10]
+          )
+        );
+      } else if (headerIndex === 3) {
+        dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
+      }
+    } else {
+      dispatch(setMessage(true, deleteRes.msg, 'error'));
+    }
+  };
   const changeTaskItem = (type: string, value: any) => {
     let newTaskItem: any = _.cloneDeep(taskItem);
     newTaskItem[type] = value;
@@ -451,7 +489,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   };
   const shareTask = () => {
     const redirect = `${window.location.protocol}//${window.location.host}`;
-    copy(redirect + '/?shareKey=' + (chooseKey ? chooseKey : taskItem._key));
+    copy(redirect + '/?shareKey=' + (chooseKey ? chooseKey : taskItem._key) + '&showType=1');
     dispatch(setMessage(true, '复制链接任务成功', 'success'));
   };
   const getLabelArray = async (groupKey: string) => {
@@ -680,6 +718,14 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     >
                       {!taskItem.importantStatus ? '设为重要' : '取消重要'}
                     </div>
+                    {taskItem.creatorGroupRole <= taskItem.groupRole ? <div
+                      className="dropMenu-item"
+                      onClick={() => {
+                        setDeleteDialogShow(true);
+                      }}
+                    >
+                      删除任务
+                    </div> : null}
                     <CreateMoreTask
                       visible={moveTaskVisible}
                       createStyle={{ top: '129px', right: '158px' }}
@@ -889,16 +935,16 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                         editable={editable}
                       />
                     ) : (
-                      <div>请点击输入备注信息</div>
-                    )
+                        <div>请点击输入备注信息</div>
+                      )
                   ) : (
-                    <Editor
-                      // editorHeight={'300px'}
-                      data={taskItem.content}
-                      onChange={changeTaskContent}
-                      editable={editable}
-                    />
-                  )}
+                      <Editor
+                        // editorHeight={'300px'}
+                        data={taskItem.content}
+                        onChange={changeTaskContent}
+                        editable={editable}
+                      />
+                    )}
                 </div>
               ) : null}
               <div className="taskInfo-comment">
@@ -911,9 +957,9 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     style={
                       commentIndex === 0
                         ? {
-                            borderBottom: '1px solid #17B881',
-                            color: '#17B881',
-                          }
+                          borderBottom: '1px solid #17B881',
+                          color: '#17B881',
+                        }
                         : {}
                     }
                   >
@@ -927,9 +973,9 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     style={
                       commentIndex === 1
                         ? {
-                            borderBottom: '1px solid #17B881',
-                            color: '#17B881',
-                          }
+                          borderBottom: '1px solid #17B881',
+                          color: '#17B881',
+                        }
                         : {}
                     }
                   >
@@ -970,56 +1016,80 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                           }
                         }}
                       />
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        className={classes.button}
-                        onClick={() => {
-                          saveCommentMsg();
-                        }}
-                      >
-                        发布
-                      </Button>
+                      {commentInput ? (
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          className={classes.button}
+                          onClick={() => {
+                            saveCommentMsg();
+                          }}
+
+                        >
+                          发布
+                        </Button>
+                      ) : (
+                          <Button
+                            variant="contained"
+                            className={classes.button}
+                            disabled
+                          >
+                            发布
+                          </Button>
+                        )}
                     </div>
                   </React.Fragment>
                 ) : (
-                  <div
-                    className="taskInfo-comment-tab"
-                    onScroll={scrollHistoryLoading}
-                  >
-                    {taskHistoryArray.map(
-                      (historyItem: any, historyIndex: number) => {
-                        return (
-                          <div
-                            key={'history' + historyIndex}
-                            className="taskInfo-comment-historyLog"
-                          >
-                            <div className="taskInfo-comment-avatar">
-                              <img
-                                src={historyItem.etc && historyItem.etc.avatar}
-                                alt=""
-                              />
-                            </div>
-                            <div className="taskInfo-comment-info">
-                              <div>
-                                {moment(
-                                  parseInt(historyItem.createTime)
-                                ).fromNow()}
+                    <div
+                      className="taskInfo-comment-tab"
+                      onScroll={scrollHistoryLoading}
+                    >
+                      {taskHistoryArray.map(
+                        (historyItem: any, historyIndex: number) => {
+                          return (
+                            <div
+                              key={'history' + historyIndex}
+                              className="taskInfo-comment-historyLog"
+                            >
+                              <div className="taskInfo-comment-avatar">
+                                <img
+                                  src={historyItem.etc && historyItem.etc.avatar}
+                                  alt=""
+                                />
                               </div>
-                              <div
-                                style={{ fontSize: '12px', color: '#8091a0' }}
-                              >
-                                {historyItem.log}
+                              <div className="taskInfo-comment-info">
+                                <div>
+                                  {moment(
+                                    parseInt(historyItem.createTime)
+                                  ).fromNow()}
+                                </div>
+                                <div
+                                  style={{ fontSize: '12px', color: '#8091a0' }}
+                                >
+                                  {historyItem.log}
+                                </div>
                               </div>
+                              {/* {historyItem.log} */}
                             </div>
-                            {/* {historyItem.log} */}
-                          </div>
-                        );
-                      }
-                    )}
-                  </div>
-                )}
+                          );
+                        }
+                      )}
+                    </div>
+                  )}
               </div>
+              <Dialog
+                visible={deleteDialogShow}
+                onClose={() => {
+                  setDeleteDialogShow(false);
+                }}
+                onOK={() => {
+                  deleteTask();
+                }}
+                title={'删除任务'}
+                dialogStyle={{ width: '400px', height: '200px' }}
+              >
+                <div className="dialog-onlyTitle">是否删除该任务</div>
+              </Dialog>
             </div>
           </React.Fragment>
         ) : null}

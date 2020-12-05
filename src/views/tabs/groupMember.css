@@ -5,6 +5,7 @@
   padding: 0px 17px;
   box-sizing: border-box;
 }
+
 .group-member-search {
   width: calc(100% - 17px);
   font-size: 14px;
@@ -14,13 +15,16 @@
 .group-member-person {
   width: 45%;
 }
+
 .group-member-team {
   width: 55%;
 }
+
 .group-member-choose {
   width: 100%;
   height: calc(100% - 60px);
 }
+
 .group-member-search {
   width: 100%;
   display: flex;
@@ -28,6 +32,7 @@
   justify-content: space-between;
   margin: 10px 0px;
 }
+
 .group-member-title {
   width: 100%;
   height: 44px;
@@ -37,14 +42,17 @@
   font-size: 14px;
   color: #23384b;
 }
+
 .group-member-container {
   width: 100%;
   height: calc(100% - 44px);
   overflow: auto;
 }
+
 .group-member-container::-webkit-scrollbar {
   width: 3px;
 }
+
 .group-member-item {
   width: 100%;
   display: flex;
@@ -52,30 +60,36 @@
   align-items: center;
   margin: 17px 0px;
 }
+
 .group-member-item-container {
   width: 70%;
   height: 100%;
   display: flex;
   align-items: center;
 }
+
 .group-member-item-button {
   display: flex;
   align-items: center;
 }
+
 .group-member-item-button img {
-  margin:0px 8px;
+  margin: 0px 8px;
   cursor: pointer;
 }
+
 .group-member-item .group-member-img {
   width: 40px;
   height: 40px;
   overflow: hidden;
 }
+
 .group-member-item .group-member-img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
 .group-member-item .group-member-name {
   height: 40px;
   line-height: 40px;
@@ -83,6 +97,7 @@
   display: flex;
   align-items: center;
 }
+
 .group-member-item .contact-time {
   height: 40px;
   display: flex;
@@ -94,28 +109,34 @@
   padding-left: 20px;
   box-sizing: border-box;
 }
+
 .group-team-container {
   height: 435px;
 }
+
 .group-time-set {
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
 }
+
 .group-time-close {
   width: 12px;
   height: 100%;
   margin-left: 20px;
   /* cursor: pointer; */
 }
+
 .group-time-close img {
   width: 12px;
   height: 12px;
 }
+
 .group-role {
   /* padding: 10px 0px; */
 }
+
 .group-role-item {
   width: 100%;
   height: 38px;
@@ -126,9 +147,11 @@
   justify-content: center;
   cursor: pointer;
 }
+
 .group-role-item:hover {
   background-color: #f0f0f0;
 }
+
 .outGroup-icon,
 .deleteGroup-icon {
   position: absolute;
@@ -136,10 +159,12 @@
   right: 0px;
   cursor: pointer;
 }
+
 .contact-team-container {
   padding-right: 12px;
   box-sizing: border-box;
 }
+
 .group-member-add {
   /* width: 41px; */
   /* height: 17px; */
@@ -156,3 +181,4 @@
   align-items: center;
   cursor: pointer;
 }
+

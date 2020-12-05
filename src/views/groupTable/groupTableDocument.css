@@ -5,28 +5,32 @@
   position: relative;
   overflow: auto;
 }
+
 .groupDocument-editor {
-  width: 70%;
+  width: 75%;
   min-height: 100%;
-  margin-left: 30%;
+  margin-left: 25%;
   overflow: auto;
 }
+
 .groupDocument-container {
-  width: 30%;
+  width: 25%;
   height: 100%;
   padding: 20px 30px;
   box-sizing: border-box;
-  position: fixed;
-  top: 68px;
+  position: absolute;
+  top: 0px;
   left: 0px;
   overflow: auto;
   color: #333;
   background-color: #fff;
 }
+
 .groupDocument-title {
   border-bottom: 1px solid #dddddd;
   padding-bottom: 10px;
 }
+
 .saveButton {
   position: fixed;
   top: 74px;

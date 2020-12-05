@@ -2,6 +2,7 @@
   width: 100%;
   position: relative;
 }
+
 .taskItem {
   width: 100%;
   min-height: 40px;
@@ -50,6 +51,7 @@
   object-fit: cover;
   cursor: pointer;
 }
+
 .task-executor-dropMenu-info {
   height: 100%;
   width: 100%;
@@ -57,14 +59,17 @@
   padding: 10px 0px;
   box-sizing: border-box;
 }
+
 .task-executor-dropMenu-info::-webkit-scrollbar {
   width: 3px;
   height: 12px;
 }
+
 .task-executor-dropMenu-info::-webkit-scrollbar-thumb {
   background: #47475b;
   border-radius: 100px;
 }
+
 .task-executor-dropMenu-container {
   width: 100%;
   height: 38px;
@@ -76,12 +81,21 @@
   cursor: pointer;
   overflow: hidden;
 }
+
+.task-executor-dropMenu-container:hover {
+  background: #F0F0F0
+}
+
 .task-executor-dropMenu-left {
-  width: calc(100% -30px);
+  width: 190px;
   height: 38px;
   display: flex;
   align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
+
 .task-executor-dropMenu-img {
   width: 28px;
   height: 28px;
@@ -247,6 +261,7 @@
   border-radius: 4px;
   padding: 5px;
 }
+
 .taskItem-icon-group {
   height: 100%;
   width: 80px;
@@ -254,6 +269,7 @@
   align-items: center;
   justify-content: flex-end;
 }
+
 .taskItem-check-icon {
   /* position: absolute;
   top: 0px;
@@ -281,6 +297,7 @@
 .taskItem:hover .taskItem-check-icon {
   display: flex;
 }
+
 /* .taskItem-title-name {
   min-height: 28px;
   position: absolute;
@@ -299,9 +316,11 @@
   border-top-right-radius: 5px;
   z-index: 3;
 }
+
 input {
   outline: none;
 }
+
 .taskItem textarea {
   width: 100%;
   border: 0px;
@@ -309,9 +328,11 @@ input {
   /* height: 20px; */
   padding: 5px 0px 0px 5px;
 }
+
 .taskItem textarea::-webkit-scrollbar {
   width: 0px;
 }
+
 .invite-container {
   width: 100%;
   height: 100%;
@@ -319,6 +340,7 @@ input {
   flex-wrap: wrap;
   align-content: center;
 }
+
 .invite-button {
   width: 100%;
   height: 38px;
@@ -328,6 +350,7 @@ input {
   padding-right: 10px;
   box-sizing: border-box;
 }
+
 .taskItem-plus {
   width: 18px;
   height: 100%;
@@ -337,13 +360,16 @@ input {
   margin: 12px 0px;
   cursor: pointer;
 }
+
 .taskItem-plus img {
   width: 28px;
   height: 28px;
 }
+
 .taskItem-plus-input {
   margin: 5px 0px 5px 0px;
 }
+
 .taskItem-plus-input input {
   width: 100%;
   height: 38px;
@@ -354,12 +380,14 @@ input {
   padding: 0px 5px;
   box-sizing: border-box;
 }
+
 .taskItem-plus-button {
   width: 100%;
   display: flex;
   justify-content: flex-end;
   margin-bottom: 10px;
 }
+
 .taskItem-suggest-item {
   width: 100%;
   height: 30px;
@@ -381,6 +409,7 @@ input {
   word-wrap: break-word;
   margin: 0px;
 }
+
 .field-textarea {
   position: absolute;
   top: 0;
@@ -398,25 +427,30 @@ input {
   font-weight: 500;
   color: #333333;
 }
+
 .field-textarea:focus {
-  outline: 2px solid #17b881;
+  outline: 1px solid #17b881;
 }
+
 .taskItem-path-container {
   width: 100%;
 }
+
 .taskItem-path {
   width: 100%;
   font-size: 8px;
-  transform: scale(0.9);
+  /* transform: scale(0.9); */
   text-align: left;
   /* margin-left:-20px; */
   /* color: #333; */
   /* display: flex;
   flex-wrap: wrap; */
 }
-.taskItem-path > span {
+
+.taskItem-path>span {
   cursor: pointer;
 }
+
 .taskItem-groupContainer {
   width: 100%;
   height: 30px;
@@ -425,18 +459,21 @@ input {
   font-size: 12px;
   color: #8091a0;
 }
+
 .taskItem-group {
   height: 100%;
   display: flex;
   align-items: center;
 }
-.task-executor-dropMenu-follow{
-  width: 21px;
-  height:100%;
+
+.task-executor-dropMenu-follow {
+  width: 15px;
+  height: 100%;
   display: flex;
   align-items: center;
-  margin-right:5px;
+  margin-left: 10px;
 }
+
 @keyframes taskAvatarSmall {
   from {
     width: 25px;

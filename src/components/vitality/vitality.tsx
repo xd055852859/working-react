@@ -22,6 +22,8 @@ const Vitality: React.FC<VitalityProps> = (props) => {
   let { vitalityType, vitalityKey, fatherVitalityInfo } = props;
   const dispatch = useDispatch();
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const groupKey = useTypedSelector((state) => state.group.groupKey);
+
   const vitalityLogRef: React.RefObject<any> = useRef();
   const [vitalityInfo, setvitalityInfo] = useState<any>(null);
   const [targetNum, setTargetNum] = useState(0);
@@ -60,7 +62,8 @@ const Vitality: React.FC<VitalityProps> = (props) => {
         targetUGKey: fatherVitalityInfo._key,
       });
     }
-  }, [vitalityType, fatherVitalityInfo]);
+  }, [groupKey, headerIndex, vitalityType, fatherVitalityInfo]);
+
   const getVitalityInfo = async (vitalityType: number) => {
     let res: any = null;
     if (vitalityType == 3) {
@@ -248,9 +251,9 @@ const Vitality: React.FC<VitalityProps> = (props) => {
     setEndTime(moment(startTime).endOf('day').valueOf());
     setLogDate(
       moment(startTime).format('M') +
-        '月' +
-        moment(startTime).format('D') +
-        '日'
+      '月' +
+      moment(startTime).format('D') +
+      '日'
     );
   };
   const getColor = (num: number) => {
@@ -291,8 +294,8 @@ const Vitality: React.FC<VitalityProps> = (props) => {
         .valueOf();
       setTargetMonthStr(
         moment(targetTime).subtract(1, 'month').format('YYYY') +
-          '/' +
-          moment(targetTime).subtract(1, 'month').format('MM')
+        '/' +
+        moment(targetTime).subtract(1, 'month').format('MM')
       );
     } else {
       personStartTime = moment(targetTime)
@@ -307,8 +310,8 @@ const Vitality: React.FC<VitalityProps> = (props) => {
         .valueOf();
       setTargetMonthStr(
         moment(targetTime).add(1, 'month').format('YYYY') +
-          '/' +
-          moment(targetTime).add(1, 'month').format('MM')
+        '/' +
+        moment(targetTime).add(1, 'month').format('MM')
       );
     }
     setTargetTime(personStartTime);
@@ -347,8 +350,8 @@ const Vitality: React.FC<VitalityProps> = (props) => {
     );
     setTargetMonthStr(
       moment().subtract(index, 'month').format('YYYY') +
-        '/' +
-        moment().subtract(index, 'month').format('MM')
+      '/' +
+      moment().subtract(index, 'month').format('MM')
     );
     setVitalityState('month');
   };
@@ -370,10 +373,10 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                 <img src={vitalityInfo.groupLogo} alt="" />
               </div>
             ) : (
-              <div className="vitality-img">
-                <img src={vitalityInfo.profile.avatar} alt="" />
-              </div>
-            )}
+                <div className="vitality-img">
+                  <img src={vitalityInfo.profile.avatar} alt="" />
+                </div>
+              )}
             <div className="vitality-top-info">
               <div className="vitality-title vitality-top-title">
                 <div>
@@ -454,7 +457,7 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                                     : 0,
                                 }}
                                 onClick={() => {
-                                  if (headerIndex !== 2) {
+                                  if (headerIndex !== 2 || (headerIndex === 2 && dayItem.startTime === moment().startOf('day').valueOf())) {
                                     getTargetLog(dayItem.startTime);
                                   }
                                 }}
@@ -493,11 +496,11 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                   vitalityState === 'month'
                     ? { opacity: '1' }
                     : {
-                        opacity: '0',
-                        height: '0px',
-                        width: '0px',
-                        zIndex: -1,
-                      }
+                      opacity: '0',
+                      height: '0px',
+                      width: '0px',
+                      zIndex: -1,
+                    }
                 }
               >
                 <div
@@ -531,12 +534,12 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                   vitalityState === 'day'
                     ? { opacity: '1' }
                     : {
-                        opacity: '0',
-                        height: '0px',
-                        width: '0px',
-                        padding: '0px',
-                        zIndex: -1,
-                      }
+                      opacity: '0',
+                      height: '0px',
+                      width: '0px',
+                      padding: '0px',
+                      zIndex: -1,
+                    }
                 }
               >
                 <div className="vitality-title">

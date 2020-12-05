@@ -410,7 +410,7 @@ const task = {
       groupKey: groupKey,
       taskType: taskType ? taskType : taskType == 0 ? 0 : 1,
       executorKey: executorKey,
-      followUKeyArray: [],
+      followUKeyArray: [executorKey],
       finishPercent: finishPercent ? finishPercent : 0,
       hour: 1,
       day: 1,

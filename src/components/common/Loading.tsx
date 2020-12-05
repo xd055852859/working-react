@@ -28,7 +28,7 @@ const Loading: React.FC<LoadingProps> = (prop) => {
   );
 };
 Loading.defaultProps = {
-  loadingWidth: '160px',
-  loadingHeight: '160px',
+  loadingWidth: '120px',
+  loadingHeight: '120px',
 };
 export default Loading;

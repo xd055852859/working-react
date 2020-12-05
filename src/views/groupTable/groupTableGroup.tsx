@@ -597,6 +597,7 @@ const GroupTableGroup: React.FC = (prop) => {
                                   onChange={(e) => {
                                     setAddInput(e.target.value);
                                   }}
+                                  style={{fontSize:'14px'}}
                                 />
                               </div>
                               <div

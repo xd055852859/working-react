@@ -54,7 +54,7 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
       //   groupMemberItem.config.headerIndex = 0;
       // }
       // dispatch(setHeaderIndex(groupMemberItem.config.headerIndex));
-      dispatch(setHeaderIndex(0));
+      // dispatch(setHeaderIndex(0));
     }
   }, [groupKey, headerIndex]);
 

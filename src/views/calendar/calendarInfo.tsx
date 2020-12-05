@@ -17,13 +17,16 @@ import 'moment/locale/zh-cn';
 import moment from 'moment';
 import plusPng from '../../assets/img/contact-plus.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
+import deleteIconSvg from '../../assets/svg/deleteIcon.svg';
 import Dialog from '../../components/common/dialog';
 import Tooltip from '../../components/common/tooltip';
 interface CalendarInfoProps {
   taskItem?: any;
   setCalendar: any;
   calendarColor: any;
-  deleteTask?: any;
+  getData?: any;
+  calendarType: string;
+  onClose?: any
 }
 moment.locale('zh-cn');
 const useStyles = makeStyles((theme: Theme) =>
@@ -54,7 +57,7 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
-  const { taskItem, setCalendar, calendarColor, deleteTask } = props;
+  const { taskItem, setCalendar, calendarColor, getData, calendarType, onClose } = props;
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const userKey = useTypedSelector((state) => state.auth.userKey);
@@ -77,13 +80,16 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
   const [dayInput, setDayInput] = useState('');
   const [groupVisible, setGroupVisible] = useState(false);
   const [calendarGroup, setCalendarGroup] = useState<any>([]);
+  const [deleteDialogShow, setDeleteDialogShow] = useState(false);
   const weekStr = ['日', '一', '二', '三', '四', '五', '六'];
   const repeatStr = ['无', '日', '周', '月', '年'];
   useEffect(() => {
     if (taskItem) {
-      let newTaskItem = _.cloneDeep(taskItem);
+      let newTaskItem = _.cloneDeep(calendarInfo);
+      for (let key in _.cloneDeep(taskItem)) {
+        newTaskItem[key] = _.cloneDeep(taskItem)[key]
+      }
       let newCalendarGroup = _.cloneDeep(calendarGroup);
-
       if (!newTaskItem.circleData) {
         newTaskItem.circleData = [];
       }
@@ -131,12 +137,24 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
       newCalendarGroup.splice(groupIndex, 1);
       newCalendarInfo.groupKeyArray.splice(groupIndex, 1);
     }
-
     setCalendarGroup(newCalendarGroup);
     setCalendarInfo(newCalendarInfo);
     setCalendar(newCalendarInfo);
   };
-
+  const deleteTask = async (calendar: any) => {
+    setDeleteDialogShow(false);
+    let deleteRes: any = await api.task.deleteTask(
+      calendar._key,
+      calendar.groupKey
+    );
+    if (deleteRes.msg === 'OK') {
+      dispatch(setMessage(true, '删除成功', 'success'));
+      getData(moment(calendar.startDay).startOf('month').startOf('day').valueOf(), moment(calendar.endDay).endOf('month').startOf('day').valueOf());
+      onClose();
+    } else {
+      dispatch(setMessage(true, deleteRes.msg, 'error'));
+    }
+  };
   return (
     <div className="calendarInfo">
       <div className="calendarInfo-title">
@@ -332,11 +350,23 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
           })}
         </div>
       </div>
+      {calendarType === '编辑' ? (
+        // <div className="taskItem-check-icon">
+        <img
+          src={deleteIconSvg}
+          alt="删除"
+          onClick={() => {
+            setDeleteDialogShow(true);
+          }}
+          className="calendarInfo-delete-icon"
+        />
+        // </div>
+      ) : null}
       {/* <div className="calendarInfo-icon">
         <div className="calendarInfo-icon-title">图标选择：</div>
         <div></div>
       </div> */}
-      {!taskItem ? (
+      {calendarType === '新建' ? (
         <div className="calendarInfo-icon">
           <div className="calendarInfo-icon-title">复制到日程表：</div>
           <div className="calendarInfo-icon-container">
@@ -374,6 +404,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
               <div className="calendarInfo-group-title">新增</div>
             </div>
           </div>
+
         </div>
       ) : null}
       <Dialog
@@ -427,6 +458,19 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
             );
           })}
         </div>
+      </Dialog>
+      <Dialog
+        visible={deleteDialogShow}
+        onClose={() => {
+          setDeleteDialogShow(false);
+        }}
+        onOK={() => {
+          deleteTask(calendarInfo);
+        }}
+        title={'删除日程'}
+        dialogStyle={{ width: '400px', height: '200px' }}
+      >
+        <div className="dialog-onlyTitle">是否删除该日程</div>
       </Dialog>
     </div>
   );

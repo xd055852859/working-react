@@ -5,13 +5,13 @@
   justify-content: space-between;
   position: relative;
   color: #333;
-  background: rgba(255, 255, 255, 0.7);
+  /* background: rgba(255, 255, 255, 0.7); */
 }
 .chart-container {
   height: 500px;
 }
 .chart {
-  width: 33%;
+  width: 48%;
 }
 .chart-div {
   width: 100%;
@@ -20,7 +20,7 @@
 .chart-left-title,
 .chart-middle-title,
 .chart-right-title {
-  width: 33%;
+  width: 48%;
   height: 50px;
   position: absolute;
   top: 0px;
@@ -41,7 +41,7 @@
   position: fixed;
   top: 70px;
   right: 10px;
-  z-index: 10;
+  z-index: 4;
   color: #333;
 }
 .countdown-right-item {

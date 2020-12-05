@@ -201,15 +201,15 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
         style={
           bg
             ? {
-                backgroundImage: 'url(' + bg + ')',
-                paddingRight: showState === 'left' ? '625px' : '365px',
-              }
+              backgroundImage: 'url(' + bg + ')',
+              paddingRight: showState === 'left' ? '625px' : '365px',
+            }
             : {
-                backgroundColor: theme.backgroundColor
-                  ? theme.backgroundColor
-                  : '#3C3C3C',
-                paddingRight: showState === 'left' ? '625px' : '365px',
-              }
+              backgroundColor: theme.backgroundColor
+                ? theme.backgroundColor
+                : '#3C3C3C',
+              paddingRight: showState === 'left' ? '625px' : '365px',
+            }
         }
       ></div>
       {theme.searchShow !== false ? (
@@ -227,63 +227,63 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
         />
       ) : null}
       {theme.weatherShow !== false &&
-      parseInt(user.profile.lo) !== user.profile.lo &&
-      parseInt(user.profile.la) !== user.profile.la &&
-      user.profile.la &&
-      user.profile.lo ? (
-        <div
-          className="showPage-weather"
-          style={{ left: theme.searchShow !== false ? '280px' : '10px' }}
-        >
-          <div className="showPage-weather-item">
-            <div className="showPage-weather-item-top">
-              {weatherObj.basic && weatherObj.basic.province}
+        parseInt(user.profile.lo) !== user.profile.lo &&
+        parseInt(user.profile.la) !== user.profile.la &&
+        user.profile.la &&
+        user.profile.lo ? (
+          <div
+            className="showPage-weather"
+            style={{ left: theme.searchShow !== false ? '280px' : '10px' }}
+          >
+            <div className="showPage-weather-item">
+              <div className="showPage-weather-item-top">
+                {weatherObj.basic && weatherObj.basic.province}
+              </div>
+              <div className="showPage-weather-item-bottom">
+                {weatherObj.basic && weatherObj.basic.city}
+              </div>
             </div>
-            <div className="showPage-weather-item-bottom">
-              {weatherObj.basic && weatherObj.basic.city}
-            </div>
-          </div>
-          <div className="showPage-weather-item">
-            <div className="showPage-weather-item-top">
-              {weatherObj.now &&
-                weatherObj.now.condition &&
-                weatherObj.now.condition.description}
-            </div>
-            <div className="showPage-weather-item-img">
-              <img
-                src={
-                  weatherObj.now && weatherObj.now.condition
-                    ? require('../../assets/weather/w' +
+            <div className="showPage-weather-item">
+              <div className="showPage-weather-item-top">
+                {weatherObj.now &&
+                  weatherObj.now.condition &&
+                  weatherObj.now.condition.description}
+              </div>
+              <div className="showPage-weather-item-img">
+                <img
+                  src={
+                    weatherObj.now && weatherObj.now.condition
+                      ? require('../../assets/weather/w' +
                         weatherObj.now.condition.code +
                         '@3x.png')
-                    : null
-                }
-                alt=""
-              />
+                      : null
+                  }
+                  alt=""
+                />
+              </div>
+            </div>
+            <div className="showPage-weather-item">
+              <div className="showPage-weather-item-top">温度</div>
+              <div className="showPage-weather-item-bottom">
+                {weatherObj.now && weatherObj.now.temperature}
+                <div className="showPage-weather-icon">℃</div>
+              </div>
+            </div>
+            <div className="showPage-weather-item">
+              <div className="showPage-weather-item-top">湿度</div>
+              <div className="showPage-weather-item-bottom">
+                {weatherObj.now && weatherObj.now.humidity}
+                <div className="showPage-weather-icon">%</div>
+              </div>
+            </div>
+            <div className="showPage-weather-item">
+              <div className="showPage-weather-item-top">PM2.5</div>
+              <div className="showPage-weather-item-bottom">
+                {weatherObj.now && weatherObj.now.aqi && weatherObj.now.aqi.pm25}
+              </div>
             </div>
           </div>
-          <div className="showPage-weather-item">
-            <div className="showPage-weather-item-top">温度</div>
-            <div className="showPage-weather-item-bottom">
-              {weatherObj.now && weatherObj.now.temperature}
-              <div className="showPage-weather-icon">℃</div>
-            </div>
-          </div>
-          <div className="showPage-weather-item">
-            <div className="showPage-weather-item-top">湿度</div>
-            <div className="showPage-weather-item-bottom">
-              {weatherObj.now && weatherObj.now.humidity}
-              <div className="showPage-weather-icon">%</div>
-            </div>
-          </div>
-          <div className="showPage-weather-item">
-            <div className="showPage-weather-item-top">PM2.5</div>
-            <div className="showPage-weather-item-bottom">
-              {weatherObj.now && weatherObj.now.aqi && weatherObj.now.aqi.pm25}
-            </div>
-          </div>
-        </div>
-      ) : null}
+        ) : null}
       <div className="showPage-clock">
         <div className="showPage-time">
           {theme.timeShow !== false ? (
@@ -301,8 +301,8 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
               {moment(nowTime).format('mm')}
             </div>
           ) : (
-            <ClockNew nowTime={nowTime} />
-          )}
+              <ClockNew nowTime={nowTime} />
+            )}
 
           <div className="showPage-time-subtitle">
             <div className="showPage-time-subtitle-top">
@@ -347,17 +347,17 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
         style={
           showState === 'left'
             ? {
-                animation: 'showLeft 500ms',
-                // animationFillMode: 'forwards',
-                right: '260px',
-              }
+              animation: 'showLeft 500ms',
+              // animationFillMode: 'forwards',
+              right: '260px',
+            }
             : showState === 'right'
-            ? {
+              ? {
                 animation: 'showRight 500ms',
                 // animationFillMode: 'forwards',
                 right: '0px',
               }
-            : { right: '0px' }
+              : { right: '0px' }
         }
       >
         {theme.taskShow !== false ? (
@@ -436,6 +436,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
                 style={{
                   width: '100%',
                   height: showPageRef.current.clientHeight + 15,
+                  border: '0px'
                 }}
               ></iframe>
             ) : null}
@@ -466,17 +467,17 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
         style={
           showState === 'left'
             ? {
-                animation: 'setLeft 500ms',
-                // animationFillMode: 'forwards',
-                right: '0px',
-              }
+              animation: 'setLeft 500ms',
+              // animationFillMode: 'forwards',
+              right: '0px',
+            }
             : showState === 'right'
-            ? {
+              ? {
                 animation: 'setRight 500ms',
                 // animationFillMode: 'forwards',
                 right: '-260px',
               }
-            : { right: '-260px' }
+              : { right: '-260px' }
         }
         onClick={(e: any) => {
           e.stopPropagation();
@@ -487,17 +488,17 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
           style={
             moveState === 'right'
               ? {
-                  animation: 'moveRight 500ms',
-                  // animationFillMode: 'forwards',
-                  left: '-260px',
-                }
+                animation: 'moveRight 500ms',
+                // animationFillMode: 'forwards',
+                left: '-260px',
+              }
               : moveState === 'left'
-              ? {
+                ? {
                   animation: 'moveLeft 500ms',
                   // animationFillMode: 'forwards',
                   left: '0px',
                 }
-              : { left: '0px', height: '460px' }
+                : { left: '0px', height: '460px' }
           }
         >
           <div className="contentHeader-set-left">
@@ -515,8 +516,8 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
                   style={{
                     backgroundImage: theme.backgroundImg
                       ? 'url(' +
-                        theme.backgroundImg +
-                        '?imageMogr2/auto-orient/thumbnail/160x160/format/jpg)'
+                      theme.backgroundImg +
+                      '?imageMogr2/auto-orient/thumbnail/160x160/format/jpg)'
                       : '',
                     backgroundColor: !theme.backgroundImg
                       ? theme.backgroundColor
@@ -588,8 +589,8 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
                 {theme.timeShow ? (
                   <img src={radioCheckPng} alt="" />
                 ) : (
-                  <img src={unradioCheckPng} alt="" />
-                )}
+                    <img src={unradioCheckPng} alt="" />
+                  )}
                 数字
               </div>
               <div
@@ -601,8 +602,8 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
                 {!theme.timeShow ? (
                   <img src={radioCheckPng} alt="" />
                 ) : (
-                  <img src={unradioCheckPng} alt="" />
-                )}
+                    <img src={unradioCheckPng} alt="" />
+                  )}
                 时钟
               </div>
             </div>
@@ -618,21 +619,21 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
               />
             </div>
             {parseInt(user.profile.lo) !== user.profile.lo &&
-            parseInt(user.profile.la) !== user.profile.la &&
-            user.profile.la &&
-            user.profile.lo ? (
-              <div className="showPage-set-title">
-                天气情况
-                <Switch
-                  checked={theme.weatherShow !== false ? true : false}
-                  onChange={() => {
-                    changeBoard('weatherShow');
-                  }}
-                  name="checkedB"
-                  inputProps={{ 'aria-label': 'secondary checkbox' }}
-                />
-              </div>
-            ) : null}
+              parseInt(user.profile.la) !== user.profile.la &&
+              user.profile.la &&
+              user.profile.lo ? (
+                <div className="showPage-set-title">
+                  天气情况
+                  <Switch
+                    checked={theme.weatherShow !== false ? true : false}
+                    onChange={() => {
+                      changeBoard('weatherShow');
+                    }}
+                    name="checkedB"
+                    inputProps={{ 'aria-label': 'secondary checkbox' }}
+                  />
+                </div>
+              ) : null}
           </div>
           <HeaderBg
             setMoveState={setMoveState}
@@ -640,29 +641,15 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
           />
         </div>
       </div>
-      <Dialog
-        visible={addVisible}
-        onClose={() => {
-          setAddVisible(false);
-        }}
-        // onOK={() => {
-        //   addLabelTask();
-        // }}
-        footer={false}
-        title={'新建任务'}
-        dialogStyle={{
-          position: 'fixed',
-          top: '65px',
-          right: '0px',
-          width: '430px',
-          height: 'calc(100% - 70px)',
-          overflow: 'auto',
-          padding: '0px 15px',
-        }}
-        showMask={false}
-      >
-        <HeaderCreate visible={addVisible}/>
-      </Dialog>
+      {/* <HeaderCreate visible={addVisible} onClose={setAddVisible(false)} createStyle={{
+        position: 'fixed',
+        top: '65px',
+        right: '0px',
+        width: '430px',
+        height: 'calc(100% - 70px)',
+        overflow: 'auto',
+        padding: '0px 15px',
+      }} /> */}
     </div>
   );
 };

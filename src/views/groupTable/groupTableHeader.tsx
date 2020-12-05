@@ -143,16 +143,16 @@ const GroupTableHeader: React.FC = (prop) => {
     // await api.member.setConfig(groupMemberItem._key, newFilterObject);
     dispatch(setFilterObject(newFilterObject));
   };
-  useEffect(() => {
-    if (groupMemberItem) {
-      dispatch(setFilterObject(groupMemberItem.config));
-      if (!groupMemberItem.config.headerIndex) {
-        groupMemberItem.config.headerIndex = 0;
-      }
-      // dispatch(setHeaderIndex(groupMemberItem.config.headerIndex));
-      dispatch(setHeaderIndex(0));
-    }
-  }, [groupMemberItem]);
+  // useEffect(() => {
+  //   if (groupMemberItem) {
+  //     dispatch(setFilterObject(groupMemberItem.config));
+  //     if (!groupMemberItem.config.headerIndex) {
+  //       groupMemberItem.config.headerIndex = 0;
+  //     }
+  //     // dispatch(setHeaderIndex(groupMemberItem.config.headerIndex));
+  //     dispatch(setHeaderIndex(0));
+  //   }
+  // }, [groupMemberItem]);
   useEffect(() => {
     //   dispatch(
     //     setFilterObject({
@@ -288,8 +288,8 @@ const GroupTableHeader: React.FC = (prop) => {
       modelUrl: groupInfo.modelUrl
         ? groupInfo.modelUrl
         : theme.backgroundImg
-        ? theme.backgroundImg
-        : '',
+          ? theme.backgroundImg
+          : '',
       templateJson: [
         // {
         //   name: '测试频道1',
@@ -436,7 +436,7 @@ const GroupTableHeader: React.FC = (prop) => {
               onClose={() => {
                 setInfoVisible(false);
               }}
-              // title={'视图切换'}
+            // title={'视图切换'}
             >
               <div className="groupTableHeader-info-container">
                 <div
@@ -466,6 +466,9 @@ const GroupTableHeader: React.FC = (prop) => {
                     style={{ width: '22px', height: '20px' }}
                   />
                   群成员
+                  {groupInfo && groupInfo.applyJoinGroupMemberCount > 0 ?
+                    <div className="group-member-title-num" style={groupInfo.applyJoinGroupMemberCount > 10 ? { borderRadius: '12px', padding: '0px 3px' } : { borderRadius: '50%', width: '20px' }}>{groupInfo.applyJoinGroupMemberCount}</div>
+                    : null}
                 </div>
                 {/* <div
                 className="groupTableHeader-info-item"
@@ -820,7 +823,7 @@ const GroupTableHeader: React.FC = (prop) => {
           width: '850px',
           height: '700px',
         }}
-        // showMask={false}
+      // showMask={false}
       >
         <div className="groupSet-tab">
           <div
@@ -832,9 +835,9 @@ const GroupTableHeader: React.FC = (prop) => {
             style={
               groupTabIndex == 0
                 ? {
-                    borderBottom: '2px solid #17B881',
-                    color: '#17B881',
-                  }
+                  borderBottom: '2px solid #17B881',
+                  color: '#17B881',
+                }
                 : {}
             }
           >
@@ -849,9 +852,9 @@ const GroupTableHeader: React.FC = (prop) => {
             style={
               groupTabIndex == 1
                 ? {
-                    borderBottom: '2px solid #17B881',
-                    color: '#17B881',
-                  }
+                  borderBottom: '2px solid #17B881',
+                  color: '#17B881',
+                }
                 : {}
             }
           >
@@ -867,9 +870,9 @@ const GroupTableHeader: React.FC = (prop) => {
             style={
               groupTabIndex == 2
                 ? {
-                    borderBottom: '2px solid #17B881',
-                    color: '#17B881',
-                  }
+                  borderBottom: '2px solid #17B881',
+                  color: '#17B881',
+                }
                 : {}
             }
           >
@@ -909,7 +912,7 @@ const GroupTableHeader: React.FC = (prop) => {
       >
         <div className="dialog-onlyTitle">是否退出该群</div>
       </Dialog>
-    </React.Fragment>
+    </React.Fragment >
   );
 };
 export default GroupTableHeader;

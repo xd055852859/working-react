@@ -12,7 +12,7 @@ import Loading from '../../components/common/loading';
 import { setMessage } from '../../redux/actions/commonActions';
 import api from '../../services/api';
 
-interface GroupTableDataProps {}
+interface GroupTableDataProps { }
 
 const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
   const dispatch = useDispatch();
@@ -48,7 +48,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
     if (user && user._key) {
       getGroupData();
     }
-  }, [user]);
+  }, [user, groupKey]);
   useEffect(() => {
     if (groupDataRef.current) {
       let clientWidth = groupDataRef.current.clientWidth;
@@ -233,7 +233,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
     dataChart = chart.createChordDiagramChart('chartdiv', data, '#333');
     XYLeftchart = chart.createXYChart('XYLeftchartdiv', XYLeftdata);
     XYRightchart = chart.createXYChart('XYRightchartdiv', XYRightdata);
-    XYLeft1chart = chart.createXYChart('XYLeft1chartdiv', XYLeft1data);
+    // XYLeft1chart = chart.createXYChart('XYLeft1chartdiv', XYLeft1data);
   };
   const getTeamData = (arr: any, taskState: number) => {
     let newPositionObj = _.cloneDeep(positionObj);
@@ -320,7 +320,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
       time = Math.floor(
         (moment(item.taskEndDate).endOf('day').valueOf() -
           moment(new Date().getTime()).endOf('day').valueOf()) /
-          86400000
+        86400000
       );
     }
     item.time = time < 0 ? Math.abs(time) : Math.abs(time) + 1;
@@ -382,7 +382,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
                   className="countdown-right-task"
                   key={'taskItem' + taskIndex}
                 >
-                  <Task taskItem={taskItem} timeSetStatus={taskIndex > personItem.length - 3}/>
+                  <Task taskItem={taskItem} timeSetStatus={taskIndex > personItem.length - 3} />
                 </div>
               );
             })}
@@ -442,6 +442,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
         height: '100%',
         overflow: 'auto',
         position: 'relative',
+        background:'#f9f9f9'
       }}
     >
       {loading ? <Loading /> : null}
@@ -473,10 +474,10 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
         style={{ height: 60 * XYlength + 'px', minHeight: '120px' }}
       >
         <div className="chart-left-title">执行任务数排名</div>
-        <div className="chart-middle-title">执行工时排名</div>
+        {/* <div className="chart-middle-title">执行工时排名</div> */}
         <div className="chart-right-title">创建任务数排名</div>
         <div className="chart" id="XYLeftchartdiv"></div>
-        <div className="chart" id="XYLeft1chartdiv"></div>
+        {/* <div className="chart" id="XYLeft1chartdiv"></div> */}
         <div className="chart" id="XYRightchartdiv"></div>
       </div>
       <div className="chart-container" style={{ height: '700px' }}>

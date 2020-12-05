@@ -103,8 +103,8 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
             src={leftArrowPng}
             alt=""
             style={{
-              width: '7px',
-              height: '11px',
+              width: '10px',
+              height: '13px',
               marginRight: '10px',
             }}
             onClick={() => {
@@ -139,7 +139,7 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
                 marginRight: '10px',
               }}
             />
-            <div>更新频率</div>
+            <div>自动更新</div>
           </div>
           <div className="contentHeader-set-item-radio">
             <input

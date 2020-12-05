@@ -29,7 +29,7 @@ import leftArrowPng from '../../assets/img/leftArroww.png';
 import unfinishPng from '../../assets/img/timeSet2.png';
 import finishPng from '../../assets/img/timeSet3.png';
 import { ContactlessOutlined } from '@material-ui/icons';
-interface CalendarProps {}
+interface CalendarProps { }
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 const Calendar: React.FC<CalendarProps> = (props) => {
-  const {} = props;
+  const { } = props;
   const dispatch = useDispatch();
   const classes = useStyles();
   // const calendarList = useTypedSelector((state) => state.task.calendarList);
@@ -53,6 +53,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
   const [calendarDate, setCalendarDate] = useState<any>([]);
   const [calendarDay, setCalendarDay] = useState(moment());
   const [calendarObj, setCalendarObj] = useState<any>({});
+  const [calendarType, setCalendarType] = useState('');
   const [calendar, setCalendar] = useState<any>(null);
   const [positionList, setPositionList] = useState<any>([]);
   const [itemVisible, setItemVisible] = useState(false);
@@ -62,7 +63,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
   const [taskList, setTaskList] = useState<any>({ arr: [], repeatArr: [] });
   const [monthTaskList, setMonthTaskList] = useState<any>([]);
   const [taskItem, setTaskItem] = useState<any>(null);
-  const [deleteDialogShow, setDeleteDialogShow] = useState(false);
+
   const [calendarStartTime, setCalendarStartTime] = useState(
     moment().startOf('month').startOf('day').valueOf()
   );
@@ -111,9 +112,9 @@ const Calendar: React.FC<CalendarProps> = (props) => {
       getCalendar(moment(calendarStartTime), calendarObj);
       setTargetMonth(
         moment(calendarStartTime).format('YYYY') +
-          '年' +
-          moment(calendarEndTime).format('MM') +
-          '月'
+        '年' +
+        moment(calendarEndTime).format('MM') +
+        '月'
       );
     }
   }, [calendarObj]);
@@ -176,10 +177,10 @@ const Calendar: React.FC<CalendarProps> = (props) => {
         // 返回的索引值刚好是上月在当月显示的天数
         let momentDate = moment(
           targetDate.year() +
-            '-' +
-            (targetDate.clone().subtract(1, 'month').month() + 1) +
-            '-' +
-            upDays
+          '-' +
+          (targetDate.clone().subtract(1, 'month').month() + 1) +
+          '-' +
+          upDays
         );
         strDate.unshift({
           month: 'last',
@@ -198,10 +199,10 @@ const Calendar: React.FC<CalendarProps> = (props) => {
         nextFirstDate++;
         let momentDate = moment(
           targetDate.year() +
-            '-' +
-            (targetDate.clone().add(1, 'month').month() + 1) +
-            '-' +
-            nextFirstDate
+          '-' +
+          (targetDate.clone().add(1, 'month').month() + 1) +
+          '-' +
+          nextFirstDate
         );
         strDate.push({
           month: 'next',
@@ -227,10 +228,10 @@ const Calendar: React.FC<CalendarProps> = (props) => {
         }
         let momentDate = moment(
           targetDate.year() +
-            '-' +
-            (targetDate.clone().month() + 1) +
-            '-' +
-            (i - curWeek + 1)
+          '-' +
+          (targetDate.clone().month() + 1) +
+          '-' +
+          (i - curWeek + 1)
         );
         let obj: any = {
           month: 'target',
@@ -366,25 +367,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
     dispatch(editTask({ key: newTaskItem._key, ...newTaskItem }, headerIndex));
     dispatch(setTaskInfo(newTaskItem));
   };
-  const taskKeyDown = (e: any) => {
-    if (e.keyCode === 46) {
-      setInfoVisible(false);
-      setDeleteDialogShow(true);
-    }
-  };
-  const deleteTask = async (calendar: any) => {
-    setDeleteDialogShow(false);
-    let deleteRes: any = await api.task.deleteTask(
-      calendar._key,
-      calendar.groupKey
-    );
-    if (deleteRes.msg === 'OK') {
-      dispatch(setMessage(true, '删除成功', 'success'));
-      getData(calendarStartTime, calendarEndTime);
-    } else {
-      dispatch(setMessage(true, deleteRes.msg, 'error'));
-    }
-  };
+
   const changeMonth = (type: number) => {
     let newCalendarStartTime = 0;
     let newCalendarEndTime = 0;
@@ -511,6 +494,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
             onClick={() => {
               setInfoVisible(true);
               setCalendar(null);
+              setCalendarType('新建')
             }}
             style={{ color: '#fff' }}
           >
@@ -555,10 +539,9 @@ const Calendar: React.FC<CalendarProps> = (props) => {
                 key={'calendar' + calendarIndex}
                 className="calendar-day-item"
                 onClick={(e) => {
-                  // setItemVisible(true);
-                  // getMousePos(e, calendarIndex);
-                  // setTaskItem(null);
-                  // setCalendarDay(moment(calendarItem.startTime));
+                  setInfoVisible(true);
+                  setCalendarType('新建')
+                  setCalendar({ startDay: moment(calendarItem.startTime).startOf('day').valueOf(), endDay: moment(calendarItem.endTime).startOf('day').valueOf() });
                 }}
                 style={{
                   // backgroundColor:
@@ -607,10 +590,11 @@ const Calendar: React.FC<CalendarProps> = (props) => {
                           onClick={(e: any) => {
                             // clickTask(e, taskItem, calendarIndex);
                             setCalendar(taskItem);
+                            setCalendarType('编辑')
                             setInfoVisible(true);
+                            e.stopPropagation();
                           }}
                           tabIndex={taskItem._key}
-                          onKeyDown={taskKeyDown}
                         >
                           {taskItem.type == 5 ? (
                             <React.Fragment>
@@ -627,7 +611,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
                                 height: '12px',
                                 marginRight: '5px',
                               }}
-                              onClick={() => {}}
+                              onClick={() => { }}
                             />
                           ) : null}
                           {taskItem.title}
@@ -641,19 +625,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
           })}
         </div>
       </div>
-      <Dialog
-        visible={deleteDialogShow}
-        onClose={() => {
-          setDeleteDialogShow(false);
-        }}
-        onOK={() => {
-          deleteTask(calendar);
-        }}
-        title={'删除任务'}
-        dialogStyle={{ width: '400px', height: '200px' }}
-      >
-        <div className="dialog-onlyTitle">是否删除该任务</div>
-      </Dialog>
+
       <CalendarItem
         visible={itemVisible}
         onClose={() => {
@@ -679,16 +651,16 @@ const Calendar: React.FC<CalendarProps> = (props) => {
           saveCalendar();
           setInfoVisible(false);
         }}
-        title={'创建日程'}
+        title={calendarType + '日程'}
         dialogStyle={{ width: '400px', height: '90%' }}
       >
         <CalendarInfo
           setCalendar={setCalendar}
           taskItem={calendar}
           calendarColor={calendarColor}
-          deleteTask={() => {
-            setDeleteDialogShow(true);
-          }}
+          getData={getData}
+          calendarType={calendarType}
+          onClose={() => { setInfoVisible(false) }}
         />
       </Dialog>
     </div>

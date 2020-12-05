@@ -52,7 +52,7 @@ import defaultGroupPng from '../../assets/img/defaultGroup.png';
 
 import api from '../../services/api';
 import moment from 'moment';
-interface HeaderSetProps {}
+interface HeaderSetProps { }
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     button: {
@@ -104,6 +104,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const [searchInput, setSearchInput] = useState('');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [child, setChild] = useState<any>(null);
 
   const [searchTaskList, setSearchTaskList] = useState<any>([]);
   const [groupIndex, setGroupIndex] = useState(0);
@@ -121,7 +122,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const [searchCheck, setSearchCheck] = useState(false);
   const [vitalityInfo, setVitalityInfo] = useState<any>(null);
   const [clientWidth, setClientWidth] = useState(1500);
-  const canvasRef: React.RefObject<any> = useRef();
+  const childRef: React.RefObject<any> = useRef();
   // const imgBigArr2 = [
   // 'https://cdn-icare.qingtime.cn/1596679428976_8Big@1x.png',
   // 'https://cdn-icare.qingtime.cn/1596679446272_9Big@1x.png',
@@ -261,129 +262,132 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     dispatch(setMessage(true, '退出登录成功', 'success'));
     history.push('/welcome');
   };
+  const onRef = (ref: any) => {
+    setChild(ref)
+  }
   return (
     <React.Fragment>
       <div className="contentHeader-set">
         {(clientWidth > 1100 && headerIndex !== 3) ||
-        (clientWidth > 900 && headerIndex === 3) ? (
-          <React.Fragment>
-            <Tooltip title="新建任务">
-              <img
-                src={addPng}
-                alt=""
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  marginRight: '15px',
-                  cursor: 'pointer',
-                  position: 'relative',
-                }}
-                onClick={() => {
-                  setAddVisible(true);
-                }}
-              />
-            </Tooltip>
-            <Tooltip title="搜索中心">
-              <img
-                src={searchPng}
-                alt=""
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  marginRight: '15px',
-                  cursor: 'pointer',
-                }}
-                onClick={() => {
-                  setSearchVisible(true);
-                }}
-              />
-            </Tooltip>
-            <Tooltip title="打卡中心">
-              <img
-                src={clockInPng}
-                alt=""
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  marginRight: '15px',
-                  cursor: 'pointer',
-                }}
-                onClick={() => {
-                  setClockInVisible(true);
-                }}
-              />
-              <ClockIn
-                visible={clockInVisible}
-                onClose={() => {
-                  setClockInVisible(false);
-                }}
-              />
-            </Tooltip>
-            {headerIndex !== 0 ? (
-              <Tooltip title="消息中心">
-                <div style={{ position: 'relative' }}>
-                  <img
-                    src={messagePng}
-                    alt=""
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      marginRight: '15px',
-                      cursor: 'pointer',
-                    }}
-                    onClick={() => {
-                      setMessageVisible(true);
-                      dispatch(setUnMessageNum(0));
-                      // dispatch(setSocketObj(null));
-                    }}
-                  />
-                  {unMessageNum ? (
-                    <div
-                      className="headerSet-unRead"
-                      style={{
-                        borderRadius: unMessageNum < 10 ? '50%' : '20px',
-                      }}
-                    >
-                      {unMessageNum}
-                    </div>
-                  ) : null}
-                </div>
+          (clientWidth > 900 && headerIndex === 3) ? (
+            <React.Fragment>
+              <Tooltip title="新建任务">
+                <img
+                  src={addPng}
+                  alt=""
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    marginRight: '15px',
+                    cursor: 'pointer',
+                    position: 'relative',
+                  }}
+                  onClick={() => {
+                    setAddVisible(true);
+                  }}
+                />
               </Tooltip>
-            ) : null}
-            <Tooltip title="聊天中心">
-              <ClickAwayListener
-                onClickAway={() => {
-                  dispatch(setChatState(false));
-                }}
-              >
-                <div style={{ position: 'relative' }}>
-                  <img
-                    src={chatPng}
-                    alt=""
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      marginRight: '15px',
-                      cursor: 'pointer',
-                    }}
-                    onClick={() => {
-                      dispatch(setChatState(true));
-                    }}
-                  />
-                  {unChatNum ? (
-                    <div
-                      className="headerSet-unRead"
-                      style={{ borderRadius: unChatNum < 10 ? '50%' : '20px' }}
-                    >
-                      {unChatNum}
-                    </div>
-                  ) : null}
-                  <Chat />
-                </div>
-              </ClickAwayListener>
-            </Tooltip>
-          </React.Fragment>
-        ) : null}
+              <Tooltip title="搜索中心">
+                <img
+                  src={searchPng}
+                  alt=""
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    marginRight: '15px',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => {
+                    setSearchVisible(true);
+                  }}
+                />
+              </Tooltip>
+              <Tooltip title="打卡中心">
+                <img
+                  src={clockInPng}
+                  alt=""
+                  style={{
+                    width: '40px',
+                    height: '40px',
+                    marginRight: '15px',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => {
+                    setClockInVisible(true);
+                  }}
+                />
+                <ClockIn
+                  visible={clockInVisible}
+                  onClose={() => {
+                    setClockInVisible(false);
+                  }}
+                />
+              </Tooltip>
+              {headerIndex !== 0 ? (
+                <Tooltip title="消息中心">
+                  <div style={{ position: 'relative' }}>
+                    <img
+                      src={messagePng}
+                      alt=""
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        marginRight: '15px',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => {
+                        setMessageVisible(true);
+                        dispatch(setUnMessageNum(0));
+                        // dispatch(setSocketObj(null));
+                      }}
+                    />
+                    {unMessageNum ? (
+                      <div
+                        className="headerSet-unRead"
+                        style={{
+                          borderRadius: unMessageNum < 10 ? '50%' : '20px',
+                        }}
+                      >
+                        {unMessageNum}
+                      </div>
+                    ) : null}
+                  </div>
+                </Tooltip>
+              ) : null}
+              <Tooltip title="聊天中心">
+                <ClickAwayListener
+                  onClickAway={() => {
+                    dispatch(setChatState(false));
+                  }}
+                >
+                  <div style={{ position: 'relative' }}>
+                    <img
+                      src={chatPng}
+                      alt=""
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        marginRight: '15px',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => {
+                        dispatch(setChatState(true));
+                      }}
+                    />
+                    {unChatNum ? (
+                      <div
+                        className="headerSet-unRead"
+                        style={{ borderRadius: unChatNum < 10 ? '50%' : '20px' }}
+                      >
+                        {unChatNum}
+                      </div>
+                    ) : null}
+                    <Chat />
+                  </div>
+                </ClickAwayListener>
+              </Tooltip>
+            </React.Fragment>
+          ) : null}
         <Tooltip title="用户中心">
           <div
             className="contentHeader-avatar-info"
@@ -398,17 +402,17 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
               style={
                 avatarShow
                   ? {
-                      animation: 'avatarSmall 500ms',
-                      // animationFillMode: 'forwards',
-                      width: '30px',
-                      height: '30px',
-                    }
+                    animation: 'avatarSmall 500ms',
+                    // animationFillMode: 'forwards',
+                    width: '30px',
+                    height: '30px',
+                  }
                   : {
-                      animation: 'avatarBig 500ms',
-                      // animationFillMode: 'forwards',
-                      width: '40px',
-                      height: '40px',
-                    }
+                    animation: 'avatarBig 500ms',
+                    // animationFillMode: 'forwards',
+                    width: '40px',
+                    height: '40px',
+                  }
               }
             >
               <img src={avatar} alt="" />
@@ -447,17 +451,17 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             style={
               moveState === 'right'
                 ? {
-                    animation: 'moveRight 500ms',
-                    // animationFillMode: 'forwards',
-                    left: '-260px',
-                  }
+                  animation: 'moveRight 500ms',
+                  // animationFillMode: 'forwards',
+                  left: '-260px',
+                }
                 : moveState === 'left'
-                ? {
+                  ? {
                     animation: 'moveLeft 500ms',
                     // animationFillMode: 'forwards',
                     left: '0px',
                   }
-                : { left: '0px', height: '520px' }
+                  : { left: '0px', height: '520px' }
             }
           >
             <div className="contentHeader-set-left">
@@ -528,8 +532,8 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                       style={{
                         backgroundImage: theme.backgroundImg
                           ? 'url(' +
-                            theme.backgroundImg +
-                            '?imageMogr2/auto-orient/thumbnail/160x160/format/jpg)'
+                          theme.backgroundImg +
+                          '?imageMogr2/auto-orient/thumbnail/160x160/format/jpg)'
                           : '',
                         backgroundColor: !theme.backgroundImg
                           ? theme.backgroundColor
@@ -570,7 +574,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                         marginRight: '10px',
                       }}
                     />
-                    <div>项目模板</div>
+                    <div>创建项目</div>
                   </div>
                   <div className="bg-item-right">
                     <img
@@ -734,50 +738,37 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                     src={leftArrowPng}
                     alt=""
                     style={{
-                      width: '7px',
-                      height: '11px',
+                      width: '10px',
+                      height: '13px',
                       marginRight: '10px',
                     }}
                     onClick={() => {
                       setMoveState('left');
                     }}
                   />
-                  项目模板
+                  创建项目
                 </div>
                 <GroupCreate />
               </div>
             ) : (
-              <HeaderBg
-                setMoveState={setMoveState}
-                setChooseWallKey={setChooseWallKey}
-              />
-            )}
+                <HeaderBg
+                  setMoveState={setMoveState}
+                  setChooseWallKey={setChooseWallKey}
+                />
+              )}
           </div>
         </Dialog>
       </div>
-      <Dialog
-        visible={addVisible}
-        onClose={() => {
-          setAddVisible(false);
-        }}
-        // onOK={() => {
-        //   addLabelTask();
-        // }}
-        footer={false}
-        title={'新建任务'}
-        dialogStyle={{
-          position: 'fixed',
-          top: '65px',
-          right: '0px',
-          width: '430px',
-          height: 'calc(100% - 70px)',
-          overflow: 'auto',
-          padding: '0px 15px',
-        }}
-        showMask={false}
-      >
-        <HeaderCreate visible={addVisible}/>
-      </Dialog>
+
+      <HeaderCreate visible={addVisible} onClose={() => { setAddVisible(false) }} createStyle={{
+        position: 'fixed',
+        top: '65px',
+        right: '0px',
+        width: '430px',
+        height: 'calc(100% - 70px)',
+        overflow: 'auto',
+        padding: '0px 15px',
+      }} />
       <Dialog
         visible={searchVisible}
         onClose={() => {

@@ -135,9 +135,9 @@ const traditionalDate = {
   },
   e2c() {
     this.TheDate =
-      arguments.length !== 3
-        ? new Date()
-        : new Date(arguments[0], arguments[1], arguments[2]);
+      arguments.length !== 3 ?
+      new Date() :
+      new Date(arguments[0], arguments[1], arguments[2]);
     let total, m, n, k;
     let isEnd = false;
     let tmp = this.TheDate.getYear();
@@ -153,7 +153,7 @@ const traditionalDate = {
     if (this.TheDate.getYear() % 4 === 0 && this.TheDate.getMonth() > 1) {
       total++;
     }
-    for (m = 0; ; m++) {
+    for (m = 0;; m++) {
       k = this.calendarData[m] < 0xfff ? 11 : 12;
       for (n = k; n >= 0; n--) {
         if (total <= 29 + this.GetBit(this.calendarData[m], n)) {
@@ -191,15 +191,15 @@ const traditionalDate = {
     }
     tmp[1] += '月';
     tmp[2] +=
-      this.cDay < 11
-        ? '初'
-        : this.cDay < 20
-        ? '十'
-        : this.cDay < 30
-        ? '廿'
-        : this.cDay == 20
-        ? '二十'
-        : '三十';
+      this.cDay < 11 ?
+      '初' :
+      this.cDay < 20 ?
+      '十' :
+      this.cDay < 30 ?
+      '廿' :
+      this.cDay == 20 ?
+      '二十' :
+      '三十';
     if (this.cDay % 10 !== 0 || this.cDay === 10) {
       tmp[2] += this.numString.charAt((this.cDay - 1) % 10);
     }
@@ -223,13 +223,10 @@ const traditionalDate = {
     // let ww = D.getDay();
     // let ss = parseInt(D.getTime() / 1000);
     //solarYear = solarYear<1900?(1900+solarYear):solarYear;
-    if (solarYear < moment().year() - 10 || solarYear > moment().year()) {
-      return '';
-    } else {
-      solarMonth = solarMonth > 0 ? solarMonth - 1 : 11;
-      this.e2c(solarYear, solarMonth, solarDay);
-      return this.GetcDateString();
-    }
+    solarMonth = solarMonth > 0 ? solarMonth - 1 : 11;
+    this.e2c(solarYear, solarMonth, solarDay);
+    return this.GetcDateString();
+
   },
   // let D = new Date();
   // let yy = D.getFullYear();

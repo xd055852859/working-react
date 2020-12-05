@@ -29,12 +29,13 @@ import taskType6Svg from '../../assets/svg/taskType6.svg';
 import taskType7Svg from '../../assets/svg/taskType7.svg';
 import taskType8Svg from '../../assets/svg/taskType8.svg';
 import taskType9Svg from '../../assets/svg/taskType9.svg';
+// import taskType9Svg from '../../assets/svg/taskType9.svg';
 import DropMenu from '../../components/common/dropMenu';
 import checkPersonPng from '../../assets/img/checkPerson.png';
-interface GroupTableTreeProps {}
+interface GroupTableTreeProps { }
 
 const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
-  const {} = props;
+  const { } = props;
   const dispatch = useDispatch();
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const user = useTypedSelector((state) => state.auth.user);
@@ -66,7 +67,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
   const boxRef: React.RefObject<any> = useRef();
   const targetTreeRef: React.RefObject<any> = useRef();
   const taskTypeArray = [
-    // taskType0Svg,
+    taskType0Svg,
     taskType1Svg,
     taskType2Svg,
     taskType3Svg,
@@ -123,8 +124,8 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
             taskItem.rootType === 10
               ? groupInfo.groupName
               : taskItem.name
-              ? taskItem.name
-              : taskItem.title,
+                ? taskItem.name
+                : taskItem.title,
           // father	父節點 id	String
           disabled:
             taskItem._key === groupInfo.taskTreeRootCardKey || !editRole,
@@ -134,10 +135,10 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
           showCheckbox: taskItem.type === 6,
           showStatus:
             taskItem._key !== groupInfo.taskTreeRootCardKey &&
-            taskItem.type === 6
+              taskItem.type === 6
               ? true
               : false,
-          icon: taskTypeArray[taskItem.taskType],
+          icon: taskItem.taskType !== 0 ? taskTypeArray[taskItem.taskType] : null,
           hour: taskItem.hour,
           limitDay: gridTime < 0 ? gridTime : gridTime + 1,
           avatarUri: taskItem.executorAvatar
@@ -193,27 +194,29 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
           ? newGridList[targetIndex].executorKey
           : null
         : type === 'next'
-        ? newGridList[fatherIndex].type === 6
-          ? newGridList[fatherIndex].executorKey
-          : null
-        : null,
+          ? newGridList[fatherIndex].type === 6
+            ? newGridList[fatherIndex].executorKey
+            : null
+          : null,
 
       '',
       type === 'child'
         ? selectedNode
         : type === 'next'
-        ? newNodeObj[selectedNode].father
-        : '',
+          ? newNodeObj[selectedNode].father
+          : '',
       0,
       type === 'child'
         ? newGridList[targetIndex].type === 6
           ? 6
           : 1
         : type === 'next'
-        ? newGridList[fatherIndex].type === 6
-          ? 6
+          ? newGridList[fatherIndex].type === 6
+            ? 6
+            : 1
           : 1
-        : 1
+      ,
+      0
     );
     if (addTaskRes.msg === 'OK') {
       let result = addTaskRes.result;
@@ -234,7 +237,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
         limitDay: gridTime < 0 ? gridTime : gridTime + 1,
         father: result.parentCardKey,
         sortList: result.children,
-        icon: taskTypeArray[result.taskType],
+        icon: result.taskType !== 0 ? taskTypeArray[result.taskType] : null,
         avatarUri:
           result.executorAvatar && result.type === 6
             ? result.executorAvatar
@@ -558,7 +561,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
     let newNodeObj = _.cloneDeep(nodeObj);
     let newGridList = _.cloneDeep(gridList);
     newTargetNode.icon = taskTypeArray[taskType];
-    newNodeObj[newTargetNode._key].icon = taskTypeArray[taskType];
+    newNodeObj[newTargetNode._key].icon = taskType !== 0 ? taskTypeArray[taskType] : null;
     let nodeIndex = _.findIndex(newGridList, { _key: newTargetNode._key });
     newGridList[nodeIndex].taskType = taskType;
     dispatch(
@@ -615,50 +618,50 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
         <div className="tree-member-container">
           {groupMemberArray
             ? groupMemberArray.map(
-                (taskMemberItem: any, taskMemberIndex: number) => {
-                  return (
+              (taskMemberItem: any, taskMemberIndex: number) => {
+                return (
+                  <div
+                    className="tree-member-item "
+                    key={'taskMember' + taskMemberIndex}
+                    onMouseEnter={() => {
+                      setMemberCheckIndex(taskMemberIndex);
+                    }}
+                    onMouseLeave={() => {
+                      setMemberCheckIndex(null);
+                    }}
+                  >
                     <div
-                      className="tree-member-item "
-                      key={'taskMember' + taskMemberIndex}
-                      onMouseEnter={() => {
-                        setMemberCheckIndex(taskMemberIndex);
-                      }}
-                      onMouseLeave={() => {
-                        setMemberCheckIndex(null);
-                      }}
-                    >
-                      <div
-                        className="tree-member-img"
-                        style={
-                          gridList[targetIndex] &&
+                      className="tree-member-img"
+                      style={
+                        gridList[targetIndex] &&
                           ((gridList[targetIndex].followUKeyArray &&
                             gridList[targetIndex].followUKeyArray.indexOf(
                               taskMemberItem.userId
                             ) !== -1) ||
                             gridList[targetIndex].executorKey ===
-                              taskMemberItem.userId ||
+                            taskMemberItem.userId ||
                             gridList[targetIndex].creatorKey ===
-                              taskMemberItem.userId)
-                            ? { border: '3px solid #17b881' }
-                            : {}
+                            taskMemberItem.userId)
+                          ? { border: '3px solid #17b881' }
+                          : {}
+                      }
+                    >
+                      <img
+                        src={
+                          taskMemberItem.avatar
+                            ? taskMemberItem.avatar
+                            : defaultPersonPng
                         }
-                      >
-                        <img
-                          src={
-                            taskMemberItem.avatar
-                              ? taskMemberItem.avatar
-                              : defaultPersonPng
-                          }
-                          onClick={(e: any) => {
-                            e.stopPropagation();
-                            changeFollow(taskMemberItem.userId);
-                          }}
-                        />
-                      </div>
-                      {/* <div>{taskMemberItem.nickName}</div> */}
-                      {gridList[targetIndex] &&
+                        onClick={(e: any) => {
+                          e.stopPropagation();
+                          changeFollow(taskMemberItem.userId);
+                        }}
+                      />
+                    </div>
+                    {/* <div>{taskMemberItem.nickName}</div> */}
+                    {gridList[targetIndex] &&
                       gridList[targetIndex].executorKey ===
-                        taskMemberItem.userId ? (
+                      taskMemberItem.userId ? (
                         <img
                           src={taskFinishPng}
                           alt=""
@@ -681,17 +684,16 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                           }}
                         />
                       ) : null}
-                    </div>
-                  );
-                }
-              )
+                  </div>
+                );
+              }
+            )
             : null}
         </div>
       </div>
       <div className="tree-info">
         <div className="tree-time">
           <div className="tree-time-taskType">
-            <img src={taskType0Svg} style={{ marginRight: '5px' }} />
             {taskTypeArray.map((item: any, index: number) => {
               return (
                 <img
@@ -722,28 +724,28 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
         <div className="tree-path">
           {selectedPath
             ? selectedPath.map((pathItem: any, pathIndex: number) => {
-                return (
-                  <React.Fragment key={'path' + pathIndex}>
-                    <div
-                      onClick={() => {
-                        dispatch(changeStartId(pathItem._key));
-                        setSelectedPath(nodeObj[pathItem._key].path1);
-                      }}
-                      style={{
-                        fontWeight:
-                          startId === pathItem._key ? 'bold' : 'normal',
-                      }}
-                      className="tree-path-item"
-                    >
-                      {pathItem.title}
-                      <div className="tree-path-icon">
-                        <div className="tree-path-icon-top"></div>
-                        <div className="tree-path-icon-bottom"></div>
-                      </div>
+              return (
+                <React.Fragment key={'path' + pathIndex}>
+                  <div
+                    onClick={() => {
+                      dispatch(changeStartId(pathItem._key));
+                      setSelectedPath(nodeObj[pathItem._key].path1);
+                    }}
+                    style={{
+                      fontWeight:
+                        startId === pathItem._key ? 'bold' : 'normal',
+                    }}
+                    className="tree-path-item"
+                  >
+                    {pathItem.title}
+                    <div className="tree-path-icon">
+                      <div className="tree-path-icon-top"></div>
+                      <div className="tree-path-icon-bottom"></div>
                     </div>
-                  </React.Fragment>
-                );
-              })
+                  </div>
+                </React.Fragment>
+              );
+            })
             : null}
         </div>
         <div
@@ -810,7 +812,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                     editTargetTask={editTargetTask}
                   />
                 }
-                // handleClickDot
+              // handleClickDot
               />
             ) : null}
             <DropMenu
@@ -861,7 +863,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                         key={'taskMember' + taskMemberIndex}
                         style={
                           gridList[targetIndex] &&
-                          gridList[targetIndex].executorKey ===
+                            gridList[targetIndex].executorKey ===
                             taskMemberItem.userId
                             ? { background: '#F0F0F0' }
                             : {}
@@ -879,13 +881,13 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                             className="task-executor-dropMenu-img"
                             style={
                               gridList[targetIndex] &&
-                              ((gridList[targetIndex].followUKeyArray &&
-                                gridList[targetIndex].followUKeyArray.indexOf(
-                                  taskMemberItem.userId
-                                ) !== -1) ||
-                                gridList[targetIndex].executorKey ===
+                                ((gridList[targetIndex].followUKeyArray &&
+                                  gridList[targetIndex].followUKeyArray.indexOf(
+                                    taskMemberItem.userId
+                                  ) !== -1) ||
+                                  gridList[targetIndex].executorKey ===
                                   taskMemberItem.userId ||
-                                gridList[targetIndex].creatorKey ===
+                                  gridList[targetIndex].creatorKey ===
                                   taskMemberItem.userId)
                                 ? { border: '3px solid #17b881' }
                                 : {}
@@ -906,17 +908,17 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                           <div>{taskMemberItem.nickName}</div>
                         </div>
                         {gridList[targetIndex] &&
-                        gridList[targetIndex].executorKey ===
+                          gridList[targetIndex].executorKey ===
                           taskMemberItem.userId ? (
-                          <img
-                            src={checkPersonPng}
-                            alt=""
-                            style={{
-                              width: '20px',
-                              height: '12px',
-                            }}
-                          />
-                        ) : null}
+                            <img
+                              src={checkPersonPng}
+                              alt=""
+                              style={{
+                                width: '20px',
+                                height: '12px',
+                              }}
+                            />
+                          ) : null}
                       </div>
                     );
                   }
