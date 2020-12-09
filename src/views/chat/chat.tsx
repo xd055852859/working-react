@@ -11,6 +11,7 @@ import './chat.css';
 import _ from 'lodash';
 import api from '../../services/api';
 import closePng from '../../assets/img/close.png';
+import moment from 'moment';
 interface ChatProps {}
 
 const Chat: React.FC<ChatProps> = (prop) => {
@@ -28,20 +29,25 @@ const Chat: React.FC<ChatProps> = (prop) => {
   const [clickType, setClickType] = useState(true);
 
   useEffect(() => {
+    console.log(user);
     if (user) {
       setUrl(
-        api.ROCKET_CHAT_URL + '/login?chatToken=' + user.rocketChat.authToken
+        api.ROCKET_CHAT_URL +
+          '/login?chatToken=' +
+          user.rocketChat.authToken +
+          '&newTime=' +
+          moment().valueOf()
       );
       window.addEventListener('message', handlerIframeEvent);
       if (
         (headerIndex === 2 && memberArray) ||
         (headerIndex === 3 && groupInfo)
       ) {
-        console.log('xxxxxxxxxxxxxxxxxxxxxx');
         goChat();
       }
     }
   }, [user]);
+
   useEffect(() => {
     if (
       (headerIndex === 2 && memberArray) ||

@@ -50,6 +50,18 @@ import groupSet2Png from '../../assets/img/groupSet2.png';
 import groupSet3Png from '../../assets/img/groupSet3.png';
 import groupSet4Png from '../../assets/img/groupSet4.png';
 import groupSet5Png from '../../assets/img/groupSet5.png';
+import tabb0Svg from '../../assets/svg/tab0.svg';
+import tabb1Svg from '../../assets/svg/tab1.svg';
+import tabb2Svg from '../../assets/svg/tab2.svg';
+import tabb3Svg from '../../assets/svg/tab3.svg';
+import tabb4Svg from '../../assets/svg/tab4.svg';
+import tabb5Svg from '../../assets/svg/tab5.svg';
+import tab0Svg from '../../assets/svg/tabw0.svg';
+import tab1Svg from '../../assets/svg/tabw1.svg';
+import tab2Svg from '../../assets/svg/tabw2.svg';
+import tab3Svg from '../../assets/svg/tabw3.svg';
+import tab4Svg from '../../assets/svg/tabw4.svg';
+import tab5Svg from '../../assets/svg/tabw5.svg';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import downArrowPng from '../../assets/img/downArrow.png';
 import logoutPng from '../../assets/img/logout.png';
@@ -84,7 +96,7 @@ const GroupTableHeader: React.FC = (prop) => {
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const theme = useTypedSelector((state) => state.auth.theme);
   const dispatch = useDispatch();
-  const viewArray: string[] = ['项目', '时间表', '执行表', '日历', '任务树'];
+  const viewArray: string[] = ['项目', '时间表', '执行表', '日历'];
   //
   const viewImg: string[] = [
     labelPng,
@@ -100,6 +112,22 @@ const GroupTableHeader: React.FC = (prop) => {
     calendarbPng,
     treebPng,
   ];
+  const tabImg: string[] = [
+    tab0Svg,
+    tab1Svg,
+    tab2Svg,
+    tab3Svg,
+    tab4Svg,
+    tab5Svg,
+  ];
+  const tabbImg: string[] = [
+    tabb0Svg,
+    tabb1Svg,
+    tabb2Svg,
+    tabb3Svg,
+    tabb4Svg,
+    tabb5Svg,
+  ];
   const checkedTitle = [
     '过期',
     '今天',
@@ -111,7 +139,7 @@ const GroupTableHeader: React.FC = (prop) => {
     '已归档',
     // '树任务',
   ];
-  const tabArray = ['任务', '日报', '动态', '文档', '活力'];
+  const tabArray = ['任务', '日报', '排行榜', '文档', '活力', '知识树'];
   const [viewVisible, setViewVisible] = useState(false);
   const [tabVisible, setTabVisible] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
@@ -257,7 +285,7 @@ const GroupTableHeader: React.FC = (prop) => {
       dispatch(getGroup(3));
       dispatch(setCommonHeaderIndex(1));
       if (!theme.moveState) {
-        dispatch(setMoveState('out'));
+        dispatch(setMoveState('in'));
       }
     } else {
       dispatch(setMessage(true, groupRes.msg, 'error'));
@@ -288,8 +316,8 @@ const GroupTableHeader: React.FC = (prop) => {
       modelUrl: groupInfo.modelUrl
         ? groupInfo.modelUrl
         : theme.backgroundImg
-          ? theme.backgroundImg
-          : '',
+        ? theme.backgroundImg
+        : '',
       templateJson: [
         // {
         //   name: '测试频道1',
@@ -339,7 +367,7 @@ const GroupTableHeader: React.FC = (prop) => {
       dispatch(getGroup(3));
       dispatch(setCommonHeaderIndex(1));
       if (!theme.moveState) {
-        dispatch(setMoveState('out'));
+        dispatch(setMoveState('in'));
       }
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
@@ -352,7 +380,7 @@ const GroupTableHeader: React.FC = (prop) => {
           className="workingTableHeader-logo"
           style={{ width: '35px' }}
           onClick={() => {
-            dispatch(setMoveState('out'));
+            dispatch(setMoveState(''));
             dispatch(setCommonHeaderIndex(1));
           }}
         >
@@ -419,7 +447,7 @@ const GroupTableHeader: React.FC = (prop) => {
             <img
               src={infoPng}
               alt=""
-              style={{ width: '30px', height: '30px' }}
+              style={{ width: '25px', height: '25px' }}
               onClick={() => {
                 setInfoVisible(true);
               }}
@@ -436,7 +464,7 @@ const GroupTableHeader: React.FC = (prop) => {
               onClose={() => {
                 setInfoVisible(false);
               }}
-            // title={'视图切换'}
+              // title={'视图切换'}
             >
               <div className="groupTableHeader-info-container">
                 <div
@@ -466,9 +494,18 @@ const GroupTableHeader: React.FC = (prop) => {
                     style={{ width: '22px', height: '20px' }}
                   />
                   群成员
-                  {groupInfo && groupInfo.applyJoinGroupMemberCount > 0 ?
-                    <div className="group-member-title-num" style={groupInfo.applyJoinGroupMemberCount > 10 ? { borderRadius: '12px', padding: '0px 3px' } : { borderRadius: '50%', width: '20px' }}>{groupInfo.applyJoinGroupMemberCount}</div>
-                    : null}
+                  {groupInfo && groupInfo.applyJoinGroupMemberCount > 0 ? (
+                    <div
+                      className="group-member-title-num"
+                      style={
+                        groupInfo.applyJoinGroupMemberCount > 10
+                          ? { borderRadius: '12px', padding: '0px 3px' }
+                          : { borderRadius: '50%', width: '20px' }
+                      }
+                    >
+                      {groupInfo.applyJoinGroupMemberCount}
+                    </div>
+                  ) : null}
                 </div>
                 {/* <div
                 className="groupTableHeader-info-item"
@@ -536,7 +573,7 @@ const GroupTableHeader: React.FC = (prop) => {
         <div className="view-container">
           <div
             className="workingTableHeader-logo"
-            style={{ width: '68px' }}
+            style={{ width: '90px' }}
             onMouseEnter={() => {
               setTabVisible(true);
               setViewVisible(false);
@@ -548,7 +585,7 @@ const GroupTableHeader: React.FC = (prop) => {
               setFilterVisible(false);
             }}
           >
-            {/* <img src={viewImg[memberHeaderIndex]} alt=""></img> */}
+            <img src={tabImg[tabIndex]} alt=""></img>
             <Chip
               size="small"
               label={tabArray[tabIndex]}
@@ -580,7 +617,10 @@ const GroupTableHeader: React.FC = (prop) => {
                       backgroundColor: tabIndex === index ? '#f0f0f0' : '',
                     }}
                   >
-                    <div>{tabItem}</div>
+                    <div className="viewTableHeader-tab">
+                      <img src={tabbImg[index]} alt=""></img>
+                      {tabItem}
+                    </div>
                     {tabIndex === index ? (
                       <img
                         src={checkPersonPng}
@@ -823,7 +863,7 @@ const GroupTableHeader: React.FC = (prop) => {
           width: '850px',
           height: '700px',
         }}
-      // showMask={false}
+        // showMask={false}
       >
         <div className="groupSet-tab">
           <div
@@ -835,9 +875,9 @@ const GroupTableHeader: React.FC = (prop) => {
             style={
               groupTabIndex == 0
                 ? {
-                  borderBottom: '2px solid #17B881',
-                  color: '#17B881',
-                }
+                    borderBottom: '2px solid #17B881',
+                    color: '#17B881',
+                  }
                 : {}
             }
           >
@@ -852,9 +892,9 @@ const GroupTableHeader: React.FC = (prop) => {
             style={
               groupTabIndex == 1
                 ? {
-                  borderBottom: '2px solid #17B881',
-                  color: '#17B881',
-                }
+                    borderBottom: '2px solid #17B881',
+                    color: '#17B881',
+                  }
                 : {}
             }
           >
@@ -870,9 +910,9 @@ const GroupTableHeader: React.FC = (prop) => {
             style={
               groupTabIndex == 2
                 ? {
-                  borderBottom: '2px solid #17B881',
-                  color: '#17B881',
-                }
+                    borderBottom: '2px solid #17B881',
+                    color: '#17B881',
+                  }
                 : {}
             }
           >
@@ -912,7 +952,7 @@ const GroupTableHeader: React.FC = (prop) => {
       >
         <div className="dialog-onlyTitle">是否退出该群</div>
       </Dialog>
-    </React.Fragment >
+    </React.Fragment>
   );
 };
 export default GroupTableHeader;

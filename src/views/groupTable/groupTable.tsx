@@ -56,7 +56,7 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
       // dispatch(setHeaderIndex(groupMemberItem.config.headerIndex));
       // dispatch(setHeaderIndex(0));
     }
-  }, [groupKey, headerIndex]);
+  }, [headerIndex]);
 
   return (
     <div
@@ -75,7 +75,7 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
         {memberHeaderIndex === 1 ? <Grid gridState={true} /> : null}
         {memberHeaderIndex === 2 ? <Grid gridState={false} /> : null}
         {memberHeaderIndex === 3 ? <WorkingCalendar /> : null}
-        {memberHeaderIndex === 4 ? (
+        {memberHeaderIndex === 11 ? (
           <GroupTableTree />
         ) : //
         null}

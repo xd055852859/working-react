@@ -15,13 +15,24 @@
   background-color: #fff;
 }
 /* 隐藏版权信息 */
-.fr-wrapper > div:first-child,
+/* .fr-wrapper > div:first-child,
 #logo,
 .fr-view > p[data-f-id='pbf'] {
   position: absolute;
   top: -10000px;
   opacity: 0;
   left: 0;
+} */
+.fr-toolbar .fr-btn-grp {
+  margin: 0px !important;
+}
+.fr-toolbar .fr-command.fr-btn svg {
+  margin: 2px !important;
+  height: 20px !important;
+  width: 20px !important;
+}
+.fr-box.fr-basic .fr-element {
+  padding: 5px 10px !important;
 }
 
 /* 文档模式下划线样式 */

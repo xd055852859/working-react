@@ -83,7 +83,7 @@
 }
 
 .task-executor-dropMenu-container:hover {
-  background: #F0F0F0
+  background: #f0f0f0;
 }
 
 .task-executor-dropMenu-left {
@@ -447,7 +447,7 @@ input {
   flex-wrap: wrap; */
 }
 
-.taskItem-path>span {
+.taskItem-path > span {
   cursor: pointer;
 }
 
@@ -476,8 +476,8 @@ input {
 
 @keyframes taskAvatarSmall {
   from {
-    width: 25px;
-    height: 25px;
+    width: 30px;
+    height: 30px;
   }
 
   to {
@@ -493,7 +493,7 @@ input {
   }
 
   to {
-    width: 25px;
-    height: 25px;
+    width: 30px;
+    height: 30px;
   }
 }

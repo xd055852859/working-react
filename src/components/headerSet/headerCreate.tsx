@@ -1,11 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './headerSet.css';
 import './headerCreate.css';
-import { TextField, Button, Checkbox, ClickAwayListener } from '@material-ui/core';
+import {
+  TextField,
+  Button,
+  Checkbox,
+  ClickAwayListener,
+} from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { setMessage } from '../../redux/actions/commonActions';
+import { changeCreateMusic } from '../../redux/actions/authActions';
 import {
   getSelfTask,
   getWorkingTableTask,
@@ -26,7 +32,7 @@ import defaultGroupPng from '../../assets/img/defaultGroup.png';
 interface HeaderCreateProps {
   visible: boolean;
   onClose?: any;
-  createStyle?: any
+  createStyle?: any;
 }
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -81,7 +87,7 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
   useEffect(() => {
     if (user && visible) {
       getTaskCreate(1);
-      getGroupArray()
+      getGroupArray();
     }
   }, [user, visible]);
   const getGroupArray = async () => {
@@ -93,18 +99,8 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
     if (groupRes.msg === 'OK') {
       newGroupArray.push(...groupRes.result);
       groupRes.result.forEach((item: any, index: number) => {
-        newLabelAllArray[index] = [];
-        if (!item.labelInfo[0]) {
-          item.labelInfo[0] = {
-            executorAvatar: "",
-            executorKey: "",
-            executorName: "",
-            labelKey: null,
-            labelName: "Todo",
-          }
-        }
-        newLabelAllArray[index] = item.labelInfo
-      })
+        newLabelAllArray[index] = _.cloneDeep(item.labelInfo);
+      });
       setGroupArray(newGroupArray);
       newLabelChooseArray[0] = [];
       newGroupChooseArray.push(_.cloneDeep(groupRes.result[0]));
@@ -113,7 +109,7 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
       newLabelChooseArray[0][0].index = 0;
       setGroupChooseArray(newGroupChooseArray);
       setLabelChooseArray(newLabelChooseArray);
-      setLabelAllArray(newLabelAllArray)
+      setLabelAllArray(newLabelAllArray);
     } else {
       dispatch(setMessage(true, groupRes.msg, 'error'));
     }
@@ -158,7 +154,7 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
     _.cloneDeep(labelChooseArray).forEach((item: any, index: number) => {
       groupArr.push(groupChooseArray[index]._key);
       labelArr[index] = [];
-      console.log(item)
+      console.log(item);
       item.map((labelItem: any, labelIndex: number) => {
         if (labelArr[index].indexOf(labelItem.labelKey)) {
           labelArr[index].push(labelItem.labelKey);
@@ -173,6 +169,7 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
     );
     if (addTaskRes.msg === 'OK') {
       dispatch(setMessage(true, '新增对应群任务成功', 'success'));
+      dispatch(changeCreateMusic(true));
       if (createTaskList) {
         let newCreateTaskList = _.cloneDeep(createTaskList);
         let newGroupChooseArray = _.cloneDeep(groupChooseArray);
@@ -213,7 +210,7 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
       let newLabelChooseArray = _.cloneDeep(labelChooseArray);
       newGroupChooseArray[chooseIndex] = groupArray;
       newLabelChooseArray[chooseIndex] = labelArray;
-      console.log(newLabelChooseArray)
+      console.log(newLabelChooseArray);
       setGroupChooseArray(newGroupChooseArray);
       setLabelChooseArray(newLabelChooseArray);
     }
@@ -228,72 +225,82 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
   };
   return (
     <React.Fragment>
-      {visible ? <ClickAwayListener onClickAway={() => {
-        if (addInput !== '') { setCloseVisible(true) } else {
-          onClose();
-        }
-      }}>
-        <div className="headerCreate" style={createStyle}>
-          <div className="headerCreate-mainTitle">新建任务</div>
-          <div className="headerSet-container">
-            <div className="headerSet-search-title">
-              <TextField
-                // required
-                id="outlined-basic"
-                variant="outlined"
-                label="添加任务"
-                style={{ width: '100%' }}
-                value={addInput}
-                className={classes.input}
-                onChange={(e) => {
-                  setAddInput(e.target.value);
-                }}
-              />
-            </div>
-            <div className="headerCreate-title-content" ref={createRef}>
-              {groupChooseArray.map((item: any, index: number) => {
-                return (
-                  <div className="headerCreate-title" key={'groupChoose' + index}>
+      {visible ? (
+        <ClickAwayListener
+          onClickAway={() => {
+            if (addInput !== '') {
+              setCloseVisible(true);
+            } else {
+              onClose();
+            }
+          }}
+        >
+          <div className="headerCreate" style={createStyle}>
+            <div className="headerCreate-mainTitle">新建任务</div>
+            <div className="headerSet-container">
+              <div className="headerSet-search-title">
+                <TextField
+                  // required
+                  id="outlined-basic"
+                  variant="outlined"
+                  label="添加任务"
+                  style={{ width: '100%' }}
+                  value={addInput}
+                  className={classes.input}
+                  onChange={(e) => {
+                    setAddInput(e.target.value);
+                  }}
+                />
+              </div>
+              <div className="headerCreate-title-content" ref={createRef}>
+                {groupChooseArray.map((item: any, index: number) => {
+                  return (
                     <div
-                      className="headerCreate-title-left"
-                      onClick={() => {
-                        setGroupVisible(true);
-                        setChooseIndex(index);
-                      }}
+                      className="headerCreate-title"
+                      key={'groupChoose' + index}
                     >
-                      <div className="headerCreate-title-avatar">
-                        <img
-                          src={item.groupLogo ? item.groupLogo : defaultGroupPng}
-                          alt=""
-                        />
-                      </div>
-                      <div className="headerCreate-title-left-left">
-                        {item.groupName} /
-                </div>
-                      <div className="headerCreate-title-left-right">
-                        {labelChooseArray[index] ? (
-                          <div className="headerCreate-title-left-title">
-                            {labelChooseArray[index][0].labelName
-                              ? labelChooseArray[index][0].labelName
-                              : labelChooseArray[index][0].labelKey
+                      <div
+                        className="headerCreate-title-left"
+                        onClick={() => {
+                          setGroupVisible(true);
+                          setChooseIndex(index);
+                        }}
+                      >
+                        <div className="headerCreate-title-avatar">
+                          <img
+                            src={
+                              item.groupLogo ? item.groupLogo : defaultGroupPng
+                            }
+                            alt=""
+                          />
+                        </div>
+                        <div className="headerCreate-title-left-left">
+                          {item.groupName} /
+                        </div>
+                        <div className="headerCreate-title-left-right">
+                          {labelChooseArray[index] ? (
+                            <div className="headerCreate-title-left-title">
+                              {labelChooseArray[index][0].labelName
+                                ? labelChooseArray[index][0].labelName
+                                : labelChooseArray[index][0].labelKey
                                 ? ''
                                 : 'ToDo'}
-                      (
-                            {labelChooseArray[index][0].executorName
-                              ? labelChooseArray[index][0].executorName
-                              : '无默认执行人'}
-                      )
-                          </div>
-                        ) : null}
+                              (
+                              {labelChooseArray[index][0].executorName
+                                ? labelChooseArray[index][0].executorName
+                                : '无默认执行人'}
+                              )
+                            </div>
+                          ) : null}
+                        </div>
                       </div>
-                    </div>
 
-                    {/*  */}
-                  </div>
-                );
-              })}
-              {/* <div style={{ position: 'relative' }}> */}
-              {/* <div
+                      {/*  */}
+                    </div>
+                  );
+                })}
+                {/* <div style={{ position: 'relative' }}> */}
+                {/* <div
             className="headerCreate-choose-title"
             onClick={() => {
               setGroupVisible(true);
@@ -306,64 +313,64 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
               style={{ width: '11px', height: '7px', marginLeft: '8px' }}
             />
           </div> */}
-              <CreateMoreTask
-                visible={groupVisible}
-                createStyle={{
-                  position: 'absolute',
-                  top: 155 + chooseIndex * 40 + 'px',
-                  left: '15px',
-                  height: '400px',
-                }}
-                changeGroupArray={changeGroupArray}
-                onClose={() => {
-                  setGroupVisible(false);
-                }}
-                groupIndex={
-                  chooseIndex < groupChooseArray.length &&
-                    groupChooseArray[chooseIndex]
-                    ? groupChooseArray[chooseIndex].index
-                    : 0
-                }
-                labelIndex={
-                  chooseIndex < groupChooseArray.length &&
-                    labelChooseArray[chooseIndex]
-                    ? labelChooseArray[chooseIndex][0].index
-                    : 0
-                }
-                labelArray={labelAllArray}
-                groupArray={groupArray}
-              />
-              {/* </div> */}
-            </div>
-            <div className="create-button">
-              <img
-                src={addState ? addCreateSvg : unaddCreateSvg}
-                alt=""
-                className="headerCreate-title-icon"
-                onClick={() => {
-                  setGroupVisible(true);
-                  setChooseIndex(groupChooseArray.length);
-                }}
-                onMouseEnter={() => {
-                  setAddState(true);
-                }}
-                onMouseLeave={() => {
-                  setAddState(false);
-                }}
-              />
-              {addInput ? (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => {
-                    // setGroupVisible(true);
-                    addMoreTask();
+                <CreateMoreTask
+                  visible={groupVisible}
+                  createStyle={{
+                    position: 'absolute',
+                    top: 155 + chooseIndex * 40 + 'px',
+                    left: '15px',
+                    height: '400px',
                   }}
-                  style={{ marginLeft: '10px', color: '#fff' }}
-                >
-                  保存
-                </Button>
-              ) : (
+                  changeGroupArray={changeGroupArray}
+                  onClose={() => {
+                    setGroupVisible(false);
+                  }}
+                  groupIndex={
+                    chooseIndex < groupChooseArray.length &&
+                    groupChooseArray[chooseIndex]
+                      ? groupChooseArray[chooseIndex].index
+                      : 0
+                  }
+                  labelIndex={
+                    chooseIndex < groupChooseArray.length &&
+                    labelChooseArray[chooseIndex]
+                      ? labelChooseArray[chooseIndex][0].index
+                      : 0
+                  }
+                  labelArray={labelAllArray}
+                  groupArray={groupArray}
+                />
+                {/* </div> */}
+              </div>
+              <div className="create-button">
+                <img
+                  src={addState ? addCreateSvg : unaddCreateSvg}
+                  alt=""
+                  className="headerCreate-title-icon"
+                  onClick={() => {
+                    setGroupVisible(true);
+                    setChooseIndex(groupChooseArray.length);
+                  }}
+                  onMouseEnter={() => {
+                    setAddState(true);
+                  }}
+                  onMouseLeave={() => {
+                    setAddState(false);
+                  }}
+                />
+                {addInput ? (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {
+                      // setGroupVisible(true);
+                      addMoreTask();
+                    }}
+                    style={{ marginLeft: '10px', color: '#fff' }}
+                  >
+                    保存
+                  </Button>
+                ) : (
                   <Button
                     variant="contained"
                     disabled
@@ -372,54 +379,58 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
                     保存
                   </Button>
                 )}
-            </div>
-
-            <div className="addTask-create">最近创建</div>
-            {createTaskList.length > 0 ? (
-              <div
-                className="headerSet-search-info"
-                onScroll={scrollCreateLoading}
-                style={{
-                  height:
-                    'calc(100% - ' +
-                    ((createRef.current ? createRef.current.offsetHeight : 0) + 175) +
-                    'px)',
-                }}
-              >
-                {createTaskList.map((taskItem: any, taskIndex: number) => {
-                  return (
-                    <Task
-                      key={'create' + taskIndex}
-                      taskItem={taskItem}
-                      showGroupName={true}
-                      createTime={moment(taskItem.createTime).fromNow()}
-                    />
-                  );
-                })}
               </div>
-            ) : null}
+
+              <div className="addTask-create">最近创建</div>
+              {createTaskList.length > 0 ? (
+                <div
+                  className="headerSet-search-info"
+                  onScroll={scrollCreateLoading}
+                  style={{
+                    height:
+                      'calc(100% - ' +
+                      ((createRef.current
+                        ? createRef.current.offsetHeight
+                        : 0) +
+                        175) +
+                      'px)',
+                  }}
+                >
+                  {createTaskList.map((taskItem: any, taskIndex: number) => {
+                    return (
+                      <Task
+                        key={'create' + taskIndex}
+                        taskItem={taskItem}
+                        showGroupName={true}
+                        createTime={moment(taskItem.createTime).fromNow()}
+                      />
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+            <Dialog
+              visible={closeVisible}
+              onClose={() => {
+                setCloseVisible(false);
+                onClose();
+              }}
+              onOK={() => {
+                if (addInput !== '') {
+                  addMoreTask();
+                } else {
+                  dispatch(setMessage(true, '请输入任务名字', 'error'));
+                }
+                setCloseVisible(false);
+              }}
+              title={'保存任务'}
+              dialogStyle={{ width: '300px', height: '200px' }}
+            >
+              <div className="deleteLabel-container">是否需要保存任务</div>
+            </Dialog>
           </div>
-          <Dialog
-            visible={closeVisible}
-            onClose={() => {
-              setCloseVisible(false);
-              onClose();
-            }}
-            onOK={() => {
-              if (addInput !== '') {
-                addMoreTask();
-              } else {
-                dispatch(setMessage(true, '请输入任务名字', 'error'));
-              }
-              setCloseVisible(false);
-            }}
-            title={'保存任务'}
-            dialogStyle={{ width: '300px', height: '200px' }}
-          >
-            <div className="deleteLabel-container">是否需要保存任务</div>
-          </Dialog>
-        </div>
-      </ClickAwayListener> : null}
+        </ClickAwayListener>
+      ) : null}
     </React.Fragment>
   );
 };

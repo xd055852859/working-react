@@ -39,9 +39,6 @@ const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
   ) {
     mainItem[0].groupName = '个人事务';
     myState = true;
-  } else if (mainItem[0].groupName.indexOf('主群') !== -1) {
-    mainItem[0].groupName = '他人事务';
-    myState = true;
   }
   const changeTask = (taskDetail: any) => {
     // dispatch(
@@ -101,6 +98,8 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
   const selfTaskArray = useTypedSelector((state) => state.task.selfTaskArray);
   const theme = useTypedSelector((state) => state.auth.theme);
   const [mainArray, setMainArray] = useState<any>([]);
+  const [finishNum, setFinishNum] = useState<any>(0);
+  const [allNum, setAllNum] = useState<any>(0);
   const dispatch = useDispatch();
   useEffect(() => {
     if (user && user._key) {
@@ -121,6 +120,7 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
       let groupObj: any = {};
       let groupArray = [];
       let createNum = 0;
+      let allNum = 0;
       let finishNum = 0;
       let state = '';
       const startTime = moment().startOf('day').valueOf();
@@ -137,14 +137,14 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
         state =
           state +
           (state
-            ? '||(item.finishPercent === 1 && item.todayTaskTime >= ' +
+            ? '||(item.finishPercent === 1 && item.taskEndDate >= ' +
               startTime +
-              '  && item.todayTaskTime <= ' +
+              '  && item.taskEndDate <= ' +
               endTime +
               ')'
-            : '(item.finishPercent === 1 && item.todayTaskTime >= ' +
+            : '(item.finishPercent === 1 && item.taskEndDate >= ' +
               startTime +
-              '  && item.todayTaskTime <= ' +
+              '  && item.taskEndDate <= ' +
               endTime +
               ')');
       }
@@ -171,6 +171,7 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
         //   item.finishPercent === 1 &&
         //   item.todayTaskTime >= startTime &&
         //   item.todayTaskTime <= endTime;
+        console.log(state);
         if (eval(state) && item.taskEndDate) {
           if (item.executorKey === user._key) {
             if (!groupObj[item.groupKey]) {
@@ -189,8 +190,11 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
           if (item.finishPercent === 1) {
             finishNum++;
           }
+          allNum++;
         }
       });
+      setFinishNum(finishNum);
+      setAllNum(allNum);
       // getNum(createNum, finishNum);
       setMainArray(_.sortBy(_.values(groupObj), ['groupName']));
     }
@@ -224,7 +228,11 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
   };
   return (
     <div className="mainBoard">
-      {!showType ? <div className="mainBoard-maintitle">我的任务</div> : null}
+      {!showType ? (
+        <div className="mainBoard-maintitle">
+          今日事务 ({allNum - finishNum} / {allNum})
+        </div>
+      ) : null}
       <div
         className="mainBoard-item"
         style={{ height: showType ? '100%' : 'calc(100% - 50px)' }}

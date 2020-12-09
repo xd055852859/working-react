@@ -13,7 +13,7 @@ import { setMessage } from '../../redux/actions/commonActions';
 import downArrowbPng from '../../assets/img/downArrowb.png';
 import DropMenu from '../common/dropMenu';
 import Dialog from '../common/dialog';
-import WorkingReport from '../../views/workingTable/workingReport';
+import WorkingReport from '../../views/workingTable/workingReport_clone1';
 
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import reportSvg from '../../assets/svg/report.svg';
@@ -66,8 +66,8 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
       selfTaskArray.forEach((item: any, index: number) => {
         let finishState =
           item.finishPercent === 1 &&
-          item.todayTaskTime >= startTime &&
-          item.todayTaskTime <= endTime;
+          item.taskEndDate >= startTime &&
+          item.taskEndDate <= endTime;
         if (
           item.executorKey === user._key &&
           ((item.finishPercent === 0 && item.taskEndDate <= endTime) ||

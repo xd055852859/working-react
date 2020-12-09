@@ -81,39 +81,39 @@ const WorkingTableLabel: React.FC = (prop) => {
                     labelArray[index][taskItem.labelKey].arr,
                     taskItem
                   );
+                } else {
+                  if (!labelArray[index]['ToDo' + index]) {
+                    labelArray[index]['ToDo' + index] = {
+                      arr: [],
+                      groupObj: item,
+                      labelObj: {
+                        groupKey: item._key,
+                        cardLabelName: 'ToDo',
+                      },
+                      position: [],
+                    };
+                  }
+                  labelArray[index]['ToDo' + index].arr = sortArr(
+                    labelArray[index]['ToDo' + index].arr,
+                    taskItem
+                  );
                 }
-
-                // else {
-                //   if (!labelArray[index]['ToDo' + index]) {
-                //     labelArray[index]['ToDo' + index] = {
-                //       arr: [],
-                //       groupObj: item,
-                //       labelObj: {
-                //         groupKey: item._key,
-                //         cardLabelName: 'ToDo',
-                //       },
-                //       position: [],
-                //     };
-                //   }
-                //   labelArray[index]['ToDo' + index].arr = sortArr(
-                //     labelArray[index]['ToDo' + index].arr,
-                //     taskItem
-                //   );
-                // }
               }
             }
           );
         });
-        workingGroupArray[0].labelArray.forEach((item: any, index: number) => {
-          if (Object.keys(labelArray[0]).indexOf(item._key) === -1) {
-            labelArray[0][item._key] = {
-              arr: [],
-              groupObj: workingGroupArray[0],
-              labelObj: item,
-              position: [],
-            };
-          }
-        });
+        // workingGroupArray[0].labelArray.forEach((item: any, index: number) => {
+        //   console.log(labelArray[0]);
+
+        //   if (Object.keys(labelArray[0]).indexOf(item._key) === -1) {
+        //     labelArray[0][item._key] = {
+        //       arr: [],
+        //       groupObj: workingGroupArray[0],
+        //       labelObj: item,
+        //       position: [],
+        //     };
+        //   }
+        // });
         labelArray = labelArray.map((item: any, index: number) => {
           for (let key in item) {
             item[key].arr = format
@@ -131,6 +131,7 @@ const WorkingTableLabel: React.FC = (prop) => {
           return Object.values(item);
         });
         labelArray = _.sortBy(_.flatten(labelArray), ['arrlength']).reverse();
+        console.log(labelArray);
         setMainLabelArray(labelArray);
       }
     }

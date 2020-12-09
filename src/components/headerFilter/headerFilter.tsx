@@ -7,7 +7,7 @@ import { setMessage } from '../../redux/actions/commonActions';
 import { setTheme } from '../../redux/actions/authActions';
 import _ from 'lodash';
 import api from '../../services/api';
-import allPng from '../../assets/img/all.png'
+import allPng from '../../assets/img/all.png';
 interface HeaderFilterProps {}
 
 const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
@@ -51,21 +51,21 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
       {
         name: '全部',
         key: null,
-        avatar:allPng
+        avatar: allPng,
       },
     ];
     let creatorFilterArray: any = [
       {
         name: '全部',
         key: null,
-        avatar:allPng
+        avatar: allPng,
       },
     ];
     let executorfilterArray: any = [
       {
         name: '全部',
         key: null,
-        avatar:allPng
+        avatar: allPng,
       },
     ];
     _.flatten(cardArray).forEach((item: any) => {
@@ -135,14 +135,14 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
       {
         name: '全部',
         key: null,
-        avatar:allPng
+        avatar: allPng,
       },
     ];
     let executorfilterArray: any = [
       {
         name: '全部',
         key: null,
-        avatar:allPng
+        avatar: allPng,
       },
     ];
     let arr = [];
@@ -242,6 +242,9 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
       dispatch(setTheme(newTheme));
     }
     dispatch(setFilterObject(newFilterObject));
+    setGroupFilterVisible(false);
+    setExecutorFilterVisible(false);
+    setCreatorFilterVisible(false);
   };
   return (
     <React.Fragment>
@@ -254,9 +257,9 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
           filterItemStyle={{
             width: '228px',
             minHeight: '300px',
-            top: '38px',         
+            top: '38px',
           }}
-          filterStyle={{ padding: '0px 18px',marginTop:'10px' }}
+          filterStyle={{ padding: '0px 18px', marginTop: '10px' }}
           filterIndex={groupIndex}
           onOpen={() => {
             setGroupFilterVisible(true);

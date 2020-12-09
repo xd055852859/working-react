@@ -19,6 +19,7 @@ import {
   changeMessageMusic,
   changeunMusic,
   changeBatchMusic,
+  changeCreateMusic,
   changeMove,
 } from './redux/actions/authActions';
 import {
@@ -77,6 +78,7 @@ const App: React.FC = () => {
   const unFinishMusic = useTypedSelector((state) => state.auth.unFinishMusic);
   const unMessageNum = useTypedSelector((state) => state.common.unMessageNum);
   const batchMusic = useTypedSelector((state) => state.auth.batchMusic);
+  const createMusic = useTypedSelector((state) => state.auth.createMusic);
   const finishPos = useTypedSelector((state) => state.auth.finishPos);
   const [intervalTime, setIntervalTime] = useState<any>(null);
   const [bgIntervalTime, setBgIntervalTime] = useState<any>(null);
@@ -100,6 +102,7 @@ const App: React.FC = () => {
   const doneAudioRef: React.RefObject<any> = useRef();
   const doneMessageRef: React.RefObject<any> = useRef();
   const undoneAudioRef: React.RefObject<any> = useRef();
+  const createRef: React.RefObject<any> = useRef();
   const batchRef: React.RefObject<any> = useRef();
 
   const ballRef: React.RefObject<any> = useRef();
@@ -108,13 +111,6 @@ const App: React.FC = () => {
     if (user && user._key && token && token === localStorage.getItem('token')) {
       dispatch(getMainGroupKey());
       dispatch(getTheme());
-      dispatch(
-        getCalendarList(
-          user._key,
-          moment().startOf('month').startOf('day').valueOf(),
-          moment().endOf('month').endOf('day').valueOf()
-        )
-      );
       dispatch(getThemeBg(1));
       let headerIndex = localStorage.getItem('headerIndex')
         ? localStorage.getItem('headerIndex')
@@ -204,24 +200,24 @@ const App: React.FC = () => {
     } else if (headerIndex == '3' || headerIndex == '2') {
       dispatch(setMoveState('in'));
     } else {
-      dispatch(setMoveState('out'));
+      dispatch(setMoveState(''));
     }
   }, [theme]);
-  useEffect(() => {
-    if (taskActionArray.length > 0) {
-      clearInterval(intervalTime);
-      let newIntervalTime: any = 0;
-      formatAction();
-      newIntervalTime = setInterval(formatAction, 1000);
-      setIntervalTime(newIntervalTime);
-    }
-    if (taskActionArray.length == 0) {
-      clearInterval(intervalTime);
-    }
-    return () => {
-      clearInterval(intervalTime);
-    };
-  }, [taskActionArray]);
+  // useEffect(() => {
+  //   if (taskActionArray.length > 0) {
+  //     clearInterval(intervalTime);
+  //     let newIntervalTime: any = 0;
+  //     formatAction();
+  //     newIntervalTime = setInterval(formatAction, 1000);
+  //     setIntervalTime(newIntervalTime);
+  //   }
+  //   if (taskActionArray.length == 0) {
+  //     clearInterval(intervalTime);
+  //   }
+  //   return () => {
+  //     clearInterval(intervalTime);
+  //   };
+  // }, [taskActionArray]);
   useEffect(() => {
     if (
       themeBg.length > 0 &&
@@ -235,10 +231,10 @@ const App: React.FC = () => {
         theme.randomType === '1'
           ? 60000
           : theme.randomType === '2'
-            ? 3600000
-            : theme.randomType === '3'
-              ? 86400000
-              : 60000;
+          ? 3600000
+          : theme.randomType === '3'
+          ? 86400000
+          : 60000;
       randomBg();
       newIntervalTime = setInterval(randomBg, randomTime);
       setBgIntervalTime(newIntervalTime);
@@ -278,6 +274,12 @@ const App: React.FC = () => {
       dispatch(changeMessageMusic(false));
     }
   }, [messageMusic]);
+  useEffect(() => {
+    if (createMusic) {
+      createRef.current.play();
+      dispatch(changeCreateMusic(false));
+    }
+  }, [createMusic]);
   useEffect(() => {
     if (socket) {
       socket.on('notice', (data: any) => {
@@ -381,24 +383,24 @@ const App: React.FC = () => {
       dom.style.animation =
         'run-right-right' +
         newFinishIndex +
-        ' 1s 0.4s 1 linear,run-right-top' +
+        ' 2s 0.4s 1 linear,run-right-top' +
         newFinishIndex +
-        ' 1s 0.4s 1 cubic-bezier(' +
-        Math.random().toFixed(2) +
-        ', ' +
-        Math.random().toFixed(2) +
-        ', ' +
-        Math.random().toFixed(2) +
-        ', ' +
-        Math.random().toFixed(2) +
-        ')';
+        ' 2s 0.4s 1 cubic-bezier(0,1,0,1)';
+      // Math.random().toFixed(2) +
+      // ', ' +
+      // Math.random().toFixed(2) +
+      // ', ' +
+      // Math.random().toFixed(2) +
+      // ', ' +
+      // Math.random().toFixed(2) +
+
       //  cubic-bezier(.66,.1,1,.41)';
 
       dom.style.animationFillMode = 'forwards';
       let img = new Image();
       img.src = moveSvg;
-      img.width = 60;
-      img.height = 60;
+      img.width = 40;
+      img.height = 40;
       dom.classList.add('ball');
       // dom.classList.add('run_top_right');
       dom.appendChild(img);
@@ -410,22 +412,23 @@ const App: React.FC = () => {
         style.deleteRule(style.cssRules.length - 4);
         clearTimeout(timer);
         timer = null;
-      }, 2800);
-
+      }, 3800);
       style.insertRule(
         '@keyframes run-right-top' +
-        newFinishIndex +
-        ' {0% {top: ' +
-        (finishPos[1] - 20) +
-        'px;} 100% {top: 30px}}',
+          newFinishIndex +
+          ' { 0% {top: ' +
+          (finishPos[1] - 20) +
+          'px}  30% {top: ' +
+          (finishPos[1] - 20) +
+          'px} 100% {top: 15px}}',
         0
       );
       style.insertRule(
         '@keyframes run-right-right' +
-        newFinishIndex +
-        '  {0% { right: ' +
-        (pageRef.current.clientWidth - finishPos[0] - 20) +
-        'px;transform: scale(1);} 100% { right: 30px;transform: scale(0.45);}',
+          newFinishIndex +
+          '  {0% {transform: scale(1)} 30% { right: ' +
+          (pageRef.current.clientWidth - finishPos[0] - 20) +
+          'px;transform: scale(1.25);} 100% { right: 30px;transform: scale(0.45);}',
         1
       );
       newFinishIndex++;
@@ -433,19 +436,19 @@ const App: React.FC = () => {
     }
   }, [finishPos]);
 
-  const formatAction = () => {
-    const nowTime = moment().valueOf();
-    taskActionArray.forEach((item: any, index: number) => {
-      if (
-        item.taskEndDate < nowTime + 1000 &&
-        item.taskEndDate > nowTime - 1000 &&
-        item.finishPercent
-      ) {
-        setPlayAction(item);
-        setPlayState(true);
-      }
-    });
-  };
+  // const formatAction = () => {
+  //   const nowTime = moment().valueOf();
+  //   taskActionArray.forEach((item: any, index: number) => {
+  //     if (
+  //       item.taskEndDate < nowTime + 1000 &&
+  //       item.taskEndDate > nowTime - 1000 &&
+  //       item.finishPercent
+  //     ) {
+  //       setPlayAction(item);
+  //       setPlayState(true);
+  //     }
+  //   });
+  // };
   const randomBg = () => {
     const localTime = localStorage.getItem('localTime')
       ? localStorage.getItem('localTime')
@@ -454,10 +457,10 @@ const App: React.FC = () => {
       theme.randomType === '1'
         ? 60000
         : theme.randomType === '2'
-          ? 3600000
-          : theme.randomType === '3'
-            ? 86400000
-            : 60000;
+        ? 3600000
+        : theme.randomType === '3'
+        ? 86400000
+        : 60000;
     if (!localTime || parseInt(localTime) + randomTime <= moment().valueOf()) {
       changeBg();
       localStorage.setItem('localTime', moment().valueOf() + '');
@@ -497,13 +500,13 @@ const App: React.FC = () => {
         style={
           theme.backgroundImg
             ? {
-              backgroundImage: 'url(' + theme.backgroundImg + ')',
-            }
+                backgroundImage: 'url(' + theme.backgroundImg + ')',
+              }
             : {
-              backgroundColor: theme.backgroundColor
-                ? theme.backgroundColor
-                : '#3C3C3C',
-            }
+                backgroundColor: theme.backgroundColor
+                  ? theme.backgroundColor
+                  : '#3C3C3C',
+              }
         }
       ></div>
       {showType === '2' ? (
@@ -583,6 +586,16 @@ const App: React.FC = () => {
       >
         您的浏览器不支持 audio 标签。
       </audio>
+      <audio
+        ref={createRef}
+        src="https://cdn-icare.qingtime.cn/1607480783765_workingVip"
+        // muted
+        // controls
+        style={{ position: 'fixed', zIndex: -5, opacity: 0 }}
+      >
+        您的浏览器不支持 audio 标签。
+      </audio>
+
       {/* <div className="ball run_top_right" ref={ballRef}>
         <img src={movePng} />
       </div> */}

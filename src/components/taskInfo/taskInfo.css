@@ -39,6 +39,10 @@
   margin-right: 9px;
   cursor: pointer;
 }
+.taskInfo-mainTitle-left-icon {
+  width: 27px;
+  height: 27px;
+}
 .taskInfo-mainTitle-left-avatar {
   border-radius: 50%;
   overflow: hidden;
@@ -89,6 +93,16 @@
   border: 1px solid #efefef;
   padding: 2px;
   box-sizing: border-box;
+  position: relative;
+  z-index: 1;
+}
+.taskInfo-Editor-mask {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  z-index: 2;
 }
 .taskInfo-item-title {
   width: 30px;
@@ -151,7 +165,7 @@
   border-radius: 4px;
 }
 .taskInfo-comment {
-  margin-bottom: 15px;
+  margin: 15px 0px 40px 0px;
 }
 .taskInfo-comment-tabs {
   width: 100%;
@@ -173,7 +187,8 @@
 }
 .taskInfo-comment-tab {
   width: 100%;
-  max-height: 300px;
+  max-height: 600px;
+  min-height: 60px;
   overflow: auto;
   padding-top: 15px;
   box-sizing: border-box;
@@ -216,10 +231,17 @@
   border-bottom: 1px solid #f0f0f0;
 }
 .taskInfo-comment-input {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+  padding: 0px 10px;
+  position: absolute;
+  left: 0px;
+  bottom: 0px;
+  background-color: #fff;
+  z-index: 10;
 }
 .point {
   width: 5px;

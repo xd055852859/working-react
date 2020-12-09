@@ -55,13 +55,13 @@ const Content: React.FC<ContentProps> = (props) => {
     let hour = moment().hour();
     let minute = moment().minute();
     let nowTime: any = [];
-    if (hour < 9) {
+    if (hour <= 9) {
       nowTime[0] = '早上';
-    } else if (hour < 11 && minute < 30) {
+    } else if (hour <= 12 && hour > 9) {
       nowTime[0] = '上午';
-    } else if (hour < 13 && minute < 30) {
+    } else if (hour <= 13 && hour > 12) {
       nowTime[0] = '中午';
-    } else if (hour < 18) {
+    } else if (hour <= 18 && hour > 13) {
       nowTime[0] = '下午';
     } else {
       nowTime[0] = '晚上';

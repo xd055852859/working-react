@@ -96,7 +96,7 @@
   color: #8091a0;
 }
 .messageBoard-item-task-button {
-  width: 60px;
+  width: 70px;
   height: 28px;
   position: absolute;
   top: 50px;
@@ -104,7 +104,7 @@
   z-index: 2;
   padding: 0px 5px;
   color: #fff;
-  font-size: 5px;
+  font-size: 11px;
   box-sizing: border-box;
   cursor: pointer;
   animation-fill-mode: forwards;

@@ -31,7 +31,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
   let XYLeft1chart = null;
   let XYRightchart = null;
   let colHeight: any = [];
-  const taskTitleArr = ['昨日完成', '今日计划', '未完成任务', '已完成任务'];
+  const taskTitleArr = ['昨日', '今日', '未完成任务', '已完成任务'];
   const startTime = moment(new Date()).startOf('day').valueOf();
   const endTime = moment(new Date()).endOf('day').valueOf();
   const startTaskTime = moment(new Date())
@@ -114,8 +114,8 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
       switch (taskState) {
         case 0:
           state =
-            item.todayTaskTime >= startTaskTime &&
-            item.todayTaskTime <= endTaskTime &&
+            item.taskEndDate >= startTaskTime &&
+            item.taskEndDate <= endTaskTime &&
             item.finishPercent == 1;
           break;
         case 1:
@@ -245,8 +245,8 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
       switch (taskState) {
         case 0:
           state =
-            item.todayTaskTime >= startTaskTime &&
-            item.todayTaskTime <= endTaskTime &&
+            item.taskEndDate >= startTaskTime &&
+            item.taskEndDate <= endTaskTime &&
             item.finishPercent == 1;
           break;
         case 1:

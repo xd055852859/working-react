@@ -17,6 +17,9 @@
   padding: 10px 0px;
   box-sizing: border-box;
 }
+.createMoreTask-left {
+  border: 1px solid #dedede;
+}
 .createMoreTask-left-container,
 .createMoreTask-right-container {
   width: 100%;
@@ -48,8 +51,15 @@
 .createMoreTask-item:hover {
   background: #f0f0f0;
 }
-.createMoreTask-item:hover .createMoreTask-item-label {
+.createMoreTask-item:hover .createMoreTask-item-label,
+.createMoreTask-item:hover .createMoreTask-item-name {
   color: #17b881;
+}
+.createMoreTask-item-left {
+  width: calc(100% - 35px);
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 .createMoreTask-item-name,
 .createMoreTask-item-label {

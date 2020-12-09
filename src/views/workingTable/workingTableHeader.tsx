@@ -40,6 +40,12 @@ import calendarbPng from '../../assets/img/calendarb.png';
 import downArrowPng from '../../assets/img/downArrow.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import checkPersonPng from '../../assets/img/checkPerson.png';
+import tabb0Svg from '../../assets/svg/tab0.svg';
+import tabb1Svg from '../../assets/svg/tab1.svg';
+import tabb4Svg from '../../assets/svg/tab4.svg';
+import tab0Svg from '../../assets/svg/tabw0.svg';
+import tab1Svg from '../../assets/svg/tabw1.svg';
+import tab4Svg from '../../assets/svg/tabw4.svg';
 import filterPng from '../../assets/img/filter.png';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -87,6 +93,8 @@ const WorkingTableHeader: React.FC = (prop) => {
     groupTabbPng,
     calendarbPng,
   ];
+  const tabImg: string[] = [tab0Svg, tab1Svg, tab4Svg];
+  const tabbImg: string[] = [tabb0Svg, tabb1Svg, tabb4Svg];
   const checkedTitle = [
     '过期',
     '今天',
@@ -268,7 +276,7 @@ const WorkingTableHeader: React.FC = (prop) => {
         className="workingTableHeader-logo"
         onClick={() => {
           if (!theme.moveState) {
-            dispatch(setMoveState('out'));
+            dispatch(setMoveState(''));
           }
           dispatch(setCommonHeaderIndex(1));
         }}
@@ -325,7 +333,7 @@ const WorkingTableHeader: React.FC = (prop) => {
       <div className="view-container">
         <div
           className="workingTableHeader-logo"
-          style={{ width: '68px' }}
+          style={{ width: '90px' }}
           onMouseEnter={() => {
             setTabVisible(true);
             setViewVisible(false);
@@ -337,7 +345,7 @@ const WorkingTableHeader: React.FC = (prop) => {
             setFilterVisible(false);
           }}
         >
-          {/* <img src={viewImg[memberHeaderIndex]} alt=""></img> */}
+          <img src={tabImg[tabIndex]} alt=""></img>
           <Chip
             size="small"
             label={tabArray[tabIndex]}
@@ -369,7 +377,10 @@ const WorkingTableHeader: React.FC = (prop) => {
                     backgroundColor: tabIndex === index ? '#f0f0f0' : '',
                   }}
                 >
-                  <div>{tabItem}</div>
+                  <div className="viewTableHeader-tab">
+                    <img src={tabbImg[index]} alt=""></img>
+                    {tabItem}
+                  </div>
                   {tabIndex === index ? (
                     <img
                       src={checkPersonPng}

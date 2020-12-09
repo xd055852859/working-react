@@ -93,14 +93,14 @@ const WorkingTableGroup: React.FC = (prop) => {
             }
           });
         });
-        workingGroupArray[0].labelArray.forEach((item: any) => {
-          if (Object.keys(arr[0]).indexOf(item._key) === -1) {
-            arr[0][item._key] = {
-              arr: [],
-              labelObj: item,
-            };
-          }
-        });
+        // workingGroupArray[0].labelArray.forEach((item: any) => {
+        //   if (Object.keys(arr[0]).indexOf(item._key) === -1) {
+        //     arr[0][item._key] = {
+        //       arr: [],
+        //       labelObj: item,
+        //     };
+        //   }
+        // });
         groupArray = arr;
         groupArray = groupArray.map((item: any) => {
           item.arrlength = 0;

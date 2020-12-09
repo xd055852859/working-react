@@ -62,7 +62,7 @@ export default function Welcome() {
   const [clientWidth, setClientWidth] = useState(0);
   const bootpageRef: React.RefObject<any> = useRef();
   useEffect(() => {
-    if (localStorage.getItem('token')) {
+    if (localStorage.getItem('token') && !localStorage.getItem('viewWelcome')) {
       history.push('/');
     }
   }, []);
@@ -91,9 +91,9 @@ export default function Welcome() {
     window.open('http://beian.miit.gov.cn/');
   };
   const toLogin = () => {
-    console.log(localStorage.getItem('token'));
-    if (localStorage.getItem('token')) {
+    if (localStorage.getItem('token') && localStorage.getItem('viewWelcome')) {
       history.push('/');
+      localStorage.removeItem('viewWelcome');
     } else {
       const redirect = `${window.location.protocol}//${window.location.host}`;
       // window.location.href = `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`;

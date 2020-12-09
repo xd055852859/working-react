@@ -137,7 +137,11 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
           />
         ) : null}
       </div>
-      {headerIndex === 1 ? (
+      {headerIndex === 1 ||
+      (headerIndex === 2 &&
+        targetUserKey &&
+        userKey &&
+        userKey === targetUserKey) ? (
         <React.Fragment>
           <input
             className="workingTable-addLabel-input"

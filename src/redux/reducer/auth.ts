@@ -19,6 +19,7 @@ export interface AuthType {
   messageMusic: boolean;
   unFinishMusic: boolean;
   batchMusic: boolean;
+  createMusic: boolean;
   finishPos: any;
 }
 
@@ -49,6 +50,7 @@ const defaultState: AuthType = {
     weatherShow: true,
     grayPencent: 0,
     moveState: false,
+
     filterObject: {
       groupKey: null,
       groupName: '',
@@ -72,6 +74,7 @@ const defaultState: AuthType = {
   messageMusic: false,
   unFinishMusic: false,
   batchMusic: false,
+  createMusic: false,
   finishPos: [],
 };
 
@@ -194,7 +197,11 @@ export const auth = (state = defaultState, action: any) => {
         ...state,
         batchMusic: action.batchMusic,
       };
-
+    case actionTypes.CHANGE_CREATE_MUSIC:
+      return {
+        ...state,
+        createMusic: action.createMusic,
+      };
     case actionTypes.CHANGE_MOVE:
       return {
         ...state,

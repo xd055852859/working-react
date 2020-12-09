@@ -4,6 +4,7 @@ import { Button, Checkbox } from '@material-ui/core';
 import _ from 'lodash';
 import moment from 'moment';
 import { useTypedSelector } from '../../redux/reducer/RootState';
+import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import './messageBoard.css';
 import api from '../../services/api';
 import {
@@ -43,13 +44,21 @@ import messageHandSvg from '../../assets/svg/messageHand.svg';
 import messageunHandSvg from '../../assets/svg/messageunHand.svg';
 import Loading from '../../components/common/loading';
 import TaskInfo from '../../components/taskInfo/taskInfo';
+import classes from '*.module.css';
 interface MessageBoardProps {
   type?: string;
 }
-
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      color: '#fff',
+    },
+  })
+);
 const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
   const { type } = prop;
   const dispatch = useDispatch();
+  const classes = useStyles();
   const user = useTypedSelector((state) => state.auth.user);
   // const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const socketObj = useTypedSelector((state) => state.common.socketObj);
@@ -101,7 +110,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
       let newMessageTotal = messageTotal;
       newMessageArray.unshift(newSocketObj);
       newMessageArray[0]._key = newSocketObj.data.noticeKey;
-      if (newSocketObj.data.type === 3 || newSocketObj.data.type === 5) {
+      if (newSocketObj.data.type == 3 || newSocketObj.data.type == 5) {
         setMessageNum(messageNum + 1);
       }
       setMessageArray(newMessageArray);
@@ -214,16 +223,29 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
         <div>{!type ? '提醒' : 'null'}</div>
         <div className="messageBoard-mainbutton">
           <div style={{ fontSize: '14px', color: !type ? '#fff' : '#333' }}>
-            <Checkbox
-              checked={messageCheck}
-              onChange={(e: any) => {
-                setMessageCheck(e.target.checked);
-                setMessagePage(1);
-                getMessage(1, e.target.checked);
-              }}
-              color="primary"
-            />
-            只看待签收
+            {!type ? (
+              <Checkbox
+                checked={messageCheck}
+                onChange={(e: any) => {
+                  setMessageCheck(e.target.checked);
+                  setMessagePage(1);
+                  getMessage(1, e.target.checked);
+                }}
+                color="primary"
+                className={classes.root}
+              />
+            ) : (
+              <Checkbox
+                checked={messageCheck}
+                onChange={(e: any) => {
+                  setMessageCheck(e.target.checked);
+                  setMessagePage(1);
+                  getMessage(1, e.target.checked);
+                }}
+                color="primary"
+              />
+            )}
+            待签收
           </div>
           {messageNum ? (
             <Button
@@ -468,7 +490,11 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                             checkMsg(messageItem._key, messageIndex);
                           }}
                         >
-                          <img src={messageButtonSvg} alt="" />
+                          <img
+                            src={messageButtonSvg}
+                            alt=""
+                            style={{ width: '12px', height: '13px' }}
+                          />
                           <div style={{ marginLeft: '5px' }}>签收</div>
                         </div>
                       ) : null}
@@ -483,7 +509,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                     >
                       <div
                         style={{
-                          width: '80%',
+                          width: '75%',
                         }}
                       >
                         <div className="messageBoard-item-name1">

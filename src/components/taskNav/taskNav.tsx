@@ -18,6 +18,7 @@ import checkPersonPng from '../../assets/img/checkPerson.png';
 import { getGroupTask, setChooseKey } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import { changeGroupInfo } from '../../redux/actions/groupActions';
+import { changeCreateMusic } from '../../redux/actions/authActions';
 
 interface TaskNavProps {
   avatar?: any;
@@ -126,6 +127,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
     );
     if (addTaskRes.msg === 'OK') {
       dispatch(setMessage(true, '新增任务成功', 'success'));
+      dispatch(changeCreateMusic(true));
       dispatch(setChooseKey(addTaskRes.result._key));
       if (headerIndex === 1) {
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10]));
@@ -189,6 +191,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
     );
     if (batchTaskRes.msg === 'OK') {
       dispatch(setMessage(true, '新增成功', 'success'));
+      dispatch(changeCreateMusic(true));
       if (headerIndex === 1) {
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10]));
       } else if (headerIndex === 2) {

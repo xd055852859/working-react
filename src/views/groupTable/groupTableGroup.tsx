@@ -12,6 +12,7 @@ import {
   setTaskKey,
 } from '../../redux/actions/taskActions';
 import { changeBatchMusic } from '../../redux/actions/authActions';
+import { changeCreateMusic } from '../../redux/actions/authActions';
 // import { getGroupInfo } from '../../redux/actions/groupActions';
 // import { getTheme } from '../../redux/actions/authActions';
 import { setMessage } from '../../redux/actions/commonActions';
@@ -426,6 +427,7 @@ const GroupTableGroup: React.FC = (prop) => {
     );
     if (addTaskRes.msg === 'OK') {
       dispatch(setMessage(true, '新增任务成功', 'success'));
+      dispatch(changeCreateMusic(true));
       dispatch(setChooseKey(addTaskRes.result._key));
       dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
       setAddTaskVisible(false);

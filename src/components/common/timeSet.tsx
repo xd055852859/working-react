@@ -139,7 +139,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                 marginBottom: '10px',
                 padding: '5px 10px',
               }
-            : { height: '50px' }
+            : { height: '42px' }
         }
       >
         {!timestate ? (
@@ -194,7 +194,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
           style={
             // !viewStyle
             // ?
-            { width: '230px', height: '42px' }
+            { width: '200px', height: '41px' }
             // : { width: '230px', height: '40px' }
           }
         >
@@ -203,7 +203,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
             style={{
               width: '20px',
               height: '20px',
-              marginRight: '5px',
+              marginRight: '2px',
               // marginBottom: '5px',
               cursor: 'pointer',
             }}
@@ -266,7 +266,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                   //  : '0px',
                   marginRight:
                     // !viewStyle ?
-                    '5px',
+                    '2px',
                   // : '1px',
                 }}
               >
@@ -303,7 +303,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                     padding: '5px 10px',
                     marginTop: '20px',
                   }
-                : { width: '405px', height: '42px', marginLeft: '10px' }
+                : { width: '360px', height: '41px', marginLeft: '10px' }
             }
           >
             <div
@@ -344,7 +344,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                 }}
               />
             </div>
-            <div className="timeSet-date-info" style={{ height: '42px' }}>
+            <div className="timeSet-date-info" style={{ height: '41px' }}>
               {timeDateArray.map((dateTimeItem: any, dateTimeIndex: number) => {
                 return (
                   <div
@@ -360,10 +360,10 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                           : timeWeek[dateTimeIndex] > 4
                           ? '#BABABA'
                           : '#505050',
-                      marginBottom: viewStyle !== 'horizontal' ? '5px' : '0px',
+                      marginBottom: viewStyle !== 'horizontal' ? '5px' : '1px',
                       marginRight:
                         // !viewStyle ?
-                        '4px',
+                        '2px',
                       // : '1px',
                     }}
                   >

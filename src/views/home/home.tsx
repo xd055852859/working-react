@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 import './home.css';
 import logoSvg from '../../assets/svg/logo.svg';
 import boardPng from '../../assets/img/board.png';
@@ -13,11 +14,11 @@ import { setCommonHeaderIndex } from '../../redux/actions/commonActions';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { setTheme } from '../../redux/actions/authActions';
 import _ from 'lodash';
-export interface HomeProps { }
+export interface HomeProps {}
 
 const Home: React.FC<HomeProps> = (props) => {
   // const location = useLocation();
-  // const history = useHistory();
+  const history = useHistory();
   const dispatch = useDispatch();
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const moveState = useTypedSelector((state) => state.common.moveState);
@@ -37,17 +38,17 @@ const Home: React.FC<HomeProps> = (props) => {
       style={
         moveState === 'in'
           ? {
-            animation: 'moveIn 500ms',
-            // animationFillMode: 'forwards',
-            width: '0px',
-          }
+              animation: 'moveIn 500ms',
+              // animationFillMode: 'forwards',
+              width: '0px',
+            }
           : moveState === 'out'
-            ? {
+          ? {
               animation: 'moveOut 500ms',
               // animationFillMode: 'forwards',
               width: '320px',
             }
-            : { width: '320px' }
+          : { width: '320px' }
       }
     >
       <div
@@ -61,21 +62,22 @@ const Home: React.FC<HomeProps> = (props) => {
         style={
           theme.backgroundImg
             ? {
-              backgroundImage: 'url(' + theme.backgroundImg + ')',
-            }
+                backgroundImage: 'url(' + theme.backgroundImg + ')',
+              }
             : { backgroundColor: theme.backgroundColor }
         }
       ></div>
       <div className="home-b"></div>
       <div className="home-header">
-        <div
-          className="home-header-logo"
-        // onClick={() => {
-        //   const redirect = `${window.location.protocol}//${window.location.host}`;
-        //   window.location.href = `${redirect}/welcome`;
-        // }}
-        >
-          <img src={logoSvg} alt="" />
+        <div className="home-header-logo">
+          <img
+            src={logoSvg}
+            alt=""
+            onClick={() => {
+              history.push('/welcome');
+              localStorage.setItem('viewWelcome', '1');
+            }}
+          />
           {theme.moveState ? (
             <img
               src={fixIconSvg}
@@ -86,15 +88,15 @@ const Home: React.FC<HomeProps> = (props) => {
               }}
             />
           ) : (
-              <img
-                src={unfixIconSvg}
-                alt=""
-                style={{ width: '30px', height: '30px' }}
-                onClick={() => {
-                  changeBoard('moveState', true);
-                }}
-              />
-            )}
+            <img
+              src={unfixIconSvg}
+              alt=""
+              style={{ width: '30px', height: '30px' }}
+              onClick={() => {
+                changeBoard('moveState', true);
+              }}
+            />
+          )}
         </div>
         <div
           className="home-header-item"
@@ -103,8 +105,8 @@ const Home: React.FC<HomeProps> = (props) => {
           }
           onClick={() => dispatch(setCommonHeaderIndex(0))}
         >
-          <img src={tablePng} alt="" className="home-header-item-logo" />
-          看板
+          <img src={boardPng} alt="" className="home-header-item-logo" />
+          首页
         </div>
         <div
           style={
@@ -113,7 +115,7 @@ const Home: React.FC<HomeProps> = (props) => {
           className="home-header-item"
           onClick={() => dispatch(setCommonHeaderIndex(1))}
         >
-          <img src={boardPng} alt="" className="home-header-item-logo" />
+          <img src={tablePng} alt="" className="home-header-item-logo" />
           我的工作
         </div>
         {theme && theme.calendarVisible ? (

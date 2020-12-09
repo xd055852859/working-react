@@ -162,10 +162,10 @@ const format = {
     if (filterArray.indexOf('今天') !== -1) {
       str =
         str === ''
-          ? '(item.taskEndDate >= startTime && item.taskEndDate <= endTime&&item.finishPercent<2)'
+          ? '(item.taskEndDate >= startTime && item.taskEndDate <= endTime && item.finishPercent<2)'
           : str +
             '||' +
-            '(item.taskEndDate >= startTime && item.taskEndDate <= endTime&&item.finishPercent<2)';
+            '(item.taskEndDate >= startTime && item.taskEndDate <= endTime && item.finishPercent<2)';
     }
     if (filterArray.indexOf('已完成') !== -1) {
       str =
@@ -353,8 +353,6 @@ const format = {
     //   u8arr[n] = bstr.charCodeAt(n);
     // }
     // return new Blob([u8arr], { type: 'text/plain' });
-  
-
   },
 };
 export default format;

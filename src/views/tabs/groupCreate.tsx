@@ -37,7 +37,7 @@ const GroupCreate: React.FC<GroupCreateProps> = (props) => {
   const [taskCheck, setTaskCheck] = React.useState(true);
   const [groupObj, setGroupObj] = React.useState<any>(null);
   const [loading, setLoading] = React.useState(false);
-  
+
   const saveGroupSet = (obj: any) => {
     if (!isNaN(templateKey)) {
       obj.templateKey = templateKey;
@@ -54,6 +54,7 @@ const GroupCreate: React.FC<GroupCreateProps> = (props) => {
       !newGroupObj.groupName.trim()
     ) {
       dispatch(setMessage(true, '请输入群名', 'error'));
+      setLoading(false);
       return;
     }
     let groupRes: any = await api.group.addGroup(newGroupObj);

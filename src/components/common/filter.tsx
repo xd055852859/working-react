@@ -84,8 +84,10 @@ const Filter: React.FC<FilterProps> = (prop) => {
               <div
                 className="filter-menu-info"
                 key={title + index}
-                onClick={() => {
+                onClick={(e) => {
                   onClick(filterType, item, index);
+                  onClose();
+                  e.stopPropagation();
                 }}
               >
                 <Avatar
