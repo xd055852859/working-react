@@ -1,22 +1,11 @@
-.chart-container,
-.chart-XYcontainer {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  position: relative;
-  color: #333;
-  /* background: rgba(255, 255, 255, 0.7); */
-}
-.chart-container {
-  height: 500px;
-}
-.chart {
-  width: 48%;
-}
+.chart,
 .chart-div {
-  width: 100%;
+  /* width: 100%; */
   height: 100%;
+  overflow: auto;
 }
+
+
 .chart-left-title,
 .chart-middle-title,
 .chart-right-title {
@@ -27,15 +16,19 @@
   line-height: 50px;
   text-align: center;
 }
+
 .chart-left-title {
   left: 0px;
 }
+
 .chart-middle-title {
   left: 33%;
 }
+
 .chart-right-title {
   right: 0px;
 }
+
 .choose-container {
   width: 130px;
   position: fixed;
@@ -44,15 +37,18 @@
   z-index: 4;
   color: #333;
 }
+
 .countdown-right-item {
   width: 100%;
   position: relative;
   color: #333;
 }
+
 .countdown-right-group {
   display: flex;
   align-items: center;
 }
+
 .countdown-right-group-logo,
 .countdown-right-avatar,
 .countdown-right-person-avatar {
@@ -62,27 +58,32 @@
   border-radius: 50%;
   margin-right: 5px;
 }
+
 .countdown-right-icon {
   width: 14px;
   height: 14px;
   margin-right: 5px;
 }
+
 .countdown-right-avatar {
   width: 34px;
   height: 34px;
   margin-right: 5px;
 }
+
 .countdown-right-person-avatar {
   width: 24px;
   height: 24px;
   margin-right: 5px;
 }
+
 .countdown-right-group-logo img,
 .countdown-right-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
 .countdown-right-task {
   width: 100%;
   min-height: 80px;
@@ -93,34 +94,41 @@
   display: flex;
   align-items: center;
 }
+
 .countdown-right-info {
   background: rgba(0, 0, 0, 0.12);
   color: #e4e4e4;
 }
-.countdown-right-info > img {
+
+.countdown-right-info>img {
   width: 14px;
   height: 14px;
   margin-right: 8px;
 }
+
 .countdown-right-top {
   width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .countdown-right-title {
   font-size: 12px;
   width: calc(100% - 24px);
 }
+
 .countdown-right-name {
   display: flex;
   align-items: center;
 }
+
 .countdown-right-progress {
   position: absolute;
   left: 0px;
   bottom: -8px;
 }
+
 .finish-info {
   width: 100%;
   position: absolute;
@@ -131,6 +139,7 @@
   font-size: 40px;
   text-align: center;
 }
+
 .clearIcon {
   position: fixed;
   top: 30px;
@@ -144,6 +153,7 @@
   align-items: center;
   color: #fff;
 }
+
 .countdown-day {
   width: 20px;
   height: 20px;
@@ -157,6 +167,7 @@
   margin-right: 5px;
   font-size: 12px;
 }
+
 .countdown-time {
   width: 0;
   height: 0;
@@ -168,6 +179,7 @@
   right: -20px;
   z-index: 2;
 }
+
 .countdown-time-hour {
   width: 10px;
   height: 10px;
@@ -179,6 +191,7 @@
   z-index: 3;
   transform: scale(0.7);
 }
+
 .countdown-time-day {
   width: 10px;
   height: 10px;
@@ -189,6 +202,7 @@
   bottom: 0px;
   z-index: 3;
 }
+
 .countdown-right-project-avatar {
   width: 18px;
   height: 18px;
@@ -198,8 +212,61 @@
   border-radius: 50%;
   overflow: hidden;
 }
-.countdown-right-project-avatar > img {
+
+.countdown-right-project-avatar>img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.choose-container-item {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  z-index: 1;
+  padding-top: 60px;
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+.choose-container-item::-webkit-scrollbar {
+  height: 10px;
+}
+
+.choose-container-item::-webkit-scrollbar-thumb {
+  background: #dedede;
+  border-radius: 100px;
+}
+
+.choose-container-item-title {
+  width: 100%;
+  height: 60px;
+  line-height: 60px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+
+.choose-point {
+  width: 30px;
+  height: 120px;
+  position: fixed;
+  right: 20px;
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: space-between;
+}
+
+.choose-point>div {
+  width: 25px;
+  height: 25px;
+  background-color: #dfdfdf;
+  border-radius: 50%;
+  cursor: pointer;
+  box-sizing: border-box;
 }

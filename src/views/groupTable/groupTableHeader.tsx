@@ -171,16 +171,16 @@ const GroupTableHeader: React.FC = (prop) => {
     // await api.member.setConfig(groupMemberItem._key, newFilterObject);
     dispatch(setFilterObject(newFilterObject));
   };
-  // useEffect(() => {
-  //   if (groupMemberItem) {
-  //     dispatch(setFilterObject(groupMemberItem.config));
-  //     if (!groupMemberItem.config.headerIndex) {
-  //       groupMemberItem.config.headerIndex = 0;
-  //     }
-  //     // dispatch(setHeaderIndex(groupMemberItem.config.headerIndex));
-  //     dispatch(setHeaderIndex(0));
-  //   }
-  // }, [groupMemberItem]);
+  useEffect(() => {
+    if (groupMemberItem) {
+      dispatch(setFilterObject(groupMemberItem.config));
+      // if (!groupMemberItem.config.headerIndex) {
+      //   groupMemberItem.config.headerIndex = 0;
+      // }
+      // dispatch(setHeaderIndex(groupMemberItem.config.headerIndex));
+      // dispatch(setHeaderIndex(0));
+    }
+  }, [groupMemberItem]);
   useEffect(() => {
     //   dispatch(
     //     setFilterObject({

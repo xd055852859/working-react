@@ -18,20 +18,26 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
+  const groupInfo = useTypedSelector((state) => state.group.groupInfo);
+
   const [groupData, setGroupData] = useState<any>(null);
   const [personObj, setPersonObj] = useState<any>({});
   const [personGroupObj, setPersonGroupObj] = useState<any>({});
   const [positionObj, setPositionObj] = useState<any>({});
   const [taskState, setTaskState] = useState(0);
-  const [XYlength, setXYlength] = useState(0);
+  const [XYLeftlength, setXYLeftlength] = useState(0);
+  const [XYRightlength, setXYRightlength] = useState(0);
   const [loading, setLoading] = useState(false);
   const [colWidth, setColWidth] = useState(0);
+  const [clientHeight, setClientHeight] = useState(0);
+  const [pointIndex, setPointIndex] = useState(0);
+
   let dataChart = null;
   let XYLeftchart = null;
   let XYLeft1chart = null;
   let XYRightchart = null;
   let colHeight: any = [];
-  const taskTitleArr = ['昨日', '今日', '未完成任务', '已完成任务'];
+  const taskTitleArr = ['昨日', '今日', '计划中', '已完成'];
   const startTime = moment(new Date()).startOf('day').valueOf();
   const endTime = moment(new Date()).endOf('day').valueOf();
   const startTaskTime = moment(new Date())
@@ -44,6 +50,11 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
     .valueOf();
   let colNumbers = 4;
   const groupDataRef: React.RefObject<any> = useRef();
+  const dataRef: React.RefObject<any> = useRef();
+  useEffect(() => {
+    console.log(document.body.clientHeight)
+    setClientHeight(document.body.clientHeight - 68);
+  }, [])
   useEffect(() => {
     if (user && user._key) {
       getGroupData();
@@ -223,13 +234,9 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
     XYRightdata = _.sortBy(XYRightdata, ['steps']);
     XYLeft1data = _.sortBy(XYLeft1data, ['steps']);
     // XYRight1data = _.sortBy(XYRight1data, ['steps']);
-    let length = _.max([
-      XYLeftdata.length,
-      XYRightdata.length,
-      XYLeft1data.length,
-    ]);
 
-    setXYlength(length);
+    setXYLeftlength(XYLeftdata.length);
+    setXYRightlength(XYRightdata.length);
     dataChart = chart.createChordDiagramChart('chartdiv', data, '#333');
     XYLeftchart = chart.createXYChart('XYLeftchartdiv', XYLeftdata);
     XYRightchart = chart.createXYChart('XYRightchartdiv', XYRightdata);
@@ -442,10 +449,24 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
         height: '100%',
         overflow: 'auto',
         position: 'relative',
-        background:'#f9f9f9'
+        background: '#f9f9f9'
       }}
+      ref={dataRef}
     >
       {loading ? <Loading /> : null}
+      <div className="choose-point" style={{ top: clientHeight / 2 - 60 + 'px' }}>
+        {_.fill(Array(4), 0).map((item: any, index: number) => {
+          return (
+            <div
+              style={pointIndex === index ? { background: '#fff', border: '3px solid #333' } : {}}
+              onClick={() => {
+                setPointIndex(index)
+                dataRef.current.scrollTo(0, index * clientHeight);
+              }}></div>
+          )
+        }
+        )}
+      </div>
       <div className="choose-container">
         {/* <radio-group v-model="taskState" onChange={onChange}> */}
         {/* <radio
@@ -469,18 +490,26 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
           })}
         </RadioGroup>
       </div>
-      <div
-        className="chart-XYcontainer"
-        style={{ height: 60 * XYlength + 'px', minHeight: '120px' }}
-      >
-        <div className="chart-left-title">执行任务数排名</div>
-        {/* <div className="chart-middle-title">执行工时排名</div> */}
-        <div className="chart-right-title">创建任务数排名</div>
-        <div className="chart" id="XYLeftchartdiv"></div>
-        {/* <div className="chart" id="XYLeft1chartdiv"></div> */}
-        <div className="chart" id="XYRightchartdiv"></div>
+      <div className="choose-container-item">
+        <div className="choose-container-item-title">{groupInfo ? groupInfo.groupName : ''}执行力排行榜</div>
+        <div
+          className="chart"
+          id="XYLeftchartdiv"
+          style={{ width: XYLeftlength > 30 ? 90 * XYLeftlength + 'px' : '100%', minWidth: '100%' }}
+        >
+        </div>
       </div>
-      <div className="chart-container" style={{ height: '700px' }}>
+      <div className="choose-container-item">
+        <div className="choose-container-item-title">{groupInfo ? groupInfo.groupName : ''} 创造力排行榜</div>
+        <div
+          className="chart"
+          id="XYRightchartdiv"
+          style={{ width: XYRightlength > 30 ? 90 * XYRightlength + 'px' : '100%', minWidth: '100%' }}
+        >
+        </div>
+      </div>
+      <div className="choose-container-item">
+        <div className="choose-container-item-title">{groupInfo ? groupInfo.groupName : ''} {taskTitleArr[taskState]}排行榜</div>
         <div className="chart-div" id="chartdiv"></div>
       </div>
       <div className="countdown-right-item" ref={groupDataRef}>

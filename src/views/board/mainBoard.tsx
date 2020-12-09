@@ -77,8 +77,8 @@ const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
               taskItem={taskItem}
               key={'task' + taskIndex}
               changeTask={changeTask}
-              // myState={myState}
-              // timeSetStatus={taskIndex > mainItem.length - 3}
+            // myState={myState}
+            // timeSetStatus={taskIndex > mainItem.length - 3}
             />
             // </div>
           );
@@ -138,26 +138,26 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
           state +
           (state
             ? '||(item.finishPercent === 1 && item.taskEndDate >= ' +
-              startTime +
-              '  && item.taskEndDate <= ' +
-              endTime +
-              ')'
+            startTime +
+            '  && item.taskEndDate <= ' +
+            endTime +
+            ')'
             : '(item.finishPercent === 1 && item.taskEndDate >= ' +
-              startTime +
-              '  && item.taskEndDate <= ' +
-              endTime +
-              ')');
+            startTime +
+            '  && item.taskEndDate <= ' +
+            endTime +
+            ')');
       }
       if (theme.finishPercentArr && theme.finishPercentArr.indexOf('2') != -1) {
         state =
           state +
           (state
             ? '||(item.finishPercent === 0 && item.taskEndDate <= ' +
-              endTime +
-              ')'
+            endTime +
+            ')'
             : '(item.finishPercent === 0 && item.taskEndDate <=' +
-              endTime +
-              ')');
+            endTime +
+            ')');
       }
       selfTaskArray.forEach((item: any, index: number) => {
         // if (
@@ -172,7 +172,7 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
         //   item.todayTaskTime >= startTime &&
         //   item.todayTaskTime <= endTime;
         console.log(state);
-        if (eval(state) && item.taskEndDate) {
+        if (eval(state) && item.taskEndDate && item.type === 2) {
           if (item.executorKey === user._key) {
             if (!groupObj[item.groupKey]) {
               groupObj[item.groupKey] = [];
@@ -187,7 +187,7 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
             //   'finishPercent',
             // ]);
           }
-          if (item.finishPercent === 1) {
+          if (item.finishPercent > 0) {
             finishNum++;
           }
           allNum++;
@@ -216,7 +216,7 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
       time = Math.floor(
         (moment(item.taskEndDate).endOf('day').valueOf() -
           moment(new Date().getTime()).endOf('day').valueOf()) /
-          86400000
+        86400000
       );
     }
     item.time = time < 0 ? Math.abs(time) : Math.abs(time) + 1;

@@ -161,8 +161,8 @@ const WorkingTableHeader: React.FC = (prop) => {
         headerIndex === 1
           ? ['分频道', '分项目', '时间表', '执行表', '频道流', '项目流', '日历']
           : user._key !== targetUserInfo._key
-          ? ['分频道', '分项目', '时间表', '', '频道流', '项目流', '日历']
-          : ['分频道', '分项目', '', '', '频道流', '项目流', '']
+            ? ['分频道', '分项目', '时间表', '', '频道流', '项目流', '日历']
+            : ['分频道', '分项目', '', '', '频道流', '项目流', '']
       );
   }, [headerIndex, user, targetUserInfo]);
   useEffect(() => {
@@ -552,22 +552,22 @@ const WorkingTableHeader: React.FC = (prop) => {
                                 ( 近{fileInput}天 )
                               </div>
                             ) : (
-                              <div style={{ marginLeft: '8px' }}>
-                                ( 近
-                                <input
-                                  type="number"
-                                  value={fileInput}
-                                  onChange={(e) => {
-                                    setFileInput(e.target.value);
-                                  }}
-                                  onBlur={(e) => {
-                                    changeFileDay(parseInt(e.target.value));
-                                  }}
-                                  className="fileday"
-                                />
+                                <div style={{ marginLeft: '8px' }}>
+                                  ( 近
+                                  <input
+                                    type="number"
+                                    value={fileInput}
+                                    onChange={(e) => {
+                                      setFileInput(e.target.value);
+                                    }}
+                                    onBlur={(e) => {
+                                      changeFileDay(parseInt(e.target.value));
+                                    }}
+                                    className="fileday"
+                                  />
                                 天 )
-                              </div>
-                            )}
+                                </div>
+                              )}
                           </React.Fragment>
                         ) : null}
                       </div>

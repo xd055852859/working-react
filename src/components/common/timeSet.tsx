@@ -134,11 +134,10 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
         style={
           viewStyle !== 'horizontal'
             ? {
-                width: '100%',
-                height: '55px',
-                marginBottom: '10px',
-                padding: '5px 10px',
-              }
+              width: '100%',
+              height: '55px',
+              padding: '5px 10px',
+            }
             : { height: '42px' }
         }
       >
@@ -149,10 +148,10 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
               viewStyle !== 'horizontal'
                 ? { width: '45px', height: '40px' }
                 : {
-                    width: '45px',
-                    height: '42px',
-                    marginRight: '10px',
-                  }
+                  width: '45px',
+                  height: '42px',
+                  marginRight: '10px',
+                }
             }
           >
             <img
@@ -160,21 +159,21 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
               onClick={() => {
                 percentClick(10);
               }}
-              // style={{ marginRight: !viewStyle ? '' : '5px' }}
+            // style={{ marginRight: !viewStyle ? '' : '5px' }}
             />
             <img
               src={timeSet2Svg}
               onClick={() => {
                 percentClick(0);
               }}
-              // style={{ marginRight: !viewStyle ? '' : '5px' }}
+            // style={{ marginRight: !viewStyle ? '' : '5px' }}
             />
             <img
               src={timeSet3Svg}
               onClick={() => {
                 percentClick(1);
               }}
-              // style={{ marginRight: !viewStyle ? '' : '5px' }}
+            // style={{ marginRight: !viewStyle ? '' : '5px' }}
             />
             <img
               src={timeSet4Svg}
@@ -245,7 +244,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                 setFreeTimeVisible(false);
               }}
               style={{ color: '#fff', height: '35px' }}
-              // className={classes.clockInButton}
+            // className={classes.clockInButton}
             >
               确定
             </Button>
@@ -298,11 +297,10 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
             style={
               viewStyle !== 'horizontal'
                 ? {
-                    width: '100%',
-                    height: '55px',
-                    padding: '5px 10px',
-                    marginTop: '20px',
-                  }
+                  width: '100%',
+                  height: '55px',
+                  padding: '5px 10px',
+                }
                 : { width: '360px', height: '41px', marginLeft: '10px' }
             }
           >
@@ -330,7 +328,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                 onClick={() => {
                   changeTimeDateType(0);
                 }}
-                // style={{ marginRight: !viewStyle ? '' : '5px' }}
+              // style={{ marginRight: !viewStyle ? '' : '5px' }}
               />
               <img
                 src={timeSet6Svg}
@@ -358,8 +356,8 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                         dateIndex === dateTimeItem
                           ? '#F28806'
                           : timeWeek[dateTimeIndex] > 4
-                          ? '#BABABA'
-                          : '#505050',
+                            ? '#BABABA'
+                            : '#505050',
                       marginBottom: viewStyle !== 'horizontal' ? '5px' : '1px',
                       marginRight:
                         // !viewStyle ?

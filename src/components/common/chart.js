@@ -34,7 +34,10 @@ const amChart = {
 
     let dateAxis = chart.xAxes.push(new am4charts.DateAxis());
     dateAxis.renderer.minGridDistance = 70;
-    dateAxis.baseInterval = { count: 30, timeUnit: 'minute' };
+    dateAxis.baseInterval = {
+      count: 30,
+      timeUnit: 'minute'
+    };
     dateAxis.renderer.tooltipLocation = 0;
     dateAxis.renderer.line.strokeDasharray = '1,4';
     dateAxis.renderer.line.strokeOpacity = 0.5;
@@ -263,46 +266,42 @@ const amChart = {
     chart.paddingRight = 20;
 
     chart.data = data;
-    let categoryAxis = chart.yAxes.push(new am4charts.CategoryAxis());
-    categoryAxis.dataFields.category = 'name';
-    categoryAxis.renderer.labels.title = -20;
+    let categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
+    categoryAxis.dataFields.category = "name";
     categoryAxis.renderer.grid.template.strokeOpacity = 0;
     categoryAxis.renderer.minGridDistance = 10;
-    categoryAxis.renderer.labels.template.dx = -20;
+    categoryAxis.renderer.labels.template.dy = 10;
+    categoryAxis.renderer.tooltip.dy = 15;
 
-    categoryAxis.renderer.minWidth = 40;
-    categoryAxis.renderer.tooltip.dx = -20;
-
-    let valueAxis = chart.xAxes.push(new am4charts.ValueAxis());
+    let valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
     valueAxis.renderer.inside = true;
     valueAxis.renderer.labels.template.fillOpacity = 0.3;
     valueAxis.renderer.grid.template.strokeOpacity = 0;
     valueAxis.min = 0;
     valueAxis.cursorTooltipEnabled = false;
     valueAxis.renderer.baseGrid.strokeOpacity = 0;
-    valueAxis.renderer.labels.template.dy = 20;
 
-    let series = chart.series.push(new am4charts.ColumnSeries());
-    series.dataFields.valueX = 'steps';
-    series.dataFields.categoryY = 'name';
-    // series.dataFields.categoryY.fill = '#fff';
-    series.tooltipText = '{valueX.value}';
-    series.tooltip.pointerOrientation = 'vertical';
-    series.tooltip.dy = -30;
+    let series = chart.series.push(new am4charts.ColumnSeries);
+    series.dataFields.valueY = "steps";
+    series.dataFields.categoryX = "name";
+    series.tooltipText = "{valueY.value}";
+    series.tooltip.pointerOrientation = "vertical";
+    series.tooltip.dy = -36;
     series.columnsContainer.zIndex = 100;
 
     let columnTemplate = series.columns.template;
-    columnTemplate.height = am4core.percent(20);
-    columnTemplate.maxHeight = 20;
-    columnTemplate.column.cornerRadius(15, 10, 15, 10);
+    columnTemplate.width = am4core.percent(25);
+    //线的宽度
+    columnTemplate.maxWidth = 25;
+    columnTemplate.column.cornerRadius(10, 10, 10, 10);
     columnTemplate.strokeOpacity = 0;
 
     series.heatRules.push({
       target: columnTemplate,
-      property: 'fill',
-      dataField: 'valueX',
-      min: am4core.color('#e5dc36'),
-      max: am4core.color('#5faa46'),
+      property: "fill",
+      dataField: "valueY",
+      min: am4core.color("#e5dc36"),
+      max: am4core.color("#5faa46")
     });
     series.mainContainer.mask = undefined;
 
@@ -310,50 +309,51 @@ const amChart = {
     chart.cursor = cursor;
     cursor.lineX.disabled = true;
     cursor.lineY.disabled = true;
-    cursor.behavior = 'none';
+    cursor.behavior = "none";
 
     let bullet = columnTemplate.createChild(am4charts.CircleBullet);
     bullet.circle.radius = 15;
-    bullet.valign = 'middle';
-    bullet.align = 'left';
+    bullet.valign = "bottom";
+    bullet.align = "center";
     bullet.isMeasured = true;
-    bullet.interactionsEnabled = false;
-    bullet.horizontalCenter = 'right';
+    bullet.mouseEnabled = false;
+    bullet.verticalCenter = "bottom";
     bullet.interactionsEnabled = false;
 
-    let hoverState = bullet.states.create('hover');
+    let hoverState = bullet.states.create("hover");
     let outlineCircle = bullet.createChild(am4core.Circle);
-    outlineCircle.adapter.add('radius', function (radius, target) {
+    outlineCircle.adapter.add("radius", function (radius, target) {
       let circleBullet = target.parent;
       return circleBullet.circle.pixelRadius + 10;
-    });
+    })
 
     let image = bullet.createChild(am4core.Image);
-    image.width = 30;
-    image.height = 30;
-    image.horizontalCenter = 'middle';
-    image.verticalCenter = 'middle';
-    image.propertyFields.href = 'href';
+    image.width = 35;
+    image.height = 35;
+    image.horizontalCenter = "middle";
+    image.verticalCenter = "middle";
+    image.propertyFields.href = "href";
 
-    image.adapter.add('mask', function (mask, target) {
+    image.adapter.add("mask", function (mask, target) {
       let circleBullet = target.parent;
       return circleBullet.circle;
-    });
+    })
 
     let previousBullet;
-    chart.cursor.events.on('cursorpositionchanged', function (event) {
+    chart.cursor.events.on("cursorpositionchanged", function (event) {
       let dataItem = series.tooltipDataItem;
 
       if (dataItem.column) {
         let bullet = dataItem.column.children.getIndex(1);
 
-        if (previousBullet && previousBullet !== bullet) {
+        if (previousBullet && previousBullet != bullet) {
           previousBullet.isHover = false;
         }
 
-        if (previousBullet !== bullet) {
-          let hs = bullet.states.getKey('hover');
-          hs.properties.dx = dataItem.column.pixelWidth;
+        if (previousBullet != bullet) {
+
+          let hs = bullet.states.getKey("hover");
+          hs.properties.dy = -bullet.parent.pixelHeight + 30;
           bullet.isHover = true;
 
           previousBullet = bullet;
