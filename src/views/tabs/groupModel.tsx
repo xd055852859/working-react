@@ -41,7 +41,7 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
   const [modelInfoIndex, setModelInfoIndex] = useState<any>(null);
   const [modelState, setModelState] = useState(false);
   const [modelPage, setModelPage] = useState(1);
-  const [taskCheck, setTaskCheck] = useState(true);
+  const [taskCheck, setTaskCheck] = useState(false);
   const [modelTotal, setModelTotal] = useState(0);
   const [modelInput, setModelInput] = useState('');
 
@@ -52,8 +52,12 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
     'rgba(179,152,152,0.3)',
     'rgba(242,237,166,0.3)',
   ];
+  let unDistory = true;
   useEffect(() => {
     getModelType();
+    return () => {
+      unDistory = false;
+    };
   }, []);
   useEffect(() => {
     if (modelInput === '') {
@@ -63,13 +67,15 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
 
   const getModelType = async () => {
     let res: any = await api.group.getTemplateTypeList();
-    if (res.msg === 'OK') {
-      res.result.unshift('全部');
-      setModelTypeArr(res.result);
-      // setModelType(res.result[0]);
-      getModelTypeList(1, null);
-    } else {
-      dispatch(setMessage(true, res.msg, 'error'));
+    if (unDistory) {
+      if (res.msg === 'OK') {
+        res.result.unshift('全部');
+        setModelTypeArr(res.result);
+        // setModelType(res.result[0]);
+        getModelTypeList(1, null);
+      } else {
+        dispatch(setMessage(true, res.msg, 'error'));
+      }
     }
   };
   const getModelTypeList = async (page: number, type: any) => {
@@ -180,7 +186,7 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
                       />
                       {modelInfoIndex === index ? (
                         <div className="groupModel-right-item-button">
-                          <Button
+                          {/* <Button
                             variant="contained"
                             color="primary"
                             style={{
@@ -193,13 +199,13 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
                             }}
                           >
                             使用此模板
-                          </Button>
+                          </Button> */}
                         </div>
                       ) : null}
                     </div>
                     <div className="groupModel-right-item-name">
                       {item.name}
-                    </div>{' '}
+                    </div>
                     <div className="groupModel-right-item-description">
                       {item.description
                         .replace(/<[^>]*>|<\/[^>]*>/gm, '')
@@ -311,29 +317,27 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
                         >
                           {templateItem.name}
                         </div>
-                        {taskCheck ? (
-                          <div className="groupModel-model-taskContainer">
-                            {templateItem.children.map(
-                              (childItem: any, childIndex: number) => {
-                                return (
-                                  <div
-                                    key={'child' + childIndex}
-                                    className="groupModel-model-task"
-                                  >
-                                    <img
-                                      src={unfinishbPng}
-                                      className="groupModel-model-logo"
-                                    />
-                                    <div className="groupModel-model-task-title">
-                                      {' '}
-                                      {childItem.name}
-                                    </div>
+                        <div className="groupModel-model-taskContainer">
+                          {templateItem.children.map(
+                            (childItem: any, childIndex: number) => {
+                              return (
+                                <div
+                                  key={'child' + childIndex}
+                                  className="groupModel-model-task"
+                                >
+                                  <img
+                                    src={unfinishbPng}
+                                    className="groupModel-model-logo"
+                                  />
+                                  <div className="groupModel-model-task-title">
+                                    {' '}
+                                    {childItem.name}
                                   </div>
-                                );
-                              }
-                            )}
-                          </div>
-                        ) : null}
+                                </div>
+                              );
+                            }
+                          )}
+                        </div>
                       </div>
                     );
                   }

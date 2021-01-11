@@ -9,15 +9,14 @@ export interface TaskType {
   selfTaskArray: any;
   workingGroupArray: any;
   workingTaskArray: any;
-  taskKey: string;
-  chooseKey: string;
+  taskKey: any;
+  chooseKey: any;
   filterObject: any;
-  taskInfoVisible: boolean;
+  taskInfoVisible: any;
   calendarList: any;
   taskActionArray: any;
   taskAction: any;
   taskInfo: any;
-
 }
 
 const defaultState: TaskType = {
@@ -125,6 +124,8 @@ export const task = (state = defaultState, action: any) => {
       return {
         ...state,
         taskInfo: action.taskInfo,
+        chooseKey:
+          action.taskInfo && action.taskInfo._key ? action.taskInfo._key : '',
       };
     case actionTypes.EDIT_TASK_SUCCESS:
       let taskInfo = _.cloneDeep(action.data[0]);
@@ -168,10 +169,8 @@ export const task = (state = defaultState, action: any) => {
               for (let key in taskInfo) {
                 if (key !== '_key') {
                   taskItem[key] = _.cloneDeep(taskInfo[key]);
-                  console.log(key);
                 }
               }
-              console.log(taskItem);
             }
 
             return taskItem;
@@ -181,12 +180,12 @@ export const task = (state = defaultState, action: any) => {
       return {
         ...state,
       };
-    case actionTypes.ADD_WORKING_TABLE_TASK_SUCCESS:
-      console.log('新建成功');
-      return {
-        ...state,
-        // taskKey: action.taskKey
-      };
+    // case actionTypes.ADD_WORKING_TABLE_TASK_SUCCESS:
+    //   console.log('新建成功');
+    //   return {
+    //     ...state,
+    //     // taskKey: action.taskKey
+    //   };
     case actionTypes.SET_FILTER_OBJECT:
       let filterObject = _.cloneDeep(state.filterObject);
       for (let key in action.filterObj) {
@@ -231,6 +230,41 @@ export const task = (state = defaultState, action: any) => {
       obj[action.taskArrayType] = _.cloneDeep(action.taskArray);
       return {
         ...obj,
+      };
+    case actionTypes.CLEAR_TASK:
+      switch (action.clearType) {
+        case 0:
+          state.labelArray = null;
+          state.taskArray = null;
+          state.workingGroupArray = null;
+          state.workingTaskArray = null;
+          break;
+        case 1:
+          state.labelArray = null;
+          state.taskArray = null;
+          state.teamTaskArray = null;
+          state.projectTaskArray = null;
+          state.selfTaskArray = null;
+          break;
+        case 3:
+          state.teamTaskArray = null;
+          state.projectTaskArray = null;
+          state.selfTaskArray = null;
+          state.workingGroupArray = null;
+          state.workingTaskArray = null;
+          break;
+        case 4:
+          state.labelArray = null;
+          state.taskArray = null;
+          state.teamTaskArray = null;
+          state.projectTaskArray = null;
+          state.selfTaskArray = null;
+          state.workingGroupArray = null;
+          state.workingTaskArray = null;
+          break;
+      }
+      return {
+        ...state,
       };
     default:
       return state;

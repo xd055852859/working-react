@@ -28,3 +28,8 @@
 .workingTable-addLabel {
   width: 35px;
 }
+.groupTableHeader-name-title-logo {
+  width: 12px;
+  height: 7px;
+  margin-left: 10px;
+}

@@ -13,7 +13,7 @@ const Bootpage: React.FC = () => {
   const [clientWidth, setClientWidth] = useState(0);
   useEffect(() => {
     if (localStorage.getItem('token')) {
-      history.push('/');
+      history.push('/home/basic');
     }
   }, []);
   useEffect(() => {
@@ -41,11 +41,10 @@ const Bootpage: React.FC = () => {
     window.open('http://beian.miit.gov.cn/');
   };
   const toLogin = () => {
-    console.log(localStorage.getItem('token'));
     if (localStorage.getItem('token')) {
-      history.push('/');
+      history.push('/home/basic');
     } else {
-      const redirect = `${window.location.protocol}//${window.location.host}`;
+      const redirect = `${window.location.protocol}//${window.location.host}/home/basic`;
       // window.location.href = `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`;
       window.open(
         `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`,

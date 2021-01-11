@@ -147,8 +147,8 @@
   width: 22.4px;
   height: 21px;
   position: absolute;
-  top: 5px;
-  right: 40px;
+  bottom: 18px;
+  left: 40px;
   cursor: pointer;
   z-index: 5;
 }

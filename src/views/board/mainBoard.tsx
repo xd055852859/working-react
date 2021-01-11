@@ -9,6 +9,7 @@ import moment from 'moment';
 import _ from 'lodash';
 import Avatar from '@material-ui/core/Avatar';
 import theme from '../../theme';
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     avatar: {
@@ -59,7 +60,12 @@ const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
           {!myState ? (
             <Avatar
               alt="群头像"
-              src={mainItem[0].groupLogo}
+              src={
+                mainItem[0].groupLogo
+                  ? mainItem[0].groupLogo +
+                    '?imageMogr2/auto-orient/thumbnail/80x'
+                  : defaultGroupPng
+              }
               className={classes.avatar}
             />
           ) : null}
@@ -77,8 +83,8 @@ const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
               taskItem={taskItem}
               key={'task' + taskIndex}
               changeTask={changeTask}
-            // myState={myState}
-            // timeSetStatus={taskIndex > mainItem.length - 3}
+              // myState={myState}
+              // timeSetStatus={taskIndex > mainItem.length - 3}
             />
             // </div>
           );
@@ -138,26 +144,26 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
           state +
           (state
             ? '||(item.finishPercent === 1 && item.taskEndDate >= ' +
-            startTime +
-            '  && item.taskEndDate <= ' +
-            endTime +
-            ')'
+              startTime +
+              '  && item.taskEndDate <= ' +
+              endTime +
+              ')'
             : '(item.finishPercent === 1 && item.taskEndDate >= ' +
-            startTime +
-            '  && item.taskEndDate <= ' +
-            endTime +
-            ')');
+              startTime +
+              '  && item.taskEndDate <= ' +
+              endTime +
+              ')');
       }
       if (theme.finishPercentArr && theme.finishPercentArr.indexOf('2') != -1) {
         state =
           state +
           (state
             ? '||(item.finishPercent === 0 && item.taskEndDate <= ' +
-            endTime +
-            ')'
+              endTime +
+              ')'
             : '(item.finishPercent === 0 && item.taskEndDate <=' +
-            endTime +
-            ')');
+              endTime +
+              ')');
       }
       selfTaskArray.forEach((item: any, index: number) => {
         // if (
@@ -171,8 +177,12 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
         //   item.finishPercent === 1 &&
         //   item.todayTaskTime >= startTime &&
         //   item.todayTaskTime <= endTime;
-        console.log(state);
-        if (eval(state) && item.taskEndDate && item.type === 2) {
+        if (
+          eval(state) &&
+          item.taskEndDate &&
+          item.type === 2 &&
+          (item.executorKey === user._key || item.creatorKey === user._key)
+        ) {
           if (item.executorKey === user._key) {
             if (!groupObj[item.groupKey]) {
               groupObj[item.groupKey] = [];
@@ -186,11 +196,11 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
             // groupObj[item.groupKey] = _.sortBy(groupObj[item.groupKey], [
             //   'finishPercent',
             // ]);
+            if (item.finishPercent > 0) {
+              finishNum++;
+            }
+            allNum++;
           }
-          if (item.finishPercent > 0) {
-            finishNum++;
-          }
-          allNum++;
         }
       });
       setFinishNum(finishNum);
@@ -216,7 +226,7 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
       time = Math.floor(
         (moment(item.taskEndDate).endOf('day').valueOf() -
           moment(new Date().getTime()).endOf('day').valueOf()) /
-        86400000
+          86400000
       );
     }
     item.time = time < 0 ? Math.abs(time) : Math.abs(time) + 1;

@@ -35,7 +35,6 @@ export const member = (state = defaultState, action: any) => {
       let userIndex = _.findIndex(action.data, {
         userId: localStorage.getItem('userKey'),
       });
-      console.log('userIndex',userIndex)
       let groupMemberItem = action.data[userIndex];
       action.data.forEach((item: any) => {
         if (item.avatar && item.avatar.indexOf('https') === -1) {
@@ -53,13 +52,19 @@ export const member = (state = defaultState, action: any) => {
           executorKey: null,
           executorAvatar: '',
           executorName: '',
-          filterType: ['过期', '今天','未来',  '已完成'],
+          filterType: ['过期', '今天', '未来', '已完成'],
         };
       }
       return {
         ...state,
         groupMemberArray: action.data,
         groupMemberItem: action.data[userIndex],
+      };
+    case actionTypes.CLEAR_MEMBER:
+      state.groupMemberArray = null;
+      state.groupMemberItem = null;
+      return {
+        ...state,
       };
     default:
       return state;

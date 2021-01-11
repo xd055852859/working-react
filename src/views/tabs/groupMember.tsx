@@ -8,7 +8,7 @@ import _ from 'lodash';
 import api from '../../services/api';
 
 import { setMessage } from '../../redux/actions/commonActions';
-import { getMember } from '../../redux/actions/memberActions';
+import { getMember, getGroupMember } from '../../redux/actions/memberActions';
 
 import DropMenu from '../../components/common/dropMenu';
 
@@ -16,6 +16,7 @@ import closePng from '../../assets/img/taskClose.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 export interface GroupMemberProps {
   setMember: any;
+  changeCount?: any;
 }
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -48,7 +49,7 @@ const useStyles = makeStyles((theme: Theme) =>
 const GroupMember: React.FC<GroupMemberProps> = (props) => {
   // const location = useLocation();
   // const history = useHistory();
-  const { setMember } = props;
+  const { setMember, changeCount } = props;
   const classes = useStyles();
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
@@ -75,17 +76,11 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
   const [total, setTotal] = React.useState(0);
   const roleTypeArr = ['群主', '管理员', '编辑', '作者', '群成员'];
   const limit = 15;
+  let unDistory = true;
   useEffect(() => {
-    if (
-      user &&
-      user._key &&
-      memberArray &&
-      groupMemberArray &&
-      searchInput === '' &&
-      groupKey
-    ) {
+    if (memberArray && groupMemberArray && searchInput === '') {
       let newMemberList: any = [];
-      if (memberList.length === 0) {
+      if (memberList.length === 0 || chooseIndex == 1) {
         newMemberList = _.cloneDeep(groupMemberArray);
       } else {
         newMemberList = _.cloneDeep(memberList);
@@ -102,14 +97,18 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
         }
         return memberItem;
       });
-      setMainMemberList(_.sortBy(newMemberArray, ['checked']).reverse());
-      setGroupMemberList(_.sortBy(newMemberArray, ['checked']).reverse());
+      console.log(newMemberArray);
+      setMainMemberList(_.sortBy(newMemberArray, ['checked']));
+      setGroupMemberList(_.sortBy(newMemberArray, ['checked']));
       setMemberList(_.sortBy(newMemberList, ['role']));
     }
-    if (user && user._key && groupKey) {
+    if (user && user._key && groupKey && searchInput === '') {
       getJoinGroupList();
     }
-  }, [user, groupKey, memberArray, groupMemberArray, searchInput]);
+    return () => {
+      unDistory = false;
+    };
+  }, [memberArray, groupMemberArray, searchInput]);
   useEffect(() => {
     if (searchInput) {
       setSearchType(false);
@@ -118,17 +117,20 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
 
   const getJoinGroupList = async () => {
     let res: any = await api.group.applyJoinGroupList(groupKey);
-    if (res.msg === 'OK') {
-      setJoinMemberList(res.result);
-    } else {
-      dispatch(setMessage(true, res.msg, 'error'));
+    if (unDistory) {
+      if (res.msg === 'OK') {
+        setJoinMemberList(res.result);
+      } else {
+        dispatch(setMessage(true, res.msg, 'error'));
+      }
     }
   };
-  const changeMember = (index: number) => {
+  const changeMember = (key: string, index: number) => {
     let newMainMemberList = _.cloneDeep(mainMemberList);
     let newMemberList = _.cloneDeep(memberList);
     let newSearchMemberList = _.cloneDeep(searchMemberList);
     if (searchInput !== '') {
+      let index = _.findIndex(newSearchMemberList, { _key: key });
       if (newSearchMemberList[index].checked) {
         newSearchMemberList[index].checked = false;
         let newSearchIndex = _.findIndex(newMemberList, {
@@ -170,6 +172,20 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       getSearchPerson(page);
     }
   };
+  const searchPerson = (input?: string) => {
+    console.log(input);
+    let newMainMemberList = _.cloneDeep(mainMemberList);
+    let personInput = input ? input : searchInput;
+    let searchPersonList: any = [];
+    searchPersonList = newMainMemberList.filter((item: any, index: number) => {
+      return (
+        item.nickName &&
+        item.nickName.toUpperCase().indexOf(personInput.toUpperCase()) !== -1
+      );
+    });
+    setSearchMemberList(searchPersonList);
+    setGroupMemberList(searchPersonList);
+  };
   const getSearchPerson = async (page: number) => {
     let newMemberList = _.cloneDeep(memberList);
     let newSearchMemberList: any = [];
@@ -192,6 +208,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
         } else {
           searchItem.checked = true;
         }
+        searchItem._key = searchItem.userId;
         newSearchMemberList.push(searchItem);
       });
       setSearchMemberList(newSearchMemberList);
@@ -286,6 +303,9 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
   };
   const changeRole = (roleIndex: number, index: number) => {
     let newMemberRoleList: any = _.cloneDeep(memberList);
+    if (roleIndex === 0) {
+      newMemberRoleList[0].role = 2;
+    }
     newMemberRoleList[index].role = roleIndex + 1;
     setMemberList(newMemberRoleList);
     setMember(newMemberRoleList);
@@ -300,11 +320,15 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       userId: newMemberRoleList[index].userId,
     });
     if (memberIndex !== -1) {
-      api.auth.setRole(
-        groupKey,
-        newMemberRoleList[index].userId,
-        roleIndex + 1
-      );
+      if (roleIndex === 0) {
+        api.group.groupOwnerChange(groupKey, newMemberRoleList[index].userId);
+      } else {
+        api.auth.setRole(
+          groupKey,
+          newMemberRoleList[index].userId,
+          roleIndex + 1
+        );
+      }
     }
   };
   const addJoinMember = async (joinItem: any, joinIndex: number) => {
@@ -322,7 +346,8 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       dispatch(setMessage(true, '通过审核成功', 'success'));
       newJoinMemberList.splice(joinIndex, 1);
       setJoinMemberList(newJoinMemberList);
-      dispatch(getMember(groupKey));
+      changeCount(newJoinMemberList.length);
+      dispatch(getGroupMember(groupKey));
       api.group.deleteApplyJoinGroup(joinItem._key);
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
@@ -339,7 +364,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }
   };
-  const addMember = async (addItem: any, addIndex: number) => {
+  const addMember = async (addItem: any, addIndex: number, type?: string) => {
     let newSearchMemberList = _.cloneDeep(searchMemberList);
     let memberRes: any = await api.group.addGroupMember(mainGroupKey, [
       {
@@ -352,9 +377,11 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
     ]);
     if (memberRes.msg === 'OK') {
       dispatch(setMessage(true, '添加好友成功', 'success'));
-      newSearchMemberList[addIndex].isMyMainGroupMember = true;
-      setSearchMemberList(newSearchMemberList);
-      setGroupMemberList(newSearchMemberList);
+      if (!type) {
+        newSearchMemberList[addIndex].isMyMainGroupMember = true;
+        setSearchMemberList(newSearchMemberList);
+        setGroupMemberList(newSearchMemberList);
+      }
       dispatch(getMember(mainGroupKey));
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
@@ -384,7 +411,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
               style={{
                 borderBottom: chooseIndex === 1 ? '2px solid #17B881' : 'none',
                 cursor: 'pointer',
-                position:'relative'
+                position: 'relative',
               }}
             >
               申请人({joinMemberList.length})
@@ -393,16 +420,15 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
           {chooseIndex === 0 ? (
             <React.Fragment>
               <div className="group-member-search">
-                <TextField
+                <input
                   // required
-                  id="outlined-basic"
-                  variant="outlined"
-                  label="搜索"
-                  className={classes.input}
-                  style={{ width: '70%' }}
+                  className="group-member-input"
+                  type="text"
+                  placeholder="搜索"
                   value={searchInput}
                   onChange={(e) => {
                     setSearchInput(e.target.value);
+                    searchPerson(e.target.value);
                   }}
                   onKeyDown={(e: any) => {
                     if (e.keyCode === 13) {
@@ -433,12 +459,16 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                 {groupMemberList.map((mainItem: any, mainIndex: number) => {
                   return (
                     <div className="group-member-item" key={'main' + mainIndex}>
-                      <div className="group-member-item-container">
+                      <div
+                        className="group-member-item-container"
+                        style={{ width: '80%' }}
+                      >
                         <div className="group-member-img">
                           <img
                             src={
                               mainItem.avatar
-                                ? mainItem.avatar
+                                ? mainItem.avatar +
+                                  '?imageMogr2/auto-orient/thumbnail/80x'
                                 : defaultPersonPng
                             }
                             alt=""
@@ -446,21 +476,21 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                         </div>
                         <div className="group-member-name">
                           {mainItem.nickName}
-                          {searchType && !mainItem.isMyMainGroupMember ? (
-                            <div
-                              className="group-member-add"
-                              onClick={() => {
-                                addMember(mainItem, mainIndex);
-                              }}
-                            >
-                              + 好友
-                            </div>
-                          ) : null}
                         </div>
+                        {searchType && !mainItem.isMyMainGroupMember ? (
+                          <div
+                            className="group-member-add"
+                            onClick={() => {
+                              addMember(mainItem, mainIndex);
+                            }}
+                          >
+                            + 好友
+                          </div>
+                        ) : null}
                       </div>
                       <Checkbox
                         onChange={() => {
-                          changeMember(mainIndex);
+                          changeMember(mainItem._key, mainIndex);
                         }}
                         checked={mainItem.checked}
                       />
@@ -479,7 +509,10 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                       <div className="group-member-img">
                         <img
                           src={
-                            mainItem.avatar ? mainItem.avatar : defaultPersonPng
+                            mainItem.avatar
+                              ? mainItem.avatar +
+                                '?imageMogr2/auto-orient/thumbnail/80x'
+                              : defaultPersonPng
                           }
                           alt=""
                         />
@@ -526,13 +559,36 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                 <div className="group-member-item-container">
                   <div className="group-member-img">
                     <img
-                      src={newItem.avatar ? newItem.avatar : defaultPersonPng}
+                      src={
+                        newItem.avatar
+                          ? newItem.avatar +
+                            '?imageMogr2/auto-orient/thumbnail/80x'
+                          : defaultPersonPng
+                      }
                       alt=""
                     />
                   </div>
                   <div className="group-member-name">{newItem.nickName}</div>
                 </div>
-                <div className="group-time-set">
+                <div
+                  className="group-time-set"
+                  style={
+                    newItem.userId !== user._key && groupRole < newItem.role
+                      ? { cursor: 'pointer' }
+                      : {}
+                  }
+                >
+                  {_.findIndex(memberArray, { userId: newItem.userId }) ===
+                  -1 ? (
+                    <div
+                      className="group-member-add"
+                      onClick={() => {
+                        addMember(newItem, newIndex, 'group');
+                      }}
+                    >
+                      + 好友
+                    </div>
+                  ) : null}
                   <div
                     className="group-time"
                     onClick={(e) => {
@@ -579,45 +635,25 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
         }}
       >
         <div className="group-role">
-          {groupRole === 1 ? (
-            <div
-              onClick={() => {
-                changeRole(1, roleIndex);
-              }}
-              className="group-role-item"
-            >
-              {roleTypeArr[1]}
-            </div>
-          ) : null}
           {groupRole === 1 || groupRole === 2 ? (
-            <div
-              onClick={() => {
-                changeRole(2, roleIndex);
-              }}
-              className="group-role-item"
-            >
-              {roleTypeArr[2]}
-            </div>
-          ) : null}
-          {groupRole < 3 ? (
-            <div
-              onClick={() => {
-                changeRole(3, roleIndex);
-              }}
-              className="group-role-item"
-            >
-              {roleTypeArr[3]}
-            </div>
-          ) : null}
-          {groupRole < 4 ? (
-            <div
-              onClick={() => {
-                changeRole(4, roleIndex);
-              }}
-              className="group-role-item"
-            >
-              {roleTypeArr[4]}
-            </div>
+            <React.Fragment>
+              {roleTypeArr.map((item: any, index: number) => {
+                return (
+                  <React.Fragment key={'role' + index}>
+                    {groupRole === 1 || groupRole < index + 1 ? (
+                      <div
+                        onClick={() => {
+                          changeRole(index, roleIndex);
+                        }}
+                        className="group-role-item"
+                      >
+                        {item}
+                      </div>
+                    ) : null}
+                  </React.Fragment>
+                );
+              })}
+            </React.Fragment>
           ) : null}
         </div>
       </DropMenu>

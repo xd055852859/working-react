@@ -44,6 +44,9 @@ const Grid: React.FC<GridProps> = (prop) => {
   const [avatarHeight, setAvatarHeight] = useState(0);
   const [loading, setLoading] = useState(false);
   const labelRef: React.RefObject<any> = useRef();
+  const avatarRef: React.RefObject<any> = useRef();
+
+  let unDistory = true;
   useEffect(() => {
     if (headerIndex === 3 && groupInfo && labelArray && taskArray) {
       let groupArray: any = _.cloneDeep([groupInfo]);
@@ -60,6 +63,9 @@ const Grid: React.FC<GridProps> = (prop) => {
     ) {
       getGridData();
     }
+    return () => {
+      unDistory = false;
+    };
   }, [
     headerIndex,
     groupInfo,
@@ -100,53 +106,57 @@ const Grid: React.FC<GridProps> = (prop) => {
     }
     // setLoading(true);
     let gridRes: any = await api.task.allGridGroupTask(obj);
-    if (gridRes.msg === 'OK') {
-      // setLoading(false);
-      let gridObj: any = _.cloneDeep(gridRes.result);
-      let newAllGridChildArray: any = [];
-      let newAllGridTaskArray: any = [];
-      let newAllGridGroupArray: any = [];
-      let cardIndex = _.findIndex(gridObj.groupArray, {
-        _key: localStorage.getItem('mainGroupKey'),
-      });
-      if (gridObj.groupArray.length > 0) {
-        gridObj.groupArray.unshift(gridObj.groupArray.splice(cardIndex, 1)[0]);
-        gridObj.cardArray.unshift(gridObj.cardArray.splice(cardIndex, 1)[0]);
-      }
-      newAllGridGroupArray = gridObj.groupArray;
-      newAllGridTaskArray = gridObj.cardArray.map(
-        (item: any, index: number) => {
-          item = item.filter((taskItem: any, taskIndex: number) => {
-            if (
-              taskItem.finishPercent == 0 ||
-              (taskItem.finishPercent == 1 && taskItem.children.length > 0) ||
-              (taskItem.finishPercent == 2 && taskItem.children.length > 0)
-            ) {
-              return taskItem;
-            }
-          });
-          return item;
+    if (unDistory) {
+      if (gridRes.msg === 'OK') {
+        // setLoading(false);
+        let gridObj: any = _.cloneDeep(gridRes.result);
+        let newAllGridChildArray: any = [];
+        let newAllGridTaskArray: any = [];
+        let newAllGridGroupArray: any = [];
+        let cardIndex = _.findIndex(gridObj.groupArray, {
+          _key: localStorage.getItem('mainGroupKey'),
+        });
+        if (gridObj.groupArray.length > 0) {
+          gridObj.groupArray.unshift(
+            gridObj.groupArray.splice(cardIndex, 1)[0]
+          );
+          gridObj.cardArray.unshift(gridObj.cardArray.splice(cardIndex, 1)[0]);
         }
-      );
-      gridObj.sonCardArray.map((item: any, index: number) => {
-        newAllGridChildArray[index] = {};
-        for (let key in item) {
-          if (
-            item[key].finishPercent == 0 ||
-            (item[key].finishPercent == 1 && item[key].children.length > 0) ||
-            (item[key].finishPercent == 2 && item[key].children.length > 0)
-          ) {
-            newAllGridChildArray[index][key] = item[key];
+        newAllGridGroupArray = gridObj.groupArray;
+        newAllGridTaskArray = gridObj.cardArray.map(
+          (item: any, index: number) => {
+            item = item.filter((taskItem: any, taskIndex: number) => {
+              if (
+                taskItem.finishPercent == 0 ||
+                (taskItem.finishPercent == 1 && taskItem.children.length > 0) ||
+                (taskItem.finishPercent == 2 && taskItem.children.length > 0)
+              ) {
+                return taskItem;
+              }
+            });
+            return item;
           }
-        }
-      });
-      setAllGridGroupArray(newAllGridGroupArray);
-      setAllGridTaskArray(newAllGridTaskArray);
-      setAllGridChildArray(newAllGridChildArray);
-      formatData();
-      setLoading(false);
-    } else {
-      dispatch(setMessage(true, gridRes.msg, 'error'));
+        );
+        gridObj.sonCardArray.map((item: any, index: number) => {
+          newAllGridChildArray[index] = {};
+          for (let key in item) {
+            if (
+              item[key].finishPercent == 0 ||
+              (item[key].finishPercent == 1 && item[key].children.length > 0) ||
+              (item[key].finishPercent == 2 && item[key].children.length > 0)
+            ) {
+              newAllGridChildArray[index][key] = item[key];
+            }
+          }
+        });
+        setAllGridGroupArray(newAllGridGroupArray);
+        setAllGridTaskArray(newAllGridTaskArray);
+        setAllGridChildArray(newAllGridChildArray);
+        formatData();
+        setLoading(false);
+      } else {
+        dispatch(setMessage(true, gridRes.msg, 'error'));
+      }
     }
   };
   const formatDate = () => {
@@ -197,13 +207,10 @@ const Grid: React.FC<GridProps> = (prop) => {
     let arr: any = [];
     let newTaskNavDay: any = [];
     if (taskNavDay) {
-      console.log(taskNavDay);
-      newTaskNavDay = _.cloneDeep(taskNavDay).map(
-        (taskNavItem: any) => {
-          taskNavItem.allTaskNum = 0;
-          return taskNavItem;
-        }
-      );
+      newTaskNavDay = _.cloneDeep(taskNavDay).map((taskNavItem: any) => {
+        taskNavItem.allTaskNum = 0;
+        return taskNavItem;
+      });
     } else {
       newTaskNavDay = formatData()[0];
     }
@@ -214,7 +221,6 @@ const Grid: React.FC<GridProps> = (prop) => {
           groupObj: groupArray[index],
           tabShow: true,
         };
-        console.log(item);
         // if (item.type === 2) {
         item.forEach((groupItem: any, groupIndex: number) => {
           if (groupItem.labelKey) {
@@ -333,7 +339,6 @@ const Grid: React.FC<GridProps> = (prop) => {
     let key = arr[arrIndex];
     let newAllGridChildArray = _.cloneDeep(allGridChildArray);
     let newTaskNavDay = _.cloneDeep(taskNavDay);
-    console.log(newAllGridChildArray);
     arr[arrIndex] = newAllGridChildArray[groupIndex][key];
     arr[arrIndex].dayArr = [];
     newTaskNavDay = newTaskNavDay.map((dayItem: any, dayIndex: number) => {
@@ -441,11 +446,18 @@ const Grid: React.FC<GridProps> = (prop) => {
   return (
     <div className="grid">
       {loading ? <Loading /> : null}
-      <div className="grid-group-date" style={{ height: '35px' }}>
+      <div className="grid-group-date">
         <div className="grid-date-label-title">任务时长统计</div>
         <div className="grid-date-label">
           {taskNavDay
             ? taskNavDate.map((dateItem: any, dateIndex: number) => {
+                let avatarWidth = !gridState
+                  ? avatarRef.current
+                    ? avatarRef.current.offsetWidth > 25
+                      ? '25px'
+                      : avatarRef.current.offsetWidth + 'px'
+                    : '0px'
+                  : '25px';
                 return (
                   <div
                     style={{ border: '0px' }}
@@ -463,10 +475,11 @@ const Grid: React.FC<GridProps> = (prop) => {
                             ? '#16AE7A'
                             : '#B6B6B6',
                         borderRadius: '50%',
-                        width: '25px',
-                        height: '25px',
+                        width: avatarWidth,
+                        height: avatarWidth,
                         textAlign: 'center',
-                        lineHeight: '25px',
+                        lineHeight: avatarWidth,
+                        zIndex: 2,
                       }}
                     >
                       {taskNavDay[dateIndex].allTaskNum > 0
@@ -512,11 +525,15 @@ const Grid: React.FC<GridProps> = (prop) => {
                             ? '1px solid transparent'
                             : '0px',
                       }}
+                      ref={avatarRef}
                     >
                       {/* <div slot="title">{dateItem.nickName}</div> */}
                       <img
                         src={
-                          dateItem.avatar ? dateItem.avatar : defaultPersonPng
+                          dateItem.avatar
+                            ? dateItem.avatar +
+                              '?imageMogr2/auto-orient/thumbnail/80x'
+                            : defaultPersonPng
                         }
                         alt=""
                       />
@@ -550,7 +567,8 @@ const Grid: React.FC<GridProps> = (prop) => {
                             <img
                               src={
                                 item.groupObj.groupLogo
-                                  ? item.groupObj.groupLogo
+                                  ? item.groupObj.groupLogo +
+                                    '?imageMogr2/auto-orient/thumbnail/80x'
                                   : defaultGroupPng
                               }
                               alt=""

@@ -1,5 +1,9 @@
 import * as qiniu from 'qiniu-js';
+import api from '../../services/api';
+import { useDispatch } from 'react-redux';
+import { setUploadToken } from '../../redux/actions/authActions';
 const uploadFile = {
+  reloadNum: 0,
   uploadImg: async (file, uptoken, mimeType, callback) => {
     //let res = await api.upload.getUptoken(window.localStorage.getItem("TOKEN"));
     if (!uptoken || !file) {
@@ -47,58 +51,113 @@ const uploadFile = {
     // 上传开始
     observable.subscribe(observer);
   },
-  qiniuUpload(uptoken, target, file, isVideo, callback = null) {
-    let mimeType = [
-      'image/png',
-      'image/jpeg',
-      'image/svg+xml',
-      'video/mp4',
-      'audio/mpeg',
-    ];
-    const domain = 'https://cdn-icare.qingtime.cn/';
-    let putExtra = {
+  // qiniuUpload(uptoken, target, file, isVideo, callback = null) {
+  //   // const dispatch = useDispatch();
+  //   let that = this;
+  //   let mimeType = ['image/png', 'image/jpeg', 'image/svg+xml', 'video/mp4'];
+  //   let putExtra = {
+  //     // 文件原文件名
+  //     fname: '',
+  //     // 自定义变量
+  //     params: {},
+  //     // 限制上传文件类型
+  //     mimeType: mimeType,
+  //   };
+  //   let config = {
+  //     useCdnDomain: true,
+  //     disableStatisticsReport: false,
+  //     retryCount: 5,
+  //     region: qiniu.region.z0,
+  //   };
+  //   let observer = {
+  //     next(res) {},
+  //     async error(err) {
+  //       // async complete(res) {
+  //       that.reloadNum++;
+  //       if (that.reloadNum > 2) {
+  //         alert('上传失败！请检查网络或重新尝试上传');
+  //       } else {
+  //         alert('上传失败！重新上传中');
+  //         let uploadRes = await api.auth.getUptoken();
+  //         if (uploadRes.msg === 'OK') {
+  //           // dispatch(setUploadToken(uploadRes.result));
+  //           that.qiniuUpload(uploadRes.result, target, file, isVideo, callback);
+  //         }
+  //       }
+  //     },
+  //     complete(res) {
+  //       const domain = 'https://cdn-icare.qingtime.cn/';
+  //       const url = domain + encodeURIComponent(res.key);
+  //       console.log(url, callback);
+  //       if (callback) {
+  //         callback(url);
+  //       } else {
+  //         if (isVideo) {
+  //           target.innerHTML = `<video src="${url}" style="width: 600px;" controls="" class="fr-draggable">您的浏览器不支持 HTML5 视频。</video>`;
+  //         } else {
+  //           console.log('target', target);
+  //           target.src = url;
+  //         }
+  //       }
+  //     },
+  //   };
+  //   // 上传
+  //   let observable = qiniu.upload(
+  //     file,
+  //     `${this.guid(8, 16)}${
+  //       file.name ? file.name.substr(file.name.lastIndexOf('.')) : '.jpg'
+  //     }`,
+  //     uptoken,
+  //     putExtra,
+  //     config
+  //   );
+  //   // 上传开始
+  //   observable.subscribe(observer);
+  // },
+  qiniuUpload(uptoken, target, file, isVideo,callBack) {
+    const putExtra = {
       // 文件原文件名
       fname: '',
       // 自定义变量
       params: {},
       // 限制上传文件类型
-      mimeType: mimeType,
+      mimeType: ['image/png', 'image/jpeg', 'image/svg+xml', 'video/mp4'],
     };
-    let config = {
+
+    const qiniuConfig = {
       useCdnDomain: true,
       disableStatisticsReport: false,
       retryCount: 5,
       region: qiniu.region.z0,
     };
+
     let observer = {
       next(res) {},
       error(err) {
-        console.log(err);
         alert('上传失败！');
       },
       complete(res) {
+        const domain = 'https://cdn-icare.qingtime.cn/';
         const url = domain + encodeURIComponent(res.key);
-        console.log('url', url);
-        if (callback) {
-          callback(url);
+        if (isVideo) {
+          target.innerHTML = `<video src="${url}" style="width: 600px;" controls="" class="fr-draggable">您的浏览器不支持 HTML5 视频。</video>`;
         } else {
-          if (isVideo) {
-            target.innerHTML = `<video src="${url}" style="width: 600px;" controls="" class="fr-draggable">您的浏览器不支持 HTML5 视频。</video>`;
-          } else {
-            target.src = url;
-          }
-          return target;
+          target.src = url;
         }
       },
     };
+
     // 上传
     let observable = qiniu.upload(
       file,
-      new Date().getTime() + '_workingVip',
+      `${this.guid(8, 16)}${
+        file.name ? file.name.substr(file.name.lastIndexOf('.')) : '.jpg'
+      }`,
       uptoken,
       putExtra,
-      config
+      qiniuConfig
     );
+
     // 上传开始
     observable.subscribe(observer);
   },

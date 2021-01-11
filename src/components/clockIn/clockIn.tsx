@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
-import { Button } from '@material-ui/core';
+import { Button,Tooltip } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import moment from 'moment';
@@ -51,11 +51,15 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
   const [groupList, setGroupList] = useState<any>([]);
   const [taskNumber, setTaskNumber] = useState(0);
   const [clockInIndex, setClockInIndex] = useState(0);
+  let unDistory = true;
   useEffect(() => {
     if (user && user._key && visible) {
       getClockIn();
       getGroupList();
     }
+    return () => {
+      unDistory = false;
+    };
   }, [user, visible]);
   useEffect(() => {
     if (selfTaskArray) {
@@ -101,17 +105,19 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
   const getGroupList = async () => {
     let newGroupList: any = [];
     let groupRes: any = await api.group.getGroup(3, null, 4);
-    if (groupRes.msg === 'OK') {
-      groupRes.result = groupRes.result.filter(
-        (groupItem: any, groupIndex: number) => {
-          if (groupItem.groupName.indexOf('个人事务') == -1) {
-            newGroupList.push(groupItem);
+    if (unDistory) {
+      if (groupRes.msg === 'OK') {
+        groupRes.result = groupRes.result.filter(
+          (groupItem: any, groupIndex: number) => {
+            if (groupItem.groupName.indexOf('个人事务') == -1) {
+              newGroupList.push(groupItem);
+            }
           }
-        }
-      );
-      setGroupList(newGroupList);
-    } else {
-      dispatch(setMessage(true, groupRes.msg, 'error'));
+        );
+        setGroupList(newGroupList);
+      } else {
+        dispatch(setMessage(true, groupRes.msg, 'error'));
+      }
     }
   };
   const getClockIn = async () => {
@@ -119,24 +125,26 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
       user._key,
       moment().startOf('day').valueOf()
     );
-    if (noteRes.msg === 'OK') {
-      setPositive(noteRes.result.positive);
-      setNegative(noteRes.result.negative);
-      setNote(noteRes.result.note);
-    } else {
-      if (noteRes.msg === '无该成就/风险/随记') {
-        await api.auth.setNote({
-          startTime: moment().startOf('day').valueOf(),
-          type: 2,
-          positive: '',
-          negative: '',
-          note: '',
-          positiveClose: '',
-          negativeClose: '',
-          noteClose: '',
-        });
+    if (unDistory) {
+      if (noteRes.msg === 'OK') {
+        setPositive(noteRes.result.positive);
+        setNegative(noteRes.result.negative);
+        setNote(noteRes.result.note);
       } else {
-        dispatch(setMessage(true, noteRes.msg, 'error'));
+        if (noteRes.msg === '无该成就/风险/随记') {
+          await api.auth.setNote({
+            startTime: moment().startOf('day').valueOf(),
+            type: 2,
+            positive: '',
+            negative: '',
+            note: '',
+            positiveClose: '',
+            negativeClose: '',
+            noteClose: '',
+          });
+        } else {
+          dispatch(setMessage(true, noteRes.msg, 'error'));
+        }
       }
     }
   };
@@ -261,7 +269,9 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
                               alt=""
                             />
                           </div>
-                          {groupItem.groupName}
+                          <Tooltip title={groupItem.groupName}>
+                          <div className="clockInGroup-item-name">{groupItem.groupName}</div>
+                          </Tooltip>
                         </div>
                       );
                     })}
@@ -322,17 +332,19 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
                 <img src={reportSvg} alt="" style={{ marginRight: '5px' }} />
                 <div>日志</div>
               </div>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={() => {
-                  clockIn();
-                }}
-                style={{ color: '#fff' }}
-                // className={classes.clockInButton}
-              >
-                {nowTime ? '下班打卡' : '上班打卡'}
-              </Button>
+              {groupList.length > 0 ? (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => {
+                    clockIn();
+                  }}
+                  style={{ color: '#fff' }}
+                  // className={classes.clockInButton}
+                >
+                  {nowTime ? '下班打卡' : '上班打卡'}
+                </Button>
+              ) : null}
             </div>
             <Dialog
               visible={showReport}

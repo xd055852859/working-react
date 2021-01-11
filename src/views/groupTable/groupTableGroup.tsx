@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import _ from 'lodash';
 import format from '../../components/common/format';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-import { TextField, Button } from '@material-ui/core';
+import { TextField, Button, IconButton } from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux';
 import {
@@ -11,8 +11,10 @@ import {
   setChooseKey,
   setTaskKey,
 } from '../../redux/actions/taskActions';
-import { changeBatchMusic } from '../../redux/actions/authActions';
-import { changeCreateMusic } from '../../redux/actions/authActions';
+import {
+  changeBatchMusic,
+  changeCreateMusic,
+} from '../../redux/actions/authActions';
 // import { getGroupInfo } from '../../redux/actions/groupActions';
 // import { getTheme } from '../../redux/actions/authActions';
 import { setMessage } from '../../redux/actions/commonActions';
@@ -24,7 +26,9 @@ import DropMenu from '../../components/common/dropMenu';
 import Dialog from '../../components/common/dialog';
 import defaultPerson from '../../assets/img/defaultPerson.png';
 import taskAddPng from '../../assets/img/contact-add.png';
+import urlSvg from '../../assets/svg/url.svg';
 import Loading from '../../components/common/loading';
+// const taskRef: React.RefObject<any> = useRef();
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     input: {
@@ -51,15 +55,17 @@ const GroupTableGroup: React.FC = (prop) => {
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   // const [memberObj, setMemberObj] = useState<any>({});
-  const [taskInfo, setTaskInfo] = useState<any>([]);
+  const [groupTaskArray, setGroupTaskArray] = useState<any>([]);
+  const [taskNumber, setTaskNumber] = useState(10);
+  const [taskLoadInfo, setTaskLoadInfo] = useState<any>([]);
   const [taskNameArr, setTaskNameArr] = useState<any>([]);
   const [labelExecutorArray, setLabelExecutorArray] = useState<any>([]);
   const [labelName, setLabelName] = useState('');
   const [labelIndex, setLabelIndex] = useState<any>(null);
   const [labelVisible, setLabelVisible] = useState(false);
-  const [labelLogoVisible, setLabelLogoVisible] = useState(false);
   const [addLabelInput, setAddLabelInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [taskLoading, setTaskLoading] = useState(false);
   const [addTaskVisible, setAddTaskVisible] = useState(false);
   const [addInput, setAddInput] = useState('');
   // const [batchTaskVisible, setBatchTaskVisible] = useState(false);
@@ -67,6 +73,8 @@ const GroupTableGroup: React.FC = (prop) => {
   // const [batchGroupKey, setBatchGroupKey] = useState<string | null>('');
   const [chooseLabelKey, setChooseLabelKey] = useState('');
   const [addVisible, setAddVisible] = useState<any>(null);
+  const [moveState, setMoveState] = useState(false);
+  const [urlInput, setUrlInput] = useState('');
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const dispatch = useDispatch();
   useEffect(() => {
@@ -75,11 +83,38 @@ const GroupTableGroup: React.FC = (prop) => {
     }
   }, [user, groupKey]);
   useEffect(() => {
+    setTaskNumber(
+      Math.ceil((document.documentElement.offsetHeight - 128) / 70)
+    );
+  }, []);
+  useEffect(() => {
+    if (taskLoadInfo) {
+      setTaskLoading(false);
+    }
+  }, [taskLoadInfo]);
+
+  useEffect(() => {
     if (taskArray) {
       setLoading(false);
       getData(labelArray, taskArray, filterObject);
     }
   }, [taskArray, filterObject, labelArray]);
+  useEffect(() => {
+    if (groupTaskArray) {
+      let newTaskLoadInfo: any = [];
+      groupTaskArray.forEach((item: any, index: number) => {
+        let taskInfoItem: any = _.cloneDeep(
+          format.formatFilter(item, filterObject)
+        );
+        newTaskLoadInfo[index] = taskInfoItem
+          .filter((taskItem: any, taskIndex: number) => {
+            return taskItem;
+          })
+          .slice(0, taskNumber + 1);
+      });
+      setTaskLoadInfo(newTaskLoadInfo);
+    }
+  }, [groupTaskArray]);
   // useEffect(() => {
   //   if (chooseKey) {
   //     dispatch(setTaskKey(chooseKey));
@@ -89,12 +124,13 @@ const GroupTableGroup: React.FC = (prop) => {
   const getData = (labelArray: any, taskArray: any, filterObject: any) => {
     let taskNameArr: any = [];
     let labelExecutorArray: any = [];
-    let taskInfo: any = [];
+    let groupTaskArray: any = [];
+
     let finishPercentArray1: any = [];
     let finishPercentArray2: any = [];
     let finishPercentArray10: any = [];
     labelArray.forEach((item: any, index: any) => {
-      taskInfo[index] = [];
+      groupTaskArray[index] = [];
       // this.taskClickArr[index] = false;
       // this.taskMoveArr[index] = false;
       taskNameArr.push({ name: item.cardLabelName, key: item._key });
@@ -118,12 +154,13 @@ const GroupTableGroup: React.FC = (prop) => {
         for (let i = 0; i < labelArray.length; i++) {
           if (item.labelKey === labelArray[i]._key) {
             let index = labelArray[i].cardOrder.indexOf(item._key);
-            taskInfo[i][index] = item;
+            groupTaskArray[i][index] = item;
+            // groupTaskArray[i].push(item);
           }
         }
       }
     });
-    taskInfo = taskInfo.map((item: any) => {
+    groupTaskArray = groupTaskArray.map((item: any) => {
       let arr = [];
       if (item) {
         for (let i = 0; i < item.length; i++) {
@@ -136,7 +173,7 @@ const GroupTableGroup: React.FC = (prop) => {
     });
     taskArray.forEach((item: any) => {
       for (let i = 0; i < labelArray.length; i++) {
-        let findIndex = _.findIndex(taskInfo[i], ['_key', item._key]);
+        let findIndex = _.findIndex(groupTaskArray[i], ['_key', item._key]);
         if (item.labelKey === labelArray[i]._key && findIndex === -1) {
           if (item.finishPercent === 1) {
             if (!finishPercentArray1[i]) {
@@ -159,7 +196,7 @@ const GroupTableGroup: React.FC = (prop) => {
         }
       }
     });
-    taskInfo.forEach((item: any, index: number) => {
+    groupTaskArray = groupTaskArray.map((item: any, index: number) => {
       if (finishPercentArray1[index]) {
         item.push(...finishPercentArray1[index]);
       }
@@ -169,39 +206,17 @@ const GroupTableGroup: React.FC = (prop) => {
       if (finishPercentArray10[index]) {
         item.push(...finishPercentArray10[index]);
       }
+      let formatArr: any = _.cloneDeep(format.formatFilter(item, filterObject));
+      formatArr = formatArr.filter((item: any, index: number) => {
+        if (item.show) {
+          return item;
+        }
+      });
+      return item;
     });
-    taskInfo = taskInfo.map((item: any) => {
-      return _.cloneDeep(format.formatFilter(item, filterObject));
-    });
-
-    setTaskInfo(taskInfo);
+    setGroupTaskArray(groupTaskArray);
     setTaskNameArr(taskNameArr);
     setLabelExecutorArray(labelExecutorArray);
-  };
-  const taskTypeLength = (value: any) => {
-    let len = 0;
-    value.forEach((item: any) => {
-      if (item.show) {
-        len++;
-      }
-    });
-    return len;
-  };
-  const changeLabelName = (e: any, index: number) => {
-    let taskNewNameArr: any = [];
-    setLabelName(e.target.value);
-    taskNewNameArr = _.cloneDeep(taskNameArr);
-    taskNewNameArr[index].name = e.target.value;
-    setTaskNameArr(taskNewNameArr);
-  };
-  const saveLabel = async (key: string) => {
-    let labelRes: any = await api.task.changeTaskLabelName(key, labelName);
-    if (labelRes.msg === 'OK') {
-      dispatch(setMessage(true, '保存成功', 'success'));
-      dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
-    } else {
-      dispatch(setMessage(true, labelRes.msg, 'error'));
-    }
   };
   const reorder = (list: any, startIndex: number, endIndex: number) => {
     const result = Array.from(list);
@@ -237,20 +252,19 @@ const GroupTableGroup: React.FC = (prop) => {
 
     let cardOrder1: any = [];
     let cardOrder2: any = [];
-    let newTaskInfo: any = [];
+    let newGroupTaskArray: any = _.cloneDeep(groupTaskArray);
     let labelObject: any = {};
-    newTaskInfo = _.cloneDeep(taskInfo);
     // dropped outside the list
     if (!destination) {
       return;
     }
     if (source.droppableId === destination.droppableId) {
       const items = reorder(
-        newTaskInfo[parseInt(source.droppableId)],
+        newGroupTaskArray[parseInt(source.droppableId)],
         source.index,
         destination.index
       );
-      newTaskInfo[parseInt(source.droppableId)] = items;
+      newGroupTaskArray[parseInt(source.droppableId)] = items;
       cardOrder1 = items.map((item: any) => {
         return item._key;
       });
@@ -262,15 +276,38 @@ const GroupTableGroup: React.FC = (prop) => {
           cardOrder: cardOrder1,
         },
       };
+      labelObject = {
+        groupKey: groupKey,
+        labelKey1: labelArray[parseInt(source.droppableId)]._key,
+        labelKey2: labelArray[parseInt(source.droppableId)]._key,
+        cardKey:
+          groupTaskArray[parseInt(source.droppableId)][source.index]._key,
+        // labelObject1: {
+        //   cardOrder: cardOrder1,
+        // },
+        // labelObject2: {
+        //   cardOrder: cardOrder2,
+        // },
+      };
+      let targetIndex = cardOrder1.indexOf(
+        groupTaskArray[parseInt(source.droppableId)][source.index]._key
+      );
+      console.log(targetIndex);
+      if (targetIndex !== -1) {
+        if (targetIndex !== 0) {
+          labelObject.previousCardKey = cardOrder1[targetIndex - 1];
+        }
+      }
     } else {
       const result = move(
-        newTaskInfo[parseInt(source.droppableId)],
-        newTaskInfo[parseInt(destination.droppableId)],
+        newGroupTaskArray[parseInt(source.droppableId)],
+        newGroupTaskArray[parseInt(destination.droppableId)],
         source,
         destination
       );
-      newTaskInfo[parseInt(source.droppableId)] = result[source.droppableId];
-      newTaskInfo[parseInt(destination.droppableId)] =
+      newGroupTaskArray[parseInt(source.droppableId)] =
+        result[source.droppableId];
+      newGroupTaskArray[parseInt(destination.droppableId)] =
         result[destination.droppableId];
       cardOrder1 = result[source.droppableId].map((item: any) => {
         return item._key;
@@ -280,25 +317,36 @@ const GroupTableGroup: React.FC = (prop) => {
       });
       labelObject = {
         groupKey: groupKey,
-        labelObject1: {
-          labelKey: labelArray[parseInt(source.droppableId)]._key,
-          cardOrder: cardOrder1,
-        },
-        labelObject2: {
-          labelKey: labelArray[parseInt(destination.droppableId)]._key,
-          cardOrder: cardOrder2,
-        },
+        labelKey1: labelArray[parseInt(source.droppableId)]._key,
+        labelKey2: labelArray[parseInt(destination.droppableId)]._key,
+        cardKey:
+          groupTaskArray[parseInt(source.droppableId)][source.index]._key,
+        // labelObject1: {
+        //   cardOrder: cardOrder1,
+        // },
+        // labelObject2: {
+        //   cardOrder: cardOrder2,
+        // },
       };
+      let targetIndex = cardOrder2.indexOf(
+        groupTaskArray[parseInt(source.droppableId)][source.index]._key
+      );
+      console.log(targetIndex);
+      if (targetIndex !== -1) {
+        if (targetIndex !== 0) {
+          labelObject.previousCardKey = cardOrder2[targetIndex - 1];
+        }
+      }
     }
-
-    setTaskInfo(newTaskInfo);
+    console.log(labelObject);
+    setGroupTaskArray(newGroupTaskArray);
     let taskRes: any = await api.task.changeTaskLabel(
       groupKey,
-      taskInfo[parseInt(source.droppableId)][source.index]._key,
+      groupTaskArray[parseInt(source.droppableId)][source.index]._key,
       labelArray[parseInt(destination.droppableId)]._key
     );
     if (taskRes.msg === 'OK') {
-      dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
+      // dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
     } else {
       dispatch(setMessage(true, taskRes.msg, 'error'));
     }
@@ -371,9 +419,9 @@ const GroupTableGroup: React.FC = (prop) => {
   //   taskIndex: number,
   //   taskInfoIndex: number
   // ) => {
-  //   let newTaskInfo = _.cloneDeep(taskInfo);
-  //   newTaskInfo[taskInfoIndex][taskIndex] = taskItem;
-  //   setTaskInfo(newTaskInfo);
+  //   let newGroupTaskArray = _.cloneDeep(groupTaskArray);
+  //   newGroupTaskArray[taskInfoIndex][taskIndex] = taskItem;
+  //   setGroupTaskArray(newGroupTaskArray);
   // };
   const addLabel = async () => {
     let newTaskNameArr: any = _.cloneDeep(taskNameArr);
@@ -410,6 +458,7 @@ const GroupTableGroup: React.FC = (prop) => {
     setLabelExecutorArray(newLabelExecutorArray);
   };
   const addTask = async (groupInfo: any, labelInfo: any) => {
+    let obj = {};
     if (addInput == '') {
       setAddTaskVisible(false);
       return;
@@ -417,14 +466,24 @@ const GroupTableGroup: React.FC = (prop) => {
     if (mainGroupKey == groupInfo._key) {
       labelInfo.executorKey = user._key;
     }
+    if (urlInput) {
+      obj = {
+        url:
+          urlInput.indexOf('http://') !== -1 ||
+          urlInput.indexOf('https://') !== -1
+            ? urlInput
+            : 'http://' + urlInput,
+      };
+    }
     setLoading(true);
-    let addTaskRes: any = await api.task.addTask(
-      groupInfo._key,
-      groupInfo.groupRole,
-      labelInfo._key,
-      labelInfo.executorKey,
-      addInput
-    );
+    let addTaskRes: any = await api.task.addTask({
+      groupKey: groupInfo._key,
+      groupRole: groupInfo.groupRole,
+      labelKey: labelInfo._key,
+      executorKey: labelInfo.executorKey,
+      title: addInput,
+      extraData: obj,
+    });
     if (addTaskRes.msg === 'OK') {
       dispatch(setMessage(true, '新增任务成功', 'success'));
       dispatch(changeCreateMusic(true));
@@ -438,6 +497,34 @@ const GroupTableGroup: React.FC = (prop) => {
       dispatch(setMessage(true, addTaskRes.msg, 'error'));
     }
   };
+  const scrollTask = (e: any, index: number) => {
+    setTaskLoading(true);
+    let newTaskLoadInfo = _.cloneDeep(taskLoadInfo);
+    let taskLength = newTaskLoadInfo[index].length;
+    let scrollHeight = e.target.scrollHeight;
+    //滚动条滚动距离
+    let scrollTop = e.target.scrollTop;
+    //窗口可视范围高度
+    let clientHeight = e.target.clientHeight;
+    let taskArr = groupTaskArray[index].filter(
+      (taskItem: any, taskIndex: number) => {
+        if (taskItem.show) {
+          return taskItem;
+        }
+      }
+    );
+    if (
+      clientHeight + scrollTop + 1 >= scrollHeight &&
+      taskLength < taskArr.length
+    ) {
+      newTaskLoadInfo[index].push(
+        ...taskArr.slice(taskLength, taskLength + taskNumber)
+      );
+      setTaskLoadInfo(newTaskLoadInfo);
+    } else {
+      setTaskLoading(false);
+    }
+  };
   return (
     <div
       className="task"
@@ -445,286 +532,335 @@ const GroupTableGroup: React.FC = (prop) => {
       //   dispatch(setChooseKey(''));
       // }}
     >
-      {loading ? <Loading /> : null}
-      <div className="task-container-profile">
-        <DragDropContext onDragEnd={onDragNameEnd}>
-          <Droppable droppableId="droppable" direction="horizontal">
-            {(provided, snapshot) => (
-              <div
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-                className="task-container-taskName"
-              >
-                {taskNameArr.map((taskNameitem: any, taskNameindex: any) => {
-                  return (
-                    <Draggable
-                      key={'drag' + taskNameindex}
-                      draggableId={taskNameindex !== 0 ? taskNameitem.key : '0'}
-                      isDragDisabled={!taskNameitem.key}
-                      index={taskNameindex}
-                    >
+      {loading || taskLoading ? <Loading /> : null}
+      {groupInfo && labelArray ? (
+        <div className="task-container-profile">
+          <DragDropContext onDragEnd={onDragNameEnd}>
+            <Droppable droppableId="droppable" direction="horizontal">
+              {(provided, snapshot) => (
+                <div
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="task-container-taskName"
+                >
+                  {taskNameArr.map((taskNameitem: any, taskNameindex: any) => {
+                    return (
+                      <Draggable
+                        key={'drag' + taskNameindex}
+                        draggableId={
+                          taskNameindex !== 0 ? taskNameitem.key : '0'
+                        }
+                        isDragDisabled={!taskNameitem.key}
+                        index={taskNameindex}
+                      >
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            // style={{ marginRight: '15px' }}
+                            onMouseEnter={() => {
+                              setLabelIndex(taskNameindex);
+                              setAddVisible('out');
+                            }}
+                            onMouseLeave={() => {
+                              setAddVisible('in');
+                            }}
+                            className="task-container-taskName-item"
+                          >
+                            <React.Fragment>
+                              {labelIndex === taskNameindex &&
+                              groupInfo &&
+                              groupInfo.role < 4 &&
+                              groupInfo.role > 0 ? (
+                                <img
+                                  src={taskAddPng}
+                                  onClick={() => {
+                                    setLabelVisible(true);
+                                  }}
+                                  className="task-container-taskName-logo"
+                                  style={
+                                    addVisible === 'in'
+                                      ? {
+                                          animation: 'navIn 200ms',
+                                          width: '0px',
+                                          height: '0px',
+                                          right: '0px',
+                                          top: '30px',
+                                        }
+                                      : addVisible === 'out'
+                                      ? {
+                                          animation: 'navOut 200ms',
+                                          width: '22px',
+                                          height: '22px',
+                                          right: '-3px',
+                                          top: '20px',
+                                        }
+                                      : {
+                                          width: '0px',
+                                          height: '0px',
+                                          right: '0px',
+                                          top: '30px',
+                                        }
+                                  }
+                                />
+                              ) : null}
+                              {groupInfo &&
+                              groupInfo.role > 0 &&
+                              groupInfo.role < 5 ? (
+                                <div
+                                  className="taskNav-addLabel"
+                                  onClick={() => {
+                                    setAddTaskVisible(true);
+                                    setChooseLabelKey(
+                                      labelArray[taskNameindex]._key
+                                        ? labelArray[taskNameindex]._key
+                                        : '0'
+                                    );
+                                    document
+                                      .querySelectorAll('.task-item-info')
+                                      [taskNameindex].scrollTo(0, 0);
+                                  }}
+                                ></div>
+                              ) : null}
+                              <TaskNav
+                                avatar={
+                                  labelExecutorArray[taskNameindex] &&
+                                  labelExecutorArray[taskNameindex]
+                                    .executorAvatar
+                                    ? labelExecutorArray[taskNameindex]
+                                        .executorAvatar
+                                    : defaultPerson
+                                }
+                                executorKey={
+                                  labelExecutorArray[taskNameindex] &&
+                                  labelExecutorArray[taskNameindex].executorKey
+                                }
+                                name={taskNameitem.name}
+                                role={groupInfo && groupInfo.role}
+                                colorIndex={taskNameindex}
+                                taskNavArray={[
+                                  groupInfo,
+                                  labelArray[taskNameindex],
+                                ]}
+                                taskNavWidth={'350px'}
+                                chooseLabelKey={chooseLabelKey}
+                                setChooseLabelKey={setChooseLabelKey}
+                                batchTaskArray={() => {
+                                  batchTaskArray(groupTaskArray[taskNameindex]);
+                                }}
+                                changeLabelAvatar={changeLabelAvatar}
+                                arrlength={labelArray.length}
+                                taskNavTask={groupTaskArray[taskNameindex]}
+                              />
+                            </React.Fragment>
+                          </div>
+                        )}
+                      </Draggable>
+                    );
+                  })}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
+          <DragDropContext onDragEnd={onDragEnd}>
+            <div className="task-container-task">
+              {taskLoadInfo.map((taskInfoitem: any, taskInfoindex: any) => {
+                return (
+                  <React.Fragment key={'taskInfoitem' + taskInfoindex}>
+                    <Droppable droppableId={taskInfoindex + ''}>
                       {(provided, snapshot) => (
                         <div
                           ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          {...provided.dragHandleProps}
-                          // style={{ marginRight: '15px' }}
-                          onMouseEnter={() => {
-                            setLabelIndex(taskNameindex);
-                            setAddVisible('out');
+                          className="task-item-info"
+                          style={{ marginRight: '15px' }}
+                          onScroll={(e) => {
+                            scrollTask(e, taskInfoindex);
                           }}
-                          onMouseLeave={() => {
-                            setAddVisible('in');
-                          }}
-                          className="task-container-taskName-item"
                         >
                           <React.Fragment>
-                            {labelIndex === taskNameindex &&
-                            groupInfo &&
-                            groupInfo.role < 4 &&
-                            groupInfo.role > 0 ? (
-                              <img
-                                src={taskAddPng}
-                                onClick={() => {
-                                  setLabelVisible(true);
-                                }}
-                                className="task-container-taskName-logo"
-                                style={
-                                  addVisible === 'in'
-                                    ? {
-                                        animation: 'navIn 200ms',
-                                        width: '0px',
-                                        height: '0px',
-                                        right: '0px',
-                                        top: '30px',
+                            {(addTaskVisible &&
+                              labelArray[taskInfoindex] &&
+                              labelArray[taskInfoindex]._key + '' ===
+                                chooseLabelKey) ||
+                            (chooseLabelKey === '0' &&
+                              labelArray[taskInfoindex] &&
+                              !labelArray[taskInfoindex]._key) ? (
+                              <div className="taskItem-plus-title taskNav-plus-title">
+                                <div className="taskItem-plus-input">
+                                  <input
+                                    // required
+                                    placeholder="任务标题"
+                                    value={addInput}
+                                    autoComplete="off"
+                                    onChange={(e) => {
+                                      setAddInput(e.target.value);
+                                    }}
+                                    style={{ fontSize: '14px' }}
+                                  />
+                                </div>
+                                <div
+                                  className="taskItem-plus-button"
+                                  style={{ marginTop: '10px' }}
+                                >
+                                  <div className="taskNav-url">
+                                    <IconButton
+                                      color="primary"
+                                      component="span"
+                                      onClick={() => {
+                                        setMoveState(true);
+                                      }}
+                                    >
+                                      <img
+                                        src={urlSvg}
+                                        alt=""
+                                        style={{
+                                          height: '25px',
+                                          width: '25px',
+                                        }}
+                                      />
+                                    </IconButton>
+
+                                    <input
+                                      className="taskNav-url-input"
+                                      value={urlInput}
+                                      onChange={(e: any) => {
+                                        setUrlInput(e.target.value);
+                                      }}
+                                      placeholder="请输入链接地址"
+                                      style={
+                                        moveState
+                                          ? {
+                                              animation: 'urlOut 500ms',
+                                              animationFillMode: 'forwards',
+                                            }
+                                          : {}
                                       }
-                                    : addVisible === 'out'
-                                    ? {
-                                        animation: 'navOut 200ms',
-                                        width: '22px',
-                                        height: '22px',
-                                        right: '-3px',
-                                        top: '20px',
-                                      }
-                                    : {
-                                        width: '0px',
-                                        height: '0px',
-                                        right: '0px',
-                                        top: '30px',
-                                      }
-                                }
-                              />
+                                    />
+                                  </div>
+                                  <Button
+                                    onClick={() => {
+                                      setChooseLabelKey('');
+                                      setAddTaskVisible(false);
+                                      setAddInput('');
+                                      setMoveState(false);
+                                    }}
+                                    style={{
+                                      marginRight: '10px',
+                                      color: '#efefef',
+                                    }}
+                                  >
+                                    取消
+                                  </Button>
+                                  {addInput && !loading ? (
+                                    <Button
+                                      variant="contained"
+                                      color="primary"
+                                      onClick={() => {
+                                        addTask(
+                                          groupInfo,
+                                          labelArray[taskInfoindex]
+                                        );
+                                      }}
+                                      style={{
+                                        marginLeft: '10px',
+                                        color: '#fff',
+                                      }}
+                                    >
+                                      确定
+                                    </Button>
+                                  ) : (
+                                    <Button
+                                      variant="contained"
+                                      disabled
+                                      style={{
+                                        marginLeft: '10px',
+                                        color: '#fff',
+                                      }}
+                                    >
+                                      确定
+                                    </Button>
+                                  )}
+                                </div>
+                              </div>
                             ) : null}
-                            {groupInfo &&
-                            groupInfo.role > 0 &&
-                            groupInfo.role < 5 ? (
-                              <div
-                                className="taskNav-addLabel"
-                                onClick={() => {
-                                  setAddTaskVisible(true);
-                                  setChooseLabelKey(
-                                    labelArray[taskNameindex]._key
-                                      ? labelArray[taskNameindex]._key
-                                      : '0'
-                                  );
-                                }}
-                              ></div>
-                            ) : null}
-                            <TaskNav
-                              avatar={
-                                labelExecutorArray[taskNameindex] &&
-                                labelExecutorArray[taskNameindex].executorAvatar
-                                  ? labelExecutorArray[taskNameindex]
-                                      .executorAvatar
-                                  : defaultPerson
-                              }
-                              executorKey={
-                                labelExecutorArray[taskNameindex] &&
-                                labelExecutorArray[taskNameindex].executorKey
-                              }
-                              name={taskNameitem.name}
-                              role={groupInfo && groupInfo.role}
-                              colorIndex={taskNameindex}
-                              taskNavArray={[
-                                groupInfo,
-                                labelArray[taskNameindex],
-                              ]}
-                              taskNavWidth={'350px'}
-                              chooseLabelKey={chooseLabelKey}
-                              setChooseLabelKey={setChooseLabelKey}
-                              batchTaskArray={() => {
-                                batchTaskArray(taskInfo[taskNameindex]);
-                              }}
-                              changeLabelAvatar={changeLabelAvatar}
-                              arrlength={labelArray.length}
-                            />
+                            {taskInfoitem.map((item: any, index: any) => (
+                              <Draggable
+                                key={item._key}
+                                draggableId={item._key}
+                                index={index}
+                              >
+                                {(provided, snapshot) => (
+                                  <div
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
+                                    {...provided.dragHandleProps}
+                                    className="task-item-item"
+                                    // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
+                                  >
+                                    {item.show ? (
+                                      <Task
+                                        taskItem={item}
+                                        // timeSetStatus={
+                                        //   taskInfoitem.length > 4 &&
+                                        //   index > taskInfoitem.length - 3
+                                        // }
+                                        taskIndex={
+                                          labelArray[taskInfoindex] &&
+                                          labelArray[
+                                            taskInfoindex
+                                          ].cardOrder.indexOf(item._key)
+                                            ? labelArray[
+                                                taskInfoindex
+                                              ].cardOrder.indexOf(item._key)
+                                            : 0
+                                        }
+                                        outSide={true}
+                                      />
+                                    ) : null}
+                                  </div>
+                                )}
+                              </Draggable>
+                            ))}
+                            {provided.placeholder}
                           </React.Fragment>
                         </div>
                       )}
-                    </Draggable>
-                  );
-                })}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
-        <DragDropContext onDragEnd={onDragEnd}>
-          <div className="task-container-task">
-            {taskInfo.map((taskInfoitem: any, taskInfoindex: any) => {
-              return (
-                <React.Fragment key={'taskInfoitem' + taskInfoindex}>
-                  <Droppable droppableId={taskInfoindex + 'task'}>
-                    {(provided, snapshot) => (
-                      <div
-                        ref={provided.innerRef}
-                        className="task-item-info"
-                        style={{ marginRight: '15px' }}
-                      >
-                        <React.Fragment>
-                          {(addTaskVisible &&
-                            labelArray[taskInfoindex] &&
-                            labelArray[taskInfoindex]._key + '' ===
-                              chooseLabelKey) ||
-                          (chooseLabelKey === '0' &&
-                            labelArray[taskInfoindex] &&
-                            !labelArray[taskInfoindex]._key) ? (
-                            <div className="taskItem-plus-title taskNav-plus-title">
-                              <div className="taskItem-plus-input">
-                                <input
-                                  // required
-                                  placeholder="任务标题"
-                                  value={addInput}
-                                  autoComplete="off"
-                                  onChange={(e) => {
-                                    setAddInput(e.target.value);
-                                  }}
-                                  style={{fontSize:'14px'}}
-                                />
-                              </div>
-                              <div
-                                className="taskItem-plus-button"
-                                style={{ marginTop: '10px' }}
-                              >
-                                <Button
-                                  onClick={() => {
-                                    setChooseLabelKey('');
-                                    setAddTaskVisible(false);
-                                    setAddInput('');
-                                  }}
-                                  style={{
-                                    marginRight: '10px',
-                                    color: '#efefef',
-                                  }}
-                                >
-                                  取消
-                                </Button>
-                                {addInput && !loading ? (
-                                  <Button
-                                    variant="contained"
-                                    color="primary"
-                                    onClick={() => {
-                                      addTask(
-                                        groupInfo,
-                                        labelArray[taskInfoindex]
-                                      );
-                                    }}
-                                    style={{
-                                      marginLeft: '10px',
-                                      color: '#fff',
-                                    }}
-                                  >
-                                    确定
-                                  </Button>
-                                ) : (
-                                  <Button
-                                    variant="contained"
-                                    disabled
-                                    style={{
-                                      marginLeft: '10px',
-                                      color: '#fff',
-                                    }}
-                                  >
-                                    确定
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-                          ) : null}
-                          {taskInfoitem.map((item: any, index: any) => (
-                            <Draggable
-                              key={item._key}
-                              draggableId={item._key}
-                              index={index}
-                            >
-                              {(provided, snapshot) => (
-                                <div
-                                  ref={provided.innerRef}
-                                  {...provided.draggableProps}
-                                  {...provided.dragHandleProps}
-                                  className="task-item-item"
-                                  // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
-                                >
-                                  {item.show ? (
-                                    <Task
-                                      taskItem={item}
-                                      // timeSetStatus={
-                                      //   taskInfoitem.length > 4 &&
-                                      //   index > taskInfoitem.length - 3
-                                      // }
-                                      taskIndex={
-                                        labelArray[taskInfoindex] &&
-                                        labelArray[
-                                          taskInfoindex
-                                        ].cardOrder.indexOf(item._key)
-                                          ? labelArray[
-                                              taskInfoindex
-                                            ].cardOrder.indexOf(item._key)
-                                          : 0
-                                      }
-                                    />
-                                  ) : null}
-                                </div>
-                              )}
-                            </Draggable>
-                          ))}
-                          {provided.placeholder}
-                        </React.Fragment>
-                      </div>
-                    )}
-                  </Droppable>
-                </React.Fragment>
-              );
-            })}
-          </div>
-        </DragDropContext>
-        <Dialog
-          visible={labelVisible}
-          onClose={() => {
-            setLabelVisible(false);
-          }}
-          onOK={() => {
-            addLabel();
-          }}
-          title={'添加频道'}
-          dialogStyle={{ width: '400px', height: '300px' }}
-        >
-          <div className="headerSet-search-title">
-            <TextField
-              // required
-              id="outlined-basic"
-              variant="outlined"
-              label="添加频道"
-              className={classes.input}
-              style={{ width: '100%' }}
-              value={addLabelInput}
-              onChange={(e) => {
-                setAddLabelInput(e.target.value);
-              }}
-            />
-          </div>
-        </Dialog>
-      </div>
+                    </Droppable>
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          </DragDropContext>
+          <Dialog
+            visible={labelVisible}
+            onClose={() => {
+              setLabelVisible(false);
+            }}
+            onOK={() => {
+              addLabel();
+            }}
+            title={'添加频道'}
+            dialogStyle={{ width: '400px', height: '300px' }}
+          >
+            <div className="headerSet-search-title">
+              <TextField
+                // required
+                id="outlined-basic"
+                variant="outlined"
+                label="添加频道"
+                className={classes.input}
+                style={{ width: '100%' }}
+                value={addLabelInput}
+                onChange={(e) => {
+                  setAddLabelInput(e.target.value);
+                }}
+              />
+            </div>
+          </Dialog>
+        </div>
+      ) : null}
     </div>
   );
 };

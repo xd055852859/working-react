@@ -5,9 +5,11 @@ import { useDispatch } from 'react-redux';
 import api from '../../services/api';
 
 import { setHeaderIndex } from '../../redux/actions/memberActions';
-import { getWorkingTableTask } from '../../redux/actions/taskActions';
+import {
+  getWorkingTableTask,
+  setFilterObject,
+} from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
-
 import WorkingTableHeader from './workingTableHeader';
 import WorkingTableLabel from './workingTableLabel';
 import WorkingTableGroup from './workingTableGroup';
@@ -16,6 +18,7 @@ import WorkingReport from './workingReport';
 import Grid from '../../components/grid/grid';
 import Loading from '../../components/common/loading';
 import Vitality from '../../components/vitality/vitality';
+import Calendar from '../../views/calendar/calendar';
 
 import taskAddPng from '../../assets/img/taskAdd.png';
 interface WorkingTableProps {}
@@ -29,6 +32,7 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
   const userKey = useTypedSelector((state) => state.auth.userKey);
   const targetUserKey = useTypedSelector((state) => state.auth.targetUserKey);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
+  const filterObject = useTypedSelector((state) => state.task.filterObject);
   // const groupKey = useTypedSelector((state) => state.group.groupKey);
   const moveState = useTypedSelector((state) => state.common.moveState);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
@@ -48,18 +52,19 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
     setInputValue(e.target.value);
   };
   useEffect(() => {
-    if (user && user._key && headerIndex === 1 && theme.fileDay) {
+    if (user && user._key && headerIndex === 1) {
       setLoading(true);
       dispatch(
-        getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10], theme.fileDay)
+        getWorkingTableTask(
+          1,
+          user._key,
+          1,
+          [0, 1, 2, 10],
+          theme.fileDay ? theme.fileDay : 7
+        )
       );
     }
-    if (
-      targetUserInfo &&
-      targetUserInfo._key &&
-      headerIndex === 2 &&
-      theme.fileDay
-    ) {
+    if (targetUserInfo && targetUserInfo._key && headerIndex === 2) {
       setLoading(true);
       dispatch(
         getWorkingTableTask(
@@ -67,14 +72,46 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
           targetUserInfo._key,
           1,
           [0, 1, 2, 10],
-          theme.fileDay
+          theme.fileDay ? theme.fileDay : 7
         )
       );
     }
-  }, [user, targetUserInfo, headerIndex, theme.fileDay]);
+  }, [user, targetUserInfo, headerIndex]);
+
   useEffect(() => {
-    setLoading(false);
-    dispatch(setHeaderIndex(0));
+    if (workingTaskArray) {
+      if (user && user._key && headerIndex === 1) {
+        setLoading(true);
+        dispatch(
+          getWorkingTableTask(
+            1,
+            user._key,
+            1,
+            [0, 1, 2, 10],
+            theme.fileDay ? theme.fileDay : 7
+          )
+        );
+      }
+      if (targetUserInfo && targetUserInfo._key && headerIndex === 2) {
+        setLoading(true);
+        dispatch(
+          getWorkingTableTask(
+            user._key === targetUserInfo._key ? 4 : 2,
+            targetUserInfo._key,
+            1,
+            [0, 1, 2, 10],
+            theme.fileDay ? theme.fileDay : 7
+          )
+        );
+      }
+    }
+  }, [filterObject]);
+
+  useEffect(() => {
+    if (headerIndex !== 3) {
+      dispatch(setHeaderIndex(0));
+      dispatch(setFilterObject(theme.filterObject));
+    }
     // dispatch(setHeaderIndex(theme.filterObject.headerIndex));
   }, [headerIndex]);
   useEffect(() => {
@@ -134,6 +171,17 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
           <Vitality
             vitalityType={2}
             vitalityKey={headerIndex === 1 ? userKey : targetUserKey}
+          />
+        ) : null}
+        {memberHeaderIndex === 9 ? (
+          <Calendar
+            targetGroupKey={
+              headerIndex === 1
+                ? mainGroupKey
+                : headerIndex === 2
+                ? targetUserInfo._key
+                : null
+            }
           />
         ) : null}
       </div>

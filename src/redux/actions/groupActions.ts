@@ -7,6 +7,7 @@ export const actionTypes = {
   CHANGE_GROUP_INFO: 'CHANGE_GROUP_INFO',
   CHANGE_GROUP_INFO_SUCCESS: 'CHANGE_GROUP_INFO_SUCCESS',
   CHANGE_START_ID: 'CHANGE_START_ID',
+  CLEAR_GROUP:'CLEAR_GROUP'
 };
 
 export function getGroup(
@@ -41,4 +42,7 @@ export function changeGroupInfoSuccess(data: any) {
 }
 export function changeStartId(startId: string) {
   return { type: actionTypes.CHANGE_START_ID, startId };
+}
+export function clearGroup() {
+  return { type: actionTypes.CLEAR_GROUP };
 }

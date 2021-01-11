@@ -17,6 +17,12 @@ export interface Common {
   unChatNum: number | string;
   unMessageNum: number;
   socketObj: any;
+  timeSetVisible: boolean;
+  timeSetX: number;
+  timeSetY: number;
+  taskMemberVisible: boolean;
+  taskMemberX: number;
+  taskMemberY: number;
 }
 
 const defaultState: Common = {
@@ -36,6 +42,12 @@ const defaultState: Common = {
   unChatNum: 0,
   unMessageNum: 0,
   socketObj: null,
+  timeSetVisible: false,
+  timeSetX: 0,
+  timeSetY: 0,
+  taskMemberVisible: false,
+  taskMemberX: 0,
+  taskMemberY: 0,
 };
 
 export const common = (state = defaultState, action: any) => {
@@ -45,7 +57,7 @@ export const common = (state = defaultState, action: any) => {
         const redirect = `${window.location.protocol}//${window.location.host}`;
         // window.location.href = `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`;
         localStorage.clear();
-        window.location.href = `${redirect}/welcome`;
+        window.location.href = `${redirect}/`;
       }
       return {
         ...state,
@@ -119,6 +131,20 @@ export const common = (state = defaultState, action: any) => {
       return {
         ...state,
         socketObj: action.socketObj,
+      };
+    case commonActionTypes.CHANGE_TIMESET_VISIBLE:
+      return {
+        ...state,
+        timeSetVisible: action.timeSetVisible,
+        timeSetX: action.timeSetX,
+        timeSetY: action.timeSetY,
+      };
+    case commonActionTypes.CHANGE_TASKMEMBER_VISIBLE:
+      return {
+        ...state,
+        taskMemberVisible: action.taskMemberVisible,
+        taskMemberX: action.taskMemberX,
+        taskMemberY: action.taskMemberY,
       };
     default:
       return state;

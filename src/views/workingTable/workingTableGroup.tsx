@@ -34,6 +34,7 @@ const WorkingTableGroup: React.FC = (prop) => {
   const [colWidth, setColWidth] = useState(0);
   const [colNumbers, setColNumbers] = useState(4);
   const [colHeight, setColHeight] = useState<any>([]);
+  const [positionGroupArray, setPositionGroupArray] = useState<any>([]);
   const workingTableRef: React.RefObject<any> = useRef();
   let oldPageX = 0;
   let labelScroll = 0;
@@ -124,7 +125,6 @@ const WorkingTableGroup: React.FC = (prop) => {
           return item;
         });
         groupArray = _.sortBy(groupArray, ['arrlength']).reverse();
-
         setMainGroupArray(groupArray);
       }
     }
@@ -142,18 +142,19 @@ const WorkingTableGroup: React.FC = (prop) => {
     }
     setColWidth(Math.floor(clientWidth / colNumbers));
   }, [workingTableRef.current]);
-  useEffect(() => {
-    let groupArray = [];
-    if (memberHeaderIndex === 5 && mainGroupArray.length > 0) {
-      groupArray = mainGroupArray.filter((item: any, index: number) => {
-        if (item.arrlength > 0) {
-          item.position = render(index);
-          return item;
-        }
-      });
-      setMainGroupArray(groupArray);
-    }
-  }, [memberHeaderIndex, mainGroupArray.length]);
+  // useEffect(() => {
+  //   let groupArray = _.cloneDeep(positionGroupArray);
+  //   if (memberHeaderIndex === 5 && positionGroupArray.length > 0) {
+  //     groupArray = positionGroupArray.filter((item: any, index: number) => {
+  //       if (item.arrlength > 0) {
+  //         item.position = render(index);
+  //         return item;
+  //       }
+  //     });
+  //     console.log(groupArray);
+  //   }
+  //   setMainGroupArray(groupArray);
+  // }, [positionGroupArray]);
   const sortArr = (arr: object[], item: any) => {
     arr.push(item);
     arr = _.sortBy(arr, ['createTime']).reverse();
@@ -217,6 +218,7 @@ const WorkingTableGroup: React.FC = (prop) => {
                     batchTaskArray={() => {
                       batchTaskArray(groupItem.arr);
                     }}
+                    taskNavTask={groupItem.arr}
                   />
 
                   <div className="workingTableLabel-info-item">
@@ -270,7 +272,6 @@ const WorkingTableGroup: React.FC = (prop) => {
   };
   const startMove = (e: any) => {
     if (e.button === 2 && workingTableRef.current) {
-      console.log('进来');
       if (workingTableRef.current) {
         oldPageX = e.pageX;
         // workingTableRef.current.addEventListener(
@@ -282,11 +283,8 @@ const WorkingTableGroup: React.FC = (prop) => {
     }
   };
   // const moveContent = (e: any) => {
-  //   // console.log(moveNum);
   //   // workingTableRef.current.scrollTo(0, 0);
   //   // setOldPage(e.pageX);
-  //   console.log("oldPageX",oldPageX)
-  //   console.log("e.pageX"e.pageX)
 
   //   oldPageX = e.pageX;
   // };
@@ -309,6 +307,13 @@ const WorkingTableGroup: React.FC = (prop) => {
       onContextMenu={endMove}
     >
       {mainGroupArray.map((item: any, index: number) => {
+        if (
+          document.getElementById('workingTableGroup' + index) &&
+          item.position.length === 0 &&
+          memberHeaderIndex === 5
+        ) {
+          item.position = render(index);
+        }
         return (
           <div key={'mainGroup' + index}>
             {/* {item.arrlength > 0 ? ( */}
@@ -345,7 +350,8 @@ const WorkingTableGroup: React.FC = (prop) => {
                     <img
                       src={
                         item.groupObj.groupLogo
-                          ? item.groupObj.groupLogo
+                          ? item.groupObj.groupLogo +
+                            '?imageMogr2/auto-orient/thumbnail/80x'
                           : defaultGroupPng
                       }
                     />

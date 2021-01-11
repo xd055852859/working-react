@@ -34,11 +34,11 @@ import 'froala-editor/css/froala_style.min.css';
 import 'froala-editor/css/froala_editor.pkgd.min.css';
 import FroalaEditor from 'react-froala-wysiwyg';
 import FroalaEditorView from 'react-froala-wysiwyg/FroalaEditorView';
-import uploadFile from './upload';
+import { qiniuUpload } from './qiniu';
 import format from './format';
-import Loading from './loading';
-// import ArticleTree from "./ArticleTree";
 
+// import ArticleTree from "./ArticleTree";
+const Froalaeditor = require('froala-editor');
 interface EditorProps {
   data: string;
   editable: boolean;
@@ -46,12 +46,65 @@ interface EditorProps {
   editorHeight?: string;
   editorState?: boolean;
   setInit?: any;
+  fullType?: string;
+  changeIsEdit?: any;
 }
 const Editor: React.FC<EditorProps> = (prop) => {
-  const { data, editable, onChange, editorHeight, editorState, setInit } = prop;
+  const {
+    data,
+    editable,
+    onChange,
+    editorHeight,
+    editorState,
+    setInit,
+    fullType,
+    changeIsEdit,
+  } = prop;
   const uptoken = useTypedSelector((state) => state.auth.uploadToken);
   const [loading, setLoading] = useState(false);
   let selectedFile: any;
+  useEffect(() => {
+    Froalaeditor.DefineIcon('clearFormatting', {
+      NAME: 'clearFormatting',
+      SVG_KEY: 'clearFormatting',
+    });
+    Froalaeditor.RegisterCommand('clearFormatting', {
+      title: '清除格式',
+      focus: false,
+      undo: false,
+      refreshAfterCallback: false,
+      callback: function () {
+        let html = this.html.get();
+        // let clear = this.html.getSelected();
+        // clear = clear.replace(/<\/?.+?>/g, '');
+        // clear = clear.replace(/&nbsp;/g, '');
+        // this.html.set(html.replace(this.html.getSelected(), clear));
+
+        // let sections = html.split('</p>');
+        let sections = html.split(
+          /<\/p>|<\/div>|<\/h1>|<\/h2>|<\/h3>|<\/h4>|<\/h5>|<\/h6>|<\/ol>|<\/li>/
+        );
+        for (let i = 0; i < sections.length; i++) {
+          let sectionStr = sections[i];
+          const isImg = sectionStr.indexOf('<img') !== -1 ? true : false;
+          if (!isImg) {
+            // 去除标签
+            sectionStr = sectionStr.replace(/<\/?.+?>/g, '');
+            sectionStr = sectionStr.replace(/&nbsp;/g, '');
+            if (sectionStr) {
+              sections[i] = `<p>${sectionStr}</p>`;
+            }
+          } else {
+            let imageUrl = sectionStr.match(/src=['"]?([^'"]*)['"]?/i)[1];
+            sections[
+              i
+            ] = `<img src="${imageUrl}" style="width: 100%;" class="fr-fic fr-dib fr-draggable"></img>`;
+          }
+        }
+        this.html.set(sections.join(''));
+      },
+    });
+  }, []);
 
   // useEffect(() => {
   //   let srcReg = /src=[\'\"]?([^\'\"]*)[\'\"]?/i;
@@ -69,30 +122,42 @@ const Editor: React.FC<EditorProps> = (prop) => {
       // this is the editor instance.
       if (editorState) {
         setInit();
+        console.log(changeIsEdit);
+      }
+    },
+    focus: function () {
+      console.log(changeIsEdit);
+      if (changeIsEdit) {
+        changeIsEdit(true);
+      }
+    },
+    blur: function () {
+      if (changeIsEdit) {
+        changeIsEdit(false);
       }
     },
     'image.inserted': async function ($img: any, response: any) {
       // get a file or blob from an blob url
       let blob = await fetch($img[0].src).then((r) => r.blob());
-      uploadFile.qiniuUpload(uptoken, $img[0], blob, false);
+      qiniuUpload(uptoken, $img[0], blob, false);
     },
     'video.beforeUpload': function (videos: any) {
       // Return false if you want to stop the video upload.
       selectedFile = videos[0];
     },
     'video.inserted': function ($video: any) {
-      uploadFile.qiniuUpload(uptoken, $video[0], selectedFile, true);
+      qiniuUpload(uptoken, $video[0], selectedFile, true);
     },
   };
 
   const config = {
     placeholder: 'Edit Me',
     documentReady: editorState ? true : false,
-    language: 'zh_cn',
+    // language: 'zh_cn',
     // iframe: true,
     // toolbarSticky: editorState ? true : false,
-    events: events,
-    height: editorHeight,
+    // events: events,
+    height: editorHeight ? editorHeight : '300px',
     // toolbarButtons: [
     //   ['undo', 'redo'],
     //   ['paragraphFormat', 'fontFamily', 'fontSize'],
@@ -113,60 +178,95 @@ const Editor: React.FC<EditorProps> = (prop) => {
     //   ['undo', 'redo'],
     //   ['bold', 'insertImage', 'insertVideo'],
     // ],
-    toolbarButtons: {
-      moreText: {
-        buttons: [
-          'bold',
-          'italic',
-          'underline',
-          'strikeThrough',
-          'subscript',
-          'superscript',
-          // "fontFamily",
-          'fontSize',
-          // "textColor",
-          // "backgroundColor",
-          // "inlineClass",
-          // "inlineStyle",
-          // "clearFormatting",
-        ],
-      },
-      moreParagraph: {
-        buttons: [
-          'paragraphFormat',
-          // "paragraphStyle",
-          'alignLeft',
-          'alignCenter',
-          'formatOLSimple',
-          'alignRight',
-          'alignJustify',
-          'formatOL',
-          'formatUL',
-          'lineHeight',
-          'outdent',
-          'indent',
-          // "quote",
-        ],
-      },
-      moreRich: {
-        buttons: [
-          'fullscreen',
-          'insertImage',
-          'insertVideo',
-          'insertLink',
-          'insertTable',
-          'emoticons',
-          'fontAwesome',
-          'specialCharacters',
-          'embedly',
-          'insertFile',
-          'insertHR',
-        ],
-      },
-      moreMisc: {
-        buttons: ['undo', 'redo', 'alert'],
-      },
-    },
+    // toolbarButtons: {
+    //   moreText: {
+    //     buttons: [
+    //       'bold',
+    //       'italic',
+    //       'underline',
+    //       'strikeThrough',
+    //       'subscript',
+    //       'superscript',
+    //       // "fontFamily",
+    //       'fontSize',
+    //       // "textColor",
+    //       // "backgroundColor",
+    //       // "inlineClass",
+    //       // "inlineStyle",
+    //       // "clearFormatting",
+    //     ],
+    //   },
+    //   moreParagraph: {
+    //     buttons: [
+    //       'paragraphFormat',
+    //       // "paragraphStyle",
+    //       'alignLeft',
+    //       'alignCenter',
+    //       'formatOLSimple',
+    //       'alignRight',
+    //       'alignJustify',
+    //       'formatOL',
+    //       'formatUL',
+    //       'lineHeight',
+    //       'outdent',
+    //       'indent',
+    //       // "quote",
+    //     ],
+    //   },
+    //   moreRich: {
+    //     buttons: [
+    //       'fullscreen',
+    //       'insertImage',
+    //       'insertVideo',
+    //       'insertLink',
+    //       'insertTable',
+    //       'emoticons',
+    //       'fontAwesome',
+    //       'specialCharacters',
+    //       'embedly',
+    //       'insertFile',
+    //       'insertHR',
+    //     ],
+    //   },
+    //   moreMisc: {
+    //     buttons: ['undo', 'redo', 'alert'],
+    //   },
+    // toolbarInline: true,
+    language: 'zh_cn',
+    // iframe: true,
+    events: events,
+    toolbarButtons:
+      fullType === 'big'
+        ? [
+            ['undo', 'redo'],
+            ['paragraphFormat', 'fontFamily', 'fontSize'],
+            [
+              'bold',
+              'italic',
+              'underline',
+              'strikeThrough',
+              'textColor',
+              'clearFormatting',
+              'backgroundColor',
+            ],
+            ['formatOL', 'formatUL', 'align'],
+            ['insertImage', 'insertVideo', 'insertTable', 'insertLink'],
+          ]
+        : [
+            [
+              'undo',
+              'redo',
+              'paragraphFormat',
+              'formatOL',
+              'formatUL',
+              'align',
+              'insertImage',
+            ],
+          ],
+
+    // Change buttons for XS screen.
+    // SVG_KEY在https://github.com/froala/wysiwyg-editor/issues/3478
+    // toolbarButtonsXS: [['undo', 'redo', 'paragraphFormat', 'formatOL', 'formatUL', 'align', 'insertImage']],
   };
   return (
     <div style={{ backgroundColor: '#efefef', width: '100%' }}>

@@ -38,6 +38,7 @@ const defaultState: AuthType = {
     messageVisible: false,
     memberVisible: false,
     randomVisible: false,
+    hourVisible: true,
     randomType: '0',
     calendarVisible: true,
     groupSortType: 1,
@@ -50,7 +51,6 @@ const defaultState: AuthType = {
     weatherShow: true,
     grayPencent: 0,
     moveState: false,
-
     filterObject: {
       groupKey: null,
       groupName: '',
@@ -120,39 +120,23 @@ export const auth = (state = defaultState, action: any) => {
     case actionTypes.GET_THEME_SUCCESS:
       if (!action.data.backgroundColor && !action.data.backgroundImg) {
         action.data.backgroundColor = '#3C3C3C';
+        action.data.backgroundImg = '';
       }
-      action.data.mainVisible =
-        action.data.mainVisible === undefined ? true : action.data.mainVisible;
-      if (!action.data.filterObject) {
-        action.data.filterObject = {
-          groupKey: null,
-          groupName: '',
-          groupLogo: '',
-          creatorKey: null,
-          creatorAvatar: '',
-          creatorName: '',
-          executorKey: null,
-          executorAvatar: '',
-          executorName: '',
-          filterType: ['过期', '今天', '未来', '已完成'],
-          headerIndex: 0,
-        };
-      } else {
-        if (!action.data.filterObject.headerIndex) {
-          action.data.filterObject.headerIndex = 0;
+      for (let key in state.theme) {
+        if (
+          action.data[key] === undefined &&
+          key !== 'backgroundColor' &&
+          key !== 'backgroundImg'
+        ) {
+          action.data[key] = state.theme[key];
         }
       }
-      action.data.fileDay = !action.data.fileDay ? 7 : action.data.fileDay;
-      action.data.finishPercentArr = !action.data.finishPercentArr
-        ? ['0', '1', '2']
-        : action.data.finishPercentArr;
       return {
         ...state,
         theme: action.data,
       };
     case actionTypes.GET_THEME_BG_SUCCESS:
       let themeBg: any = [];
-      console.log('total', action);
       if (action.data.page == 1) {
         state.themeBg = [];
       }
@@ -170,6 +154,11 @@ export const auth = (state = defaultState, action: any) => {
       return {
         ...state,
         theme: action.action.configInfo,
+      };
+    case actionTypes.SET_UPLOAD_TOKEN:
+      return {
+        ...state,
+        uploadToken: action.uploadToken,
       };
     case actionTypes.GET_UPLOAD_TOKEN_SUCCESS:
       localStorage.setItem('uptoken', action.data);
@@ -207,7 +196,12 @@ export const auth = (state = defaultState, action: any) => {
         ...state,
         finishPos: action.finishPos,
       };
-
+    case actionTypes.CLEAR_AUTH:
+      state.targetUserKey = '';
+      state.targetUserInfo = null;
+      return {
+        ...state,
+      };
     default:
       return state;
   }

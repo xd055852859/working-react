@@ -6,6 +6,7 @@ import {
   RadioGroup,
   FormControlLabel,
   Button,
+  Tooltip,
   Switch,
 } from '@material-ui/core';
 import { getSelfTask } from '../../redux/actions/taskActions';
@@ -24,18 +25,25 @@ import api from '../../services/api';
 import MainBoard from '../board/mainBoard';
 import ClockNew from '../../components/clock/clockNew';
 import HeaderBg from '../../components/headerSet/headerBg';
-import Dialog from '../../components/common/dialog';
 // import ClockNew from '../../components/clock/clockNew';
 import HeaderCreate from '../../components/headerSet/headerCreate';
 import infoPng from '../../assets/img/info.png';
 import logoSvg from '../../assets/svg/logo.svg';
+import mindcuteLogoSvg from '../../assets/svg/mindcuteLogo.svg';
+
+import leftArrowPng from '../../assets/img/leftArrow.png';
 import rightArrowPng from '../../assets/img/rightArrow.png';
 import radioCheckPng from '../../assets/img/radioCheck.png';
 import unradioCheckPng from '../../assets/img/unradioCheck.png';
+import search1Png from '../../assets/img/search1.png';
+import search2Png from '../../assets/img/search2.png';
+import search3Png from '../../assets/img/search3.png';
+import search4Png from '../../assets/img/search4.png';
 import showAddSvg from '../../assets/svg/showAdd.svg';
 import { getGroup } from '../../redux/actions/groupActions';
 import bgImg from '../../assets/img/bgImg.png';
 import { getTokenSourceMapRange } from 'typescript';
+import DropMenu from '../../components/common/dropMenu';
 interface ShowPageProps {
   changeShowType: any;
 }
@@ -53,10 +61,13 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
   const [moveState, setMoveState] = useState('');
   const [chooseWallKey, setChooseWallKey] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [searchIndex, setSearchIndex] = useState(0);
   const [bg, setBg] = useState<any>('');
   const [menuShow, setMenuShow] = useState(0);
   const [timeOsToken, setTimeOsToken] = useState(null);
   const [addVisible, setAddVisible] = useState(false);
+  const [searchIconVisible, setSearchIconVisible] = useState(false);
+
   const [weatherObj, setWeatherObj] = useState<any>({});
   const showPageRef: React.RefObject<any> = useRef();
   const year = moment().year();
@@ -64,27 +75,29 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
   const day = moment().date();
   const week = moment().day();
   const weekStr = ['日', '一', '二', '三', '四', '五', '六'];
+  const searchImgArr = [search2Png, search1Png, search4Png, search3Png];
+  let timerRef = useRef<any>(null);
+  let unDistory = true;
   useEffect(() => {
-    let interval: any = null;
     let newShowPoint = true;
     if (localStorage.getItem('bg')) {
       setBg(localStorage.getItem('bg'));
     }
     setShowPoint(!newShowPoint);
     newShowPoint = !newShowPoint;
-    interval = setInterval(() => {
+    timerRef.current = setInterval(() => {
       setNowTime(new Date());
       setShowPoint(newShowPoint);
       newShowPoint = !newShowPoint;
     }, 1000);
     // getSocket();
-    setTimeInterval(interval);
+    setTimeInterval(timerRef.current);
     localStorage.setItem('page', 'show');
     localStorage.setItem('headerIndex', '0');
     // getWeather();
     return () => {
-      if (timeInterval) {
-        clearInterval(timeInterval);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
       }
     };
   }, []);
@@ -103,6 +116,9 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
         getWeather();
       }
     }
+    return () => {
+      unDistory = false;
+    };
   }, [user]);
   useEffect(() => {
     if (theme.backgroundImg) {
@@ -114,14 +130,15 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
   }, [theme]);
   const getToken = async () => {
     let res: any = await api.auth.switchToken();
-    if (res.msg == 'OK') {
-      setTimeOsToken(res.result.token);
-    } else {
-      dispatch(setMessage(true, res.msg, 'error'));
+    if (unDistory) {
+      if (res.msg == 'OK') {
+        setTimeOsToken(res.result.token);
+      } else {
+        dispatch(setMessage(true, res.msg, 'error'));
+      }
     }
   };
   const changeFinishPercentArr = (e: any, type: string) => {
-    console.log(e.target.checked);
     let newTheme = _.cloneDeep(theme);
     if (e.target.checked) {
       newTheme.finishPercentArr.push(type);
@@ -153,31 +170,48 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
   };
   const getPrompt = async () => {
     let promptRes: any = await api.auth.getPrompt();
-    if (promptRes.msg === 'OK') {
-      setPrompt(promptRes.result.content);
-      // dispatch(setMessage(true, '申请加群成功', 'success'));
-    } else {
-      dispatch(setMessage(true, promptRes.msg, 'error'));
+    if (unDistory) {
+      if (promptRes.msg === 'OK') {
+        setPrompt(promptRes.result.content);
+      } else {
+        dispatch(setMessage(true, promptRes.msg, 'error'));
+      }
     }
   };
-
   const getWeather = async () => {
     let newWeatherObj: any = {};
     let weatherRes: any = await api.common.getWeather(
       user.profile.lo,
       user.profile.la
     );
-    if (weatherRes.msg === 'OK') {
-      newWeatherObj = _.cloneDeep(weatherRes.result);
-      setWeatherObj(newWeatherObj);
-    } else {
-      dispatch(setMessage(true, weatherRes.msg, 'error'));
+    if (unDistory) {
+      if (weatherRes.msg === 'OK') {
+        newWeatherObj = _.cloneDeep(weatherRes.result);
+        setWeatherObj(newWeatherObj);
+      } else {
+        dispatch(setMessage(true, weatherRes.msg, 'error'));
+      }
     }
   };
   const onKeyDownchange = (e: any) => {
     if (e.keyCode == 13) {
       //事件操作
-      window.open('http://www.baidu.com/s?wd=' + searchInput);
+      let str = '';
+      switch (searchIndex) {
+        case 0:
+          str = 'https://cn.bing.com/search?q=' + searchInput;
+          break;
+        case 1:
+          str = 'https://www.baidu.com/s?wd=' + searchInput;
+          break;
+        case 2:
+          str = 'https://www.sogou.com/web?query=' + searchInput;
+          break;
+        case 3:
+          str = 'https://www.google.com/search?q=' + searchInput;
+          break;
+      }
+      window.open(str);
     }
   };
   return (
@@ -213,18 +247,57 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
         }
       ></div>
       {theme.searchShow !== false ? (
-        <input
-          type="text"
-          className="showPage-input"
-          placeholder="搜索"
-          value={searchInput}
-          onChange={(e: any) => {
-            setSearchInput(e.target.value);
-          }}
-          onKeyDown={(e) => {
-            onKeyDownchange(e);
-          }}
-        />
+        <div className="showPage-input">
+          <div className="showPage-input-img">
+            <Tooltip title="选择搜索引擎">
+              <img
+                src={searchImgArr[searchIndex]}
+                alt=""
+                onClick={() => {
+                  setSearchIconVisible(true);
+                }}
+              />
+            </Tooltip>
+            <DropMenu
+              visible={searchIconVisible}
+              dropStyle={{
+                width: '85px',
+                height: '150px',
+                top: '35px',
+                left: '0px',
+                color: '#333',
+              }}
+              onClose={() => {
+                setSearchIconVisible(false);
+              }}
+            >
+              {searchImgArr.map((item: any, index: number) => {
+                return (
+                  <div className="showPage-input-img" key={'icon' + index}>
+                    <img
+                      src={item}
+                      alt=""
+                      onClick={() => {
+                        setSearchIndex(index);
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </DropMenu>
+          </div>
+          <input
+            type="text"
+            placeholder="搜索"
+            value={searchInput}
+            onChange={(e: any) => {
+              setSearchInput(e.target.value);
+            }}
+            onKeyDown={(e) => {
+              onKeyDownchange(e);
+            }}
+          />
+        </div>
       ) : null}
       {theme.weatherShow !== false &&
       parseInt(user.profile.lo) !== user.profile.lo &&
@@ -383,12 +456,23 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
           <div
             className="showPage-bigLogo"
             onClick={(e: any) => {
-              window.top.location.href = window.location.origin + '/';
+              window.top.location.href = window.location.origin + '/home/basic';
               // changeShowType();
+              localStorage.removeItem('showType');
               e.stopPropagation();
             }}
           >
             <img src={logoSvg} alt="" />
+          </div>
+          <div
+            className="showPage-bigLogo"
+            onClick={(e: any) => {
+              window.open(
+                'https://mindcute.com/login?token=' + timeOsToken
+              );
+            }}
+          >
+            <img src={mindcuteLogoSvg} alt="" />
           </div>
         </div>
         <div className="showPage-task-menu">
@@ -448,7 +532,6 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
           className="showPage-logo"
           style={{ top: '24px', right: '45px', height: '20px', width: '20px' }}
           onClick={(e: any) => {
-            console.log('????????????');
             setAddVisible(true);
             e.stopPropagation();
           }}
@@ -518,7 +601,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
                     backgroundImage: theme.backgroundImg
                       ? 'url(' +
                         theme.backgroundImg +
-                        '?imageMogr2/auto-orient/thumbnail/160x160/format/jpg)'
+                        '?imageMogr2/auto-orient/thumbnail/80x)'
                       : '',
                     backgroundColor: !theme.backgroundImg
                       ? theme.backgroundColor
@@ -557,7 +640,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
                   changeBoard('cDayShow');
                 }}
                 name="checkedA"
-                inputProps={{ 'aria-label': 'secondary checkbox' }}
+                inputProps={{ 'aria-label': 'primary checkbox' }}
               />
             </div>
             <div className="showPage-set-title">
@@ -568,7 +651,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
                   changeBoard('taskShow');
                 }}
                 name="checkedC"
-                inputProps={{ 'aria-label': 'secondary checkbox' }}
+                inputProps={{ 'aria-label': 'primary checkbox' }}
               />
             </div>
             <div className="showPage-set-title">
@@ -636,10 +719,26 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
               </div>
             ) : null}
           </div>
-          <HeaderBg
-            setMoveState={setMoveState}
-            setChooseWallKey={setChooseWallKey}
-          />
+
+          <div className="bg">
+            <img
+              src={leftArrowPng}
+              alt=""
+              style={{
+                width: '10px',
+                height: '13px',
+                marginRight: '10px',
+              }}
+              onClick={() => {
+                setMoveState('left');
+              }}
+            />
+            <HeaderBg
+              setMoveState={setMoveState}
+              setChooseWallKey={setChooseWallKey}
+              headerType="show"
+            />
+          </div>
         </div>
       </div>
       <HeaderCreate

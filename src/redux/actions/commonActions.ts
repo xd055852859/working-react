@@ -11,6 +11,8 @@ export const actionTypes = {
   SET_UNCHATREADNUM: 'SET_UNCHATREADNUM',
   SET_UNMESSAGEREADNUM: 'SET_UNMESSAGEREADNUM',
   SET_SOCKETOBJ: 'SET_SOCKETOBJ',
+  CHANGE_TIMESET_VISIBLE: 'CHANGE_TIMESET_VISIBLE',
+  CHANGE_TASKMEMBER_VISIBLE:'CHANGE_TASKMEMBER_VISIBLE'
 };
 
 export function Failed(error: any) {
@@ -90,5 +92,29 @@ export function setSocketObj(socketObj: any) {
   return {
     type: actionTypes.SET_SOCKETOBJ,
     socketObj,
+  };
+}
+export function changeTimeSetVisible(
+  timeSetVisible: boolean,
+  timeSetX?: number,
+  timeSetY?: number
+) {
+  return {
+    type: actionTypes.CHANGE_TIMESET_VISIBLE,
+    timeSetVisible,
+    timeSetX,
+    timeSetY,
+  };
+}
+export function changeTaskMemberVisible(
+  taskMemberVisible: boolean,
+  taskMemberX?: number,
+  taskMemberY?: number
+) {
+  return {
+    type: actionTypes.CHANGE_TASKMEMBER_VISIBLE,
+    taskMemberVisible,
+    taskMemberX,
+    taskMemberY,
   };
 }

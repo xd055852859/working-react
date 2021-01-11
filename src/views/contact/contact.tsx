@@ -20,15 +20,20 @@ import {
   getTargetUserInfo,
   // userKeyToGroupKey
 } from '../../redux/actions/authActions';
+import { setHeaderIndex } from '../../redux/actions/memberActions';
 import Dialog from '../../components/common/dialog';
+import TimeIcon from '../../components/common/timeIcon';
+import Loading from '../../components/common/loading';
 import checkPersonPng from '../../assets/img/checkPerson.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import carePng from '../../assets/img/care.png';
 import uncarePng from '../../assets/img/uncare.png';
+import contactTree from '../../assets/svg/contactTree.svg';
+import contactBook from '../../assets/svg/contactBook.svg';
+import computer from '../../assets/svg/computer.svg';
 import api from '../../services/api';
 import _ from 'lodash';
-import theme from '@amcharts/amcharts4/themes/animated';
 export interface ContactProps {
   contactIndex: number;
   contactType?: string;
@@ -62,28 +67,38 @@ const Contact: React.FC<ContactProps> = (props) => {
   const [cloneGroupName, setCloneGroupName] = useState('');
   const [cloneGroupVisible, setCloneGroupVisible] = useState(false);
   const [cloneGroupIndex, setCloneGroupIndex] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
   const theme = useTypedSelector((state) => state.auth.theme);
 
   // const theme = useTypedSelector((state) => state.auth.theme);
   useEffect(() => {
-    if (user && user._key) {
-      if (!groupArray && contactIndex === 0) {
-        dispatch(getGroup(3, 1));
-        setTimeout(() => {
-          dispatch(getGroup(3));
-        }, 1000);
-        dispatch(getMember(mainGroupKey, 1, 1));
-        setTimeout(() => {
-          dispatch(getMember(mainGroupKey));
-        }, 1000);
-      }
-      if (groupArray && contactIndex === 0) {
-        setContactArray(groupArray);
-      } else if (memberArray && contactIndex === 1) {
-        setContactArray(memberArray);
-      }
+    if (user && user._key && !groupArray) {
+      // dispatch(getGroup(3, 1));
+      // setTimeout(() => {
+      setLoading(true);
+      dispatch(getGroup(3));
+      // }, 1000);
+      // dispatch(getMember(mainGroupKey, 1, 1));
+      // setTimeout(() => {
+      dispatch(getMember(mainGroupKey));
+      // }, 1000);
     }
-  }, [groupArray, memberArray, user, contactIndex]);
+  }, [groupArray, user]);
+
+  useEffect(() => {
+    if (groupArray && contactIndex === 0) {
+      setLoading(false);
+      setContactArray(groupArray);
+    }
+  }, [groupArray, contactIndex]);
+
+  useEffect(() => {
+    if (memberArray && contactIndex === 1) {
+      setLoading(false);
+      setContactArray(memberArray);
+    }
+  }, [memberArray, contactIndex]);
+
   useEffect(() => {
     if (contactSearchInput === '') {
       if (groupArray && contactIndex === 0) {
@@ -95,13 +110,15 @@ const Contact: React.FC<ContactProps> = (props) => {
   }, [contactSearchInput]);
   const toTargetGroup = async (groupKey: string, index: number) => {
     dispatch(setGroupKey(groupKey));
-    dispatch(getGroupInfo(groupKey));
+    // dispatch(getGroupInfo(groupKey));
     dispatch(setCommonHeaderIndex(3));
     if (!theme.moveState) {
       dispatch(setMoveState('in'));
     }
     await api.group.visitGroupOrFriend(2, groupKey);
-    dispatch(getGroup(3));
+    if (contactType === 'header') {
+      dispatch(getGroup(3));
+    }
   };
   const toTargetUser = async (targetUserKey: string, index: number) => {
     dispatch(getTargetUserInfo(targetUserKey));
@@ -110,7 +127,10 @@ const Contact: React.FC<ContactProps> = (props) => {
       dispatch(setMoveState('in'));
     }
     await api.group.visitGroupOrFriend(1, targetUserKey);
-    dispatch(getMember(mainGroupKey));
+    if (contactType === 'header') {
+      dispatch(getMember(mainGroupKey));
+    }
+    //
   };
   const changeCare = (
     e: any,
@@ -130,6 +150,7 @@ const Contact: React.FC<ContactProps> = (props) => {
     let searchInput = input ? input : contactSearchInput;
     newContactArray = newContactArray.filter((item: any, index: number) => {
       return (
+        item.groupName &&
         item.groupName.toUpperCase().indexOf(searchInput.toUpperCase()) !== -1
       );
     });
@@ -159,6 +180,7 @@ const Contact: React.FC<ContactProps> = (props) => {
       className="contact"
       style={{ height: contactType ? '100%' : 'calc(100% - 60px)' }}
     >
+      {loading ? <Loading loadingWidth="70px" loadingHeight="70px" /> : null}
       {contactType && contactIndex === 0 ? (
         <div className="contact-search">
           <input
@@ -193,12 +215,20 @@ const Contact: React.FC<ContactProps> = (props) => {
             let name = contactIndex ? item.nickName : item.groupName;
             let avatar = contactIndex
               ? item.avatar
-                ? item.avatar
+                ? item.avatar + '?imageMogr2/auto-orient/thumbnail/80x'
                 : defaultPersonPng
               : item.groupLogo
-              ? item.groupLogo
+              ? item.groupLogo + '?imageMogr2/auto-orient/thumbnail/80x'
               : defaultGroupPng;
             let key = contactIndex ? item.userId : item._key;
+            let onlineColor =
+              item.onlineStatus === 'online'
+                ? '#7ED321'
+                : item.onlineStatus === 'busy'
+                ? '#EA3836'
+                : item.onlineStatus === 'away'
+                ? '#F5A623'
+                : '#B3B3B3';
             return (
               <div
                 className="contact-item"
@@ -226,6 +256,12 @@ const Contact: React.FC<ContactProps> = (props) => {
                   <div className="contact-avatar">
                     <img alt={name} src={avatar} />
                   </div>
+                  {contactIndex ? (
+                    <div
+                      className="contact-online"
+                      style={{ backgroundColor: onlineColor }}
+                    ></div>
+                  ) : null}
                   <div
                     className="contact-left-title"
                     style={
@@ -268,54 +304,71 @@ const Contact: React.FC<ContactProps> = (props) => {
                     )
                   ) : null}
                 </div>
-                {contactType === 'create' && cloneGroupIndex === index ? (
-                  <img
-                    src={checkPersonPng}
-                    alt=""
-                    style={{
-                      width: '20px',
-                      height: '12px',
-                    }}
-                  ></img>
-                ) : null}
-                {item.todayTotalTaskNumber && !contactType ? (
-                  <div className="contact-right">
-                    {/* <div>
-                    今日任务:{item.todayTotalTaskNumber},今日工时:
-                    {item.todayTotalTaskHours}
-                  </div> */}
-                    <div
-                      className="contanct-time-day"
+                <div  className="contact-icon-right">
+                  {contactType === 'create' && cloneGroupIndex === index ? (
+                    <img
+                      src={checkPersonPng}
+                      alt=""
                       style={{
-                        left:
-                          parseInt(item.todayTotalTaskNumber) < 10
-                            ? '5px'
-                            : '3px',
+                        width: '20px',
+                        height: '12px',
                       }}
-                    >
-                      {parseInt(item.todayTotalTaskNumber)}
-                    </div>
-                    <div className="contanct-time"></div>
-                    <div
-                      className="contanct-time-hour"
+                    ></img>
+                  ) : null}
+                  {!contactType && item.knowledgeBaseNodeKey ? (
+                    <img
+                      src={contactBook}
+                      alt=""
                       style={{
-                        right:
-                          parseInt(item.todayTotalTaskHours) < 1
-                            ? '0px'
-                            : (parseInt(item.todayTotalTaskHours) + '').length >
-                              1
-                            ? '5px'
-                            : '3px',
+                        width: '14px',
+                        height: '17px',
+                        marginRight: '5px',
                       }}
-                    >
-                      {parseInt(item.todayTotalTaskHours)}
-                    </div>
-                  </div>
-                ) : null}
+                      onClick={() => {
+                        dispatch(setHeaderIndex(9));
+                      }}
+                    ></img>
+                  ) : null}
+                  {!contactType && item.isHasKnowledge ? (
+                    <img
+                      src={contactTree}
+                      alt=""
+                      style={{
+                        width: '18px',
+                        height: '17px',
+                        marginRight: '5px',
+                      }}
+                      onClick={() => {
+                        console.log('>>>');
+                        dispatch(setHeaderIndex(11));
+                      }}
+                    ></img>
+                  ) : null}
+                  {item.onlineStatus === 'online' && !contactType ? (
+                    <img
+                      src={computer}
+                      alt=""
+                      style={{
+                        width: '20px',
+                        height: '17px',
+                        marginRight: '5px',
+                      }}
+                    ></img>
+                  ) : null}
+                  {item.todayTotalTaskNumber && !contactType ? (
+                    <TimeIcon
+                      timeHour={Math.ceil(item.todayTotalTaskHours)}
+                      timeDay={Math.ceil(item.todayTotalTaskNumber)}
+                    />
+                  ) : (
+                    <div style={{ width: '24px' }}></div>
+                  )}
+                </div>
               </div>
             );
           })
         : null}
+
       <Dialog
         visible={cloneGroupVisible}
         onClose={() => {

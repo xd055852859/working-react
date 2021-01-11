@@ -138,19 +138,15 @@ const CalendarItem: React.FC<CalendarItemProps> = (props) => {
       setCalendarInput('新日程');
       onClose();
     } else {
-      let res: any = await api.task.addTask(
-        mainGroupKey,
-        1,
-        '',
-        userKey,
-        calendarInput,
-        '',
-        0,
-        5,
-        calendarIndex,
-        calendarCheck ? 1 : 0,
-        calendarTime
-      );
+      let res: any = await api.task.addTask({
+        groupKey: mainGroupKey,
+        groupRole: 1,
+        executorKey: userKey,
+        title: calendarInput,
+        taskType: calendarIndex,
+        finishPercent: calendarCheck,
+        taskEndDate: calendarTime,
+      });
       if (res.msg === 'OK') {
         await dispatch(setMessage(true, '新增日程成功', 'success'));
         dispatch(getCalendarList(userKey, calendarStartTime, calendarEndTime));

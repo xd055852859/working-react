@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { getGroupMember } from '../../redux/actions/memberActions';
 import './gridTree.css';
-import { editTask } from '../../redux/actions/taskActions';
+import { editTask,setTaskInfo } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import Task from '../task/task';
 import NewGridTree from './gridTree';
@@ -77,6 +77,7 @@ const GridTree: React.FC<GridTreeProps> = (props) => {
     setGridTaskNavDay(newGridTaskNavDay);
     changeTaskNum(newGridTaskNavDay);
     dispatch(editTask({ key: newGridTaskItem._key, ...newGridTaskItem }, 4));
+    dispatch(setTaskInfo(newGridTaskItem));
   };
   const changeTask = (item: any) => {
     let newGridTaskItem = _.cloneDeep(gridTaskItem);

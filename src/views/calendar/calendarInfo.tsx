@@ -8,7 +8,12 @@ import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker,
 } from '@material-ui/pickers';
-import { Button, TextField, Checkbox } from '@material-ui/core';
+import {
+  TextField,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+} from '@material-ui/core';
 import { setMessage } from '../../redux/actions/commonActions';
 import { getCalendarList, editTask } from '../../redux/actions/taskActions';
 import _ from 'lodash';
@@ -20,13 +25,16 @@ import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import deleteIconSvg from '../../assets/svg/deleteIcon.svg';
 import Dialog from '../../components/common/dialog';
 import Tooltip from '../../components/common/tooltip';
+import TaskMember from '../../components/task/taskMember';
 interface CalendarInfoProps {
   taskItem?: any;
   setCalendar: any;
   calendarColor: any;
   getData?: any;
   calendarType: string;
-  onClose?: any
+  onClose?: any;
+  targetGroupKey: string;
+  setFollowList?: any;
 }
 moment.locale('zh-cn');
 const useStyles = makeStyles((theme: Theme) =>
@@ -54,10 +62,38 @@ const useStyles = makeStyles((theme: Theme) =>
         // color: '#fff',
       },
     },
+    hourInput: {
+      width: '105px',
+      color: '#fff',
+      marginTop: '24px',
+      marginLeft: '10px',
+      '& .MuiInput-formControl': {
+        marginTop: '0px',
+        borderColor: '#fff',
+      },
+      '& .MuiOutlinedInput-input': {
+        padding: '10px 14px',
+        borderColor: '#fff',
+        // color: '#fff',
+      },
+      '& .MuiInputLabel-formControl': {
+        marginTop: '-17px',
+        // color: '#fff',
+      },
+    },
   })
 );
 const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
-  const { taskItem, setCalendar, calendarColor, getData, calendarType, onClose } = props;
+  const {
+    taskItem,
+    setCalendar,
+    calendarColor,
+    getData,
+    calendarType,
+    onClose,
+    targetGroupKey,
+    setFollowList,
+  } = props;
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const userKey = useTypedSelector((state) => state.auth.userKey);
@@ -70,6 +106,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
     title: '',
     startDay: moment().startOf('day').valueOf(),
     endDay: moment().endOf('day').valueOf(),
+    remindTime: moment().format('HH:mm'),
     type: 2,
     taskType: 0,
   });
@@ -79,26 +116,61 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
   const [monthInput, setMonthInput] = useState('');
   const [dayInput, setDayInput] = useState('');
   const [groupVisible, setGroupVisible] = useState(false);
+  const [memberVisible, setMemberVisible] = useState(false);
   const [calendarGroup, setCalendarGroup] = useState<any>([]);
+  const [calendarFollow, setCalendarFollow] = useState<any>([]);
+
   const [deleteDialogShow, setDeleteDialogShow] = useState(false);
+  const [calendarEditType, setCalendarEditType] = useState('1');
+
   const weekStr = ['日', '一', '二', '三', '四', '五', '六'];
   const repeatStr = ['无', '日', '周', '月', '年'];
   useEffect(() => {
     if (taskItem) {
       let newTaskItem = _.cloneDeep(calendarInfo);
       for (let key in _.cloneDeep(taskItem)) {
-        newTaskItem[key] = _.cloneDeep(taskItem)[key]
+        newTaskItem[key] = _.cloneDeep(taskItem)[key];
       }
       let newCalendarGroup = _.cloneDeep(calendarGroup);
       if (!newTaskItem.circleData) {
         newTaskItem.circleData = [];
+      } else {
+        setRepeatIndex(newTaskItem.repeatCircle);
       }
       if (!newTaskItem.groupKeyArray) {
         newTaskItem.groupKeyArray = [];
       }
+      if (!newTaskItem.calendarEditType) {
+        newTaskItem.calendarEditType = 1;
+      }
+      console.log(calendarType);
+      if (calendarType !== '新建') {
+        if (newTaskItem.repeatCircle === 3) {
+          setDayInput(newTaskItem.circleData[0]);
+        }
+        if (newTaskItem.repeatCircle === 4) {
+          setMonthInput(newTaskItem.circleData[0].month + 1);
+          setDayInput(newTaskItem.circleData[0].date);
+        }
+        getFollowList(newTaskItem);
+      }
+      if (
+        calendarType !== '新建' &&
+        newTaskItem.startDay !== moment().startOf('day').valueOf()
+      ) {
+        newTaskItem.calendarEditType = 2;
+      }
       setCalendarInfo(newTaskItem);
     }
   }, [taskItem]);
+  const getFollowList = async (calendar: any) => {
+    let followRes: any = await api.task.getCalendarInfo(calendar._key);
+    if (followRes.msg === 'OK') {
+      setCalendarFollow(followRes.result.followUserArray);
+    } else {
+      dispatch(setMessage(true, followRes.msg, 'error'));
+    }
+  };
   const changeWeekArr = (num: number) => {
     let newCalendarInfo = _.cloneDeep(calendarInfo);
     let weekIndex = newCalendarInfo.circleData.indexOf(num);
@@ -117,11 +189,15 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
     setCalendar(newCalendarInfo);
   };
   const changeDate = (date: any, type: string) => {
+    console.log(date);
     let newCalendarInfo = _.cloneDeep(calendarInfo);
     if (type === 'start') {
       newCalendarInfo.startDay = date.valueOf();
-    } else if ((type = 'end')) {
+    } else if (type === 'end') {
       newCalendarInfo.endDay = date.valueOf();
+    } else if (type === 'remind') {
+      newCalendarInfo.remindTime = date;
+      console.log(newCalendarInfo.remindTime);
     }
     setCalendarInfo(newCalendarInfo);
     setCalendar(newCalendarInfo);
@@ -129,7 +205,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
   const chooseCalendarGroup = (item: any) => {
     let newCalendarInfo = _.cloneDeep(calendarInfo);
     let newCalendarGroup = _.cloneDeep(calendarGroup);
-    let groupIndex = newCalendarGroup.indexOf(item._key);
+    let groupIndex = _.findIndex(newCalendarGroup, { _key: item._key });
     if (groupIndex === -1) {
       newCalendarGroup.push(item);
       newCalendarInfo.groupKeyArray.push(item._key);
@@ -141,6 +217,21 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
     setCalendarInfo(newCalendarInfo);
     setCalendar(newCalendarInfo);
   };
+  const chooseCalendarFollow = (item: any) => {
+    let newCalendarFollow = _.cloneDeep(calendarFollow);
+    let newFollowList = [];
+    let followIndex = _.findIndex(newCalendarFollow, { _key: item._key });
+    if (followIndex === -1) {
+      newCalendarFollow.push(item);
+    } else {
+      newCalendarFollow.splice(followIndex, 1);
+    }
+    setCalendarFollow(newCalendarFollow);
+    newFollowList = newCalendarFollow.map((item: any, index: number) => {
+      return item.userId ? item.userId : item._key;
+    });
+    setFollowList(newFollowList);
+  };
   const deleteTask = async (calendar: any) => {
     setDeleteDialogShow(false);
     let deleteRes: any = await api.task.deleteTask(
@@ -149,11 +240,22 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
     );
     if (deleteRes.msg === 'OK') {
       dispatch(setMessage(true, '删除成功', 'success'));
-      getData(moment(calendar.startDay).startOf('month').startOf('day').valueOf(), moment(calendar.endDay).endOf('month').startOf('day').valueOf());
+      getData(
+        moment(calendar.startDay).startOf('month').startOf('day').valueOf(),
+        moment(calendar.endDay).endOf('month').startOf('day').valueOf()
+      );
       onClose();
     } else {
       dispatch(setMessage(true, deleteRes.msg, 'error'));
     }
+  };
+  const onChange = (e: any) => {
+    let newCalendarInfo = _.cloneDeep(calendarInfo);
+    setCalendarEditType(e.target.value);
+    //现在和未来
+    console.log('e.target.value', e.target.value);
+    newCalendarInfo.calendarEditType = parseInt(e.target.value);
+    setCalendar(newCalendarInfo);
   };
   return (
     <div className="calendarInfo">
@@ -211,7 +313,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
           />
         </MuiPickersUtilsProvider>
       </div>
-      <div className="calendarInfo-item calendarInfo-repeat-item">
+      <div className="calendarInfo-repeat-item">
         <div className="calendarInfo-item-title">重复</div>
         <div className="calendarInfo-repeat">
           <div className="calendarInfo-week">
@@ -319,7 +421,24 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
       </div>
       <div className="calendarInfo-item">
         <div className="calendarInfo-item-title">提醒</div>
-        <div className="calendarInfo-item-notice">无</div>
+        <div className="calendarInfo-item-notice">
+          <TextField
+            id="time"
+            label="时间"
+            type="time"
+            value={calendarInfo.remindTime}
+            className={classes.hourInput}
+            onChange={(e) => {
+              changeDate(e.target.value, 'remind');
+            }}
+            InputLabelProps={{
+              shrink: true,
+            }}
+            inputProps={{
+              step: 60, // 5 min
+            }}
+          />
+        </div>
       </div>
       <div className="calendarInfo-item">
         <div className="calendarInfo-item-title">颜色</div>
@@ -350,6 +469,36 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
           })}
         </div>
       </div>
+      {calendarType === '编辑' &&
+      calendarInfo.startDay === moment().startOf('day').valueOf() ? (
+        // <div className="taskItem-check-icon">
+        <div className="calendarInfo-item" style={{ marginTop: '20px' }}>
+          <div className="calendarInfo-item-title">设置</div>
+          <div className="calendarInfo-item-color">
+            <RadioGroup
+              aria-label="gender"
+              value={calendarEditType}
+              onChange={onChange}
+            >
+              <FormControlLabel
+                value={'1'}
+                control={<Radio />}
+                label={'当日'}
+                key={'radio1'}
+                style={{ height: '40px' }}
+              />
+              <FormControlLabel
+                value={'2'}
+                control={<Radio />}
+                label={'循环'}
+                key={'radio2'}
+                style={{ height: '40px' }}
+              />
+            </RadioGroup>
+          </div>
+        </div>
+      ) : // </div>
+      null}
       {calendarType === '编辑' ? (
         // <div className="taskItem-check-icon">
         <img
@@ -360,12 +509,50 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
           }}
           className="calendarInfo-delete-icon"
         />
-        // </div>
-      ) : null}
-      {/* <div className="calendarInfo-icon">
-        <div className="calendarInfo-icon-title">图标选择：</div>
-        <div></div>
-      </div> */}
+      ) : // </div>
+      null}
+      {calendarType === '编辑' ? (
+        <div className="calendarInfo-icon">
+          <div className="calendarInfo-icon-title">关注者：</div>
+          <div className="calendarInfo-icon-container">
+            {calendarFollow.map((iconItem: any, iconIndex: number) => {
+              return (
+                <div className="calendarInfo-group" key={'icon' + iconIndex}>
+                  <div className="calendarInfo-group-item">
+                    <img
+                      src={
+                        iconItem.avatar
+                          ? iconItem.avatar +
+                            '?imageMogr2/auto-orient/thumbnail/80x'
+                          : defaultGroupPng
+                      }
+                      alt=""
+                    />
+                  </div>
+                  <Tooltip title={iconItem.nickName}>
+                    <div className="calendarInfo-group-title">
+                      {iconItem.nickName}
+                    </div>
+                  </Tooltip>
+                </div>
+              );
+            })}
+
+            <div
+              className="calendarInfo-group"
+              onClick={() => {
+                setMemberVisible(true);
+              }}
+            >
+              <div className="calendarInfo-group-item calendarInfo-group-add">
+                <img src={plusPng} alt="" />
+              </div>
+              <div className="calendarInfo-group-title">新增</div>
+            </div>
+          </div>
+        </div>
+      ) : // </div>
+      null}
       {calendarType === '新建' ? (
         <div className="calendarInfo-icon">
           <div className="calendarInfo-icon-title">复制到日程表：</div>
@@ -377,7 +564,8 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
                     <img
                       src={
                         iconItem.groupLogo
-                          ? iconItem.groupLogo
+                          ? iconItem.groupLogo +
+                            '?imageMogr2/auto-orient/thumbnail/80x'
                           : defaultGroupPng
                       }
                       alt=""
@@ -404,7 +592,6 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
               <div className="calendarInfo-group-title">新增</div>
             </div>
           </div>
-
         </div>
       ) : null}
       <Dialog
@@ -413,7 +600,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
           position: 'fixed',
           width: '245px',
           maxHeight: '90%',
-          bottom: '5%',
+          top: '5%',
           left: 'calc(50% + 205px)',
           color: '#333',
           overflow: 'auto',
@@ -425,39 +612,67 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
         footer={false}
       >
         <div className="calendarInfo-group-box">
-          {groupArray.map((groupItem: any, groupIndex: number) => {
-            return (
-              <div
-                className="calendarInfo-group-box-container"
-                key={'group' + groupIndex}
-                onClick={() => {
-                  chooseCalendarGroup(groupItem);
-                }}
-                style={
-                  calendarGroup.indexOf(groupItem._key) !== -1
-                    ? { backgroundColor: '#efefef' }
-                    : {}
-                }
-              >
-                <div className="calendarInfo-group-box-item">
-                  <img
-                    src={
-                      groupItem.groupLogo
-                        ? groupItem.groupLogo
-                        : defaultGroupPng
+          {groupArray
+            ? groupArray.map((groupItem: any, groupIndex: number) => {
+                return (
+                  <div
+                    className="calendarInfo-group-box-container"
+                    key={'group' + groupIndex}
+                    onClick={() => {
+                      chooseCalendarGroup(groupItem);
+                    }}
+                    style={
+                      calendarGroup.indexOf(groupItem._key) !== -1
+                        ? { backgroundColor: '#efefef' }
+                        : {}
                     }
-                    alt=""
-                  />
-                </div>
-                <Tooltip title={groupItem.groupName}>
-                  <div className="calendarInfo-group-title">
-                    {groupItem.groupName}
+                  >
+                    <div className="calendarInfo-group-box-item">
+                      <img
+                        src={
+                          groupItem.groupLogo
+                            ? groupItem.groupLogo +
+                              '?imageMogr2/auto-orient/thumbnail/80x'
+                            : defaultGroupPng
+                        }
+                        alt=""
+                      />
+                    </div>
+                    <Tooltip title={groupItem.groupName}>
+                      <div className="calendarInfo-group-title">
+                        {groupItem.groupName}
+                      </div>
+                    </Tooltip>
                   </div>
-                </Tooltip>
-              </div>
-            );
-          })}
+                );
+              })
+            : null}
         </div>
+      </Dialog>
+      <Dialog
+        visible={memberVisible}
+        onClose={() => {
+          setMemberVisible(false);
+        }}
+        dialogStyle={{
+          position: 'fixed',
+          width: '245px',
+          maxHeight: '90%',
+          top: '5%',
+          left: 'calc(50% + 205px)',
+          color: '#333',
+          overflow: 'auto',
+        }}
+        showMask={false}
+        footer={false}
+      >
+        <TaskMember
+          targetGroupKey={targetGroupKey}
+          onClose={() => {
+            setMemberVisible(false);
+          }}
+          chooseFollow={chooseCalendarFollow}
+        />
       </Dialog>
       <Dialog
         visible={deleteDialogShow}

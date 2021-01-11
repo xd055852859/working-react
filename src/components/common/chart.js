@@ -36,7 +36,7 @@ const amChart = {
     dateAxis.renderer.minGridDistance = 70;
     dateAxis.baseInterval = {
       count: 30,
-      timeUnit: 'minute'
+      timeUnit: 'minute',
     };
     dateAxis.renderer.tooltipLocation = 0;
     dateAxis.renderer.line.strokeDasharray = '1,4';
@@ -267,7 +267,7 @@ const amChart = {
 
     chart.data = data;
     let categoryAxis = chart.xAxes.push(new am4charts.CategoryAxis());
-    categoryAxis.dataFields.category = "name";
+    categoryAxis.dataFields.category = 'name';
     categoryAxis.renderer.grid.template.strokeOpacity = 0;
     categoryAxis.renderer.minGridDistance = 10;
     categoryAxis.renderer.labels.template.dy = 10;
@@ -281,11 +281,11 @@ const amChart = {
     valueAxis.cursorTooltipEnabled = false;
     valueAxis.renderer.baseGrid.strokeOpacity = 0;
 
-    let series = chart.series.push(new am4charts.ColumnSeries);
-    series.dataFields.valueY = "steps";
-    series.dataFields.categoryX = "name";
-    series.tooltipText = "{valueY.value}";
-    series.tooltip.pointerOrientation = "vertical";
+    let series = chart.series.push(new am4charts.ColumnSeries());
+    series.dataFields.valueY = 'steps';
+    series.dataFields.categoryX = 'name';
+    series.tooltipText = '{valueY.value}';
+    series.tooltip.pointerOrientation = 'vertical';
     series.tooltip.dy = -36;
     series.columnsContainer.zIndex = 100;
 
@@ -298,10 +298,10 @@ const amChart = {
 
     series.heatRules.push({
       target: columnTemplate,
-      property: "fill",
-      dataField: "valueY",
-      min: am4core.color("#e5dc36"),
-      max: am4core.color("#5faa46")
+      property: 'fill',
+      dataField: 'valueY',
+      min: am4core.color('#e5dc36'),
+      max: am4core.color('#5faa46'),
     });
     series.mainContainer.mask = undefined;
 
@@ -309,38 +309,38 @@ const amChart = {
     chart.cursor = cursor;
     cursor.lineX.disabled = true;
     cursor.lineY.disabled = true;
-    cursor.behavior = "none";
+    cursor.behavior = 'none';
 
     let bullet = columnTemplate.createChild(am4charts.CircleBullet);
-    bullet.circle.radius = 15;
-    bullet.valign = "bottom";
-    bullet.align = "center";
+    bullet.circle.radius = 13;
+    bullet.valign = 'bottom';
+    bullet.align = 'center';
     bullet.isMeasured = true;
     bullet.mouseEnabled = false;
-    bullet.verticalCenter = "bottom";
+    bullet.verticalCenter = 'bottom';
     bullet.interactionsEnabled = false;
 
-    let hoverState = bullet.states.create("hover");
+    let hoverState = bullet.states.create('hover');
     let outlineCircle = bullet.createChild(am4core.Circle);
-    outlineCircle.adapter.add("radius", function (radius, target) {
+    outlineCircle.adapter.add('radius', function (radius, target) {
       let circleBullet = target.parent;
-      return circleBullet.circle.pixelRadius + 10;
-    })
+      return circleBullet.circle.pixelRadius + 8;
+    });
 
     let image = bullet.createChild(am4core.Image);
-    image.width = 35;
-    image.height = 35;
-    image.horizontalCenter = "middle";
-    image.verticalCenter = "middle";
-    image.propertyFields.href = "href";
+    image.width = 25;
+    image.height =25;
+    image.horizontalCenter = 'middle';
+    image.verticalCenter = 'middle';
+    image.propertyFields.href = 'href';
 
-    image.adapter.add("mask", function (mask, target) {
+    image.adapter.add('mask', function (mask, target) {
       let circleBullet = target.parent;
       return circleBullet.circle;
-    })
+    });
 
     let previousBullet;
-    chart.cursor.events.on("cursorpositionchanged", function (event) {
+    chart.cursor.events.on('cursorpositionchanged', function (event) {
       let dataItem = series.tooltipDataItem;
 
       if (dataItem.column) {
@@ -351,9 +351,8 @@ const amChart = {
         }
 
         if (previousBullet != bullet) {
-
-          let hs = bullet.states.getKey("hover");
-          hs.properties.dy = -bullet.parent.pixelHeight + 30;
+          let hs = bullet.states.getKey('hover');
+          hs.properties.dy = -bullet.parent.pixelHeight + 25;
           bullet.isHover = true;
 
           previousBullet = bullet;
@@ -512,7 +511,7 @@ const amChart = {
     series.labels.template.disabled = true;
     series.ticks.template.disabled = true;
 
-    chart.legend.position = 'bottom';
+    chart.legend.position = 'right';
     chart.data = data;
 
     return chart;

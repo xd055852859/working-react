@@ -8,7 +8,7 @@ import {
   setChooseKey,
 } from '../../redux/actions/taskActions';
 import { changeBatchMusic } from '../../redux/actions/authActions';
-
+import Loading from '../../components/common/loading';
 import TaskNav from '../../components/taskNav/taskNav';
 // import { setHeaderIndex } from '../../redux/actions/memberActions';
 import { setMessage } from '../../redux/actions/commonActions';
@@ -40,7 +40,9 @@ const WorkingTableLabel: React.FC = (prop) => {
   const [colWidth, setColWidth] = useState(0);
   const [colNumbers, setColNumbers] = useState(4);
   const [colHeight, setColHeight] = useState<any>([]);
-
+  const [taskNumber, setTaskNumber] = useState(10);
+  const [taskLoading, setTaskLoading] = useState(false);
+  const [labelLoadArray, setLabelLoadArray] = useState<any>([]);
   const [chooseLabelKey, setChooseLabelKey] = useState('');
   const workingTableRef: React.RefObject<any> = useRef();
   const dispatch = useDispatch();
@@ -50,10 +52,21 @@ const WorkingTableLabel: React.FC = (prop) => {
   let oldPageX = 0;
   let labelScroll = 0;
   useEffect(() => {
+    setTaskNumber(
+      Math.ceil((document.documentElement.offsetHeight - 128) / 70)
+    );
+  }, []);
+  useEffect(() => {
+    if (labelLoadArray) {
+      setTaskLoading(false);
+    }
+  }, [labelLoadArray]);
+  useEffect(() => {
     if (workingTaskArray) {
       setMainLabelArray([]);
       let labelArray: any = [];
       let labelArr: any = [];
+      let labelLoadArray: any = [];
       if (workingGroupArray.length > 0 && workingTaskArray.length > 0) {
         workingGroupArray.forEach((item: any, index: number) => {
           labelArr[index] = item.labelArray.map(
@@ -102,19 +115,35 @@ const WorkingTableLabel: React.FC = (prop) => {
             }
           );
         });
-        // workingGroupArray[0].labelArray.forEach((item: any, index: number) => {
-        //   console.log(labelArray[0]);
-
-        //   if (Object.keys(labelArray[0]).indexOf(item._key) === -1) {
-        //     labelArray[0][item._key] = {
-        //       arr: [],
-        //       groupObj: workingGroupArray[0],
-        //       labelObj: item,
-        //       position: [],
-        //     };
-        //   }
-        // });
+        workingGroupArray[0].labelArray.forEach((item: any, index: number) => {
+          if (
+            Object.keys(labelArray[0])[Object.keys(labelArray[0]).length - 1] !=
+            'null'
+          ) {
+            labelArray[0]['null'] = {
+              arr: [],
+              groupObj: workingGroupArray[0],
+              labelObj: {
+                groupKey: item.groupKey,
+                cardLabelName: 'ToDo',
+              },
+              position: [],
+            };
+          } else if (
+            Object.keys(labelArray[0]).indexOf(item._key) === -1 &&
+            item._key
+          ) {
+            labelArray[0][item._key] = {
+              arr: [],
+              groupObj: workingGroupArray[0],
+              labelObj: item,
+              position: [],
+            };
+          }
+        });
+        console.log(labelArray);
         labelArray = labelArray.map((item: any, index: number) => {
+          let arr = [];
           for (let key in item) {
             item[key].arr = format
               .formatFilter(item[key].arr, filterObject)
@@ -127,15 +156,25 @@ const WorkingTableLabel: React.FC = (prop) => {
               !item[key].labelObj._key
                 ? 10000
                 : item[key].arr.length;
+            labelLoadArray[index] = item[key].arr.filter(
+              (taskItem: any, taskIndex: number) => {
+                if (taskItem.show) {
+                  return taskItem;
+                }
+              }
+            );
           }
           return Object.values(item);
         });
         labelArray = _.sortBy(_.flatten(labelArray), ['arrlength']).reverse();
-        console.log(labelArray);
+        labelArray.forEach((item: any, index: number) => {
+          labelLoadArray[index] = item.arr.slice(0, taskNumber + 1);
+        });
+        setLabelLoadArray(labelLoadArray);
         setMainLabelArray(labelArray);
       }
     }
-  }, [workingTaskArray, workingGroupArray, filterObject]);
+  }, [workingTaskArray, workingGroupArray]);
   useEffect(() => {
     let clientWidth = workingTableRef.current.clientWidth;
     if (clientWidth < 600) {
@@ -149,18 +188,6 @@ const WorkingTableLabel: React.FC = (prop) => {
     }
     setColWidth(Math.floor(clientWidth / colNumbers));
   }, [workingTableRef.current]);
-  useEffect(() => {
-    let labelArray = [];
-    if (memberHeaderIndex === 4 && mainLabelArray.length > 0) {
-      labelArray = mainLabelArray.filter((item: any, index: number) => {
-        if (item.arrlength > 0) {
-          item.position = render(index);
-          return item;
-        }
-      });
-      setMainLabelArray(labelArray);
-    }
-  }, [memberHeaderIndex, mainLabelArray.length]);
   // useEffect(() => {
   //   if (chooseKey) {
   //     dispatch(setTaskKey(chooseKey));
@@ -230,7 +257,6 @@ const WorkingTableLabel: React.FC = (prop) => {
   };
   const startMove = (e: any) => {
     if (e.button === 2 && workingTableRef.current) {
-      console.log('进来');
       if (workingTableRef.current) {
         oldPageX = e.pageX;
         // workingTableRef.current.addEventListener(
@@ -242,11 +268,8 @@ const WorkingTableLabel: React.FC = (prop) => {
     }
   };
   // const moveContent = (e: any) => {
-  //   // console.log(moveNum);
   //   // workingTableRef.current.scrollTo(0, 0);
   //   // setOldPage(e.pageX);
-  //   console.log("oldPageX",oldPageX)
-  //   console.log("e.pageX"e.pageX)
 
   //   oldPageX = e.pageX;
   // };
@@ -258,6 +281,34 @@ const WorkingTableLabel: React.FC = (prop) => {
         labelScroll = labelScroll + (oldPageX - e.pageX);
       }
       workingTableRef.current.scrollTo(labelScroll, 0);
+    }
+  };
+  const scrollTask = (e: any, index: number) => {
+    setTaskLoading(true);
+    let newLabelLoadArray = _.cloneDeep(labelLoadArray);
+    let taskLength = newLabelLoadArray[index].length;
+    let scrollHeight = e.target.scrollHeight;
+    //滚动条滚动距离
+    let scrollTop = e.target.scrollTop;
+    //窗口可视范围高度
+    let clientHeight = e.target.clientHeight;
+    let taskArray = mainLabelArray[index].arr.filter(
+      (taskItem: any, taskIndex: number) => {
+        if (taskItem.show) {
+          return taskItem;
+        }
+      }
+    );
+    if (
+      clientHeight + scrollTop + 1 >= scrollHeight &&
+      taskLength < taskArray.length
+    ) {
+      newLabelLoadArray[index].push(
+        ...taskArray.slice(taskLength, taskLength + taskNumber)
+      );
+      setLabelLoadArray(newLabelLoadArray);
+    } else {
+      setTaskLoading(false);
     }
   };
   return (
@@ -273,7 +324,15 @@ const WorkingTableLabel: React.FC = (prop) => {
       onContextMenu={endMove}
       id="title"
     >
+      {taskLoading ? <Loading /> : null}
       {mainLabelArray.map((labelItem: any, labelIndex: number) => {
+        if (
+          document.getElementById('workingTableLabel' + labelIndex) &&
+          labelItem.position.length === 0 &&
+          memberHeaderIndex === 4
+        ) {
+          labelItem.position = render(labelIndex);
+        }
         return (
           <div
             key={'label' + labelIndex}
@@ -333,28 +392,38 @@ const WorkingTableLabel: React.FC = (prop) => {
                   batchTaskArray={() => {
                     batchTaskArray(labelItem.arr);
                   }}
+                  taskNavTask={labelItem.arr}
                 />
                 <div
                   style={memberHeaderIndex === 0 ? { overflowY: 'auto' } : {}}
                   className="workingTableLabel-info-item-label-container"
+                  onScroll={(e) => {
+                    if (memberHeaderIndex === 0) {
+                      scrollTask(e, labelIndex);
+                    }
+                  }}
                 >
-                  {labelItem.arr.map((taskItem: any, taskIndex: number) => {
-                    return (
-                      <React.Fragment key={'task' + taskIndex}>
-                        {taskItem.show ? (
-                          <React.Fragment>
-                            <Task
-                              taskItem={taskItem}
-                              taskIndex={0}
-                              taskInfoIndex={labelIndex}
-                              // timeSetStatus={taskIndex > labelItem.arr.length - 3}
-                              // myState={labelItem.groupObj._key === mainGroupKey}
-                            />
-                          </React.Fragment>
-                        ) : null}
-                      </React.Fragment>
-                    );
-                  })}
+                  {labelLoadArray[labelIndex]
+                    ? labelLoadArray[labelIndex].map(
+                        (taskItem: any, taskIndex: number) => {
+                          return (
+                            <React.Fragment key={'task' + taskIndex}>
+                              {taskItem.show ? (
+                                <React.Fragment>
+                                  <Task
+                                    taskItem={taskItem}
+                                    taskIndex={0}
+                                    taskInfoIndex={labelIndex}
+                                    // timeSetStatus={taskIndex > labelItem.arr.length - 3}
+                                    // myState={labelItem.groupObj._key === mainGroupKey}
+                                  />
+                                </React.Fragment>
+                              ) : null}
+                            </React.Fragment>
+                          );
+                        }
+                      )
+                    : null}
                 </div>
               </div>
             </div>

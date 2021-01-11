@@ -22,6 +22,10 @@
   top: -10000px;
   opacity: 0;
   left: 0;
+  height: 1px;
+}
+.second-toolbar a {
+  display: none !important;
 }
 .fr-toolbar .fr-btn-grp {
   margin: 0px !important;
@@ -31,10 +35,19 @@
   height: 20px !important;
   width: 20px !important;
 }
+
 .fr-box.fr-basic .fr-element {
   padding: 5px 10px !important;
+  min-height: 375px !important;
 }
-
+.preview-container .fr-box.fr-document,
+.preview-container .fr-box.fr-document .fr-wrapper {
+  min-width: unset !important;
+}
+.preview-container .fr-box.fr-document .fr-wrapper .fr-element {
+  /* width: unset !important; */
+  padding: 1cm !important;
+}
 /* 文档模式下划线样式 */
 @media (min-width: 992px) {
   .fr-box.fr-document .fr-wrapper .fr-element hr {

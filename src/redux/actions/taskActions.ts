@@ -22,7 +22,8 @@ export const actionTypes = {
   SET_TASK_ACTION: 'SET_TASK_ACTION',
   GET_CALENDAR_LIST: 'GET_CALENDAR_LIST',
   GET_CALENDAR_LIST_SUCCESS: 'GET_CALENDAR_LIST_SUCCESS',
-  SET_NEW_TASK_ARRAY:'SET_NEW_TASK_ARRAY',
+  SET_NEW_TASK_ARRAY: 'SET_NEW_TASK_ARRAY',
+  CLEAR_TASK: 'CLEAR_TASK',
 };
 
 export function getGroupTask(
@@ -83,7 +84,7 @@ export function getSelfTask(
   finishPercentArray: string,
   fileDay?: number,
   endTime?: number,
-  isAddTodayFinish?:number
+  isAddTodayFinish?: number
 ) {
   return {
     type: actionTypes.GET_SELF_TASK,
@@ -92,7 +93,7 @@ export function getSelfTask(
     finishPercentArray: finishPercentArray,
     fileDay: fileDay,
     endTime: endTime,
-    isAddTodayFinish:isAddTodayFinish
+    isAddTodayFinish: isAddTodayFinish,
   };
 }
 export function getSelfTaskSuccess(data: any) {
@@ -137,27 +138,27 @@ export function editTask(data: any, headerIndex: number) {
 export function editTaskSuccess(data: any) {
   return { type: actionTypes.EDIT_TASK_SUCCESS, data };
 }
-export function addWorkingTableTask(
-  title: string,
-  groupKey: string,
-  groupRole: number | string,
-  labelKey: number | string,
-  cardIndex: number | string,
-  executorKey?: number | string
-) {
-  return {
-    type: actionTypes.ADD_WORKING_TABLE_TASK,
-    title: title,
-    groupKey: groupKey,
-    groupRole: groupRole,
-    labelKey: labelKey,
-    cardIndex: cardIndex,
-    executorKey: executorKey,
-  };
-}
-export function addWorkingTableTaskSuccess(data: any) {
-  return { type: actionTypes.ADD_WORKING_TABLE_TASK_SUCCESS, data };
-}
+// export function addWorkingTableTask(
+//   title: string,
+//   groupKey: string,
+//   groupRole: number | string,
+//   labelKey: number | string,
+//   cardIndex: number | string,
+//   executorKey?: number | string
+// ) {
+//   return {
+//     type: actionTypes.ADD_WORKING_TABLE_TASK,
+//     title: title,
+//     groupKey: groupKey,
+//     groupRole: groupRole,
+//     labelKey: labelKey,
+//     cardIndex: cardIndex,
+//     executorKey: executorKey,
+//   };
+// }
+// export function addWorkingTableTaskSuccess(data: any) {
+//   return { type: actionTypes.ADD_WORKING_TABLE_TASK_SUCCESS, data };
+// }
 export function setFilterObject(filterObj: any) {
   return {
     type: actionTypes.SET_FILTER_OBJECT,
@@ -192,6 +193,13 @@ export function getCalendarList(
 export function getCalendarListSuccess(data: any) {
   return { type: actionTypes.GET_CALENDAR_LIST_SUCCESS, data };
 }
-export function setNewTaskArray(taskArrayType:string,taskArray:any) {
-  return { type: actionTypes.SET_NEW_TASK_ARRAY, taskArrayType:taskArrayType,taskArray:taskArray };
+export function setNewTaskArray(taskArrayType: string, taskArray: any) {
+  return {
+    type: actionTypes.SET_NEW_TASK_ARRAY,
+    taskArrayType: taskArrayType,
+    taskArray: taskArray,
+  };
+}
+export function clearTask(clearType: any) {
+  return { type: actionTypes.CLEAR_TASK, clearType: clearType };
 }

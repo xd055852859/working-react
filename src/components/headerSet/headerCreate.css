@@ -20,7 +20,7 @@
   align-items: center;
   justify-content: space-between;
 }
-.headerSet-container{
+.headerSet-container {
   width: 100%;
   height: calc(100% - 54px);
   display: flex;
@@ -106,4 +106,40 @@
 
 .headerCreate-title-left-left {
   margin-right: 5px;
+}
+.headerCreate-url {
+  width: 280px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  /* justify-content: space-between; */
+}
+.headerCreate-url-input {
+  width: 0px;
+  height: 30px;
+  margin-left: 5px;
+  border: 1px solid #cecece;
+  border-radius: 6px;
+  box-sizing: border-box;
+  opacity: 0;
+}
+@keyframes urlInputOut {
+  from {
+    width: 0px;
+    opacity: 0;
+  }
+  to {
+    width: 220px;
+    opacity: 1;
+  }
+}
+@keyframes urlInputIn {
+  from {
+    width: 220px;
+    opacity: 1;
+  }
+  to {
+    width: 0px;
+    opacity: 0;
+  }
 }

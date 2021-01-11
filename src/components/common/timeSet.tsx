@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useTypedSelector } from '../../redux/reducer/RootState';
 import './timeSet.css';
 import moment from 'moment';
+import { useDispatch } from 'react-redux';
 import timeSet1Svg from '../../assets/svg/timeSet1.svg';
 import timeSet2Svg from '../../assets/svg/timeSet2.svg';
 import timeSet3Svg from '../../assets/svg/timeSet3.svg';
@@ -9,15 +11,19 @@ import timeSet5Svg from '../../assets/svg/timeSet5.svg';
 import timeSet6Svg from '../../assets/svg/timeSet6.svg';
 import clockSvg from '../../assets/svg/clock.svg';
 import { Button } from '@material-ui/core';
+import { editTask, setTaskInfo } from '../../redux/actions/taskActions';
+import { setMessage } from '../../redux/actions/commonActions';
 import DropMenu from '../common/dropMenu';
+import _ from 'lodash';
 interface timeSetProp {
-  timeSetClick: any;
-  dayNumber: number;
-  timeNumber: number | null;
+  timeSetClick?: any;
+  dayNumber?: number;
+  timeNumber?: number | null;
   endDate?: number;
   percentClick?: any;
   timestate?: string;
   viewStyle?: string;
+  type?: string;
 }
 
 const TimeSet: React.FC<timeSetProp> = (prop) => {
@@ -29,7 +35,11 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
     percentClick,
     timestate,
     viewStyle,
+    type,
   } = prop;
+  const dispatch = useDispatch();
+  const taskInfo = useTypedSelector((state) => state.task.taskInfo);
+  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const [timeDate, setTimeDate] = useState<any>([]);
   const [timeWeek, setTimeWeek] = useState<any>([]);
   const [timeMonth, setTimeMonth] = useState<any>([]);
@@ -38,6 +48,9 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
   const [timeDateArray, setTimeDateArray] = useState<any>([]);
   const [timeDateType, setTimeDateType] = useState(0);
   const [dateIndex, setdateIndex] = useState(0);
+  const [newEndDate, setNewEndDate] = useState<any>(0);
+  const [newDayNumber, setNewDayNumber] = useState<any>(null);
+  const [newTimeNumber, setNewTimeNumber] = useState<any>(null);
   const timeArray = [
     1,
     2,
@@ -65,8 +78,29 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
     }
   }, [timeDate]);
   useEffect(() => {
+    if (timeSetClick) {
+      setNewEndDate(endDate);
+      setNewDayNumber(dayNumber);
+      setNewTimeNumber(timeNumber);
+    }
+  }, [timeSetClick]);
+
+  useEffect(() => {
+    if (taskInfo && type) {
+      let [time, newTaskInfo]: any = [0, _.cloneDeep(taskInfo)];
+      if (newTaskInfo.taskEndDate) {
+        time = moment(newTaskInfo.taskEndDate)
+          .endOf('day')
+          .diff(moment().endOf('day'), 'days');
+        setNewEndDate(newTaskInfo.taskEndDate);
+        setNewDayNumber(time + 1);
+        setNewTimeNumber(newTaskInfo.hour);
+      }
+    }
+  }, [type, taskInfo]);
+  useEffect(() => {
     changeDateIndex(timeDateType);
-  }, [dayNumber]);
+  }, [newDayNumber]);
   const mouthDate = () => {
     let timeDate = [];
     let timeWeek = [];
@@ -101,12 +135,12 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
     let dateIndex = 0;
     if (timeDateType) {
       dateIndex = moment()
-        .add(dayNumber - 1, 'day')
+        .add(newDayNumber - 1, 'day')
         .endOf('day')
         .date();
     } else {
-      if (dayNumber >= 0) {
-        dateIndex = dayNumber;
+      if (newDayNumber >= 0) {
+        dateIndex = newDayNumber;
       } else {
         dateIndex = 0;
       }
@@ -122,11 +156,54 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
     changeDateIndex(timeDateType);
     setTimeDateType(timeDateType);
   };
+  const changeTime = (type: string, value?: any) => {
+    let newTaskItem: any = {};
+    let newTaskInfo: any = _.cloneDeep(taskInfo);
+    if (type === 'finishPercent') {
+      newTaskItem.finishPercent = value;
+      newTaskInfo.finishPercent = value;
+      if (newTaskItem.finishPercent === 1) {
+        // newTaskDetail.todayTaskTime = moment().valueOf();
+        newTaskItem.taskEndDate = moment().valueOf();
+        newTaskInfo.taskEndDate = moment().valueOf();
+        setNewEndDate(newTaskItem.taskEndDate);
+      }
+    }
+    if (type === 'hour') {
+      newTaskItem.hour = value;
+      newTaskInfo.hour = value;
+      setNewTimeNumber(newTaskItem.hour);
+    } else if (type === 'day') {
+      newTaskItem.day = value;
+      newTaskInfo.day = value;
+      newTaskItem.taskEndDate = moment()
+        .add(value - 1, 'day')
+        .endOf('day')
+        .valueOf();
+      setNewEndDate(newTaskItem.taskEndDate);
+      setNewDayNumber(value);
+      newTaskInfo.taskEndDate = _.cloneDeep(newTaskItem.taskEndDate);
+    } else if (type === 'infinite') {
+      newTaskItem.taskEndDate = 99999999999999;
+      newTaskInfo.taskEndDate = _.cloneDeep(newTaskItem.taskEndDate);
+    }
+    console.log(newTaskInfo);
+    dispatch(
+      editTask(
+        {
+          key: newTaskInfo._key,
+          ...newTaskItem,
+        },
+        headerIndex
+      )
+    );
+    dispatch(setTaskInfo(newTaskInfo));
+  };
   return (
     <React.Fragment>
       {!viewStyle ? (
         <div className="timeSet-title">
-          预计工时 <span>{timeNumber + '小时'}</span>
+          预计工时 <span>{newTimeNumber + '小时'}</span>
         </div>
       ) : null}
       <div
@@ -134,10 +211,10 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
         style={
           viewStyle !== 'horizontal'
             ? {
-              width: '100%',
-              height: '55px',
-              padding: '5px 10px',
-            }
+                width: '100%',
+                height: '55px',
+                padding: '5px 10px',
+              }
             : { height: '42px' }
         }
       >
@@ -148,37 +225,53 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
               viewStyle !== 'horizontal'
                 ? { width: '45px', height: '40px' }
                 : {
-                  width: '45px',
-                  height: '42px',
-                  marginRight: '10px',
-                }
+                    width: '45px',
+                    height: '42px',
+                  }
             }
           >
             <img
               src={timeSet1Svg}
               onClick={() => {
-                percentClick(10);
+                if (type) {
+                  changeTime('finishPercent', 10);
+                } else {
+                  percentClick(10, viewStyle);
+                }
               }}
-            // style={{ marginRight: !viewStyle ? '' : '5px' }}
+              // style={{ marginRight: !viewStyle ? '' : '5px' }}
             />
+
             <img
               src={timeSet2Svg}
               onClick={() => {
-                percentClick(0);
+                if (type) {
+                  changeTime('finishPercent', 0);
+                } else {
+                  percentClick(0, viewStyle);
+                }
               }}
-            // style={{ marginRight: !viewStyle ? '' : '5px' }}
+              // style={{ marginRight: !viewStyle ? '' : '5px' }}
             />
             <img
               src={timeSet3Svg}
               onClick={() => {
-                percentClick(1);
+                if (type) {
+                  changeTime('finishPercent', 1);
+                } else {
+                  percentClick(1, viewStyle);
+                }
               }}
-            // style={{ marginRight: !viewStyle ? '' : '5px' }}
+              // style={{ marginRight: !viewStyle ? '' : '5px' }}
             />
             <img
               src={timeSet4Svg}
               onClick={() => {
-                percentClick(2);
+                if (type) {
+                  changeTime('finishPercent', 2);
+                } else {
+                  percentClick(2, viewStyle);
+                }
               }}
               style={{
                 width: '19px',
@@ -214,7 +307,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
           <DropMenu
             visible={freeTimeVisible}
             dropStyle={{
-              width: '222px',
+              width: '192px',
               height: '57px',
               top: '20px',
               left: '0px',
@@ -240,11 +333,21 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
               variant="contained"
               color="primary"
               onClick={() => {
-                timeSetClick('hour', parseFloat(freeTimeInput));
-                setFreeTimeVisible(false);
+                console.log(freeTimeInput);
+                console.log(isNaN(parseFloat(freeTimeInput)));
+                if (isNaN(parseFloat(freeTimeInput))) {
+                  dispatch(setMessage(true, '请输入数字', 'error'));
+                  return;
+                }
+                if (type) {
+                  changeTime('hour', parseFloat(freeTimeInput));
+                } else {
+                  timeSetClick('hour', parseFloat(freeTimeInput));
+                  setFreeTimeVisible(false);
+                }
               }}
               style={{ color: '#fff', height: '35px' }}
-            // className={classes.clockInButton}
+              // className={classes.clockInButton}
             >
               确定
             </Button>
@@ -255,7 +358,12 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                 key={'time' + timeIndex}
                 // className="timeSet-item"
                 onClick={() => {
-                  timeSetClick('hour', timeItem);
+                  if (type) {
+                    changeTime('hour', timeItem);
+                  } else {
+                    timeSetClick('hour', timeItem);
+                    setFreeTimeVisible(false);
+                  }
                 }}
                 className="timeSet-time-item"
                 style={{
@@ -274,7 +382,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                   className="timeSet-time-choose"
                   style={{
                     borderColor:
-                      timeNumber === timeItem
+                      newTimeNumber === timeItem
                         ? '#F28806  transparent transparent transparent'
                         : '#35a6f8 transparent transparent transparent',
                   }}
@@ -289,7 +397,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
         <React.Fragment>
           {!viewStyle ? (
             <div className="timeSet-title">
-              到期时间<span>{moment(endDate).format('YYYY-MM-DD')}</span>
+              到期时间<span>{moment(newEndDate).format('YYYY-MM-DD')}</span>
             </div>
           ) : null}
           <div
@@ -297,10 +405,10 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
             style={
               viewStyle !== 'horizontal'
                 ? {
-                  width: '100%',
-                  height: '55px',
-                  padding: '5px 10px',
-                }
+                    width: '100%',
+                    height: '55px',
+                    padding: '5px 10px',
+                  }
                 : { width: '360px', height: '41px', marginLeft: '10px' }
             }
           >
@@ -312,23 +420,21 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                 {
                   width: '45px',
                   height: '40px',
-                  marginRight: '10px',
+                  marginRight: viewStyle === 'horizontal' ? '-3px' : '10px',
                   alignContent: 'space-between',
                 }
-                // : {
-                //     height: '30px',
-                //     alignItems: 'center',
-                //     alignContent: 'initial',
-                //     margin: '0px 5px',
-                //   }
               }
             >
               <img
                 src={timeSet5Svg}
                 onClick={() => {
-                  changeTimeDateType(0);
+                  if (type) {
+                    changeTime('infinite');
+                  } else {
+                    timeSetClick('infinite');
+                  }
                 }}
-              // style={{ marginRight: !viewStyle ? '' : '5px' }}
+                // style={{ marginRight: !viewStyle ? '' : '5px' }}
               />
               <img
                 src={timeSet6Svg}
@@ -338,7 +444,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                   // marginRight: !viewStyle ? '' : '5px',
                 }}
                 onClick={() => {
-                  changeTimeDateType(1);
+                  changeTimeDateType(timeDateType === 1 ? 0 : 1);
                 }}
               />
             </div>
@@ -349,15 +455,19 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                     key={'date' + dateTimeIndex}
                     className="timeSet-date-item"
                     onClick={() => {
-                      timeSetClick('day', dateTimeIndex + 1);
+                      if (type) {
+                        changeTime('day', dateTimeIndex + 1);
+                      } else {
+                        timeSetClick('day', dateTimeIndex + 1);
+                      }
                     }}
                     style={{
                       backgroundColor:
                         dateIndex === dateTimeItem
                           ? '#F28806'
                           : timeWeek[dateTimeIndex] > 4
-                            ? '#BABABA'
-                            : '#505050',
+                          ? '#BABABA'
+                          : '#505050',
                       marginBottom: viewStyle !== 'horizontal' ? '5px' : '1px',
                       marginRight:
                         // !viewStyle ?

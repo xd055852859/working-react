@@ -155,9 +155,11 @@
   width: 350px;
   overflow: auto;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 }
 
-.task-container-profile .task-item-info span {
+.task-container-profile .task-item-info > span {
   /* min-height: 80px; */
   height: calc(100% - 10px);
   width: 100%;
@@ -196,11 +198,37 @@
   object-fit: cover;
 }
 .taskNav-addLabel {
-  width: 20px;
-  height: 20px;
-  background-color:transparent;
+  width: 30px;
+  height: 30px;
+  background-color: transparent;
   position: absolute;
-  top: 20px;
-  right: 57px;
+  top: 17px;
+  right: 55px;
   z-index: 2;
+}
+.taskNav-url {
+  width: 280px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  /* justify-content: space-between; */
+}
+.taskNav-url-input {
+  width: 0px;
+  height: 30px;
+  margin-left: 5px;
+  border: 1px solid #cecece;
+  border-radius: 6px;
+  box-sizing: border-box;
+  opacity: 0;
+}
+@keyframes urlOut {
+  from {
+    width: 0px;
+    opacity: 0;
+  }
+  to {
+    width: 140px;
+    opacity: 1;
+  }
 }

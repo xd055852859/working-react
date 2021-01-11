@@ -27,16 +27,14 @@ const Chat: React.FC<ChatProps> = (prop) => {
   // const unChatNum = useTypedSelector((state) => state.common.unChatNum);
   const [url, setUrl] = useState('');
   const [clickType, setClickType] = useState(true);
-
+  let unDistory = true;
   useEffect(() => {
-    console.log(user);
     if (user) {
       setUrl(
-        api.ROCKET_CHAT_URL +
-          '/login?chatToken=' +
-          user.rocketChat.authToken +
-          '&newTime=' +
-          moment().valueOf()
+        api.ROCKET_CHAT_URL + '/login?chatToken=' + user.rocketChat.authToken
+        //  +
+        // '&newTime=' +
+        // moment().valueOf()
       );
       window.addEventListener('message', handlerIframeEvent);
       if (
@@ -55,6 +53,9 @@ const Chat: React.FC<ChatProps> = (prop) => {
     ) {
       goChat();
     }
+    return () => {
+      unDistory = false;
+    };
     // dispatch(setChatState(false));
   }, [headerIndex, groupKey, targetUserKey, groupInfo, memberArray]);
   useEffect(() => {
@@ -70,7 +71,6 @@ const Chat: React.FC<ChatProps> = (prop) => {
         if (isNaN(e.data.data)) {
           e.data.data = 0;
         }
-        console.log(e.data);
         dispatch(setUnChatNum(e.data.data));
         // setUnReadNum(unReadNum + e.data.data.unread);
         break;
@@ -79,107 +79,113 @@ const Chat: React.FC<ChatProps> = (prop) => {
   };
   const goChat = async () => {
     const dom: any = document.querySelector('iframe');
-    if (headerIndex === 2) {
-      const privatePerson =
-        memberArray[_.findIndex(memberArray, { userId: targetUserKey })];
-      if (privatePerson) {
-        const privateChatRId = privatePerson.privateChatRId;
-        if (privateChatRId) {
-          dom.contentWindow.postMessage(
-            {
-              externalCommand: 'go',
-              path: '/direct/' + privateChatRId,
-            },
-            '*'
-          );
-        } else {
-          let chatRes: any = await api.member.getPrivateChatRId(
-            mainGroupKey,
-            targetUserKey
-          );
-          if (chatRes.msg === 'OK') {
+    if (dom) {
+      if (headerIndex === 2) {
+        const privatePerson =
+          memberArray[_.findIndex(memberArray, { userId: targetUserKey })];
+        if (privatePerson) {
+          const privateChatRId = privatePerson.privateChatRId;
+          if (privateChatRId) {
             dom.contentWindow.postMessage(
               {
                 externalCommand: 'go',
-                path: '/direct/' + chatRes.result,
+                path: '/direct/' + privateChatRId,
               },
               '*'
             );
           } else {
-            dispatch(setMessage(true, chatRes.msg, 'error'));
+            let chatRes: any = await api.member.getPrivateChatRId(
+              mainGroupKey,
+              targetUserKey
+            );
+            if (unDistory) {
+              if (chatRes.msg === 'OK') {
+                dom.contentWindow.postMessage(
+                  {
+                    externalCommand: 'go',
+                    path: '/direct/' + chatRes.result,
+                  },
+                  '*'
+                );
+              } else {
+                dispatch(setMessage(true, chatRes.msg, 'error'));
+              }
+            }
           }
         }
+      } else if (headerIndex === 3) {
+        dom.contentWindow.postMessage(
+          {
+            externalCommand: 'go',
+            path: '/group/' + groupInfo.groupUUID,
+          },
+          '*'
+        );
       }
-    } else if (headerIndex === 3) {
-      dom.contentWindow.postMessage(
-        {
-          externalCommand: 'go',
-          path: '/channel/' + groupInfo.groupUUID,
-        },
-        '*'
-      );
     }
   };
   return (
-    <div
-      className="chat-iframe"
-      style={
-        // headerIndex === 4
-        //   ? {
-        //       opacity: 1,
-        //       left: '320px',
-        //       top: '0px',
-        //     }
-        // :
-        chatState
-          ? !clickType
-            ? {
-                width: '420px',
-              }
-            : {
-                width: '600px',
-              }
-          : { opacity: 0, width: '0px', height: '0px' }
-      }
-    >
-      <iframe
-        src={url}
-        className="chat"
-        style={
-          !clickType
-            ? {
-                left: '-180px',
-              }
-            : {
-                left: '0px',
-              }
-        }
-      ></iframe>
+    <React.Fragment>
       <div
-        className="chat-more"
-        onClick={() => {
-          setClickType(!clickType);
-        }}
+        className="chat-iframe"
         style={
-          !clickType
-            ? {
-                left: '10px',
-              }
-            : {
-                left: '192px',
-              }
+          // headerIndex === 4
+          //   ? {
+          //       opacity: 1,
+          //       left: '320px',
+          //       top: '0px',
+          //     }
+          // :
+          chatState
+            ? !clickType
+              ? {
+                  width: '420px',
+                }
+              : {
+                  width: '600px',
+                }
+            : { opacity: 0, width: '0px', height: '0px' }
         }
-      ></div>
-      {chatState ? (
-        <img
-          src={closePng}
-          className="chat-close"
+      >
+        <iframe
+          src={url}
+          className="chat"
+          style={
+            !clickType
+              ? {
+                  left: '-180px',
+                }
+              : {
+                  left: '0px',
+                }
+          }
+        ></iframe>
+        <div
+          className="chat-more"
           onClick={() => {
-            dispatch(setChatState(false));
+            setClickType(!clickType);
           }}
-        />
-      ) : null}
-    </div>
+          style={
+            !clickType
+              ? {
+                  left: '10px',
+                }
+              : {
+                  left: '192px',
+                }
+          }
+        ></div>
+        {chatState ? (
+          <img
+            src={closePng}
+            className="chat-close"
+            onClick={() => {
+              dispatch(setChatState(false));
+            }}
+          />
+        ) : null}
+      </div>
+    </React.Fragment>
   );
 };
 export default Chat;

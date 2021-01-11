@@ -52,7 +52,11 @@ export const group = (state = defaultState, action: any) => {
         ...state,
         startId: action.startId,
       };
-
+    case actionTypes.CLEAR_GROUP:
+      state.groupInfo = null;
+      return {
+        ...state,
+      };
     default:
       return state;
   }

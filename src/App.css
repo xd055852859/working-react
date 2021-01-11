@@ -29,6 +29,7 @@
 }
 *::-webkit-scrollbar {
   width: 1.5px;
+  height: 5px;
 }
 *::-webkit-scrollbar-thumb {
   background: #dedede;
@@ -103,7 +104,15 @@ body > div[role] {
   background-color: #17b881 !important;
 }
 textarea {
-  padding: 0;
+  padding: 5px;
+  border-radius: 6px;
+  font-family: 'Roboto', 'Helvetica', 'Arial', sans-serif;
+  line-height: 18px;
+  resize: none;
+}
+textarea:focus {
+  border: 1px solid #17b881;
+  outline: 0px;
 }
 [contenteditable]:focus {
   outline: 1px solid #17b881;
@@ -130,11 +139,31 @@ textarea {
   align-items: center;
   justify-content: center;
 }
-
-/* 定义动画的流程 */
-.run_top_right {
-  /* animation: run-right-right 3s 0.4s 1 linear, run-right-top 3s 0.4s 1 ease-out; */
- 
+.timeSet-container {
+  width: 274px;
+  height: 205px;
+  position: fixed;
+  z-index: 50;
+  background-color: #fff;
+  overflow: auto;
+  box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  box-sizing: border-box;
+  color: #333;
+  display: none;
+}
+.taskMember-container {
+  width: 260px;
+  height: 50%;
+  position: fixed;
+  z-index: 50;
+  background-color: #fff;
+  overflow: auto;
+  box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  box-sizing: border-box;
+  color: #333;
+  display: none;
 }
 
 /* 向上走的动画初始及结尾值 */

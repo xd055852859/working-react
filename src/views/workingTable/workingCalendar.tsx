@@ -4,7 +4,7 @@ import { useTypedSelector } from '../../redux/reducer/RootState';
 import moment from 'moment';
 import _ from 'lodash';
 import format from '../../components/common/format';
-
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import Task from '../../components/task/task';
 
 interface WorkingCanlendarProps {}
@@ -139,7 +139,15 @@ const WorkingCanlendar: React.FC<WorkingCanlendarProps> = (prop) => {
           <React.Fragment key={'canlendarItem' + key}>
             <div className="dayCanlendar-title">
               <div className="dayCanlendar-img">
-                <img src={item[key][0].executorAvatar} alt="" />
+                <img
+                  src={
+                    item[key][0].executorAvatar
+                      ? item[key][0].executorAvatar +
+                        '?imageMogr2/auto-orient/thumbnail/80x'
+                      : defaultPersonPng
+                  }
+                  alt=""
+                />
               </div>
               <div className="dayCanlendar-name">
                 {item[key][0] ? item[key][0].executorName : ''}

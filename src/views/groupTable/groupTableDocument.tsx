@@ -8,6 +8,7 @@ import './groupTableDocument.css';
 import api from '../../services/api';
 import _ from 'lodash';
 import Editor from '../../components/common/Editor';
+import { group } from '../../redux/reducer/group';
 interface GroupTableProps {}
 
 const GroupTableDocument: React.FC<GroupTableProps> = (prop) => {
@@ -21,15 +22,31 @@ const GroupTableDocument: React.FC<GroupTableProps> = (prop) => {
   const documentRef: React.RefObject<any> = useRef();
 
   useEffect(() => {
-    if (user && user._key && groupInfo) {
-      setGroupDocument(groupInfo.groupDocument);
+    if (user && user._key) {
+      getGroupDocument();
     }
-  }, [user, groupInfo]);
+  }, [user, groupKey]);
   useEffect(() => {
+    console.log(groupDocument, initState);
     if (initState) {
       formatHtml(documentRef.current);
     }
   }, [groupDocument, initState]);
+  const getGroupDocument = async () => {
+    let documentRes: any = await api.group.getGroupProperty(
+      groupKey,
+      'groupDocument'
+    );
+    if (documentRes.msg === 'OK') {
+      setGroupDocument(documentRes.result);
+    } else {
+      if (documentRes.msg === '无该属性') {
+        setGroupDocument('');
+      } else {
+        dispatch(setMessage(true, documentRes.msg, 'error'));
+      }
+    }
+  };
   const changeGroupDocument = (value: string) => {
     setGroupDocument(value);
   };
@@ -86,6 +103,7 @@ const GroupTableDocument: React.FC<GroupTableProps> = (prop) => {
         });
       }
     }
+    console.log('arr', arr);
     setFileArr(_.drop(arr, 4));
   };
   const saveFile = async () => {

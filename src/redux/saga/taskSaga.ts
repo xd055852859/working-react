@@ -7,8 +7,8 @@ import {
   getSelfTaskSuccess,
   getWorkingTableSuccess,
   editTaskSuccess,
-  addWorkingTableTaskSuccess,
-  getCalendarListSuccess
+  // addWorkingTableTaskSuccess,
+  getCalendarListSuccess,
 } from '../actions/taskActions';
 import { Failed, Loading } from '../actions/commonActions';
 import api from '../../services/api';
@@ -17,7 +17,7 @@ function* getGroupTask(action: any) {
   try {
     Loading(true);
     const res = yield call(
-      api.task.getTaskList,
+      api.task.getTaskListNew,
       action.typeBoard1,
       action.targetUGKey,
       action.finishPercentArray,
@@ -74,7 +74,7 @@ function* getSelfTask(action: any) {
       action.finishPercentArray,
       action.fileDay,
       action.endTime,
-      action.isAddTodayFinish,
+      action.isAddTodayFinish
     );
     if (res.msg === 'OK') {
       yield put(getSelfTaskSuccess(res.result));
@@ -117,31 +117,25 @@ function* editTask(action: any) {
     yield put(Failed(e));
   }
 }
-function* addWorkingTableTask(action: any) {
-  try {
-    const res = yield call(
-      api.task.addTask,
-      action.groupKey,
-      action.groupRole,
-      action.labelKey,
-      action.executorKey
-    );
-    if (res.msg === 'OK') {
-      yield put(addWorkingTableTaskSuccess(res.result));
-    } else {
-      yield put(Failed(res));
-    }
-  } catch (e) {
-    yield put(Failed(e));
-  }
-}
+// function* addWorkingTableTask(action: any) {
+//   try {
+//     const res = yield call(api.task.addTask, action.params);
+//     if (res.msg === 'OK') {
+//       yield put(addWorkingTableTaskSuccess(res.result));
+//     } else {
+//       yield put(Failed(res));
+//     }
+//   } catch (e) {
+//     yield put(Failed(e));
+//   }
+// }
 function* getCalendarList(action: any) {
   try {
     const res = yield call(
       api.task.getCalendarList,
       action.targetUKey,
       action.startTime,
-      action.endTime,
+      action.endTime
     );
     if (res.msg === 'OK') {
       yield put(getCalendarListSuccess(res.result));
@@ -160,9 +154,8 @@ const taskSaga = [
   takeLatest(actionTypes.GET_SELF_TASK, getSelfTask),
   takeLatest(actionTypes.GET_WORKING_TABLE_TASK, getWorkingTableTask),
   takeLatest(actionTypes.EDIT_TASK, editTask),
-  takeLatest(actionTypes.ADD_WORKING_TABLE_TASK, addWorkingTableTask),
+  // takeLatest(actionTypes.ADD_WORKING_TABLE_TASK, addWorkingTableTask),
   takeLatest(actionTypes.GET_CALENDAR_LIST, getCalendarList),
-  
 ];
 
 export default taskSaga;

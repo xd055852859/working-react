@@ -4,6 +4,7 @@ export const actionTypes = {
   SET_MEMBER_HEADERINDEX: 'SET_MEMBER_HEADERINDEX',
   GET_GROUP_MEMBER: 'GET_GROUP_MEMBER',
   GET_GROUP_MEMBER_SUCCESS: 'GET_GROUP_MEMBER_SUCCESS',
+  CLEAR_MEMBER:'CLEAR_MEMBER'
 };
 
 export function getMember(
@@ -33,4 +34,7 @@ export function getGroupMember(groupId: string | null, sortType?: number) {
 }
 export function getGroupMemberSuccess(data: any) {
   return { type: actionTypes.GET_GROUP_MEMBER_SUCCESS, data };
+}
+export function clearMember() {
+  return { type: actionTypes.CLEAR_MEMBER};
 }

@@ -15,7 +15,7 @@ import 'moment/locale/zh-cn';
 import moment from 'moment';
 import copy from 'copy-to-clipboard';
 import Comment from '../comment/comment';
-import hourPng from '../../assets/img/hour.png';
+import hourSvg from '../../assets/svg/hour.svg';
 import playPng from '../../assets/img/play.png';
 import stopPng from '../../assets/img/stop.png';
 import unExecutorPng from '../../assets/img/unExecutor.png';
@@ -25,8 +25,7 @@ import taskUnfinishPng from '../../assets/svg/unfinishb.svg';
 import taskClosePng from '../../assets/img/taskClose.png';
 import ellipsisbPng from '../../assets/img/ellipsisb.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
-import downArrowbPng from '../../assets/img/downArrowb.png';
-import defaultGroupPng from '../../assets/img/defaultGroup.png';
+import fullscreenSvg from '../../assets/svg/fullscreen.svg';
 import api from '../../services/api';
 import { setMessage } from '../../redux/actions/commonActions';
 import {
@@ -36,19 +35,18 @@ import {
   getSelfTask,
   getWorkingTableTask,
   getGroupTask,
+  setTaskInfo,
 } from '../../redux/actions/taskActions';
 import DropMenu from '../common/dropMenu';
 import Dialog from '../common/dialog';
 import TimeSet from '../common/timeSet';
 import Editor from '../common/Editor';
-import uploadFile from '../common/upload';
 import Loading from '../common/loading';
 import CreateMoreTask from '../createMoreTask/createMoreTask';
 
 interface TaskInfoProps {
   fatherTaskItem?: any;
   onClose?: any;
-  editFatherTask?: any;
   type?: string;
 }
 // pick a date util library
@@ -56,6 +54,7 @@ moment.locale('zh-cn');
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     root: {
+      width: '142px',
       margin: '-10px 0px',
     },
     input: {
@@ -91,25 +90,19 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
-  const { fatherTaskItem, onClose, editFatherTask, type } = prop;
+  const { fatherTaskItem, onClose, type } = prop;
   const classes = useStyles();
   const dispatch = useDispatch();
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const chooseKey = useTypedSelector((state) => state.task.chooseKey);
-  const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
-  const taskKey = useTypedSelector((state) => state.task.taskKey);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
-  const uptoken = useTypedSelector((state) => state.auth.uploadToken);
   const titleRef: React.RefObject<any> = useRef();
   const taskInfo = useTypedSelector((state) => state.task.taskInfo);
   const taskInfoVisible = useTypedSelector(
     (state) => state.task.taskInfoVisible
   );
   const user = useTypedSelector((state) => state.auth.user);
-  const groupArray = useTypedSelector((state) => state.group.groupArray);
-  const [labelArray, setLabelArray] = useState<any>([]);
-  const [taskGroupArray, setTaskGroupArray] = useState<any>([]);
   const [taskItem, setTaskItem] = useState<any>(null);
   const [startDate, setStartDate] = React.useState<Date | null>(new Date());
   const [endDate, setEndDate] = React.useState<Date | null>(new Date());
@@ -132,15 +125,15 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   const [taskMemberArray, setTaskMemberArray] = useState<any>([]);
   const [countDownTime, setCountDownTime] = useState(0);
   const [countDownState, setCountDownState] = useState(false);
-  const [countInterval, setCountInterval] = useState<any>(null);
-  const [groupIndex, setGroupIndex] = useState(0);
-  const [groupVisible, setGroupVisible] = useState(false);
-  const [labelIndex, setLabelIndex] = useState(0);
-  const [labelVisible, setLabelVisible] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [deleteDialogShow, setDeleteDialogShow] = useState(false);
-  const [moveTaskType, setMoveTaskType] = useState('');
+  const [editorDialogShow, setEditorDialogShow] = useState(false);
 
+  const [moveTaskType, setMoveTaskType] = useState('');
+  const [urlInput, setUrlInput] = useState('');
+  const [content, setContent] = useState('<p>备注信息:</p>');
   const color = [
     '#6FD29A',
     '#21ABE4',
@@ -166,84 +159,45 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     { name: '顶级优先', id: 10 },
   ];
   const taskLimit = 10;
+  let countRef = useRef<any>(null);
+  let unDistory = true;
   useEffect(() => {
-    if (chooseKey) {
-      if ((!taskInfo && !fatherTaskItem) || type === 'new') {
+    return () => {
+      if (countRef.current) {
+        clearInterval(countRef.current);
+      }
+    };
+  }, []);
+  useEffect(() => {
+    if ((chooseKey || taskInfo) && taskInfoVisible) {
+      if (!taskInfo || chooseKey !== taskInfo._key) {
         getTaskItem();
-      } else if (fatherTaskItem) {
-        console.log('fatherTaskItem', fatherTaskItem);
-        changeTaskInfo(fatherTaskItem);
       } else if (taskInfo) {
         changeTaskInfo(taskInfo);
       }
     }
     return () => {
-      clearInterval(countInterval);
+      unDistory = false;
     };
-  }, [chooseKey, taskInfoVisible, taskInfo, fatherTaskItem, type]);
-  useEffect(() => {
-    if (groupArray && groupArray.length > 0) {
-      let newGroupArray = _.cloneDeep(groupArray);
-      newGroupArray.unshift({
-        _key: mainGroupKey,
-        groupName: '我的主群',
-      });
-      setTaskGroupArray(newGroupArray);
-      getLabelArray(mainGroupKey);
-    }
-  }, [groupArray]);
-  useEffect(() => {
-    console.log(titleRef);
-    if (titleRef.current) {
-      // if (titleRef.current.setSelectionRange) {
-      //   titleRef.current.setSelectionRange(
-      //     titleRef.current.value.length,
-      //     titleRef.current.value.length
-      //   );
-      // } else {
-      //   let range = titleRef.current.createTextRange();
-      //   range.moveStart('character', titleRef.current.value.length);
-      //   range.moveEnd('character', titleRef.current.value.length);
-      //   range.select();
-      // }
-      let range = document.createRange();
-      range.selectNodeContents(titleRef.current);
-      range.collapse(false);
-      let sel: any = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-    }
-    // dispatch(setChooseKey('0'));
-  }, [titleRef.current]);
-  // useEffect(() => {
-  //   console.log('改变', taskItem);
-  // }, [taskItem]);
-  // useEffect(() => {
-  //   if (editState) {
-  //     let newTaskItem: any = stopCountdown();
-  //     dispatch(
-  //       editTask(
-  //         { key: newTaskItem._key, ...newTaskItem },
-  //         headerIndex == 5 ? 1 : headerIndex
-  //       )
-  //     );
-  //     // setTaskItem(null);
-  //     // setEditState(false);
-  //   }
-  // }, [chooseKey]);
+  }, [chooseKey, taskInfo]);
+
   const getTaskItem = async () => {
     setLoading(true);
     let taskItemRes: any = await api.task.getTaskInfo(chooseKey);
-    if (taskItemRes.msg === 'OK') {
-      let taskInfo = _.cloneDeep(taskItemRes.result);
-      setLoading(false);
-      changeTaskInfo(taskInfo);
-    } else {
-      setLoading(false);
-      dispatch(setMessage(true, taskItemRes.msg, 'error'));
+    console.log(unDistory);
+    if (unDistory) {
+      if (taskItemRes.msg === 'OK') {
+        let taskInfo = _.cloneDeep(taskItemRes.result);
+        setLoading(false);
+        setTaskItem(taskInfo);
+        changeTaskInfo(taskInfo, 1);
+      } else {
+        setLoading(false);
+        dispatch(setMessage(true, taskItemRes.msg, 'error'));
+      }
     }
   };
-  const changeTaskInfo = async (taskInfo: any) => {
+  const changeTaskInfo = async (taskInfo: any, type?: number) => {
     getHistoryList(taskHistoryPage, taskInfo);
     getCommentList(taskHistoryPage, taskInfo);
     setStartDate(
@@ -257,16 +211,6 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
         setTaskTypeIndex(index);
       }
     });
-    setLoading(true);
-    let taskItemRes: any = await api.task.getTaskInfo(chooseKey);
-    if (taskItemRes.msg === 'OK') {
-      setLoading(false);
-      taskInfo.content = _.cloneDeep(taskItemRes.result).content;
-      setTaskItem(taskInfo);
-    } else {
-      setLoading(false);
-      dispatch(setMessage(true, taskItemRes.msg, 'error'));
-    }
     setEditRole(
       (taskInfo.groupRole &&
         taskInfo.groupRole > 0 &&
@@ -274,13 +218,37 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
         taskInfo.creatorKey === user._key ||
         taskInfo.executorKey === user._key
     );
+    if (taskInfo.content) {
+      setContent(taskInfo.content);
+    }
+    if (taskInfo.extraData && taskInfo.extraData.url) {
+      setUrlInput(taskInfo.extraData.url);
+    }
     setCountDownTime(taskInfo.countDownTime);
     getTaskMemberArray(taskInfo.groupKey);
+    if (!type) {
+      setLoading(true);
+      let taskItemRes: any = await api.task.getTaskInfo(chooseKey);
+      console.log(unDistory);
+      if (unDistory) {
+        if (taskItemRes.msg === 'OK') {
+          setLoading(false);
+          taskInfo.content = _.cloneDeep(taskItemRes.result).content;
+          if (taskInfo.content) {
+            setContent(taskInfo.content);
+          }
+          setTaskItem(taskInfo);
+        } else {
+          setLoading(false);
+          dispatch(setMessage(true, taskItemRes.msg, 'error'));
+        }
+      }
+    }
   };
   const getTaskMemberArray = async (groupKey: string) => {
     let taskMemberRes: any = null;
     taskMemberRes = await api.member.getMember(groupKey, 4);
-    if (taskMemberRes.msg === 'OK') {
+    if (taskMemberRes.msg === 'OK' && unDistory) {
       setTaskMemberArray(taskMemberRes.result);
     }
   };
@@ -294,12 +262,14 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       page,
       taskLimit
     );
-    if (commentRes.msg === 'OK') {
-      newCommentArray.push(...commentRes.result);
-      setTaskCommentArray(newCommentArray);
-      setTaskCommentTotal(commentRes.totalNumber);
-    } else {
-      dispatch(setMessage(true, commentRes.msg, 'error'));
+    if (unDistory) {
+      if (commentRes.msg === 'OK') {
+        newCommentArray.push(...commentRes.result);
+        setTaskCommentArray(newCommentArray);
+        setTaskCommentTotal(commentRes.totalNumber);
+      } else {
+        dispatch(setMessage(true, commentRes.msg, 'error'));
+      }
     }
   };
 
@@ -313,12 +283,14 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       page,
       taskLimit
     );
-    if (historyRes.msg === 'OK') {
-      newHistoryArray.push(...historyRes.result);
-      setTaskHistoryArray(newHistoryArray);
-      setTaskHistoryTotal(historyRes.totalNumber);
-    } else {
-      dispatch(setMessage(true, historyRes.msg, 'error'));
+    if (unDistory) {
+      if (historyRes.msg === 'OK') {
+        newHistoryArray.push(...historyRes.result);
+        setTaskHistoryArray(newHistoryArray);
+        setTaskHistoryTotal(historyRes.totalNumber);
+      } else {
+        dispatch(setMessage(true, historyRes.msg, 'error'));
+      }
     }
   };
   const handleDateChange = (date: any, type: string) => {
@@ -371,6 +343,11 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     setEditState(true);
   };
   const changeTaskContent = (value: string) => {
+    if (value) {
+      setContent(value);
+    } else {
+      setContent('<p>备注信息:</p>');
+    }
     changeTaskItem('content', value);
   };
   const changeTimeSet = (type: string, hour: number) => {
@@ -461,27 +438,24 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     if (type === 'content' && value !== '') {
       newTaskItem.hasContent = true;
     }
-    console.log(newTaskItem);
     setEditState(true);
     setTaskItem(newTaskItem);
   };
   const playCountdown = () => {
     let newCountDownTime = countDownTime;
-    let newCountInterval = countInterval;
     let newTaskItem: any = _.cloneDeep(taskItem);
     setCountDownState(true);
-    clearInterval(countInterval);
-    newCountInterval = setInterval(() => {
+    clearInterval(countRef.current);
+    countRef.current = setInterval(() => {
       newCountDownTime = newCountDownTime + 1000;
       setCountDownTime(newCountDownTime);
       newTaskItem['countDownTime'] = newCountDownTime;
       setEditState(true);
       setTaskItem(newTaskItem);
     }, 1000);
-    setCountInterval(newCountInterval);
   };
   const stopCountdown = () => {
-    clearInterval(countInterval);
+    clearInterval(countRef.current);
     setCountDownState(false);
     let newTaskItem: any = _.cloneDeep(taskItem);
     newTaskItem['countDownTime'] = countDownTime;
@@ -503,60 +477,36 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     const redirect = `${window.location.protocol}//${window.location.host}`;
     copy(
       redirect +
-        '/?shareKey=' +
+        '/home/showPage?shareKey=' +
         (chooseKey ? chooseKey : taskItem._key) +
         '&showType=1'
     );
     dispatch(setMessage(true, '复制链接任务成功', 'success'));
   };
-  const getLabelArray = async (groupKey: string) => {
-    let newLabelArray = [
-      { _key: null, cardLabelName: 'ToDo', executorKey: user._key },
-    ];
-    let labelRes: any = await api.group.getLabelInfo(groupKey);
-    if (labelRes.msg === 'OK') {
-      newLabelArray.push(...labelRes.result);
-      setLabelArray(newLabelArray);
-    } else {
-      dispatch(setMessage(true, labelRes.msg, 'error'));
-    }
-  };
+  // const getLabelArray = async (groupKey: string) => {
+  //   let newLabelArray = [
+  //     { _key: null, cardLabelName: 'ToDo', executorKey: user._key },
+  //   ];
+  //   let labelRes: any = await api.group.getLabelInfo(groupKey);
+  //   if (labelRes.msg === 'OK') {
+  //     newLabelArray.push(...labelRes.result);
+  //     setLabelArray(newLabelArray);
+  //   } else {
+  //     dispatch(setMessage(true, labelRes.msg, 'error'));
+  //   }
+  // };
   const saveTaskInfo = (type?: number) => {
+    if (!editRole) {
+      dispatch(setMessage(true, '无编辑权限,请提升权限或加入对应群', 'error'));
+    }
     let newTaskItem = _.cloneDeep(taskItem);
-    let closeState = false;
-    if (newTaskItem && newTaskItem.content && type !== 2) {
-      let srcReg = /src=[\'\"]?([^\'\"]*)[\'\"]?/i;
-      let arr = newTaskItem.content.match(srcReg);
-      if (arr) {
-        arr.forEach(async (item: any, index: number) => {
-          if (item.indexOf('blob:') != -1) {
-            closeState = true;
-            let str = item.replace('src="', '').replace('"', '');
-            let img = new Image();
-            img.src = str;
-            let blob = await fetch(img.src).then((r) => r.blob());
-            if (blob) {
-              uploadFile.qiniuUpload(uptoken, img, blob, false, (url: any) => {
-                newTaskItem.content = newTaskItem.content.replace(
-                  item,
-                  'src="' + url + '"'
-                );
-              });
-            }
-            // newTaskItem.content = newTaskItem.content.replace(str, url);
-            // uploadFile.uploadImg(img, uptoken, mimeType, (url: any) => {
-            //   console.log(url);
-            // });
-          }
-        });
+    if (urlInput && newTaskItem) {
+      if (!newTaskItem.extraData) {
+        newTaskItem.extraData = {};
       }
+      newTaskItem.extraData.url = urlInput;
     }
-    setTaskItem(newTaskItem);
-    if (closeState) {
-      dispatch(setMessage(true, '图片正在上传，请稍后', 'error'));
-      return;
-    }
-    dispatch(changeTaskInfoVisible(false));
+    dispatch(setTaskInfo(newTaskItem));
     if (onClose) {
       onClose();
     }
@@ -564,19 +514,16 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       dispatch(
         editTask({ key: newTaskItem._key, ...newTaskItem }, headerIndex)
       );
-      if (editFatherTask) {
-        editFatherTask(newTaskItem, 0);
-      }
     }
-    if (type === 1) {
-      dispatch(setMessage(true, '备注保存成功', 'success'));
-    }
+    dispatch(changeTaskInfoVisible(false));
   };
   return (
     // changeTaskInfoVisible
     <ClickAwayListener
       onClickAway={() => {
-        saveTaskInfo();
+        if (!isEdit) {
+          saveTaskInfo();
+        }
       }}
     >
       <div className="taskInfo">
@@ -616,7 +563,8 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     <img
                       src={
                         taskItem.executorAvatar
-                          ? taskItem.executorAvatar
+                          ? taskItem.executorAvatar +
+                            '?imageMogr2/auto-orient/thumbnail/80x'
                           : unExecutorPng
                       }
                       alt=""
@@ -664,7 +612,8 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                                 <img
                                   src={
                                     taskMemberItem.avatar
-                                      ? taskMemberItem.avatar
+                                      ? taskMemberItem.avatar +
+                                        '?imageMogr2/auto-orient/thumbnail/80x'
                                       : defaultPersonPng
                                   }
                                 />
@@ -678,7 +627,47 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                   </DropMenu>
                 </div>
               </div>
+
               <div className="taskInfo-mainTitle-right">
+                <div
+                  className="taskInfo-item-suggest"
+                  onClick={() => {
+                    setSuggestVisible(true);
+                  }}
+                  style={{
+                    color: color[taskTypeIndex],
+                    backgroundColor: backgroundColor[taskTypeIndex],
+                  }}
+                >
+                  {taskTypeArr[taskTypeIndex].name}
+                  <DropMenu
+                    visible={suggestVisible}
+                    dropStyle={{ width: '100px', top: '36px', left: '-60px' }}
+                    onClose={() => {
+                      setSuggestVisible(false);
+                    }}
+                  >
+                    {taskTypeArr.map((taskTypeItem, taskTypeIndex) => {
+                      return (
+                        <div
+                          key={'taskType' + taskTypeIndex}
+                          className="taskInfo-item-suggest-item"
+                          style={{
+                            color: color[taskTypeIndex],
+                            backgroundColor: backgroundColor[taskTypeIndex],
+                          }}
+                          onClick={() => {
+                            setTaskTypeIndex(taskTypeIndex);
+                            changeTaskItem('taskType', taskTypeItem.id);
+                            setSuggestVisible(false);
+                          }}
+                        >
+                          {taskTypeItem.name}
+                        </div>
+                      );
+                    })}
+                  </DropMenu>
+                </div>
                 <div
                   className="taskInfo-mainTitle-right-icon"
                   onClick={() => {
@@ -746,7 +735,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     >
                       {!taskItem.importantStatus ? '设为重要' : '取消重要'}
                     </div>
-                    {taskItem.creatorGroupRole <= taskItem.groupRole ? (
+                    {taskItem.groupRole < 3 ? (
                       <div
                         className="dropMenu-item"
                         onClick={() => {
@@ -767,6 +756,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                       moreTitle={taskItem.title}
                       moveTaskType={moveTaskType}
                       taskKey={taskItem._key}
+                      taskItem={taskItem}
                     />
                   </DropMenu>
                 </div>
@@ -809,8 +799,11 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
               </div>
 
               <div className="taskInfo-item">
-                <div className="taskInfo-item-title">开始</div>
-                <div className="taskInfo-item-info">
+                <div className="taskInfo-item-title">日期</div>
+                <div
+                  className="taskInfo-item-info"
+                  style={{ justifyContent: 'flex-start' }}
+                >
                   <MuiPickersUtilsProvider utils={DateFnsUtils}>
                     <KeyboardDatePicker
                       disableToolbar
@@ -828,13 +821,6 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                       }}
                       className={classes.root}
                     />
-                  </MuiPickersUtilsProvider>
-                </div>
-              </div>
-              <div className="taskInfo-item">
-                <div className="taskInfo-item-title">截止</div>
-                <div className="taskInfo-item-info">
-                  <MuiPickersUtilsProvider utils={DateFnsUtils}>
                     <KeyboardDatePicker
                       disableToolbar
                       variant="inline"
@@ -850,24 +836,20 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                         'aria-label': 'change date',
                       }}
                       className={classes.root}
+                      style={{ margin: '0px 15px' }}
                     />
                   </MuiPickersUtilsProvider>
-                </div>
-              </div>
-              <div className="taskInfo-item">
-                <div className="taskInfo-item-title">工时</div>
-                <div className="taskInfo-item-info">
                   <div
                     className="taskInfo-item-hour"
                     onClick={() => {
                       setHourVisible(true);
                     }}
                   >
-                    <img src={hourPng} alt="" />
-                    {taskItem.hour ? taskItem.hour + ' 小时' : '预计工时'}
+                    <img src={hourSvg} alt="" />
+                    {/* {taskItem.hour ? taskItem.hour + ' 小时' : '预计工时'} */}
                     <DropMenu
                       visible={hourVisible}
-                      dropStyle={{ top: '36px' }}
+                      dropStyle={{ top: '36px', left: '-200px' }}
                       onClose={() => {
                         setHourVisible(false);
                       }}
@@ -881,6 +863,11 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                       />
                     </DropMenu>
                   </div>
+                </div>
+              </div>
+              {/* <div className="taskInfo-item">
+                <div className="taskInfo-item-title">工时</div>
+                <div className="taskInfo-item-info">
                   <div
                     className="taskInfo-item-countdown"
                     onClick={() => {
@@ -891,53 +878,23 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     {formatHour(countDownTime)}
                   </div>
                 </div>
-              </div>
+              </div> */}
               <div className="taskInfo-item">
-                <div className="taskInfo-item-title">类型</div>
-                <div
-                  className="taskInfo-item-suggest"
-                  onClick={() => {
-                    setSuggestVisible(true);
+                <div className="taskInfo-item-title">链接</div>
+                <input
+                  className="taskInfo-item-input"
+                  value={urlInput}
+                  onChange={(e: any) => {
+                    setUrlInput(e.target.value);
+                    setEditState(true);
                   }}
-                  style={{
-                    color: color[taskTypeIndex],
-                    backgroundColor: backgroundColor[taskTypeIndex],
-                  }}
-                >
-                  {taskTypeArr[taskTypeIndex].name}
-                  <DropMenu
-                    visible={suggestVisible}
-                    dropStyle={{ width: '100%', top: '36px' }}
-                    onClose={() => {
-                      setSuggestVisible(false);
-                    }}
-                  >
-                    {taskTypeArr.map((taskTypeItem, taskTypeIndex) => {
-                      return (
-                        <div
-                          key={'taskType' + taskTypeIndex}
-                          className="taskInfo-item-suggest-item"
-                          style={{
-                            color: color[taskTypeIndex],
-                            backgroundColor: backgroundColor[taskTypeIndex],
-                          }}
-                          onClick={() => {
-                            setTaskTypeIndex(taskTypeIndex);
-                            changeTaskItem('taskType', taskTypeItem.id);
-                            setSuggestVisible(false);
-                          }}
-                        >
-                          {taskTypeItem.name}
-                        </div>
-                      );
-                    })}
-                  </DropMenu>
-                </div>
+                  placeholder="请输入链接地址"
+                />
               </div>
               <div className="taskInfo-item" style={{ height: '0px' }}>
                 {/* <div className="taskInfo-item-title">关注</div>
                 <div className="taskInfo-item-follow"></div> */}
-                {!localStorage.getItem('page') ? (
+                {/* {!localStorage.getItem('page') ? (
                   <Button
                     variant="contained"
                     color="primary"
@@ -949,15 +906,27 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                   >
                     保存
                   </Button>
-                ) : null}
+                ) : null} */}
               </div>
               {!localStorage.getItem('page') ? (
                 <div className="taskInfo-Editor">
                   <Editor
                     // editorHeight={'300px'}
-                    data={taskItem.content}
+                    data={content}
                     onChange={changeTaskContent}
                     editable={true}
+                    fullType={'small'}
+                    changeIsEdit={(state: boolean) => {
+                      setIsEdit(state);
+                    }}
+                  />
+                  <img
+                    src={fullscreenSvg}
+                    alt=""
+                    className="taskInfo-Editor-img"
+                    onClick={() => {
+                      setEditorDialogShow(true);
+                    }}
                   />
                 </div>
               ) : null}
@@ -1068,6 +1037,12 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                       saveCommentMsg();
                     }
                   }}
+                  onFocus={() => {
+                    setIsEdit(true);
+                  }}
+                  onBlur={() => {
+                    setIsEdit(false);
+                  }}
                 />
                 {commentInput ? (
                   <Button
@@ -1102,6 +1077,23 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                 dialogStyle={{ width: '400px', height: '200px' }}
               >
                 <div className="dialog-onlyTitle">是否删除该任务</div>
+              </Dialog>
+              <Dialog
+                visible={editorDialogShow}
+                onClose={() => {
+                  setEditorDialogShow(false);
+                }}
+                title={'编辑详情'}
+                dialogStyle={{ width: '95%', height: '95%' }}
+                footer={false}
+              >
+                <Editor
+                  editorHeight={document.body.clientHeight * 0.95 - 50 + 'px'}
+                  data={content}
+                  onChange={changeTaskContent}
+                  editable={true}
+                  fullType={'big'}
+                />
               </Dialog>
             </div>
           </React.Fragment>

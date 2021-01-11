@@ -10,6 +10,8 @@ import moment from 'moment';
 import _ from 'lodash';
 import VitalityIcon from '../vitalityIcon/vitalityIcon';
 import batteryPng from '../../assets/img/battery.png';
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import rightArrowPng from '../../assets/img/rightArrow.png';
 import leftArrowPng from '../../assets/img/leftArrow.png';
 interface VitalityProps {
@@ -22,8 +24,9 @@ const Vitality: React.FC<VitalityProps> = (props) => {
   let { vitalityType, vitalityKey, fatherVitalityInfo } = props;
   const dispatch = useDispatch();
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const user = useTypedSelector((state) => state.auth.user);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
-
+  const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const vitalityLogRef: React.RefObject<any> = useRef();
   const [vitalityInfo, setvitalityInfo] = useState<any>(null);
   const [targetNum, setTargetNum] = useState(0);
@@ -46,7 +49,8 @@ const Vitality: React.FC<VitalityProps> = (props) => {
   const [logtotal, setLogtotal] = useState(0);
   const [page, setLogPage] = useState(1);
   const monthArr = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-  const limit = 40;
+  const limit = 50;
+  let unDistory = true;
   const toDoc = () => {
     window.open(
       'https://baoku.qingtime.cn/OHPRQG_1585745644894/article?key=1249218647'
@@ -62,7 +66,10 @@ const Vitality: React.FC<VitalityProps> = (props) => {
         targetUGKey: fatherVitalityInfo._key,
       });
     }
-  }, [groupKey, headerIndex, vitalityType, fatherVitalityInfo]);
+    return () => {
+      unDistory = false;
+    };
+  }, [groupKey, headerIndex, vitalityType, fatherVitalityInfo, targetUserInfo]);
 
   const getVitalityInfo = async (vitalityType: number) => {
     let res: any = null;
@@ -71,20 +78,25 @@ const Vitality: React.FC<VitalityProps> = (props) => {
     } else {
       res = await api.auth.getTargetUserInfo(vitalityKey);
     }
-    if (res.msg == 'OK') {
-      setvitalityInfo(res.result);
-      getVitalityData({
-        type: vitalityType - 1,
-        targetUGKey: res.result._key,
-      });
-    } else {
-      dispatch(setMessage(true, res.msg, 'error'));
+    if (unDistory) {
+      if (res.msg == 'OK') {
+        setvitalityInfo(res.result);
+        getVitalityData({
+          type: vitalityType - 1,
+          targetUGKey: res.result._key,
+        });
+      } else {
+        dispatch(setMessage(true, res.msg, 'error'));
+      }
     }
   };
   useEffect(() => {
     setLogPage(1);
     setLogList([]);
     getLog(startTime, 1, limit);
+    return () => {
+      unDistory = false;
+    };
   }, [startTime]);
   const getVitalityData = async (obj: any) => {
     let newMonthData = _.cloneDeep(monthData);
@@ -153,37 +165,41 @@ const Vitality: React.FC<VitalityProps> = (props) => {
       },
     ];
     let monthRes: any = await api.auth.monthEnergy(monthObj);
-    if (monthRes.msg == 'OK') {
-      monthTimeArr.forEach((monthItem, monthIndex) => {
-        newMonthData[monthIndex] = [];
-        monthRes.result.forEach((item: any) => {
-          if (
-            item.startTime >= monthItem.startTime &&
-            item.startTime < monthItem.endTime
-          ) {
-            newMonthData[monthIndex].push({
-              color: getColor(item.value),
-              date: moment(item.startTime).date(),
-              value: item.value.toFixed(1),
-              startTime: item.startTime,
-            });
-          }
+    if (unDistory) {
+      if (monthRes.msg == 'OK') {
+        monthTimeArr.forEach((monthItem, monthIndex) => {
+          newMonthData[monthIndex] = [];
+          monthRes.result.forEach((item: any) => {
+            if (
+              item.startTime >= monthItem.startTime &&
+              item.startTime < monthItem.endTime
+            ) {
+              newMonthData[monthIndex].push({
+                color: getColor(item.value),
+                date: moment(item.startTime).date(),
+                value: item.value.toFixed(1),
+                startTime: item.startTime,
+              });
+            }
+          });
         });
-      });
-      newMonthData.forEach((item: any, index: number) => {
-        newMonthTitleArr.unshift(moment(item[0].startTime).format('M') + '月');
-        item = formatMonth(item[0].startTime, item);
-      });
-      newMonthData.reverse();
-    } else {
-      dispatch(setMessage(true, monthRes.msg, 'error'));
+        newMonthData.forEach((item: any, index: number) => {
+          newMonthTitleArr.unshift(
+            moment(item[0].startTime).format('M') + '月'
+          );
+          item = formatMonth(item[0].startTime, item);
+        });
+        newMonthData.reverse();
+      } else {
+        dispatch(setMessage(true, monthRes.msg, 'error'));
+      }
+      setStartTime(moment().startOf('day').valueOf());
+      setEndTime(moment().endOf('day').valueOf());
+      setLogDate(moment().format('M') + '月' + moment().format('D') + '日');
+      setMonthData(newMonthData);
+      setMonthTitleArr(newMonthTitleArr);
+      getLog(moment().startOf('day').valueOf(), page, limit);
     }
-    setStartTime(moment().startOf('day').valueOf());
-    setEndTime(moment().endOf('day').valueOf());
-    setLogDate(moment().format('M') + '月' + moment().format('D') + '日');
-    setMonthData(newMonthData);
-    setMonthTitleArr(newMonthTitleArr);
-    getLog(moment().startOf('day').valueOf(), page, limit);
   };
   const getPersonVitality = async (startTime: number, endTime: number) => {
     let personRes: any = await api.auth.monthEnergyWeb(
@@ -224,22 +240,24 @@ const Vitality: React.FC<VitalityProps> = (props) => {
       );
     } else if (vitalityType !== 3) {
       dataRes = await api.auth.getUserLog(
-        vitalityKey,
         startTime,
         moment(startTime).endOf('day').valueOf(),
         page,
-        limit
+        limit,
+        vitalityKey !== user._key ? vitalityKey : null
       );
     }
-    if (dataRes.msg === 'OK') {
-      dataRes.result.forEach((item: any) => {
-        item.createTime = moment(item.createTime).format('HH:mm');
-        newLogList.push(item);
-      });
-      setLogList(newLogList);
-      setLogtotal(dataRes.totalNumber);
-    } else {
-      dispatch(setMessage(true, dataRes.msg, 'error'));
+    if (unDistory) {
+      if (dataRes.msg === 'OK') {
+        dataRes.result.forEach((item: any) => {
+          item.createTime = moment(item.createTime).format('HH:mm');
+          newLogList.push(item);
+        });
+        setLogList(newLogList);
+        setLogtotal(dataRes.totalNumber);
+      } else {
+        dispatch(setMessage(true, dataRes.msg, 'error'));
+      }
     }
   };
   const getTargetLog = (startTime: number) => {
@@ -251,32 +269,33 @@ const Vitality: React.FC<VitalityProps> = (props) => {
     setEndTime(moment(startTime).endOf('day').valueOf());
     setLogDate(
       moment(startTime).format('M') +
-      '月' +
-      moment(startTime).format('D') +
-      '日'
+        '月' +
+        moment(startTime).format('D') +
+        '日'
     );
   };
   const getColor = (num: number) => {
     let color = '';
     if (num <= 0) {
-      color = '#FFFFFF';
+      color = '#D8E2FF';
     } else if (num < 10 && num > 0) {
-      color = '#FFFCDA';
+      color = '#D1DEFF';
     } else if (num < 20 && num >= 10) {
-      color = '#F6EDA5';
+      color = '#94B2FF';
     } else if (num < 30 && num >= 20) {
-      color = '#FFBB8E';
+      color = '#7FA3FF';
     } else if (num < 40 && num >= 30) {
-      color = '#FFA661';
+      color = '#376EF8';
     } else if (num < 50 && num >= 40) {
-      color = '#FF6760';
+      color = '#476FD5';
     } else if (num < 60 && num >= 50) {
-      color = '#F73850';
+      color = '#1F4CC1';
     } else if (num >= 60) {
-      color = '#FF232E';
+      color = '#214EC1';
     }
     return color;
   };
+
   const changeMonth = (type: number) => {
     let personStartTime = 0;
     let personEndTime = 0;
@@ -294,8 +313,8 @@ const Vitality: React.FC<VitalityProps> = (props) => {
         .valueOf();
       setTargetMonthStr(
         moment(targetTime).subtract(1, 'month').format('YYYY') +
-        '/' +
-        moment(targetTime).subtract(1, 'month').format('MM')
+          '/' +
+          moment(targetTime).subtract(1, 'month').format('MM')
       );
     } else {
       personStartTime = moment(targetTime)
@@ -310,8 +329,8 @@ const Vitality: React.FC<VitalityProps> = (props) => {
         .valueOf();
       setTargetMonthStr(
         moment(targetTime).add(1, 'month').format('YYYY') +
-        '/' +
-        moment(targetTime).add(1, 'month').format('MM')
+          '/' +
+          moment(targetTime).add(1, 'month').format('MM')
       );
     }
     setTargetTime(personStartTime);
@@ -350,8 +369,8 @@ const Vitality: React.FC<VitalityProps> = (props) => {
     );
     setTargetMonthStr(
       moment().subtract(index, 'month').format('YYYY') +
-      '/' +
-      moment().subtract(index, 'month').format('MM')
+        '/' +
+        moment().subtract(index, 'month').format('MM')
     );
     setVitalityState('month');
   };
@@ -370,13 +389,29 @@ const Vitality: React.FC<VitalityProps> = (props) => {
           <div className="vitality-top">
             {vitalityType === 3 ? (
               <div className="vitality-img">
-                <img src={vitalityInfo.groupLogo} alt="" />
+                <img
+                  src={
+                    vitalityInfo.groupLogo
+                      ? vitalityInfo.groupLogo +
+                        '?imageMogr2/auto-orient/thumbnail/80x'
+                      : defaultGroupPng
+                  }
+                  alt=""
+                />
               </div>
             ) : (
-                <div className="vitality-img">
-                  <img src={vitalityInfo.profile.avatar} alt="" />
-                </div>
-              )}
+              <div className="vitality-img">
+                <img
+                  src={
+                    vitalityInfo.profile.avatar
+                      ? vitalityInfo.profile.avatar +
+                        '?imageMogr2/auto-orient/thumbnail/80x'
+                      : defaultPersonPng
+                  }
+                  alt=""
+                />
+              </div>
+            )}
             <div className="vitality-top-info">
               <div className="vitality-title vitality-top-title">
                 <div>
@@ -452,12 +487,15 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                                 style={{
                                   // backgroundColor: dayItem.color,
                                   backgroundColor: dayItem.color,
-                                  border: dayItem.date
-                                    ? '1px solid rgba(151, 151, 151, 1)'
-                                    : 0,
+                                  border: dayItem.date ? '1px solid #fff' : 0,
                                 }}
                                 onClick={() => {
-                                  if (headerIndex !== 2 || (headerIndex === 2 && dayItem.startTime === moment().startOf('day').valueOf())) {
+                                  if (
+                                    headerIndex !== 2 ||
+                                    (headerIndex === 2 &&
+                                      dayItem.startTime ===
+                                        moment().startOf('day').valueOf())
+                                  ) {
                                     getTargetLog(dayItem.startTime);
                                   }
                                 }}
@@ -468,11 +506,14 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                                       className="vitality-changeNum-box"
                                       style={{
                                         color:
-                                          dayItem.value > 0 ? '#fff' : '#333',
+                                          dayItem.value > 0
+                                            ? '#fff'
+                                            : '#FB7552',
                                       }}
                                     >
-                                      {dayItem.value > 0 ? '+' : ''}
-                                      {dayItem.value}
+                                      {dayItem.value.indexOf('-') === -1
+                                        ? dayItem.value
+                                        : dayItem.value.split('-')[1]}
                                     </div>
                                     <div className="vitality-changeNum"></div>
                                   </React.Fragment>
@@ -496,11 +537,11 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                   vitalityState === 'month'
                     ? { opacity: '1' }
                     : {
-                      opacity: '0',
-                      height: '0px',
-                      width: '0px',
-                      zIndex: -1,
-                    }
+                        opacity: '0',
+                        height: '0px',
+                        width: '0px',
+                        zIndex: -1,
+                      }
                 }
               >
                 <div
@@ -534,12 +575,12 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                   vitalityState === 'day'
                     ? { opacity: '1' }
                     : {
-                      opacity: '0',
-                      height: '0px',
-                      width: '0px',
-                      padding: '0px',
-                      zIndex: -1,
-                    }
+                        opacity: '0',
+                        height: '0px',
+                        width: '0px',
+                        padding: '0px',
+                        zIndex: -1,
+                      }
                 }
               >
                 <div className="vitality-title">
@@ -561,7 +602,7 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                     >
                       时间
                     </div>
-                    <div style={{ width: '10%' }}>执行人</div>
+                    <div style={{ width: '10%' }}>操作</div>
                     <div style={{ width: '50%' }}>任务</div>
                     <div style={{ width: '20%' }}>干系人</div>
                     <div style={{ width: '10%' }}>活力</div>
@@ -576,18 +617,20 @@ const Vitality: React.FC<VitalityProps> = (props) => {
                         >
                           {logItem.createTime}
                         </div>
-                        <div style={{ width: '10%' }}>
-                          {logItem.executorName}
+                        <div
+                          style={{ width: '15%', justifyContent: 'flex-start' }}
+                        >
+                          {logItem.log}
                         </div>
                         <div
-                          style={{ width: '50%', justifyContent: 'flex-start' }}
+                          style={{ width: '45%', justifyContent: 'flex-start' }}
                         >
                           {logItem.cardTitle}
                         </div>
                         <div style={{ width: '20%' }}>
                           {logItem.creatorName}
                           {logItem.creatorName && logItem.executorName
-                            ? '→'
+                            ? '⇀'
                             : ''}
                           {logItem.executorName}
                         </div>

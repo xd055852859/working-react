@@ -1,0 +1,20 @@
+.file-button {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  z-index: 2;
+  opacity: 0;
+  outline: none;
+}
+.company-header-button {
+  width: 330px;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.MuiTableCell-stickyHeader {
+  background-color: #fff;
+}

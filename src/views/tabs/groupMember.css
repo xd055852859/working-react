@@ -10,8 +10,17 @@
   width: calc(100% - 17px);
   font-size: 14px;
   color: #8091a0;
+  padding-right: 10px;
+  box-sizing: border-box;
 }
-
+.group-member-input {
+  width: 75%;
+  height: 32px;
+  border: 1px solid #dfdfdf;
+  border-radius: 5px;
+  padding: 0px 5px;
+  box-sizing: border-box;
+}
 .group-member-person {
   width: 45%;
 }
@@ -62,7 +71,7 @@
 }
 
 .group-member-item-container {
-  width: 70%;
+  width: 65%;
   height: 100%;
   display: flex;
   align-items: center;
@@ -79,8 +88,9 @@
 }
 
 .group-member-item .group-member-img {
-  width: 40px;
-  height: 40px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
   overflow: hidden;
 }
 
@@ -91,11 +101,13 @@
 }
 
 .group-member-item .group-member-name {
-  height: 40px;
-  line-height: 40px;
+  height: 30px;
+  line-height: 30px;
   margin-left: 15px;
-  display: flex;
-  align-items: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  word-break: break-all;
 }
 
 .group-member-item .contact-time {
@@ -118,7 +130,6 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  cursor: pointer;
 }
 
 .group-time-close {
@@ -175,10 +186,10 @@
   line-height: 17px;
   border: 1px solid #17b881;
   margin-left: 5px;
+  margin-right: 5px;
   border-radius: 9px;
   padding: 2px 3px;
   display: flex;
   align-items: center;
   cursor: pointer;
 }
-

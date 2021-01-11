@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import Filter from '../common/filter';
-import { setFilterObject } from '../../redux/actions/taskActions';
+import {
+  setFilterObject,
+  getWorkingTableTask,
+  getGroupTask,
+} from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import { setTheme } from '../../redux/actions/authActions';
 import _ from 'lodash';
@@ -18,6 +22,8 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const filterObject = useTypedSelector((state) => state.task.filterObject);
+  const user = useTypedSelector((state) => state.auth.user);
+  const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const groupMemberItem = useTypedSelector(
     (state) => state.member.groupMemberItem
   );
@@ -36,7 +42,6 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
   useEffect(() => {
     // 用户已登录
     if (headerIndex !== 3 && workingTaskArray) {
-      dispatch(setFilterObject(theme.filterObject));
       getData(workingTaskArray, theme.filterObject);
     }
   }, [workingTaskArray, headerIndex]);

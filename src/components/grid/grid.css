@@ -63,7 +63,7 @@
   align-items: center;
   cursor: pointer;
   box-sizing: border-box;
-  font-size: 10px;
+  font-size: 8px;
 }
 .grid-label-td {
   border: 1px solid #ededed;

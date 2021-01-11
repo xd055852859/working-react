@@ -11,9 +11,11 @@ import DropMenu from '../../components/common/dropMenu';
 import HeaderFilter from '../../components/headerFilter/headerFilter';
 import Contact from '../../views/contact/contact';
 import Tooltip from '../../components/common/tooltip';
-
+import {
+  getWorkingTableTask,
+  setFilterObject,
+} from '../../redux/actions/taskActions';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
-import { setFilterObject } from '../../redux/actions/taskActions';
 import { setTheme } from '../../redux/actions/authActions';
 import {
   setCommonHeaderIndex,
@@ -38,14 +40,17 @@ import gridTimebPng from '../../assets/img/gridTimeb.png';
 import gridPersonbPng from '../../assets/img/gridPersonb.png';
 import calendarbPng from '../../assets/img/calendarb.png';
 import downArrowPng from '../../assets/img/downArrow.png';
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import checkPersonPng from '../../assets/img/checkPerson.png';
 import tabb0Svg from '../../assets/svg/tab0.svg';
 import tabb1Svg from '../../assets/svg/tab1.svg';
 import tabb4Svg from '../../assets/svg/tab4.svg';
+import tabb6Svg from '../../assets/svg/tab6.svg';
 import tab0Svg from '../../assets/svg/tabw0.svg';
 import tab1Svg from '../../assets/svg/tabw1.svg';
 import tab4Svg from '../../assets/svg/tabw4.svg';
+import tab6Svg from '../../assets/svg/tabw6.svg';
 import filterPng from '../../assets/img/filter.png';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -74,7 +79,7 @@ const WorkingTableHeader: React.FC = (prop) => {
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const theme = useTypedSelector((state) => state.auth.theme);
   const dispatch = useDispatch();
-  const tabArray: string[] = ['任务', '日报', '活力'];
+  const tabArray: string[] = ['任务', '日报', '活力','日程'];
   const viewImg: string[] = [
     labelPng,
     groupPng,
@@ -93,15 +98,14 @@ const WorkingTableHeader: React.FC = (prop) => {
     groupTabbPng,
     calendarbPng,
   ];
-  const tabImg: string[] = [tab0Svg, tab1Svg, tab4Svg];
-  const tabbImg: string[] = [tabb0Svg, tabb1Svg, tabb4Svg];
+  const tabImg: string[] = [tab0Svg, tab1Svg, tab4Svg, tab6Svg];
+  const tabbImg: string[] = [tabb0Svg, tabb1Svg, tabb4Svg, tabb6Svg];
   const checkedTitle = [
     '过期',
     '今天',
     '已完成',
     '未来',
     '重要',
-    '未计划',
     '一般卡片',
     '已归档',
   ];
@@ -111,9 +115,10 @@ const WorkingTableHeader: React.FC = (prop) => {
   const [filterVisible, setFilterVisible] = useState(false);
   const [memberVisible, setMemberVisible] = useState(false);
   const [filterCheckedArray, setFilterCheckedArray] = useState<any>([
-    true,
-    true,
-    true,
+    false,
+    false,
+    false,
+    false,
     false,
     false,
     false,
@@ -161,20 +166,21 @@ const WorkingTableHeader: React.FC = (prop) => {
         headerIndex === 1
           ? ['分频道', '分项目', '时间表', '执行表', '频道流', '项目流', '日历']
           : user._key !== targetUserInfo._key
-            ? ['分频道', '分项目', '时间表', '', '频道流', '项目流', '日历']
-            : ['分频道', '分项目', '', '', '频道流', '项目流', '']
+          ? ['分频道', '分项目', '时间表', '', '频道流', '项目流', '日历']
+          : ['分频道', '分项目', '', '', '频道流', '项目流', '']
       );
   }, [headerIndex, user, targetUserInfo]);
   useEffect(() => {
     dispatch(setFilterObject(theme.filterObject));
     // dispatch(setHeaderIndex(theme.filterObject.headerIndex));
     // dispatch(setHeaderIndex(0));
-    let filterCheckedArray: any = [];
+    let filterCheckedArray: any = [true, true, true, false, false, false];
     if (theme.filterObject.filterType.length > 0) {
       filterCheckedArray = checkedTitle.map((item: any) => {
         return theme.filterObject.filterType.indexOf(item) !== -1;
       });
     }
+    console.log(filterCheckedArray);
     setFileInput(theme.fileDay);
     setFilterCheckedArray(filterCheckedArray);
   }, [theme]);
@@ -237,39 +243,6 @@ const WorkingTableHeader: React.FC = (prop) => {
     dispatch(setTheme(newTheme));
     setFileState(true);
   };
-  const goChat = async () => {
-    const dom: any = document.querySelector('iframe');
-    const privatePerson =
-      memberArray[_.findIndex(memberArray, { userId: targetUserKey })];
-    const privateChatRId = privatePerson.privateChatRId;
-    if (privateChatRId) {
-      dom.contentWindow.postMessage(
-        {
-          externalCommand: 'go',
-          path: '/direct/' + privateChatRId,
-        },
-        '*'
-      );
-      dispatch(setChatState(true));
-    } else {
-      let chatRes: any = await api.member.getPrivateChatRId(
-        mainGroupKey,
-        targetUserKey
-      );
-      if (chatRes.msg === 'OK') {
-        dom.contentWindow.postMessage(
-          {
-            externalCommand: 'go',
-            path: '/direct/' + chatRes.result,
-          },
-          '*'
-        );
-        dispatch(setChatState(true));
-      } else {
-        dispatch(setMessage(true, chatRes.msg, 'error'));
-      }
-    }
-  };
   return (
     <div className="workingTableHeader">
       <div
@@ -291,7 +264,8 @@ const WorkingTableHeader: React.FC = (prop) => {
             <img
               src={
                 targetUserInfo && targetUserInfo.profile.avatar
-                  ? targetUserInfo.profile.avatar
+                  ? targetUserInfo.profile.avatar +
+                    '?imageMogr2/auto-orient/thumbnail/80x'
                   : defaultPersonPng
               }
               alt=""
@@ -452,7 +426,7 @@ const WorkingTableHeader: React.FC = (prop) => {
           </div>
         ) : null}
 
-        {memberHeaderIndex < 7 ? (
+        {memberHeaderIndex < 2 ? (
           <React.Fragment>
             <div
               className="workingTableHeader-logo"
@@ -469,7 +443,17 @@ const WorkingTableHeader: React.FC = (prop) => {
             {filterObject.groupKey ? (
               <Chip
                 size="small"
-                avatar={<Avatar alt="" src={filterObject.groupLogo} />}
+                avatar={
+                  <Avatar
+                    alt=""
+                    src={
+                      filterObject.groupLogo
+                        ? filterObject.groupLogo +
+                          '?imageMogr2/auto-orient/thumbnail/80x'
+                        : defaultGroupPng
+                    }
+                  />
+                }
                 onClick={() => {
                   setFilterVisible(true);
                 }}
@@ -481,7 +465,17 @@ const WorkingTableHeader: React.FC = (prop) => {
             {filterObject.creatorKey ? (
               <Chip
                 size="small"
-                avatar={<Avatar alt="" src={filterObject.creatorAvatar} />}
+                avatar={
+                  <Avatar
+                    alt=""
+                    src={
+                      filterObject.creatorAvatar
+                        ? filterObject.creatorAvatar +
+                          '?imageMogr2/auto-orient/thumbnail/80x'
+                        : defaultPersonPng
+                    }
+                  />
+                }
                 onClick={() => {
                   setFilterVisible(true);
                 }}
@@ -493,7 +487,17 @@ const WorkingTableHeader: React.FC = (prop) => {
             {filterObject.executorKey ? (
               <Chip
                 size="small"
-                avatar={<Avatar alt="" src={filterObject.executorAvatar} />}
+                avatar={
+                  <Avatar
+                    alt=""
+                    src={
+                      filterObject.executorAvatar
+                        ? filterObject.executorAvatar +
+                          '?imageMogr2/auto-orient/thumbnail/80x'
+                        : defaultPersonPng
+                    }
+                  />
+                }
                 onClick={() => {
                   setFilterVisible(true);
                 }}
@@ -533,7 +537,7 @@ const WorkingTableHeader: React.FC = (prop) => {
                     return (
                       <div key={'filter' + item} className="filter-menu-item">
                         <Checkbox
-                          checked={filterCheckedArray[index]}
+                          checked={!!filterCheckedArray[index]}
                           onChange={() => {
                             changeFilterCheck(item);
                           }}
@@ -552,22 +556,22 @@ const WorkingTableHeader: React.FC = (prop) => {
                                 ( 近{fileInput}天 )
                               </div>
                             ) : (
-                                <div style={{ marginLeft: '8px' }}>
-                                  ( 近
-                                  <input
-                                    type="number"
-                                    value={fileInput}
-                                    onChange={(e) => {
-                                      setFileInput(e.target.value);
-                                    }}
-                                    onBlur={(e) => {
-                                      changeFileDay(parseInt(e.target.value));
-                                    }}
-                                    className="fileday"
-                                  />
+                              <div style={{ marginLeft: '8px' }}>
+                                ( 近
+                                <input
+                                  type="number"
+                                  value={fileInput}
+                                  onChange={(e) => {
+                                    setFileInput(e.target.value);
+                                  }}
+                                  onBlur={(e) => {
+                                    changeFileDay(parseInt(e.target.value));
+                                  }}
+                                  className="fileday"
+                                />
                                 天 )
-                                </div>
-                              )}
+                              </div>
+                            )}
                           </React.Fragment>
                         ) : null}
                       </div>

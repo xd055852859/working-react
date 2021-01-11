@@ -42,9 +42,10 @@ import messageButtonSvg from '../../assets/svg/messageButton.svg';
 import messageTimeSvg from '../../assets/svg/messageTime.svg';
 import messageHandSvg from '../../assets/svg/messageHand.svg';
 import messageunHandSvg from '../../assets/svg/messageunHand.svg';
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
+import urlSvg from '../../assets/svg/url.svg';
 import Loading from '../../components/common/loading';
-import TaskInfo from '../../components/taskInfo/taskInfo';
-import classes from '*.module.css';
+import Dialog from '../../components/common/dialog';
 interface MessageBoardProps {
   type?: string;
 }
@@ -70,8 +71,8 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
   const [loading, setLoading] = useState(false);
   const [taskInfoShow, setTaskInfoShow] = useState(false);
   const [messageCheck, setMessageCheck] = useState(false);
-
-  const messageLimit = 10;
+  const [messageVisible, setMessageVisible] = useState(false);
+  const messageLimit = 20;
   const messageImgArray = [
     messageType1Png,
     messageType2Png,
@@ -96,14 +97,17 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
     messageType21Svg,
     messageType22Svg,
   ];
+  let unDistory = true;
   useEffect(() => {
     if (user && user._key) {
       getMessage(messagePage, messageCheck);
     }
+    return () => {
+      unDistory = false;
+    };
   }, [user]);
 
   useEffect(() => {
-    console.log('socketObj', socketObj);
     if (socketObj) {
       let newMessageArray = _.cloneDeep(messageArray);
       let newSocketObj = _.cloneDeep(socketObj);
@@ -130,19 +134,20 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
       messageLimit,
       check ? 2 : 1
     );
-    if (messageRes.msg === 'OK') {
-      setLoading(false);
-      newMessageArray.push(...messageRes.result);
-      setMessageArray(newMessageArray);
-      setMessageTotal(messageRes.totalNumber);
-      setMessageNum(messageRes.allNotDealNotice35);
-    } else {
-      setLoading(false);
-      dispatch(setMessage(true, messageRes.msg, 'error'));
+    if (unDistory) {
+      if (messageRes.msg === 'OK') {
+        setLoading(false);
+        newMessageArray.push(...messageRes.result);
+        setMessageArray(newMessageArray);
+        setMessageTotal(messageRes.totalNumber);
+        setMessageNum(messageRes.allNotDealNotice35);
+      } else {
+        setLoading(false);
+        dispatch(setMessage(true, messageRes.msg, 'error'));
+      }
     }
   };
   const scrollMessageLoading = async (e: any) => {
-    // console.log(e);
     let newPage = messagePage;
     //文档内容实际高度（包括超出视窗的溢出部分）
     let scrollHeight = e.target.scrollHeight;
@@ -151,7 +156,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
     //窗口可视范围高度
     let clientHeight = e.target.clientHeight;
     if (
-      clientHeight + scrollTop + 10 >= scrollHeight &&
+      clientHeight + scrollTop + 1 >= scrollHeight &&
       messageArray.length < messageTotal
     ) {
       newPage = newPage + 1;
@@ -187,7 +192,12 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
     if (messageRes.msg === 'OK') {
       dispatch(setMessage(true, '签收成功', 'success'));
       dispatch(changeMessageMusic(true));
-      newMessageArray[index].data.applyStatus = 1;
+      if (newMessageArray[index].data.type === 3) {
+        newMessageArray[index].data.assignConfirm = true;
+      } else if (newMessageArray[index].data.type === 5) {
+        newMessageArray[index].data.finishConfirm = true;
+      }
+
       setMessageArray(newMessageArray);
       setMessageNum(newMessageNum - 1);
     } else {
@@ -200,13 +210,27 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
     if (messageRes.msg === 'OK') {
       dispatch(setMessage(true, '批量签收成功', 'success'));
       newMessageArray = newMessageArray.map((item: any, index: number) => {
-        if (item.data.type == 3 || item.data.type == 5) {
-          item.data.applyStatus = 1;
+        if (item.data.type === 3) {
+          item.data.assignConfirm = true;
+        } else if (item.data.type === 5) {
+          item.data.finishConfirm = true;
         }
+        item.data.applyStatus = 1;
         return item;
       });
       setMessageNum(messageRes.result.failureNoticeKeyArray.length);
       setMessageArray(newMessageArray);
+    } else {
+      dispatch(setMessage(true, messageRes.msg, 'error'));
+    }
+  };
+  const clearMessage = async () => {
+    let newMessageArray = _.cloneDeep(messageArray);
+    let messageRes: any = await api.auth.clearMessage();
+    if (messageRes.msg === 'OK') {
+      dispatch(setMessage(true, '清除消息成功', 'success'));
+      setMessageVisible(false);
+      getMessage(1, messageCheck);
     } else {
       dispatch(setMessage(true, messageRes.msg, 'error'));
     }
@@ -220,8 +244,21 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
           !type ? { borderBottom: '1px solid rgba(216, 216, 216, 0.4)' } : {}
         }
       >
-        <div>{!type ? '提醒' : 'null'}</div>
+        <div>{!type ? '提醒' : null}</div>
         <div className="messageBoard-mainbutton">
+          <div
+            style={{
+              fontSize: '14px',
+              color: '#17B881',
+              textDecoration: 'underline',
+              cursor: 'pointer',
+            }}
+            onClick={() => {
+              setMessageVisible(true);
+            }}
+          >
+            清除消息
+          </div>
           <div style={{ fontSize: '14px', color: !type ? '#fff' : '#333' }}>
             {!type ? (
               <Checkbox
@@ -278,8 +315,8 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
               messageItem.data.executorKey !== user._key) ||
             (messageItem.data.type == 5 &&
               messageItem.data.creatorKey !== user._key) ||
-            ((messageItem.data.type == 5 || messageItem.data.type == 3) &&
-              messageItem.data.applyStatus == 1) ||
+            (messageItem.data.type == 5 && messageItem.data.finishConfirm) ||
+            (messageItem.data.type == 3 && messageItem.data.assignConfirm) ||
             (messageItem.data.type !== 5 && messageItem.data.type !== 3);
           return (
             <React.Fragment key={'message' + messageIndex}>
@@ -323,7 +360,12 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                             }}
                           >
                             <img
-                              src={messageItem.data.groupLogo}
+                              src={
+                                messageItem.data.groupLogo
+                                  ? messageItem.data.groupLogo +
+                                    '?imageMogr2/auto-orient/thumbnail/80x'
+                                  : defaultGroupPng
+                              }
                               alt=""
                               style={{
                                 width: '100%',
@@ -352,9 +394,8 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                         <div>{messageItem.data.creatorName}</div>
                         <img
                           src={
-                            messageItem.data.finishConfirm ||
-                            (messageItem.data.type == 5 &&
-                              messageItem.data.applyStatus == 1)
+                            messageItem.data.finishConfirm &&
+                            messageItem.data.type == 5
                               ? messageHandSvg
                               : messageunHandSvg
                           }
@@ -373,9 +414,8 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                         </div>
                         <img
                           src={
-                            messageItem.data.assignConfirm ||
-                            (messageItem.data.type == 3 &&
-                              messageItem.data.applyStatus == 1)
+                            messageItem.data.assignConfirm &&
+                            messageItem.data.type == 3
                               ? messageHandSvg
                               : messageunHandSvg
                           }
@@ -406,10 +446,19 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                           }}
                         >
                           <div className="messageBoard-item-day">
-                            {messageItem.data
+                            {messageItem &&
+                            messageItem.data &&
+                            messageItem.data.taskEndDate
                               ? moment(messageItem.data.taskEndDate)
                                   .endOf('day')
-                                  .diff(moment().endOf('day'), 'days') < 0
+                                  .diff(moment().endOf('day'), 'days') < 0 &&
+                                !isNaN(
+                                  Math.abs(
+                                    moment(messageItem.data.taskEndDate)
+                                      .endOf('day')
+                                      .diff(moment().endOf('day'), 'days')
+                                  )
+                                )
                                 ? Math.abs(
                                     moment(messageItem.data.taskEndDate)
                                       .endOf('day')
@@ -420,12 +469,30 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                                       .endOf('day')
                                       .diff(moment().endOf('day'), 'days')
                                   ) + 1
-                              : null}
+                              : ''}
                           </div>
                           <div className="messageBoard-item-hour">
                             {messageItem.data.hour}
                           </div>
                         </div>
+
+                        {messageItem.data.extraData &&
+                        messageItem.data.extraData.url ? (
+                          <img
+                            src={urlSvg}
+                            alt=""
+                            style={{
+                              height: '18px',
+                              width: '18px',
+                              cursor: 'pointer',
+                              marginLeft: '8px',
+                            }}
+                            onClick={(e: any) => {
+                              window.open(messageItem.data.extraData.url);
+                              e.stopPropagation();
+                            }}
+                          />
+                        ) : null}
                       </div>
                       <div
                         className="messageBoard-item-name1"
@@ -470,8 +537,10 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                         </div>
                       ) : null}
                       {(messageItem.data.type == 3 &&
+                        !messageItem.data.assignConfirm &&
                         messageItem.data.executorKey == user._key) ||
                       (messageItem.data.type == 5 &&
+                        !messageItem.data.finishConfirm &&
                         messageItem.data.creatorKey === user._key) ? (
                         <div
                           style={{
@@ -597,6 +666,21 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
           type="new"
         />
       ) : null} */}
+      <Dialog
+        visible={messageVisible}
+        onClose={() => {
+          setMessageVisible(false);
+        }}
+        onOK={() => {
+          clearMessage();
+        }}
+        title={'清除消息'}
+        dialogStyle={{ width: '400px', height: '200px' }}
+      >
+        <div className="dialog-onlyTitle">
+          清理消息将删除目前所有不需要审核的消息，确定要清理吗？
+        </div>
+      </Dialog>
     </div>
   );
 };

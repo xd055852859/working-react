@@ -92,7 +92,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
   const [personArray, setPersonArray] = useState<any>([{}]);
   const [personIndex, setPersonIndex] = useState(0);
   const commentLimit = 10;
-
+  let unDistory = true;
   useEffect(() => {
     if (user && user._key) {
       if (!headerType) {
@@ -121,6 +121,9 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
         );
       }
     }
+    return () => {
+      unDistory = false;
+    };
   }, [user, workingTaskArray, taskArray, targetUserInfo]);
   useEffect(() => {
     if (user && user._key && headerType) {
@@ -198,7 +201,6 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       setDiaryKey(targetUserInfo._key);
       newDiaryKey = targetUserInfo._key;
     }
-    console.log(taskArray);
     arr.forEach((item: any, index: number) => {
       newDateArray[index] = {
         creatorArr: [],
@@ -284,31 +286,30 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     setDayCanlendarArray(newDayCanlendarArray);
     newPersonArray.unshift({ key: '全部', avatar: '', name: '全部' });
     setPersonArray(newPersonArray);
-    console.log(newDateArray);
-    console.log(newDayCanlendarArray);
-    console.log(newPersonArray);
   };
   const getDiaryNote = async (startTime: number, diaryKey: any) => {
     if (diaryKey) {
       let noteRes: any = await api.auth.getNote(diaryKey, startTime);
-      if (noteRes.msg == 'OK') {
-        setPositive(noteRes.result.positive);
-        setNegative(noteRes.result.negative);
-        setNote(noteRes.result.note);
-      } else {
-        if (noteRes.msg == '无该成就/风险/随记') {
-          await api.auth.setNote({
-            startTime: moment().startOf('day').valueOf(),
-            type: 2,
-            positive: '',
-            negative: '',
-            note: '',
-            positiveClose: '',
-            negativeClose: '',
-            noteClose: '',
-          });
+      if (unDistory) {
+        if (noteRes.msg == 'OK') {
+          setPositive(noteRes.result.positive);
+          setNegative(noteRes.result.negative);
+          setNote(noteRes.result.note);
         } else {
-          dispatch(setMessage(true, noteRes.msg, 'error'));
+          if (noteRes.msg == '无该成就/风险/随记') {
+            await api.auth.setNote({
+              startTime: moment().startOf('day').valueOf(),
+              type: 2,
+              positive: '',
+              negative: '',
+              note: '',
+              positiveClose: '',
+              negativeClose: '',
+              noteClose: '',
+            });
+          } else {
+            dispatch(setMessage(true, noteRes.msg, 'error'));
+          }
         }
       }
     }
@@ -319,17 +320,19 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       startTime,
       endTime
     );
-    if (res.msg == 'OK') {
-      setDiaryList(res.result);
-      if (res.result.length > 0) {
-        if (res.result[0]._key) {
-          setContentKey(res.result[0]._key);
-          getCommentList(1, res.result[0]._key);
+    if (unDistory) {
+      if (res.msg == 'OK') {
+        setDiaryList(res.result);
+        if (res.result.length > 0) {
+          if (res.result[0]._key) {
+            setContentKey(res.result[0]._key);
+            getCommentList(1, res.result[0]._key);
+          }
         }
+        getData(_.flatten(workingTaskArray), res.result);
+      } else {
+        dispatch(setMessage(true, res.msg, 'error'));
       }
-      getData(_.flatten(workingTaskArray), res.result);
-    } else {
-      dispatch(setMessage(true, res.msg, 'error'));
     }
   };
   const getCommentList = async (page: number, contentKey: number | string) => {
@@ -343,12 +346,14 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       page,
       commentLimit
     );
-    if (res.msg == 'OK') {
-      newCommentList.push(...res.result);
-      setCommentList(newCommentList);
-      setCommentTotal(res.totalNumber);
-    } else {
-      dispatch(setMessage(true, res.msg, 'error'));
+    if (unDistory) {
+      if (res.msg == 'OK') {
+        newCommentList.push(...res.result);
+        setCommentList(newCommentList);
+        setCommentTotal(res.totalNumber);
+      } else {
+        dispatch(setMessage(true, res.msg, 'error'));
+      }
     }
   };
   const scrollCommentLoading = (e: any) => {
@@ -377,7 +382,8 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
               <img
                 src={
                   dayCanlendarItem[dayKey].executorArr[0].executorAvatar
-                    ? dayCanlendarItem[dayKey].executorArr[0].executorAvatar
+                    ? dayCanlendarItem[dayKey].executorArr[0].executorAvatar +
+                      '?imageMogr2/auto-orient/thumbnail/80x'
                     : defaultPersonPng
                 }
                 alt=""
@@ -519,30 +525,30 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     }
     return [timeStr, moment(time).format('M.DD')];
   };
-  const addTask = async () => {
-    let addTaskRes: any = await api.task.addTask(
-      mainGroupKey,
-      1,
-      null,
-      user._key,
-      '',
-      '',
-      0,
-      2,
-      0,
-      0,
-      dateArray[diaryIndex].end
-    );
-    if (addTaskRes.msg === 'OK') {
-      dispatch(setMessage(true, '新增任务成功', 'success'));
-      dispatch(changeCreateMusic(true));
-      dispatch(
-        getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10], theme.fileDay)
-      );
-    } else {
-      dispatch(setMessage(true, addTaskRes.msg, 'error'));
-    }
-  };
+  // const addTask = async () => {
+  //   let addTaskRes: any = await api.task.addTask(
+  //     mainGroupKey,
+  //     1,
+  //     null,
+  //     user._key,
+  //     '',
+  //     '',
+  //     0,
+  //     2,
+  //     0,
+  //     0,
+  //     dateArray[diaryIndex].end
+  //   );
+  //   if (addTaskRes.msg === 'OK') {
+  //     dispatch(setMessage(true, '新增任务成功', 'success'));
+  //     dispatch(changeCreateMusic(true));
+  //     dispatch(
+  //       getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10], theme.fileDay)
+  //     );
+  //   } else {
+  //     dispatch(setMessage(true, addTaskRes.msg, 'error'));
+  //   }
+  // };
   return (
     <div className="diary">
       <div className="diary-bg">
@@ -604,7 +610,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                       variant="contained"
                       color="primary"
                       onClick={() => {
-                        addTask();
+                        // addTask();
                       }}
                       className="save-button"
                     >

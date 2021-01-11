@@ -1,11 +1,10 @@
 .createMoreTask {
-  width: 400px;
+  width: 428px;
   height: 500px;
   position: fixed;
   z-index: 20;
   background-color: #fff;
   box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.5);
-  border-radius: 12px;
   overflow: hidden;
   display: flex;
   justify-content: space-between;
@@ -23,8 +22,7 @@
 .createMoreTask-left-container,
 .createMoreTask-right-container {
   width: 100%;
-  /* height: calc(100% - 35px); */
-  height: 100%;
+  height: calc(100% - 75px);
   overflow: auto;
 }
 .createMoreTask-item {
@@ -63,8 +61,11 @@
 }
 .createMoreTask-item-name,
 .createMoreTask-item-label {
-  display: flex;
-  align-items: center;
+  width: 70px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  word-break: break-all;
 }
 .createMoreTask-avatar {
   width: 30px;
@@ -90,4 +91,24 @@
   justify-content: space-between;
   align-items: center;
   cursor: pointer;
+  padding:0px 8px;
+  box-sizing: border-box;
+  font-weight:bold;
+}
+.createMoreTask-groupName {
+  width: calc(100% - 35px);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  word-break: break-all;
+}
+.createMoreTask-left-input {
+  width: calc(100% - 16px);
+  height: 30px;
+  border: 1px solid #dfdfdf;
+  border-radius: 5px;
+  margin-left: 8px;
+  margin-bottom:10px;
+  padding:0px 5px;
+  box-sizing: border-box;
 }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './workingReport.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import { TextField, Button } from '@material-ui/core';
+import { TextField, Button, Tooltip } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import { setMessage } from '../../redux/actions/commonActions';
 import { getWorkingTableTask } from '../../redux/actions/taskActions';
@@ -19,8 +19,9 @@ import reportIcon from '../../assets/svg/reportIcon.svg';
 // import clickNumberPng from '../../assets/img/clickNumber.png';
 import DropMenu from '../../components/common/dropMenu';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
-// import Editor from '../../components/common/Editor';
+import Loading from '../../components/common/loading';
 import Task from '../../components/task/task';
+import memberSvg from '../../assets/svg/member.svg';
 
 export interface WorkingReportProps {
   headerType?: boolean;
@@ -68,7 +69,9 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
+  const groupKey = useTypedSelector((state) => state.group.groupKey);
   const taskArray = useTypedSelector((state) => state.task.taskArray);
+  const taskInfo = useTypedSelector((state) => state.task.taskInfo);
   const workingTaskArray = useTypedSelector(
     (state) => state.task.workingTaskArray
   );
@@ -91,14 +94,21 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
   const [personObj, setPersonObj] = useState<any>(null);
   const [personArray, setPersonArray] = useState<any>([{}]);
   const [personIndex, setPersonIndex] = useState(0);
-  const commentLimit = 10;
+  const [loading, setLoading] = useState(false);
+  const [moveState, setMoveState] = useState<any>(null);
 
+  const commentLimit = 10;
+  let unDistory = true;
   useEffect(() => {
     if (user && user._key) {
+      setLoading(true);
       if (headerIndex == 3 && taskArray && !headerType) {
         setDiaryKey('全部');
         getData(taskArray, '全部');
-      } else if (workingTaskArray && (headerType || headerIndex == 1 || (headerIndex == 2 && targetUserInfo))) {
+      } else if (
+        workingTaskArray &&
+        (headerType || headerIndex == 1 || (headerIndex == 2 && targetUserInfo))
+      ) {
         if (headerIndex == 2 && !headerType) {
           setDiaryKey(targetUserInfo._key);
           getData(_.flatten(workingTaskArray), targetUserInfo._key);
@@ -108,7 +118,10 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
         }
       }
     }
-  }, [user, targetUserInfo]);
+    return () => {
+      unDistory = false;
+    };
+  }, [user, targetUserInfo, taskArray, workingTaskArray]);
   useEffect(() => {
     if (user && user._key && headerType) {
       dispatch(
@@ -116,9 +129,55 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       );
     }
   }, [headerType]);
+  useEffect(() => {
+    if (taskInfo && personObj) {
+      let newPersonObj = _.cloneDeep(personObj);
+      if (
+        newPersonObj[moment(taskInfo.createTime).endOf('day').valueOf()] &&
+        newPersonObj[moment(taskInfo.taskEndDate).endOf('day').valueOf()][
+          taskInfo.executorKey
+        ]
+      ) {
+        newPersonObj[moment(taskInfo.taskEndDate).endOf('day').valueOf()][
+          taskInfo.executorKey
+        ].executorArray = newPersonObj[
+          moment(taskInfo.taskEndDate).endOf('day').valueOf()
+        ][taskInfo.executorKey].executorArray.map(
+          (item: any, index: number) => {
+            if (item._key === taskInfo._key) {
+              item = _.cloneDeep(taskInfo);
+            }
+            return item;
+          }
+        );
+      }
+      if (
+        newPersonObj[moment(taskInfo.createTime).endOf('day').valueOf()] &&
+        newPersonObj[moment(taskInfo.createTime).endOf('day').valueOf()][
+          taskInfo.creatorKey
+        ]
+      ) {
+        newPersonObj[moment(taskInfo.createTime).endOf('day').valueOf()][
+          taskInfo.creatorKey
+        ].creatorArray = newPersonObj[
+          moment(taskInfo.createTime).endOf('day').valueOf()
+        ][taskInfo.creatorKey].creatorArray.map((item: any, index: number) => {
+          if (item._key === taskInfo._key) {
+            item = _.cloneDeep(taskInfo);
+          }
+          return item;
+        });
+      }
+      setPersonObj(newPersonObj);
+    }
+  }, [taskInfo]);
+
   const chooseDiary = async (item: string, index: number) => {
     setDiaryIndex(item);
-    getDiaryList(moment(parseInt(item)).startOf('day').valueOf(), moment(parseInt(item)).endOf('day').valueOf())
+    getDiaryList(
+      moment(parseInt(item)).startOf('day').valueOf(),
+      moment(parseInt(item)).endOf('day').valueOf()
+    );
     setPositive('');
     setNegative('');
     setNote('');
@@ -137,10 +196,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     setPersonIndex(index);
     getData(taskArray, key);
   };
-  const getData = async (
-    taskArray: any,
-    personKey: string
-  ) => {
+  const getData = async (taskArray: any, personKey: string) => {
     let newPersonObj: any = {};
     let targetPersonObj: any = {};
     let newPersonArray: any = [];
@@ -150,7 +206,8 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     taskArray.forEach((taskItem: any, taskIndex: number) => {
       if (
         taskItem.taskEndDate &&
-        taskItem.type === 2 &&
+        taskItem.taskEndDate != 99999999999999 &&
+        (taskItem.type === 2 || taskItem.type === 6) &&
         taskItem.finishPercent !== 10
       ) {
         if (!newExecObj[moment(taskItem.taskEndDate).endOf('day').valueOf()]) {
@@ -163,7 +220,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       if (
         taskItem.taskEndDate &&
         taskItem.createTime &&
-        taskItem.type === 2 &&
+        (taskItem.type === 2 || taskItem.type === 6) &&
         taskItem.finishPercent !== 10
       ) {
         if (!newCreateObj[moment(taskItem.createTime).endOf('day').valueOf()]) {
@@ -179,7 +236,12 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
         let state = personKey === '全部' || item.executorKey === personKey;
         if (state) {
           if (!newPersonObj[key]) {
-            newPersonObj[key] = { executorNum: 0, creatorNum: 0 };
+            newPersonObj[key] = {
+              executorNum: 0,
+              creatorNum: 0,
+              allexecutorNum: 0,
+              allcreatorNum: 0,
+            };
           }
           if (!newPersonObj[key][item.executorKey]) {
             newPersonObj[key][item.executorKey] = {
@@ -203,6 +265,8 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
           if (item.finishPercent > 0) {
             newPersonObj[key].executorNum = newPersonObj[key].executorNum + 1;
           }
+          newPersonObj[key].allexecutorNum =
+            newPersonObj[key].allexecutorNum + 1;
         }
       });
     }
@@ -211,7 +275,12 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
         let state = personKey === '全部' || item.creatorKey === personKey;
         if (state) {
           if (!newPersonObj[key]) {
-            newPersonObj[key] = { executorNum: 0, creatorNum: 0 };
+            newPersonObj[key] = {
+              executorNum: 0,
+              creatorNum: 0,
+              allexecutorNum: 0,
+              allcreatorNum: 0,
+            };
           }
           if (!newPersonObj[key][item.creatorKey]) {
             newPersonObj[key][item.creatorKey] = {
@@ -232,7 +301,10 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
             }
           }
           newPersonObj[key][item.creatorKey].creatorArray.push(item);
-          newPersonObj[key].creatorNum = newPersonObj[key].creatorNum + 1;
+          if (item.finishPercent > 0) {
+            newPersonObj[key].creatorNum = newPersonObj[key].creatorNum + 1;
+          }
+          newPersonObj[key].allcreatorNum = newPersonObj[key].allcreatorNum + 1;
         }
       });
     }
@@ -253,33 +325,39 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       });
 
     newPersonArray.unshift({ key: '全部', avatar: '', name: '全部' });
+    console.log(targetPersonObj);
     setPersonObj(targetPersonObj);
-    console.log("111111", newPersonArray);
     if (personKey === '全部') {
       setPersonArray(newPersonArray);
     }
+    setLoading(false);
   };
   const getDiaryNote = async (startTime: number) => {
     if (diaryKey) {
-      let noteRes: any = await api.auth.getNote(headerIndex == 1 || headerType ? user._key : targetUserInfo._key, startTime);
-      if (noteRes.msg == 'OK') {
-        setPositive(noteRes.result.positive);
-        setNegative(noteRes.result.negative);
-        setNote(noteRes.result.note);
-      } else {
-        if (noteRes.msg == '无该成就/风险/随记') {
-          await api.auth.setNote({
-            startTime: moment().startOf('day').valueOf(),
-            type: 2,
-            positive: '',
-            negative: '',
-            note: '',
-            positiveClose: '',
-            negativeClose: '',
-            noteClose: '',
-          });
+      let noteRes: any = await api.auth.getNote(
+        headerIndex == 1 || headerType ? user._key : targetUserInfo._key,
+        startTime
+      );
+      if (unDistory) {
+        if (noteRes.msg == 'OK') {
+          setPositive(noteRes.result.positive);
+          setNegative(noteRes.result.negative);
+          setNote(noteRes.result.note);
         } else {
-          dispatch(setMessage(true, noteRes.msg, 'error'));
+          if (noteRes.msg == '无该成就/风险/随记') {
+            await api.auth.setNote({
+              startTime: moment().startOf('day').valueOf(),
+              type: 2,
+              positive: '',
+              negative: '',
+              note: '',
+              positiveClose: '',
+              negativeClose: '',
+              noteClose: '',
+            });
+          } else {
+            dispatch(setMessage(true, noteRes.msg, 'error'));
+          }
         }
       }
     }
@@ -290,16 +368,18 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       startTime,
       endTime
     );
-    if (res.msg == 'OK') {
-      setDiaryList(res.result);
-      if (res.result.length > 0) {
-        if (res.result[0]._key) {
-          setContentKey(res.result[0]._key);
-          getCommentList(1, res.result[0]._key);
+    if (unDistory) {
+      if (res.msg == 'OK') {
+        setDiaryList(res.result);
+        if (res.result.length > 0) {
+          if (res.result[0]._key) {
+            setContentKey(res.result[0]._key);
+            getCommentList(1, res.result[0]._key);
+          }
         }
+      } else {
+        dispatch(setMessage(true, res.msg, 'error'));
       }
-    } else {
-      dispatch(setMessage(true, res.msg, 'error'));
     }
   };
   const getCommentList = async (page: number, contentKey: number | string) => {
@@ -313,12 +393,14 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       page,
       commentLimit
     );
-    if (res.msg == 'OK') {
-      newCommentList.push(...res.result);
-      setCommentList(newCommentList);
-      setCommentTotal(res.totalNumber);
-    } else {
-      dispatch(setMessage(true, res.msg, 'error'));
+    if (unDistory) {
+      if (res.msg == 'OK') {
+        newCommentList.push(...res.result);
+        setCommentList(newCommentList);
+        setCommentTotal(res.totalNumber);
+      } else {
+        dispatch(setMessage(true, res.msg, 'error'));
+      }
     }
   };
   const scrollCommentLoading = (e: any) => {
@@ -340,76 +422,85 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
   const getAllReport = (personItem: any, personIndex: number) => {
     let dom: any = [];
     for (let personKey in personItem) {
-      if (personKey != "executorNum" && personKey != 'creatorNum') {
+      if (
+        personKey != 'executorNum' &&
+        personKey != 'creatorNum' &&
+        personKey != 'allcreatorNum' &&
+        personKey != 'allexecutorNum'
+      ) {
         let executorNum = 0;
-        let avatar = personItem[personKey].executorArray.length > 0
-          ? personItem[personKey].executorArray[0].executorAvatar
+        let avatar =
+          personItem[personKey].executorArray.length > 0
             ? personItem[personKey].executorArray[0].executorAvatar
-            : defaultPersonPng
-          : personItem[personKey].creatorArray.length > 0
-            ? personItem[personKey].creatorArray[0].creatorAvatar
+              ? personItem[personKey].executorArray[0].executorAvatar +
+                '?imageMogr2/auto-orient/thumbnail/80x'
+              : defaultPersonPng
+            : personItem[personKey].creatorArray.length > 0
+            ? personItem[personKey].creatorArray[0].creatorAvatar +
+              '?imageMogr2/auto-orient/thumbnail/80x'
             : defaultPersonPng;
-        let name = personItem[personKey].executorArray.length > 0
-          ? personItem[personKey].executorArray[0].executorName
+        let name =
+          personItem[personKey].executorArray.length > 0
             ? personItem[personKey].executorArray[0].executorName
-            : ''
-          : personItem[personKey].creatorArray.length > 0
+              ? personItem[personKey].executorArray[0].executorName
+              : ''
+            : personItem[personKey].creatorArray.length > 0
             ? personItem[personKey].creatorArray[0].creatorName
-            : '';;
-        personItem[personKey].executorArray.forEach((item: any, index: number) => {
-          if (item.finishPercent > 0) {
-            executorNum++;
+            : '';
+        personItem[personKey].executorArray.forEach(
+          (item: any, index: number) => {
+            if (item.finishPercent > 0) {
+              executorNum++;
+            }
           }
-        })
+        );
         dom.push(
           <React.Fragment key={'day' + personKey}>
             <div className="diaryall-subtitle">
               <div className="diaryall-subtitle-img">
-                <img
-                  src={
-                    avatar
-                  }
-                  alt=""
-                />
+                <img src={avatar} alt="" />
               </div>
-              <div><span style={{ fontWeight: 'bold' }}>{name}</span> <span>
-                ( 新建{personItem[personKey].creatorArray.length}条 完成
-                            {executorNum}条 )
-                          </span></div>
+              <div>
+                <span style={{ fontWeight: 'bold' }}>{name}</span>{' '}
+                <span>
+                  ( 新建完成 {personItem[personKey].creatorArray.length} 条
+                  计划完成 {executorNum} 条 )
+                </span>
+              </div>
             </div>
-            <div className="diary-container-title">1. 执行任务</div>
+            <div className="diary-container-title">1. 计划任务</div>
             {personItem[personKey].executorArray.map(
               (taskItem: any, taskIndex: number) => {
                 return (
                   <div
                     key={'date' + taskIndex}
                     className="diary-container-item"
-                  // onClick={() => {
-                  //   setDiaryIndex(diaryIndex);
-                  // }}
+                    // onClick={() => {
+                    //   setDiaryIndex(diaryIndex);
+                    // }}
                   >
                     <Task taskItem={taskItem} reportState={true} />
                   </div>
                 );
               }
             )}
-            <div className="diary-container-title">2. 创建任务</div>
+            <div className="diary-container-title">2. 新建任务</div>
             {personItem[personKey].creatorArray.map(
               (taskItem: any, taskIndex: number) => {
                 return (
                   <div
                     key={'date' + taskIndex}
                     className="diary-container-item"
-                  // onClick={() => {
-                  //   setDiaryIndex(diaryIndex);
-                  // }}
+                    // onClick={() => {
+                    //   setDiaryIndex(diaryIndex);
+                    // }}
                   >
                     <Task taskItem={taskItem} reportState={true} />
                   </div>
                 );
               }
             )}
-          </React.Fragment >
+          </React.Fragment>
         );
       }
     }
@@ -473,202 +564,217 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
   };
   const formatTime = (time: number) => {
     let week = moment(time).day();
-    let timeStr = '';
-    switch (week) {
-      case 1:
-        timeStr = '周一 ';
-        break;
-      case 2:
-        timeStr = '周二 ';
-        break;
-      case 3:
-        timeStr = '周三 ';
-        break;
-      case 4:
-        timeStr = '周四 ';
-        break;
-      case 5:
-        timeStr = '周五 ';
-        break;
-      case 6:
-        timeStr = '周六 ';
-        break;
-      case 0:
-        timeStr = '周日 ';
-        break;
-    }
     return [
-      timeStr,
+      moment(time).format('dd'),
       moment(time).year() === moment().year()
-        ? moment(time).format('MM月DD日')
-        : moment(time).format('YYYY年MM月DD日'),
+        ? moment(time).format('MM.DD')
+        : moment(time).format('YYYY.MM.DD'),
     ];
   };
   const addTask = async () => {
-    let addTaskRes: any = await api.task.addTask(
-      mainGroupKey,
-      1,
-      null,
-      user._key,
-      '',
-      '',
-      0,
-      2,
-      0,
-      0,
-      dateArray[diaryIndex].end
-    );
+    let newPersonObj = _.cloneDeep(personObj);
+    let addTaskRes: any = await api.task.addTask({
+      groupKey: mainGroupKey,
+      groupRole: 1,
+      executorKey: user._key,
+      taskEndDate: parseInt(diaryIndex),
+    });
     if (addTaskRes.msg === 'OK') {
       dispatch(setMessage(true, '新增任务成功', 'success'));
       dispatch(changeCreateMusic(true));
-      dispatch(
-        getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10], theme.fileDay)
+      console.log(newPersonObj[diaryIndex][diaryKey]);
+      newPersonObj[diaryIndex][diaryKey].executorArray.unshift(
+        addTaskRes.result
       );
+      newPersonObj[diaryIndex][diaryKey].creatorArray.unshift(
+        addTaskRes.result
+      );
+      setPersonObj(newPersonObj);
     } else {
       dispatch(setMessage(true, addTaskRes.msg, 'error'));
     }
   };
   return (
     <div className="diary">
-      <div className="diary-bg">
-        <div className="diary-menu">
-          <div className="diary-menu-title">目录</div>
-          <div className="diary-menu-container">
-            {personObj
-              ? Object.keys(_.cloneDeep(personObj)).map(
-                (item: any, index: number) => {
-                  return (
-                    <React.Fragment key={'date' + index}>
-                      {diaryKey !== '全部' ? (
-                        <div
-                          className="diary-menu-item"
-                          onClick={() => {
-                            chooseDiary(item, index);
-                          }}
-                          style={{
-                            backgroundColor:
-                              diaryIndex == item ? 'rgb(229, 231, 234)' : '',
-                          }}
-                        >
-                          <span style={{ marginRight: '10px' }}>
-                            {formatTime(parseInt(item))[1]}
-                          </span>
-                          <span>
-                            {' ' + formatTime(parseInt(item))[0] + ' '}
-                          </span>
-                          <span>
-                            ( 新建{personObj[item].creatorNum}条 完成
-                            {personObj[item].executorNum}条 )
-                          </span>
-                        </div>
-                      ) : (
-                          <a href={'#diaryall' + index} className="diary-menu-item">
-                            <span style={{ marginRight: '10px' }}>
-                              {formatTime(parseInt(item))[1]}
-                            </span>
-                            <span>
-                              {' ' + formatTime(parseInt(item))[0] + ' '}
-                            </span>
-                            <span>
-                              ( 新建{personObj[item].creatorNum}条 完成
-                            {personObj[item].executorNum}条 )
-                          </span>
-                          </a>
-                        )}
-                    </React.Fragment>
-                  );
-                }
-              )
-              : null}
+      {loading ? <Loading /> : null}
+      {personObj && personObj[diaryIndex] ? (
+        <div className="diary-bg">
+          <div className="diary-menu">
+            <div className="diary-menu-title">
+              <span>日期</span>
+              <span>星期</span>
+              <span>完成/今日新建</span>
+              <span>完成/今日计划</span>
+            </div>
+            <div className="diary-menu-container">
+              {personObj
+                ? Object.keys(_.cloneDeep(personObj)).map(
+                    (item: any, index: number) => {
+                      return (
+                        <React.Fragment key={'date' + index}>
+                          {diaryKey !== '全部' ? (
+                            <div
+                              className="diary-menu-item"
+                              onClick={() => {
+                                chooseDiary(item, index);
+                              }}
+                              style={{
+                                backgroundColor:
+                                  diaryIndex == item
+                                    ? 'rgb(229, 231, 234)'
+                                    : '',
+                                fontWeight:
+                                  moment(parseInt(item))
+                                    .startOf('day')
+                                    .valueOf() ===
+                                  moment().startOf('day').valueOf()
+                                    ? 'bold'
+                                    : 'normal',
+                              }}
+                            >
+                              <span>{formatTime(parseInt(item))[1]}</span>
+                              <span> {formatTime(parseInt(item))[0]}</span>
+                              <span>
+                                {personObj[item].allcreatorNum === 0
+                                  ? ''
+                                  : personObj[item].creatorNum +
+                                    ' / ' +
+                                    personObj[item].allcreatorNum}
+                              </span>
+                              <span>
+                                {personObj[item].allexecutorNum === 0
+                                  ? ''
+                                  : personObj[item].executorNum +
+                                    ' / ' +
+                                    personObj[item].allexecutorNum}
+                              </span>
+                            </div>
+                          ) : (
+                            <a
+                              href={'#diaryall' + index}
+                              className="diary-menu-item"
+                              style={{
+                                fontWeight:
+                                  moment(parseInt(item))
+                                    .startOf('day')
+                                    .valueOf() ===
+                                  moment().startOf('day').valueOf()
+                                    ? 'bold'
+                                    : 'normal',
+                              }}
+                            >
+                              <span>{formatTime(parseInt(item))[1]}</span>
+                              <span>{formatTime(parseInt(item))[0]}</span>
+                              <span>
+                                {personObj[item].allcreatorNum === 0
+                                  ? ''
+                                  : personObj[item].creatorNum +
+                                    ' / ' +
+                                    personObj[item].allcreatorNum}
+                              </span>
+                              <span>
+                                {personObj[item].allexecutorNum === 0
+                                  ? ''
+                                  : personObj[item].executorNum +
+                                    ' / ' +
+                                    personObj[item].allexecutorNum}
+                              </span>
+                            </a>
+                          )}
+                        </React.Fragment>
+                      );
+                    }
+                  )
+                : null}
+            </div>
           </div>
-        </div>
-        {personObj ? (
-          <div className="diary-container">
-            {headerIndex != 3 ? <h2>一、任务看板</h2> : null}
-            {diaryKey !== '全部' && personObj ? (
-              <React.Fragment>
-                <div className="diary-container-mainTitle">
-                  <div>
-                    <img
-                      src={reportIcon}
-                      style={{
-                        marginRight: '5px',
-                        height: '16px',
-                        width: '19px',
-                      }}
-                    />
-                    <span style={{ marginRight: '10px', fontWeight: 'bold' }}>
-                      {formatTime(parseInt(diaryIndex))[1]}
-                    </span>
-                    <span style={{ marginRight: '10px', fontWeight: 'bold' }}>
-                      {' ' + formatTime(parseInt(diaryIndex))[0] + ' '}
-                    </span>
-                    <span>
-                      ( 新建{personObj[diaryIndex].creatorNum}条 完成
-                      {personObj[diaryIndex].executorNum}条 )
-                    </span>
+          {personObj ? (
+            <div className="diary-container">
+              {headerIndex != 3 ? <h2>一、任务看板</h2> : null}
+              {diaryKey !== '全部' ? (
+                <React.Fragment>
+                  <div className="diary-container-mainTitle">
+                    <div>
+                      <img
+                        src={reportIcon}
+                        style={{
+                          marginRight: '5px',
+                          height: '16px',
+                          width: '19px',
+                        }}
+                      />
+                      <span style={{ marginRight: '10px', fontWeight: 'bold' }}>
+                        {formatTime(parseInt(diaryIndex))[1]}
+                      </span>
+                      <span style={{ marginRight: '10px', fontWeight: 'bold' }}>
+                        {' ' + formatTime(parseInt(diaryIndex))[0] + ' '}
+                      </span>
+                      <span>
+                        ( 新建完成 {personObj[diaryIndex].creatorNum} 条
+                        计划完成 {personObj[diaryIndex].executorNum} 条 )
+                      </span>
+                    </div>
+                    <div>
+                      {headerIndex === 1 || headerType ? (
+                        <React.Fragment>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => {
+                              saveNote();
+                            }}
+                            className="save-button"
+                          >
+                            保存
+                          </Button>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => {
+                              addTask();
+                            }}
+                            className="save-button"
+                          >
+                            添加任务
+                          </Button>
+                        </React.Fragment>
+                      ) : null}
+                    </div>
                   </div>
-                  <div>
-                    {headerIndex === 1 || headerType ? (
-                      <React.Fragment>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={() => {
-                            saveNote();
-                          }}
-                          className="save-button"
+                  <div className="diary-container-title">1. 计划任务</div>
+                  {personObj[diaryIndex][diaryKey].executorArray.map(
+                    (taskItem: any, taskIndex: number) => {
+                      return (
+                        <div
+                          key={'date' + taskIndex}
+                          className="diary-container-item"
+                          // onClick={() => {
+                          //   setDiaryIndex(diaryIndex);
+                          // }}
                         >
-                          保存
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={() => {
-                            addTask();
-                          }}
-                          className="save-button"
+                          <Task taskItem={taskItem} reportState={true} />
+                        </div>
+                      );
+                    }
+                  )}
+                  <div className="diary-container-title">2. 新建任务</div>
+                  {personObj[diaryIndex][diaryKey].creatorArray.map(
+                    (taskItem: any, taskIndex: number) => {
+                      return (
+                        <div
+                          key={'date' + taskIndex}
+                          className="diary-container-item"
+                          // onClick={() => {
+                          //   setDiaryIndex(diaryIndex);
+                          // }}
                         >
-                          添加任务
-                        </Button>
-                      </React.Fragment>
-                    ) : null}
-                  </div>
-                </div>
-                <div className="diary-container-title">1. 执行任务</div>
-                {personObj[diaryIndex][diaryKey].executorArray.map(
-                  (taskItem: any, taskIndex: number) => {
-                    return (
-                      <div
-                        key={'date' + taskIndex}
-                        className="diary-container-item"
-                      // onClick={() => {
-                      //   setDiaryIndex(diaryIndex);
-                      // }}
-                      >
-                        <Task taskItem={taskItem} reportState={true} />
-                      </div>
-                    );
-                  }
-                )}
-                <div className="diary-container-title">2. 创建任务</div>
-                {personObj[diaryIndex][diaryKey].creatorArray.map(
-                  (taskItem: any, taskIndex: number) => {
-                    return (
-                      <div
-                        key={'date' + taskIndex}
-                        className="diary-container-item"
-                      // onClick={() => {
-                      //   setDiaryIndex(diaryIndex);
-                      // }}
-                      >
-                        <Task taskItem={taskItem} reportState={true} />
-                      </div>
-                    );
-                  }
-                )}
-              </React.Fragment>
-            ) : (
+                          <Task taskItem={taskItem} reportState={true} />
+                        </div>
+                      );
+                    }
+                  )}
+                </React.Fragment>
+              ) : (
                 <React.Fragment>
                   {Object.values(_.cloneDeep(personObj)).map(
                     (personItem: any, personIndex: number) => {
@@ -680,7 +786,6 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                             key={'dayCanlendar' + personIndex}
                           ></a>
                           <div className="diary-container-mainTitle">
-
                             <div>
                               <img
                                 src={reportIcon}
@@ -690,82 +795,111 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                                   width: '19px',
                                 }}
                               />
-                              <span style={{ marginRight: '10px', fontWeight: 'bold' }}>
-                                {formatTime(parseInt(Object.keys(_.cloneDeep(personObj))[personIndex]))[1]}
+                              <span
+                                style={{
+                                  marginRight: '10px',
+                                  fontWeight: 'bold',
+                                }}
+                              >
+                                {
+                                  formatTime(
+                                    parseInt(
+                                      Object.keys(_.cloneDeep(personObj))[
+                                        personIndex
+                                      ]
+                                    )
+                                  )[1]
+                                }
                               </span>
-                              <span style={{ marginRight: '10px', fontWeight: 'bold' }}>
-                                {' ' + formatTime(parseInt(Object.keys(_.cloneDeep(personObj))[personIndex]))[0] + ' '}
+                              <span
+                                style={{
+                                  marginRight: '10px',
+                                  fontWeight: 'bold',
+                                }}
+                              >
+                                {' ' +
+                                  formatTime(
+                                    parseInt(
+                                      Object.keys(_.cloneDeep(personObj))[
+                                        personIndex
+                                      ]
+                                    )
+                                  )[0] +
+                                  ' '}
                               </span>
-                              <span>( 新建{personItem.creatorNum}条 完成{personItem.executorNum}条 )</span>
+                              <span>
+                                ( 新建完成 {personItem.creatorNum} 条 计划完成{' '}
+                                {personItem.executorNum} 条 )
+                              </span>
                             </div>
                           </div>
                           {getAllReport(personItem, personIndex)}
                         </div>
-
                       );
                     }
                   )}
                 </React.Fragment>
               )}
 
-            {(headerIndex != 3 || headerType) && parseInt(diaryIndex) < moment().startOf('day').valueOf() ? (
-              <React.Fragment>
-                <h2>二、工作日志</h2>
-                <div className="diary-content-pn">
-                  <div className="diary-content-tab">
-                    <div>成绩</div>
-                    <div>审视</div>
-                  </div>
-                  <div className="diary-content-info">
-                    {headerIndex == 1 || headerType ? (
-                      <textarea
-                        value={positive}
-                        placeholder="成绩,收获,价值创造"
-                        className="diary-content-textarea"
-                        onChange={(e) => {
-                          setPositive(e.target.value);
-                        }}
-                      />
-                    ) : (
+              {(headerIndex != 3 || headerType) &&
+              parseInt(diaryIndex) < moment().startOf('day').valueOf() ? (
+                <React.Fragment>
+                  <h2>二、工作日志</h2>
+                  <div className="diary-content-pn">
+                    <div className="diary-content-tab">
+                      <div>成绩</div>
+                      <div>审视</div>
+                    </div>
+                    <div className="diary-content-info">
+                      {headerIndex == 1 || headerType ? (
+                        <textarea
+                          value={positive}
+                          placeholder="成绩,收获,价值创造"
+                          className="diary-content-textarea"
+                          onChange={(e) => {
+                            setPositive(e.target.value);
+                          }}
+                        />
+                      ) : (
                         <div className="diary-content-textarea">{positive}</div>
                       )}
-                    {headerIndex == 1 || headerType ? (
-                      <textarea
-                        value={negative}
-                        placeholder="困难，挑战，潜在问题"
-                        className="diary-content-textarea"
-                        onChange={(e) => {
-                          setNegative(e.target.value);
-                        }}
-                      />
-                    ) : (
+                      {headerIndex == 1 || headerType ? (
+                        <textarea
+                          value={negative}
+                          placeholder="困难，挑战，潜在问题"
+                          className="diary-content-textarea"
+                          onChange={(e) => {
+                            setNegative(e.target.value);
+                          }}
+                        />
+                      ) : (
                         <div className="diary-content-textarea">{negative}</div>
                       )}
+                    </div>
                   </div>
-                </div>
-                <h2>三、随记</h2>
-                {headerIndex == 1 || headerType ? (
-                  <textarea
-                    value={note}
-                    placeholder="随记"
-                    className="diary-textarea"
-                    onChange={(e) => {
-                      setNote(e.target.value);
-                    }}
-                  />
-                ) : (
+                  <h2>三、随记</h2>
+                  {headerIndex == 1 || headerType ? (
+                    <textarea
+                      value={note}
+                      placeholder="随记"
+                      className="diary-textarea"
+                      onChange={(e) => {
+                        setNote(e.target.value);
+                      }}
+                    />
+                  ) : (
                     <div className="diary-textarea">{note}</div>
                   )}
-                {/* 可能不存在打卡key */}
-                {contentKey ? (
-                  <React.Fragment>
-                    <div className="diary-comment">
-                      <div className="diary-comment-title">
-                        <div className="diary-comment-icon">
-                          <img src={commentPng} alt="" />
-                          评论
-                        </div>
-                        {/* <div className="diary-comment-like">
+                  {/* 可能不存在打卡key */}
+                  {contentKey ? (
+                    <React.Fragment>
+                      <div className="diary-comment">
+                        <div className="diary-comment-title">
+                          <div className="diary-comment-icon">
+                            <img src={commentPng} alt="" />
+                            评论
+                          </div>
+                          {/* <div className="diary-comment-like">
                       {contentItem.isLike ? (
                         <img
                           src={likePng}
@@ -785,129 +919,125 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                       )}
                       点赞 {contentItem.likeNumber}
                     </div> */}
-                      </div>
-                      {commentList.length > 0 ? (
-                        <div
-                          className="diary-comment-info"
-                          onScroll={scrollCommentLoading}
-                        >
-                          {commentList.map(
-                            (commentItem: any, commentIndex: number) => {
-                              return (
-                                <div
-                                  className="diary-comment-item"
-                                  key={commentIndex}
-                                >
-                                  <div className="diary-comment-item-avatar">
-                                    <img src={commentItem.avatar} alt="" />
-                                  </div>
-                                  <div className="diary-comment-item-info">
-                                    <div className="diary-comment-item-nickName">
-                                      {commentItem.nickName}
-                                    </div>
-                                    <div className="diary-comment-item-content">
-                                      {commentItem.content}
-                                    </div>
-                                  </div>
-                                  {commentItem.userKey == user._key ? (
-                                    <div
-                                      className="diary-comment-item-reply"
-                                      onClick={() => {
-                                        deleteComment(
-                                          commentItem,
-                                          commentIndex
-                                        );
-                                      }}
-                                    >
-                                      <div className="diary-comment-delete-icon">
-                                        <img src={deletePng} alt="" />
-                                      </div>
-                                      <div className="diary-comment-reply-title">
-                                        删除
-                                      </div>
-                                    </div>
-                                  ) : null}
-                                </div>
-                              );
-                            }
-                          )}
                         </div>
-                      ) : null}
-                    </div>
-
-                    <div className="diary-comment-button">
-                      <TextField
-                        placeholder="我要评论......"
-                        style={{ width: '90%' }}
-                        onChange={(e: any) => {
-                          setComment(e.target.value);
-                        }}
-                        value={comment}
-                        onKeyDown={(e: any) => {
-                          if (e.keyCode === 13) {
-                            addComment();
-                          }
-                        }}
-                      />
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        style={{ marginRight: '10px' }}
-                        className={classes.button}
-                        onClick={() => {
-                          addComment();
-                        }}
-                      >
-                        发送
-                      </Button>
-                    </div>
-                  </React.Fragment>
-                ) : null}
-              </React.Fragment>
-            ) : null}
-          </div>
-        ) : null}
-      </div>
-
-      <DropMenu
-        visible={headerIndex === 3 && !headerType}
-        dropStyle={{
-          width: '45px',
-          maxHeight: 'calc(100% - 68px)',
-          top: '68px',
-          left: 'calc(100% - 50px)',
-          color: '#333',
-          position: 'fixed',
-          zIndex: 5,
-          padding: '5px',
-          boxSizing: 'border-box',
-          overflow: 'auto',
-        }}
-      >
-        <React.Fragment>
-          {personArray.length > 0 ? (
-            <React.Fragment>
-              {personArray.map((item: any, index: number) => {
-                return (
-                  <React.Fragment key={'person' + index}>
-                    {index == 0 ? (
-                      <div
-                        className="diary-avatar"
-                        onClick={() => {
-                          choosePerson(item.key, index);
-                        }}
-                        style={
-                          item.key === diaryKey
-                            ? {
-                              backgroundColor: '#17B881',
-                              color: '#fff',
-                            }
-                            : {}
-                        }
-                      >
-                        全部
+                        {commentList.length > 0 ? (
+                          <div
+                            className="diary-comment-info"
+                            onScroll={scrollCommentLoading}
+                          >
+                            {commentList.map(
+                              (commentItem: any, commentIndex: number) => {
+                                return (
+                                  <div
+                                    className="diary-comment-item"
+                                    key={commentIndex}
+                                  >
+                                    <div className="diary-comment-item-avatar">
+                                      <img src={commentItem.avatar} alt="" />
+                                    </div>
+                                    <div className="diary-comment-item-info">
+                                      <div className="diary-comment-item-nickName">
+                                        {commentItem.nickName}
+                                      </div>
+                                      <div className="diary-comment-item-content">
+                                        {commentItem.content}
+                                      </div>
+                                    </div>
+                                    {commentItem.userKey == user._key ? (
+                                      <div
+                                        className="diary-comment-item-reply"
+                                        onClick={() => {
+                                          deleteComment(
+                                            commentItem,
+                                            commentIndex
+                                          );
+                                        }}
+                                      >
+                                        <div className="diary-comment-delete-icon">
+                                          <img src={deletePng} alt="" />
+                                        </div>
+                                        <div className="diary-comment-reply-title">
+                                          删除
+                                        </div>
+                                      </div>
+                                    ) : null}
+                                  </div>
+                                );
+                              }
+                            )}
+                          </div>
+                        ) : null}
                       </div>
-                    ) : (
+
+                      <div className="diary-comment-button">
+                        <TextField
+                          placeholder="我要评论......"
+                          style={{ width: '90%' }}
+                          onChange={(e: any) => {
+                            setComment(e.target.value);
+                          }}
+                          value={comment}
+                          onKeyDown={(e: any) => {
+                            if (e.keyCode === 13) {
+                              addComment();
+                            }
+                          }}
+                        />
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          style={{ marginRight: '10px' }}
+                          className={classes.button}
+                          onClick={() => {
+                            addComment();
+                          }}
+                        >
+                          发送
+                        </Button>
+                      </div>
+                    </React.Fragment>
+                  ) : null}
+                </React.Fragment>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+      <React.Fragment>
+        {headerIndex === 3 && !headerType ? (
+          <div
+            className="diary-member"
+            style={
+              moveState === 'top'
+                ? {
+                    animation: 'rightTop 500ms',
+                    // animationFillMode: 'forwards',
+                    height: '40px',
+                  }
+                : moveState === 'bottom'
+                ? {
+                    animation: 'rightBottom 500ms',
+                    height: '100%',
+                    // animationFillMode: 'forwards',
+                  }
+                : { height: '100%' }
+            }
+          >
+            <Tooltip title="选择群成员">
+              <img
+                src={memberSvg}
+                alt=""
+                className="diary-logo"
+                onClick={() => {
+                  setMoveState(moveState === 'top' ? 'bottom' : 'top');
+                }}
+              />
+            </Tooltip>
+            {personArray.length > 0
+              ? personArray.map((item: any, index: number) => {
+                  return (
+                    <React.Fragment key={'person' + index}>
+                      {index == 0 ? (
                         <div
                           className="diary-avatar"
                           onClick={() => {
@@ -916,8 +1046,25 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                           style={
                             item.key === diaryKey
                               ? {
-                                border: '2px solid #17B881',
-                              }
+                                  backgroundColor: '#17B881',
+                                  color: '#fff',
+                                }
+                              : {}
+                          }
+                        >
+                          全部
+                        </div>
+                      ) : (
+                        <div
+                          className="diary-avatar"
+                          onClick={() => {
+                            choosePerson(item.key, index);
+                          }}
+                          style={
+                            item.key === diaryKey
+                              ? {
+                                  border: '2px solid #17B881',
+                                }
                               : {}
                           }
                         >
@@ -927,13 +1074,13 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                           />
                         </div>
                       )}
-                  </React.Fragment>
-                );
-              })}
-            </React.Fragment>
-          ) : null}
-        </React.Fragment>
-      </DropMenu>
+                    </React.Fragment>
+                  );
+                })
+              : null}
+          </div>
+        ) : null}
+      </React.Fragment>
     </div>
   );
 };

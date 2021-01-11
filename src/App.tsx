@@ -4,118 +4,117 @@ import { useLocation, useHistory } from 'react-router-dom';
 import { useTypedSelector } from './redux/reducer/RootState';
 import { getSearchParamValue } from './services/util';
 import { useDispatch } from 'react-redux';
-import moment from 'moment';
 import _ from 'lodash';
-import format from './components/common/format';
+import moment from 'moment';
 import {
   getUserInfo,
-  getMainGroupKey,
-  getUploadToken,
-  getTheme,
-  getTargetUserInfo,
-  getThemeBg,
   setTheme,
   changeMusic,
   changeMessageMusic,
   changeunMusic,
   changeBatchMusic,
   changeCreateMusic,
-  changeMove,
+  clearAuth,
+  getThemeBg,
+  getMainGroupKey,
+  getUploadToken,
+  getTheme,
+  getTargetUserInfo,
 } from './redux/actions/authActions';
 import {
-  setCommonHeaderIndex,
   setMoveState,
-  setUnMessageNum,
-  setSocketObj,
+  setCommonHeaderIndex,
+  changeTimeSetVisible,
+  changeTaskMemberVisible,
 } from './redux/actions/commonActions';
+import { clearMember } from './redux/actions/memberActions';
+import { clearGroup } from './redux/actions/groupActions';
 import {
   setChooseKey,
   changeTaskInfoVisible,
-  getCalendarList,
-  setTaskKey,
-  setNewTaskArray,
+  clearTask,
 } from './redux/actions/taskActions';
-
-import HeaderSet from './components/headerSet/headerSet';
-import Home from './views/home/home';
-import Content from './views/content/content';
-import WorkingTable from './views/workingTable/workingTable';
-import GroupTable from './views/groupTable/groupTable';
-import Calendar from './views/calendar/calendar';
-import ShowPage from './views/showPage/showPage';
+import Loadable from 'react-loadable';
+import TimeSet from './components/common/timeSet';
+import TaskMember from './components/task/taskMember';
 import TaskInfo from './components/taskInfo/taskInfo';
-
-import closePng from './assets/img/close.png';
 import moveSvg from './assets/svg/move.svg';
 import { setGroupKey } from './redux/actions/groupActions';
-
+import { Route, Switch, Redirect } from 'react-router-dom';
+const ShowPage = Loadable({
+  loader: () => import('./views/showPage/showPage'),
+  loading: () => null,
+});
+const Company = Loadable({
+  loader: () => import('./views/company/company'),
+  loading: () => null,
+});
+const Basic = Loadable({
+  loader: () => import('./views/basic/basic'),
+  loading: () => null,
+});
 const App: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
   const token = useTypedSelector((state) => state.auth.token);
-  const socket = useTypedSelector((state) => state.auth.socket);
-  const socketObj = useTypedSelector((state) => state.common.socketObj);
-
-  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
-  const taskInfoVisible = useTypedSelector(
-    (state) => state.task.taskInfoVisible
-  );
-  const taskActionArray = useTypedSelector(
-    (state) => state.task.taskActionArray
-  );
-  const taskAction = useTypedSelector((state) => state.task.taskAction);
-  const taskArray = useTypedSelector((state) => state.task.taskArray);
-  const selfTaskArray = useTypedSelector((state) => state.task.selfTaskArray);
-  const workingTaskArray = useTypedSelector(
-    (state) => state.task.workingTaskArray
-  );
+  const groupKey = useTypedSelector((state) => state.group.groupKey);
+  const targetUserKey = useTypedSelector((state) => state.auth.targetUserKey);
   const theme = useTypedSelector((state) => state.auth.theme);
   const themeBg = useTypedSelector((state) => state.auth.themeBg);
   const finishMusic = useTypedSelector((state) => state.auth.finishMusic);
   const messageMusic = useTypedSelector((state) => state.auth.messageMusic);
   const unFinishMusic = useTypedSelector((state) => state.auth.unFinishMusic);
-  const unMessageNum = useTypedSelector((state) => state.common.unMessageNum);
   const batchMusic = useTypedSelector((state) => state.auth.batchMusic);
   const createMusic = useTypedSelector((state) => state.auth.createMusic);
   const finishPos = useTypedSelector((state) => state.auth.finishPos);
-  const [intervalTime, setIntervalTime] = useState<any>(null);
-  const [bgIntervalTime, setBgIntervalTime] = useState<any>(null);
-  const [playAction, setPlayAction] = useState<any>({});
-  const [playState, setPlayState] = useState(false);
-  const [showType, setShowType] = useState('3');
+  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const taskInfoVisible = useTypedSelector(
+    (state) => state.task.taskInfoVisible
+  );
+  const timeSetVisible = useTypedSelector(
+    (state) => state.common.timeSetVisible
+  );
+  const taskMemberVisible = useTypedSelector(
+    (state) => state.common.taskMemberVisible
+  );
+  const timeSetX = useTypedSelector((state) => state.common.timeSetX);
+  const timeSetY = useTypedSelector((state) => state.common.timeSetY);
+  const taskMemberX = useTypedSelector((state) => state.common.taskMemberX);
+  const taskMemberY = useTypedSelector((state) => state.common.taskMemberY);
   const [finishIndex, setFinishIndex] = useState(0);
-  const calendarColor = [
-    '#39B98D',
-    '#3C8FB5',
-    '#B762BD',
-    '#86B93F',
-    '#8B572A',
-    '#D0021B',
-    '#F5A623',
-    '#FC766A',
-    '#4A4A4A',
-    '#9B9B9B',
-  ];
-  const pageRef: React.RefObject<any> = useRef();
+  const [bgIntervalTime, setBgIntervalTime] = useState<any>(null);
   const doneAudioRef: React.RefObject<any> = useRef();
   const doneMessageRef: React.RefObject<any> = useRef();
   const undoneAudioRef: React.RefObject<any> = useRef();
   const createRef: React.RefObject<any> = useRef();
   const batchRef: React.RefObject<any> = useRef();
-
-  const ballRef: React.RefObject<any> = useRef();
+  const [timesetObj, setTimesetObj] = useState<any>(null);
+  const [taskMemberObj, setTaskMemberObj] = useState<any>(null);
+  const [showType, setShowType] = useState('3');
+  const pageRef: React.RefObject<any> = useRef();
+  let bgRef = useRef<any>(null);
+  let starRef = useRef<any>(null);
+  useEffect(() => {
+    return () => {
+      if (bgRef.current) {
+        clearInterval(bgRef.current);
+      }
+      if (starRef.current) {
+        clearTimeout(starRef.current);
+      }
+    };
+  }, []);
   useEffect(() => {
     // 用户已登录
-    if (user && user._key && token && token === localStorage.getItem('token')) {
+    if (user && token && token === localStorage.getItem('token')) {
+      // dispatch(getMainGroupKey());
       dispatch(getMainGroupKey());
       dispatch(getTheme());
-      dispatch(getThemeBg(1));
       let headerIndex = localStorage.getItem('headerIndex')
         ? localStorage.getItem('headerIndex')
         : '1';
-
       if (headerIndex) {
         if (headerIndex == '5') {
           if (theme && !theme.calendarVisible) {
@@ -132,9 +131,6 @@ const App: React.FC = () => {
       const groupKey = localStorage.getItem('groupKey');
       if (groupKey) {
         dispatch(setGroupKey(groupKey));
-        // dispatch(setMoveState('in'));
-        // dispatch(setCommonHeaderIndex(3));
-        // localStorage.setItem('groupKey', '');
       }
       const shareKey = localStorage.getItem('shareKey');
       if (shareKey) {
@@ -145,7 +141,8 @@ const App: React.FC = () => {
       const showType = localStorage.getItem('showType');
       if (showType) {
         setShowType('2');
-        localStorage.removeItem('showType');
+        // localStorage.removeItem('showType');
+        history.push('/home/showPage');
       } else {
         setShowType('1');
       }
@@ -159,21 +156,23 @@ const App: React.FC = () => {
         // 获取用户信息
         localStorage.setItem('token', token);
         dispatch(getUserInfo(token));
+        // dispatch(getMember(mainGroupKey, 1, 1));
         dispatch(getUploadToken());
       } else {
-        history.push('/welcome');
+        history.push('/');
+        return;
       }
 
       const groupKey = getSearchParamValue(location.search, 'groupKey');
       if (groupKey) {
         localStorage.setItem('groupKey', groupKey);
         localStorage.setItem('headerIndex', '3');
-        window.location.href = window.location.origin + '/';
+        history.push('/home/basic');
       }
       const shareKey = getSearchParamValue(location.search, 'shareKey');
       if (shareKey) {
         localStorage.setItem('shareKey', shareKey);
-        window.location.href = window.location.origin + '/?showType=1';
+        history.push('/home/showPage');
       }
       const showType = getSearchParamValue(location.search, 'showType');
       if (showType) {
@@ -182,9 +181,9 @@ const App: React.FC = () => {
       let url = window.location.href;
       if (getSearchParamValue(location.search, 'token')) {
         if (showType) {
-          window.location.href = window.location.origin + '/?showType=1';
+          history.push('/home/showPage');
         } else {
-          window.location.href = window.location.origin + '/';
+          history.push('/home/basic');
         }
       }
       // 自动切换为https
@@ -193,7 +192,7 @@ const App: React.FC = () => {
         window.location.replace(url);
       }
     }
-  }, [history, dispatch, location.search, user, token]);
+  }, [user, token]);
   useEffect(() => {
     if (theme.moveState) {
       dispatch(setMoveState(''));
@@ -202,31 +201,18 @@ const App: React.FC = () => {
     } else {
       dispatch(setMoveState(''));
     }
+    if (theme.randomVisible) {
+      dispatch(getThemeBg(1));
+    }
   }, [theme]);
-  // useEffect(() => {
-  //   if (taskActionArray.length > 0) {
-  //     clearInterval(intervalTime);
-  //     let newIntervalTime: any = 0;
-  //     formatAction();
-  //     newIntervalTime = setInterval(formatAction, 1000);
-  //     setIntervalTime(newIntervalTime);
-  //   }
-  //   if (taskActionArray.length == 0) {
-  //     clearInterval(intervalTime);
-  //   }
-  //   return () => {
-  //     clearInterval(intervalTime);
-  //   };
-  // }, [taskActionArray]);
   useEffect(() => {
     if (
       themeBg.length > 0 &&
       theme.randomVisible &&
-      theme.randomType
+      theme.randomType &&
+      !bgRef.current
       // &&canvasRef.current
     ) {
-      clearInterval(bgIntervalTime);
-      let newIntervalTime: any = 0;
       const randomTime =
         theme.randomType === '1'
           ? 60000
@@ -236,20 +222,13 @@ const App: React.FC = () => {
           ? 86400000
           : 60000;
       randomBg();
-      newIntervalTime = setInterval(randomBg, randomTime);
-      setBgIntervalTime(newIntervalTime);
+      bgRef.current = setInterval(randomBg, randomTime);
     }
     if (themeBg.length == 0 || !theme.randomVisible) {
-      clearInterval(bgIntervalTime);
+      clearInterval(bgRef.current);
     }
-    return () => {
-      clearInterval(bgIntervalTime);
-    };
   }, [themeBg, theme]);
   // , canvasRef
-  useEffect(() => {
-    setPlayAction(_.cloneDeep(taskAction));
-  }, [taskAction]);
   useEffect(() => {
     if (finishMusic) {
       doneAudioRef.current.play();
@@ -280,100 +259,6 @@ const App: React.FC = () => {
       dispatch(changeCreateMusic(false));
     }
   }, [createMusic]);
-  useEffect(() => {
-    if (socket) {
-      socket.on('notice', (data: any) => {
-        console.log('data', data);
-
-        let taskData = JSON.parse(data);
-        console.log(taskData);
-        dispatch(setSocketObj({ data: taskData }));
-      });
-    }
-  }, [socket]);
-  useEffect(() => {
-    if (socketObj) {
-      let newUnMessageNum = unMessageNum;
-      let newSelfTaskArray = _.cloneDeep(selfTaskArray);
-      let newWorkingTaskArray = _.cloneDeep(workingTaskArray);
-      let newTaskArray = _.cloneDeep(taskArray);
-      dispatch(setUnMessageNum(newUnMessageNum + 1));
-      if (headerIndex === 0 && newSelfTaskArray) {
-        newSelfTaskArray = newSelfTaskArray.map(
-          (taskItem: any, taskIndex: number) => {
-            if (taskItem._key === socketObj.data.cardKey) {
-              for (let key in taskItem) {
-                if (
-                  socketObj.data[key] &&
-                  key !== 'content' &&
-                  key !== 'type'
-                ) {
-                  if (typeof taskItem[key] === 'number') {
-                    taskItem[key] = parseInt(socketObj.data[key]);
-                  } else if (typeof taskItem[key] === 'boolean') {
-                    taskItem[key] = socketObj.data[key] ? true : false;
-                  } else {
-                    taskItem[key] = socketObj.data[key];
-                  }
-                }
-              }
-            }
-            return taskItem;
-          }
-        );
-        dispatch(setNewTaskArray('selfTaskArray', newSelfTaskArray));
-      } else if (
-        (headerIndex === 1 || headerIndex === 2) &&
-        newWorkingTaskArray
-      ) {
-        newWorkingTaskArray = newWorkingTaskArray.map(
-          (taskItem: any, taskIndex: number) => {
-            taskItem = taskItem.map((item: any, index: number) => {
-              if (item._key === socketObj.data.cardKey) {
-                for (let key in item) {
-                  if (
-                    socketObj.data[key] &&
-                    key !== 'content' &&
-                    key !== 'type'
-                  ) {
-                    if (typeof item[key] === 'number') {
-                      item[key] = parseFloat(socketObj.data[key]);
-                    } else if (typeof item[key] === 'boolean') {
-                      item[key] = socketObj.data[key] ? true : false;
-                    } else {
-                      item[key] = socketObj.data[key];
-                    }
-                  }
-                }
-              }
-              return item;
-            });
-            return taskItem;
-          }
-        );
-        dispatch(setNewTaskArray('workingTaskArray', newWorkingTaskArray));
-      } else if (headerIndex === 3 && newTaskArray) {
-        newTaskArray = newTaskArray.map((taskItem: any, taskIndex: number) => {
-          if (taskItem._key === socketObj.data.cardKey) {
-            for (let key in taskItem) {
-              if (socketObj.data[key] && key !== 'content' && key !== 'type') {
-                if (typeof taskItem[key] === 'number') {
-                  taskItem[key] = parseInt(socketObj.data[key]);
-                } else if (typeof taskItem[key] === 'boolean') {
-                  taskItem[key] = socketObj.data[key] ? true : false;
-                } else {
-                  taskItem[key] = socketObj.data[key];
-                }
-              }
-            }
-          }
-          return taskItem;
-        });
-        console.log(newTaskArray);
-        dispatch(setNewTaskArray('taskArray', newTaskArray));
-      }
-    }
-  }, [socketObj]);
   useEffect(() => {
     if (finishPos.length > 0) {
       let newFinishIndex = finishIndex;
@@ -406,13 +291,16 @@ const App: React.FC = () => {
       dom.appendChild(img);
       pageRef.current.appendChild(dom);
       let style: any = document.styleSheets[0];
-      let timer: any = setTimeout(() => {
-        pageRef.current.removeChild(dom);
-        style.deleteRule(style.cssRules.length - 5);
-        style.deleteRule(style.cssRules.length - 4);
-        clearTimeout(timer);
-        timer = null;
-      }, 3800);
+      starRef.current = setTimeout(() => {
+        if (pageRef.current) {
+          pageRef.current.removeChild(dom);
+        }
+        if (style) {
+          style.deleteRule(style.cssRules.length - 5);
+          style.deleteRule(style.cssRules.length - 4);
+        }
+        // clearTimeout(starRef.current);
+      }, 2800);
       style.insertRule(
         '@keyframes run-right-top' +
           newFinishIndex +
@@ -435,20 +323,51 @@ const App: React.FC = () => {
       setFinishIndex(newFinishIndex);
     }
   }, [finishPos]);
+  useEffect(() => {
+    if (timeSetVisible) {
+      let obj: any = {};
+      if (pageRef.current.offsetHeight - timeSetY > 205) {
+        obj.top = timeSetY + 10;
+      } else {
+        obj.bottom = pageRef.current.offsetHeight - timeSetY;
+      }
+      if (pageRef.current.offsetWidth - timeSetX > 274) {
+        obj.left = timeSetX;
+      } else {
+        obj.right = pageRef.current.offsetWidth - timeSetX;
+      }
+      obj.display = 'block';
+      setTimesetObj(obj);
+    }
+  }, [timeSetX, timeSetY]);
+  useEffect(() => {
+    let obj: any = {};
+    if (taskMemberVisible) {
+      if (pageRef.current.offsetHeight * 0.5 > taskMemberY) {
+        obj.top = taskMemberY - 20;
+      } else {
+        obj.bottom = pageRef.current.offsetHeight - taskMemberY - 20;
+      }
+      if (pageRef.current.offsetWidth - taskMemberX > 260) {
+        obj.left = taskMemberX - 130;
+      } else {
+        obj.right = pageRef.current.offsetWidth - taskMemberX;
+      }
+      obj.display = 'block';
+      setTaskMemberObj(obj);
+    }
+  }, [taskMemberX, taskMemberY]);
+  useEffect(() => {
+    dispatch(clearTask(4));
+    if (headerIndex !== 2) {
+      dispatch(clearAuth());
+    }
+    if (headerIndex !== 3) {
+      dispatch(clearMember());
+      dispatch(clearGroup());
+    }
+  }, [headerIndex, targetUserKey, groupKey]);
 
-  // const formatAction = () => {
-  //   const nowTime = moment().valueOf();
-  //   taskActionArray.forEach((item: any, index: number) => {
-  //     if (
-  //       item.taskEndDate < nowTime + 1000 &&
-  //       item.taskEndDate > nowTime - 1000 &&
-  //       item.finishPercent
-  //     ) {
-  //       setPlayAction(item);
-  //       setPlayState(true);
-  //     }
-  //   });
-  // };
   const randomBg = () => {
     const localTime = localStorage.getItem('localTime')
       ? localStorage.getItem('localTime')
@@ -482,13 +401,7 @@ const App: React.FC = () => {
     };
   };
   return (
-    <div
-      className="App"
-      // onClick={() => {
-      //   dispatch(setTaskKey(''));
-      // }}
-      ref={pageRef}
-    >
+    <div className="App" ref={pageRef}>
       <div
         className="App-bg1"
         style={{
@@ -516,38 +429,39 @@ const App: React.FC = () => {
           }}
         />
       ) : showType === '1' ? (
-        <React.Fragment>
-          <Home />
-          {headerIndex === 0 ? <Content /> : null}
-          {headerIndex === 1 ? <WorkingTable /> : null}
-          {headerIndex === 3 ? <GroupTable /> : null}
-          {headerIndex === 2 ? <WorkingTable /> : null}
-          {headerIndex === 5 && theme && theme.calendarVisible ? (
-            <Calendar />
-          ) : null}
-          <HeaderSet />
-        </React.Fragment>
-      ) : null}
-      {taskInfoVisible ? <TaskInfo type="new" /> : null}
-      {playState ? (
-        <div className="action">
-          <div className="action-title">日程提醒</div>
-          <div
-            className="action-container"
-            style={{
-              borderLeft: '2px solid ' + calendarColor[playAction.taskType],
-            }}
-          >
-            {playAction.title}
-          </div>
-          <img
-            src={closePng}
-            className="action-close"
-            onClick={() => {
-              setPlayAction({});
-              setPlayState(false);
-            }}
+        // <Router>
+        <Switch>
+          <Route
+            exact
+            path="/home/"
+            render={() => <Redirect to="/home/basic" />}
           />
+          <Route path="/home/basic" component={Basic} />
+          <Route exact path="/home/showPage" component={ShowPage} />
+          <Route path="/home/company" component={Company} />
+        </Switch>
+      ) : null}
+      {taskInfoVisible ? <TaskInfo /> : null}
+      {timeSetVisible && timeSetX && timeSetY ? (
+        <div
+          className="timeSet-container"
+          style={timesetObj}
+          onMouseLeave={() => {
+            dispatch(changeTimeSetVisible(false, 0, 0));
+          }}
+        >
+          <TimeSet type="new" />
+        </div>
+      ) : null}
+      {taskMemberVisible && taskMemberX && taskMemberY ? (
+        <div
+          className="taskMember-container"
+          style={taskMemberObj}
+          onMouseLeave={() => {
+            dispatch(changeTaskMemberVisible(false, 0, 0));
+          }}
+        >
+          <TaskMember />
         </div>
       ) : null}
       <audio
@@ -595,10 +509,6 @@ const App: React.FC = () => {
       >
         您的浏览器不支持 audio 标签。
       </audio>
-
-      {/* <div className="ball run_top_right" ref={ballRef}>
-        <img src={movePng} />
-      </div> */}
     </div>
   );
 };

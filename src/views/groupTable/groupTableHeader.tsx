@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Checkbox, Chip, Avatar, Button } from '@material-ui/core';
+import { Checkbox, Chip, Avatar, Button, Tooltip } from '@material-ui/core';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
@@ -10,7 +10,7 @@ import {
   setChatState,
 } from '../../redux/actions/commonActions';
 import { setTheme } from '../../redux/actions/authActions';
-import { setFilterObject } from '../../redux/actions/taskActions';
+import { setFilterObject, getGroupTask } from '../../redux/actions/taskActions';
 import { changeGroupInfo, getGroup } from '../../redux/actions/groupActions';
 import { getGroupMember } from '../../redux/actions/memberActions';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
@@ -20,7 +20,7 @@ import moment from 'moment';
 import '../workingTable/workingTableHeader.css';
 import DropMenu from '../../components/common/dropMenu';
 import Dialog from '../../components/common/dialog';
-import Tooltip from '../../components/common/tooltip';
+// import Tooltip from '../../components/common/tooltip';
 import GroupSet from '../tabs/groupSet';
 import GroupMember from '../tabs/groupMember';
 import SonGroup from '../tabs/sonGroup';
@@ -56,13 +56,16 @@ import tabb2Svg from '../../assets/svg/tab2.svg';
 import tabb3Svg from '../../assets/svg/tab3.svg';
 import tabb4Svg from '../../assets/svg/tab4.svg';
 import tabb5Svg from '../../assets/svg/tab5.svg';
+import tabb6Svg from '../../assets/svg/tab6.svg';
 import tab0Svg from '../../assets/svg/tabw0.svg';
 import tab1Svg from '../../assets/svg/tabw1.svg';
 import tab2Svg from '../../assets/svg/tabw2.svg';
 import tab3Svg from '../../assets/svg/tabw3.svg';
 import tab4Svg from '../../assets/svg/tabw4.svg';
 import tab5Svg from '../../assets/svg/tabw5.svg';
+import tab6Svg from '../../assets/svg/tabw6.svg';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import downArrowPng from '../../assets/img/downArrow.png';
 import logoutPng from '../../assets/img/logout.png';
 import './groupTableHeader.css';
@@ -119,6 +122,7 @@ const GroupTableHeader: React.FC = (prop) => {
     tab3Svg,
     tab4Svg,
     tab5Svg,
+    tab6Svg,
   ];
   const tabbImg: string[] = [
     tabb0Svg,
@@ -127,6 +131,7 @@ const GroupTableHeader: React.FC = (prop) => {
     tabb3Svg,
     tabb4Svg,
     tabb5Svg,
+    tabb6Svg,
   ];
   const checkedTitle = [
     '过期',
@@ -134,12 +139,11 @@ const GroupTableHeader: React.FC = (prop) => {
     '已完成',
     '未来',
     '重要',
-    '未计划',
     '一般卡片',
     '已归档',
     // '树任务',
   ];
-  const tabArray = ['任务', '日报', '排行榜', '文档', '活力', '知识树'];
+  const tabArray = ['任务', '日报', '排行榜', '文档', '活力', '知识树', '日程'];
   const [viewVisible, setViewVisible] = useState(false);
   const [tabVisible, setTabVisible] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
@@ -150,6 +154,7 @@ const GroupTableHeader: React.FC = (prop) => {
   const [vitalityVisible, setVitalityVisible] = useState(false);
   const [groupMemberVisible, setGroupMemberVisible] = useState(false);
   const [sonGroupVisible, setSonGroupVisible] = useState(false);
+  const [joinCount, setJoinCount] = useState(0);
   const [dismissVisible, setDismissVisible] = useState(false);
   const [groupMember, setGroupMember] = useState<any>([]);
   const [groupObj, setGroupObj] = React.useState<any>(null);
@@ -161,8 +166,11 @@ const GroupTableHeader: React.FC = (prop) => {
     false,
     false,
     false,
+    false,
   ]);
   const [outGroupVisible, setOutGroupVisible] = useState(false);
+  const [fileState, setFileState] = useState(true);
+  const [fileInput, setFileInput] = useState('7');
   const chooseMemberHeader = async (headIndex: number) => {
     dispatch(setHeaderIndex(headIndex));
     setViewVisible(false);
@@ -198,6 +206,16 @@ const GroupTableHeader: React.FC = (prop) => {
     //   );
     // dispatch(setHeaderIndex(0));
   }, [headerIndex]);
+
+  useEffect(() => {
+    let index = memberHeaderIndex === 0 ? 0 : memberHeaderIndex - 6;
+    setTabIndex(index);
+  }, [memberHeaderIndex]);
+  useEffect(() => {
+    if (groupInfo) {
+      setJoinCount(groupInfo.applyJoinGroupMemberCount);
+    }
+  }, [groupInfo]);
   useEffect(() => {
     let filterCheckedArray: any = [];
     if (filterObject.filterType.length > 0) {
@@ -205,6 +223,7 @@ const GroupTableHeader: React.FC = (prop) => {
         return filterObject.filterType.indexOf(item) !== -1;
       });
     }
+    setFileInput(filterObject.fileDay);
     setFilterCheckedArray(filterCheckedArray);
   }, [filterObject]);
   const changeFilterCheck = async (filterTypeText: string) => {
@@ -221,11 +240,10 @@ const GroupTableHeader: React.FC = (prop) => {
   const saveGroupSet = (obj: any) => {
     setGroupObj(obj);
   };
-  const setGroup = () => {
+  const setGroup = async () => {
     if (groupObj) {
-      dispatch(changeGroupInfo(groupKey, groupObj));
+      await dispatch(changeGroupInfo(groupKey, groupObj));
       // dispatch(setMessage(true, '修改群属性成功', 'success'));
-      // dispatch(getGroup(3, null, theme.groupSortType));
       dispatch(getGroup(3));
     }
   };
@@ -285,7 +303,7 @@ const GroupTableHeader: React.FC = (prop) => {
       dispatch(getGroup(3));
       dispatch(setCommonHeaderIndex(1));
       if (!theme.moveState) {
-        dispatch(setMoveState('in'));
+        dispatch(setMoveState('out'));
       }
     } else {
       dispatch(setMessage(true, groupRes.msg, 'error'));
@@ -304,7 +322,7 @@ const GroupTableHeader: React.FC = (prop) => {
   };
   const shareGroup = () => {
     const redirect = `${window.location.protocol}//${window.location.host}`;
-    copy(redirect + '/?groupKey=' + groupKey);
+    copy(redirect + '/home/basic?groupKey=' + groupKey);
     dispatch(setMessage(true, '复制链接群成功', 'success'));
   };
   const addTemplate = async () => {
@@ -373,6 +391,22 @@ const GroupTableHeader: React.FC = (prop) => {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }
   };
+  const changeFileDay = async (fileDay: number) => {
+    let newFilterObject = _.cloneDeep(filterObject);
+    newFilterObject.fileDay = fileDay;
+    let res: any = await api.member.setConfig(
+      groupMemberItem._key,
+      newFilterObject
+    );
+    if (res.msg === 'OK') {
+      console.log('设置成功');
+      // dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
+      setFileState(true);
+      dispatch(setFilterObject(newFilterObject));
+    } else {
+      dispatch(setMessage(true, res.msg, 'error'));
+    }
+  };
   return (
     <React.Fragment>
       <div className="workingTableHeader">
@@ -397,7 +431,8 @@ const GroupTableHeader: React.FC = (prop) => {
             <img
               src={
                 groupInfo && groupInfo.groupLogo
-                  ? groupInfo.groupLogo
+                  ? groupInfo.groupLogo +
+                    '?imageMogr2/auto-orient/thumbnail/80x'
                   : defaultGroupPng
               }
               alt=""
@@ -494,16 +529,16 @@ const GroupTableHeader: React.FC = (prop) => {
                     style={{ width: '22px', height: '20px' }}
                   />
                   群成员
-                  {groupInfo && groupInfo.applyJoinGroupMemberCount > 0 ? (
+                  {groupInfo && joinCount > 0 ? (
                     <div
                       className="group-member-title-num"
                       style={
-                        groupInfo.applyJoinGroupMemberCount > 10
+                        joinCount > 10
                           ? { borderRadius: '12px', padding: '0px 3px' }
                           : { borderRadius: '50%', width: '20px' }
                       }
                     >
-                      {groupInfo.applyJoinGroupMemberCount}
+                      {joinCount}
                     </div>
                   ) : null}
                 </div>
@@ -571,71 +606,73 @@ const GroupTableHeader: React.FC = (prop) => {
         />
       </Tooltip> */}
         <div className="view-container">
-          <div
-            className="workingTableHeader-logo"
-            style={{ width: '90px' }}
-            onMouseEnter={() => {
-              setTabVisible(true);
-              setViewVisible(false);
-              setFilterVisible(false);
-            }}
-            onClick={() => {
-              setTabVisible(true);
-              setViewVisible(false);
-              setFilterVisible(false);
-            }}
-          >
-            <img src={tabImg[tabIndex]} alt=""></img>
-            <Chip
-              size="small"
-              label={tabArray[tabIndex]}
-              className={classes.chip}
-            />
-            <DropMenu
-              visible={tabVisible}
-              dropStyle={{
-                width: '180px',
-                top: '60px',
-                left: '0px',
-                color: '#333',
+          {memberHeaderIndex === 0 || memberHeaderIndex > 5 ? (
+            <div
+              className="workingTableHeader-logo"
+              style={{ width: '90px' }}
+              onMouseEnter={() => {
+                setTabVisible(true);
+                setViewVisible(false);
+                setFilterVisible(false);
               }}
-              onClose={() => {
-                setTabVisible(false);
+              onClick={() => {
+                setTabVisible(true);
+                setViewVisible(false);
+                setFilterVisible(false);
               }}
-              closeType={1}
             >
-              {tabArray.map((tabItem: any, index: number) => {
-                return (
-                  <div
-                    className="viewTableHeader-logo  viewTableHeader-tab"
-                    onClick={() => {
-                      chooseMemberHeader(index === 0 ? 0 : index + 6);
-                      setTabIndex(index);
-                    }}
-                    key={'tabTable' + index}
-                    style={{
-                      backgroundColor: tabIndex === index ? '#f0f0f0' : '',
-                    }}
-                  >
-                    <div className="viewTableHeader-tab">
-                      <img src={tabbImg[index]} alt=""></img>
-                      {tabItem}
+              <img src={tabImg[tabIndex]} alt=""></img>
+              <Chip
+                size="small"
+                label={tabArray[tabIndex]}
+                className={classes.chip}
+              />
+              <DropMenu
+                visible={tabVisible}
+                dropStyle={{
+                  width: '180px',
+                  top: '60px',
+                  left: '0px',
+                  color: '#333',
+                }}
+                onClose={() => {
+                  setTabVisible(false);
+                }}
+                closeType={1}
+              >
+                {tabArray.map((tabItem: any, index: number) => {
+                  return (
+                    <div
+                      className="viewTableHeader-logo  viewTableHeader-tab"
+                      onClick={() => {
+                        chooseMemberHeader(index === 0 ? 0 : index + 6);
+                        setTabIndex(index);
+                      }}
+                      key={'tabTable' + index}
+                      style={{
+                        backgroundColor: tabIndex === index ? '#f0f0f0' : '',
+                      }}
+                    >
+                      <div className="viewTableHeader-tab">
+                        <img src={tabbImg[index]} alt=""></img>
+                        {tabItem}
+                      </div>
+                      {tabIndex === index ? (
+                        <img
+                          src={checkPersonPng}
+                          alt=""
+                          style={{
+                            width: '20px',
+                            height: '12px',
+                          }}
+                        ></img>
+                      ) : null}
                     </div>
-                    {tabIndex === index ? (
-                      <img
-                        src={checkPersonPng}
-                        alt=""
-                        style={{
-                          width: '20px',
-                          height: '12px',
-                        }}
-                      ></img>
-                    ) : null}
-                  </div>
-                );
-              })}
-            </DropMenu>
-          </div>
+                  );
+                })}
+              </DropMenu>
+            </div>
+          ) : null}
           {memberHeaderIndex < 5 ? (
             <React.Fragment>
               <div
@@ -708,7 +745,17 @@ const GroupTableHeader: React.FC = (prop) => {
                   {filterObject.groupKey ? (
                     <Chip
                       size="small"
-                      avatar={<Avatar alt="" src={filterObject.groupLogo} />}
+                      avatar={
+                        <Avatar
+                          alt=""
+                          src={
+                            filterObject.groupLogo
+                              ? filterObject.groupLogo +
+                                '?imageMogr2/auto-orient/thumbnail/80x'
+                              : defaultGroupPng
+                          }
+                        />
+                      }
                       label={filterObject.groupName}
                       onClick={() => {
                         setFilterVisible(true);
@@ -721,7 +768,15 @@ const GroupTableHeader: React.FC = (prop) => {
                     <Chip
                       size="small"
                       avatar={
-                        <Avatar alt="" src={filterObject.creatorAvatar} />
+                        <Avatar
+                          alt=""
+                          src={
+                            filterObject.creatorAvatar
+                              ? filterObject.creatorAvatar +
+                                '?imageMogr2/auto-orient/thumbnail/80x'
+                              : defaultPersonPng
+                          }
+                        />
                       }
                       label={'创建人: ' + filterObject.creatorName}
                       onClick={() => {
@@ -735,7 +790,15 @@ const GroupTableHeader: React.FC = (prop) => {
                     <Chip
                       size="small"
                       avatar={
-                        <Avatar alt="" src={filterObject.executorAvatar} />
+                        <Avatar
+                          alt=""
+                          src={
+                            filterObject.executorAvatar
+                              ? filterObject.executorAvatar +
+                                '?imageMogr2/auto-orient/thumbnail/80x'
+                              : defaultPersonPng
+                          }
+                        />
                       }
                       label={'执行人: ' + filterObject.executorName}
                       onClick={() => {
@@ -786,11 +849,37 @@ const GroupTableHeader: React.FC = (prop) => {
                           />
                           {item}
                           {item == '已归档' ? (
-                            <div
-                              style={{ marginLeft: '8px', cursor: 'pointer' }}
-                            >
-                              ( 近7天 )
-                            </div>
+                            <React.Fragment>
+                              {fileState ? (
+                                <div
+                                  onClick={() => {
+                                    setFileState(false);
+                                  }}
+                                  style={{
+                                    marginLeft: '8px',
+                                    cursor: 'pointer',
+                                  }}
+                                >
+                                  ( 近{fileInput}天 )
+                                </div>
+                              ) : (
+                                <div style={{ marginLeft: '8px' }}>
+                                  ( 近
+                                  <input
+                                    type="number"
+                                    value={fileInput}
+                                    onChange={(e) => {
+                                      setFileInput(e.target.value);
+                                    }}
+                                    onBlur={(e) => {
+                                      changeFileDay(parseInt(e.target.value));
+                                    }}
+                                    className="fileday"
+                                  />
+                                  天 )
+                                </div>
+                              )}
+                            </React.Fragment>
                           ) : null}
                         </div>
                       );
@@ -918,26 +1007,37 @@ const GroupTableHeader: React.FC = (prop) => {
           >
             子群
           </div>
-          <img
-            src={logoutPng}
-            alt=""
-            className="contact-dialog-out"
-            onClick={() => {
-              setOutGroupVisible(true);
-            }}
-          />
         </div>
         {groupTabIndex === 0 ? (
-          <GroupSet saveGroupSet={saveGroupSet} type={'设置'} />
+          <GroupSet
+            saveGroupSet={saveGroupSet}
+            type={'设置'}
+            groupInfo={groupInfo}
+          />
         ) : null}
-        {groupTabIndex === 1 ? <GroupMember setMember={setMember} /> : null}
+        {groupTabIndex === 1 ? (
+          <GroupMember
+            setMember={setMember}
+            changeCount={(count: any) => {
+              setJoinCount(count);
+            }}
+          />
+        ) : null}
         {groupTabIndex === 2 ? (
           <SonGroup
             onClose={() => {
-              setSonGroupVisible(false);
+              setGroupSetVisible(false);
             }}
           />
         ) : null}
+        <img
+          src={logoutPng}
+          alt=""
+          className="contact-dialog-out"
+          onClick={() => {
+            setOutGroupVisible(true);
+          }}
+        />
       </Dialog>
       <Dialog
         visible={outGroupVisible}

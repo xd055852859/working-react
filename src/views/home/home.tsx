@@ -14,6 +14,7 @@ import { setCommonHeaderIndex } from '../../redux/actions/commonActions';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { setTheme } from '../../redux/actions/authActions';
 import _ from 'lodash';
+import { Tooltip } from '@material-ui/core';
 export interface HomeProps {}
 
 const Home: React.FC<HomeProps> = (props) => {
@@ -74,28 +75,32 @@ const Home: React.FC<HomeProps> = (props) => {
             src={logoSvg}
             alt=""
             onClick={() => {
-              history.push('/welcome');
+              history.push('/');
               localStorage.setItem('viewWelcome', '1');
             }}
           />
           {theme.moveState ? (
-            <img
-              src={fixIconSvg}
-              alt=""
-              style={{ width: '30px', height: '30px' }}
-              onClick={() => {
-                changeBoard('moveState', false);
-              }}
-            />
+            <Tooltip title="锁定左侧面板">
+              <img
+                src={fixIconSvg}
+                alt=""
+                style={{ width: '30px', height: '30px' }}
+                onClick={() => {
+                  changeBoard('moveState', false);
+                }}
+              />
+            </Tooltip>
           ) : (
-            <img
-              src={unfixIconSvg}
-              alt=""
-              style={{ width: '30px', height: '30px' }}
-              onClick={() => {
-                changeBoard('moveState', true);
-              }}
-            />
+            <Tooltip title="动态伸缩左侧面板">
+              <img
+                src={unfixIconSvg}
+                alt=""
+                style={{ width: '30px', height: '30px' }}
+                onClick={() => {
+                  changeBoard('moveState', true);
+                }}
+              />
+            </Tooltip>
           )}
         </div>
         <div
@@ -103,7 +108,9 @@ const Home: React.FC<HomeProps> = (props) => {
           style={
             headerIndex === 0 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
           }
-          onClick={() => dispatch(setCommonHeaderIndex(0))}
+          onClick={() => {
+            dispatch(setCommonHeaderIndex(0));
+          }}
         >
           <img src={boardPng} alt="" className="home-header-item-logo" />
           首页
@@ -113,7 +120,9 @@ const Home: React.FC<HomeProps> = (props) => {
             headerIndex === 1 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
           }
           className="home-header-item"
-          onClick={() => dispatch(setCommonHeaderIndex(1))}
+          onClick={() => {
+            dispatch(setCommonHeaderIndex(1));
+          }}
         >
           <img src={tablePng} alt="" className="home-header-item-logo" />
           我的工作
@@ -126,7 +135,9 @@ const Home: React.FC<HomeProps> = (props) => {
                 : {}
             }
             className="home-header-item"
-            onClick={() => dispatch(setCommonHeaderIndex(5))}
+            onClick={() =>{
+              dispatch(setCommonHeaderIndex(5));
+            }}
           >
             <img src={calendarPng} alt="" className="home-header-item-logo" />
             我的日程

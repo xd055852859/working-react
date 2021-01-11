@@ -34,9 +34,13 @@
 }
 
 .taskNav-name {
-  width: 220px;
+  max-width: 170px;
   font-size: 16px;
   font-weight: 500;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  word-break: break-all;
 }
 
 .taskNav-name-plus {
@@ -59,7 +63,7 @@
   color: #fff;
   background-color: transparent;
   font-size: 16px;
-  margin-bottom:3px
+  margin-bottom: 3px;
 }
 .taskNav-set {
   padding: 10px 0px;
@@ -87,7 +91,7 @@
   width: 100%;
   height: 300px;
   border-radius: 5px;
-  padding:5px;
+  padding: 5px;
   box-sizing: border-box;
 }
 
@@ -106,4 +110,35 @@
   height: 100%;
   display: flex;
   align-items: center;
+}
+.taskNav-url {
+  width: 280px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+.taskNav-url-input {
+  width: 0px;
+  height: 30px;
+  margin-left: 5px;
+  border: 1px solid #cecece;
+  border-radius: 6px;
+  box-sizing: border-box;
+  opacity: 0;
+}
+.taskNav-taskType {
+  width: 100%;
+  height: 38px;
+  line-height: 38px;
+  text-align: center;
+}
+@keyframes urlOut {
+  from {
+    width: 0px;
+    opacity: 0;
+  }
+  to {
+    width: 140px;
+    opacity: 1;
+  }
 }

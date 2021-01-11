@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { getTeamTask, getProjectTask } from '../../redux/actions/taskActions';
 import Task from '../../components/task/task';
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import moment from 'moment';
 import _ from 'lodash';
 import Avatar from '@material-ui/core/Avatar';
@@ -36,7 +37,6 @@ interface ProjectBoardItemProps {
 const MemberBoardItem: React.FC<MemberBoardItemProps> = (props) => {
   const { memberItem } = props;
   const classes = useStyles();
-  console.log('memberItem', memberItem);
   return (
     <React.Fragment>
       <div className="memberBoard-title">
@@ -54,7 +54,12 @@ const MemberBoardItem: React.FC<MemberBoardItemProps> = (props) => {
               {item[0].groupName.indexOf('主群') === -1 ? (
                 <Avatar
                   alt="群头像"
-                  src={item[0].groupLogo}
+                  src={
+                    item[0].groupLogo
+                      ? item[0].groupLogo +
+                        '?imageMogr2/auto-orient/thumbnail/80x'
+                      : defaultGroupPng
+                  }
                   className={classes.logo}
                 />
               ) : null}

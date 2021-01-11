@@ -1,6 +1,7 @@
 import React from 'react';
 import moment from 'moment';
 import './comment.css';
+import defaultPersonPng from '../../assets/img/defaultPerson.png'
 interface CommentProps {
   commentItem: any;
   commentClick:any;
@@ -15,7 +16,7 @@ const Comment: React.FC<CommentProps> = (prop) => {
     <div className="commentItem">
       <div className="commentItem-avatar">
         <div className="commentItem-avatar-img">
-          <img src={commentItem.etc.avatar} alt="" />
+          <img src={commentItem.etc.avatar?commentItem.etc.avatar+'?imageMogr2/auto-orient/thumbnail/80x':defaultPersonPng} alt="" />
         </div>
       </div>
       <div className="commentItem-content">

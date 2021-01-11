@@ -32,6 +32,7 @@ import editImgPng from '../../assets/img/editImg.png';
 interface GroupSetProps {
   saveGroupSet: any;
   type: string;
+  groupInfo?: any;
 }
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -56,11 +57,11 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 const GroupSet: React.FC<GroupSetProps> = (props) => {
   const classes = useStyles();
-  const { saveGroupSet, type } = props;
+  const { saveGroupSet, type, groupInfo } = props;
   const dispatch = useDispatch();
   const uploadToken = useTypedSelector((state) => state.auth.uploadToken);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
-  const groupInfo = useTypedSelector((state) => state.group.groupInfo);
+  // const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const groupRole = useTypedSelector((state) => state.group.groupRole);
   const [groupName, setGroupName] = useState('');
   const [enterprise, setEnterprise] = useState(false);
@@ -125,7 +126,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
     'https://cdn-icare.qingtime.cn/1603958235940_workingVip',
   ];
   useEffect(() => {
-    if (type === '设置' && groupInfo) {
+    if ((type === '设置' || type === '企业') && groupInfo) {
       setGroupName(groupInfo.groupName ? groupInfo.groupName : '');
       setGroupDesc(groupInfo.groupDesc ? groupInfo.groupDesc : '');
       setGroupLogo(groupInfo.groupLogo ? groupInfo.groupLogo : '');
@@ -137,7 +138,11 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
           : false
       );
       setIsOpen(groupInfo.isOpen ? groupInfo.isOpen : false);
-      setJoinType(groupInfo.joinType ? groupInfo.joinType + '' : '1');
+      setJoinType(
+        groupInfo.joinType || groupInfo.joinType === 0
+          ? groupInfo.joinType + ''
+          : '1'
+      );
       setPassword(groupInfo.password ? groupInfo.password : '');
       setQuestion(groupInfo.question ? groupInfo.question : '');
       setIsHasPassword(
@@ -183,7 +188,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
   const changeJoinType = (e: any) => {
     let newJoinType = e.target.value;
     setJoinType(newJoinType);
-    setGroupSet('joinType', newJoinType);
+    setGroupSet('joinType', parseInt(newJoinType));
   };
   const changeIsPassword = (e: any) => {
     let newIsHasPassword = e.target.checked;
@@ -252,7 +257,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
       groupLogo: groupLogo,
       modelUrl: modelUrl,
       isOpen: isOpen,
-      joinType: parseInt(joinType, 10),
+      joinType: parseInt(joinType),
       password: password,
       question: question,
       isHasPassword: isHasPassword,
@@ -266,7 +271,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
   };
   const shareGroup = () => {
     const redirect = `${window.location.protocol}//${window.location.host}`;
-    copy(redirect + '/?groupKey=' + groupKey);
+    copy(redirect + '/home?groupKey=' + groupKey);
     dispatch(setMessage(true, '复制链接群成功', 'success'));
   };
   return (

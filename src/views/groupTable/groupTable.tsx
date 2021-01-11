@@ -18,13 +18,16 @@ import WorkingReport from '../workingTable/workingReport';
 import Grid from '../../components/grid/grid';
 import GroupTableDocument from './groupTableDocument';
 import GroupTableTree from './groupTableTree';
-
 import Vitality from '../../components/vitality/vitality';
+import Calendar from '../../views/calendar/calendar';
+
 interface GroupTableProps {}
 
 const GroupTable: React.FC<GroupTableProps> = (prop) => {
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
+  const filterObject = useTypedSelector((state) => state.task.filterObject);
+  const taskArray = useTypedSelector((state) => state.task.taskArray);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const memberHeaderIndex = useTypedSelector(
     (state) => state.member.memberHeaderIndex
@@ -44,17 +47,22 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
     }
   }, [user, groupKey]);
   useEffect(() => {
-    if (groupInfo) {
+    if (user && user._key && groupKey && taskArray) {
+      dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
+    }
+  }, [filterObject]);
+  useEffect(() => {
+    if (groupInfo && groupInfo.taskTreeRootCardKey) {
       dispatch(changeStartId(groupInfo.taskTreeRootCardKey));
     }
   }, [groupInfo]);
   useEffect(() => {
-    if (groupKey) {
+    if (groupKey && memberHeaderIndex !== 11) {
       // if (!groupMemberItem.config.headerIndex) {
       //   groupMemberItem.config.headerIndex = 0;
       // }
       // dispatch(setHeaderIndex(groupMemberItem.config.headerIndex));
-      // dispatch(setHeaderIndex(0));
+      dispatch(setHeaderIndex(0));
     }
   }, [headerIndex]);
 
@@ -75,15 +83,16 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
         {memberHeaderIndex === 1 ? <Grid gridState={true} /> : null}
         {memberHeaderIndex === 2 ? <Grid gridState={false} /> : null}
         {memberHeaderIndex === 3 ? <WorkingCalendar /> : null}
-        {memberHeaderIndex === 11 ? (
-          <GroupTableTree />
-        ) : //
-        null}
+
         {memberHeaderIndex === 7 ? <WorkingReport /> : null}
         {memberHeaderIndex === 8 ? <GroupTableData /> : null}
         {memberHeaderIndex === 9 ? <GroupTableDocument /> : null}
         {memberHeaderIndex === 10 ? (
           <Vitality vitalityType={headerIndex} vitalityKey={groupKey} />
+        ) : null}
+        {memberHeaderIndex === 11 ? <GroupTableTree /> : null}
+        {memberHeaderIndex === 12 ? (
+          <Calendar targetGroupKey={groupKey} />
         ) : null}
       </div>
     </div>

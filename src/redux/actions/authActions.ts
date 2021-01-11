@@ -13,6 +13,7 @@ export const actionTypes = {
   SET_THEME_BG_PAGE: 'SET_THEME_BG_PAGE',
   SET_THEME: 'SET_THEME',
   SET_THEME_SUCCESS: 'SET_THEME_SUCCESS',
+  SET_UPLOAD_TOKEN: 'SET_UPLOAD_TOKEN',
   GET_UPLOAD_TOKEN: 'GET_UPLOAD_TOKEN',
   GET_UPLOAD_TOKEN_SUCCESS: 'GET_UPLOAD_TOKEN_SUCCESS',
   CHANGE_FINISH_MUSIC: 'CHANGE_FINISH_MUSIC',
@@ -21,6 +22,7 @@ export const actionTypes = {
   CHANGE_BATCH_MUSIC: 'CHANGE_BATCH_MUSIC',
   CHANGE_CREATE_MUSIC: 'CHANGE_CREATE_MUSIC',
   CHANGE_MOVE: 'CHANGE_MOVE',
+  CLEAR_AUTH: 'CLEAR_AUTH',
 };
 
 export function getUserInfo(token: string | null) {
@@ -114,6 +116,12 @@ export function setThemeSuccess(data: any, action: any) {
     action,
   };
 }
+export function setUploadToken(uploadToken: any) {
+  return {
+    type: actionTypes.SET_UPLOAD_TOKEN,
+    uploadToken: uploadToken,
+  };
+}
 export function getUploadToken() {
   return {
     type: actionTypes.GET_UPLOAD_TOKEN,
@@ -162,4 +170,7 @@ export function changeMove(finishPos: any) {
     type: actionTypes.CHANGE_MOVE,
     finishPos,
   };
+}
+export function clearAuth() {
+  return { type: actionTypes.CLEAR_AUTH };
 }

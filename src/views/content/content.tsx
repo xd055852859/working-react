@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './content.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
@@ -21,21 +21,26 @@ const Content: React.FC<ContentProps> = (props) => {
   const [prompt, setPrompt] = useState();
   // const [timeInterval, setTimeInterval] = useState<any>(null);
   // const [targetInterval, setTargetInterval] = useState<any>(null);
+  let timerRef = useRef<any>(null);
+  let unDistory = true;
   useEffect(() => {
-    let timeInterval: any = null;
-    if (user && headerIndex === 0) {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
+  useEffect(() => {
+    if (user && !timerRef.current) {
       formatTime();
       getPrompt();
-      timeInterval = setInterval(formatTime, 60000);
+      timerRef.current = setInterval(formatTime, 60000);
       // getSocket();
     }
     return () => {
-      if (timeInterval) {
-        clearInterval(timeInterval);
-        timeInterval = null;
-      }
+      unDistory = false;
     };
-  }, [user, headerIndex]);
+  }, [user]);
   // useEffect(() => {
   //   let targetInterval: any = null;
   //   if (user && headerIndex === 0) {
@@ -71,11 +76,13 @@ const Content: React.FC<ContentProps> = (props) => {
   };
   const getPrompt = async () => {
     let promptRes: any = await api.auth.getPrompt();
-    if (promptRes.msg === 'OK') {
-      setPrompt(promptRes.result.content);
-      // dispatch(setMessage(true, '申请加群成功', 'success'));
-    } else {
-      dispatch(setMessage(true, promptRes.msg, 'error'));
+    if (unDistory) {
+      if (promptRes.msg === 'OK') {
+        setPrompt(promptRes.result.content);
+        // dispatch(setMessage(true, '申请加群成功', 'success'));
+      } else {
+        dispatch(setMessage(true, promptRes.msg, 'error'));
+      }
     }
   };
   const getNum = async (createNum: number, finishNum: number) => {

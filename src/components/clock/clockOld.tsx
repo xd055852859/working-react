@@ -16,17 +16,17 @@ const Clock: React.FC<ClockProps> = (props) => {
   const [timer, setTimer] = useState<any>(null);
   const hourArr: any = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
-  useEffect(() => {
-    let timer: any = null;
-    updateTime();
-    timer = setInterval(() => {
-      updateTime();
-    }, 100);
-    setTimer(timer);
-    return () => {
-      clearInterval(timer);
-    };
-  }, []);
+  // useEffect(() => {
+  //   let timer: any = null;
+  //   updateTime();
+  //   timer = setInterval(() => {
+  //     updateTime();
+  //   }, 100);
+  //   setTimer(timer);
+  //   return () => {
+  //     clearInterval(timer);
+  //   };
+  // }, []);
   const updateTime = () => {
     const dom: any = document.querySelector('.second');
     let newSecAngle = (moment().second() + moment().millisecond() / 1000) * 6;

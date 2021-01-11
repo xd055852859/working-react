@@ -155,6 +155,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
         newMainSearchList = memberArray.filter(
           (memberItem: any, memberIndex: number) => {
             if (
+              memberItem.nickName &&
               memberItem.nickName
                 .toUpperCase()
                 .indexOf(msgInput.toUpperCase()) != -1
@@ -167,6 +168,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
         newMainSearchList = groupArray.filter(
           (groupItem: any, groupIndex: number) => {
             if (
+              groupItem.groupName &&
               groupItem.groupName
                 .toUpperCase()
                 .indexOf(msgInput.toUpperCase()) != -1
@@ -288,6 +290,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     let groupRes: any = await api.group.getGroupInfo(groupKey);
     if (groupRes.msg === 'OK') {
       let newGroupInfo = groupRes.result;
+      console.log(groupRes.result);
       if (newGroupInfo.joinType) {
         setQuestion(newGroupInfo.question);
         setJoinType(newGroupInfo.joinType);
@@ -296,7 +299,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
         setSearchItem(searchItem);
         setInviteVisible(true);
       } else {
-        api.group.addGroupMember(groupKey, [
+        let groupMemberRes: any = await api.group.addGroupMember(groupKey, [
           {
             userKey: user._key,
             nickName: user.profile.nickName,
@@ -305,10 +308,14 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             role: newGroupInfo.defaultPower,
           },
         ]);
-        dispatch(setMessage(true, '加入项目成功', 'success'));
-        newSearchList.splice(searchIndex, 1);
-        setSearchList(newSearchList);
-        dispatch(getGroup(3));
+        if (groupMemberRes.msg === 'OK') {
+          dispatch(setMessage(true, '加入项目成功', 'success'));
+          newSearchList.splice(searchIndex, 1);
+          setSearchList(newSearchList);
+          dispatch(getGroup(3));
+        } else {
+          dispatch(setMessage(true, groupMemberRes.msg, 'error'));
+        }
       }
     } else {
       dispatch(setMessage(true, groupRes.msg, 'error'));
@@ -366,15 +373,17 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     //   dispatch(setTheme(newTheme));
     // }
   };
-  const toTargetGroup = (groupKey: string) => {
+  const toTargetGroup = async (groupKey: string) => {
     dispatch(setGroupKey(groupKey));
     dispatch(getGroupInfo(groupKey));
     dispatch(setCommonHeaderIndex(3));
     if (!theme.moveState) {
       dispatch(setMoveState('in'));
     }
+    await api.group.visitGroupOrFriend(2, groupKey);
+    dispatch(getGroup(3));
   };
-  const toTargetUser = (targetUserKey: string) => {
+  const toTargetUser = async (targetUserKey: string) => {
     // dispatch(setTargetUserKey(targetUserKey));
     // dispatch(userKeyToGroupKey(targetUserKey));
     dispatch(getTargetUserInfo(targetUserKey));
@@ -382,6 +391,8 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     if (!theme.moveState) {
       dispatch(setMoveState('in'));
     }
+    await api.group.visitGroupOrFriend(1, targetUserKey);
+    dispatch(getMember(mainGroupKey));
   };
   return (
     <div
@@ -598,10 +609,12 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                   let avatar =
                     contactIndex === 0
                       ? mainSearchItem.groupLogo
-                        ? mainSearchItem.groupLogo
+                        ? mainSearchItem.groupLogo +
+                          '?imageMogr2/auto-orient/thumbnail/80x'
                         : defaultGroupPng
                       : mainSearchItem.avatar
-                      ? mainSearchItem.avatar
+                      ? mainSearchItem.avatar +
+                        '?imageMogr2/auto-orient/thumbnail/80x'
                       : defaultPersonPng;
                   let name =
                     contactIndex === 0

@@ -15,7 +15,7 @@ export default function Message() {
   return (
     <Snackbar
       open={message.visible}
-      autoHideDuration={1000}
+      autoHideDuration={2000}
       anchorOrigin={{ vertical: "top", horizontal: "center" }}
       onClose={() => dispatch(setMessage(false, "", undefined))}
     >

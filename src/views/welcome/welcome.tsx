@@ -63,7 +63,7 @@ export default function Welcome() {
   const bootpageRef: React.RefObject<any> = useRef();
   useEffect(() => {
     if (localStorage.getItem('token') && !localStorage.getItem('viewWelcome')) {
-      history.push('/');
+      history.push('/home/basic');
     }
   }, []);
   useEffect(() => {
@@ -92,10 +92,16 @@ export default function Welcome() {
   };
   const toLogin = () => {
     if (localStorage.getItem('token') && localStorage.getItem('viewWelcome')) {
-      history.push('/');
+      history.push('/home/basic');
       localStorage.removeItem('viewWelcome');
     } else {
-      const redirect = `${window.location.protocol}//${window.location.host}`;
+      let redirect = '';
+      if (localStorage.getItem('showType')) {
+        redirect = `${window.location.protocol}//${window.location.host}/home/showPage`;
+      } else {
+        redirect = `${window.location.protocol}//${window.location.host}/home/basic`;
+      }
+
       // window.location.href = `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://working.vip/page/logo2.svg`;
       window.open(
         `https://account.qingtime.cn?apphigh=27&redirect=${redirect}&logo=https://cdn-icare.qingtime.cn/1605251458500_workingVip`,

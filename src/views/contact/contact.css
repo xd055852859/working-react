@@ -31,6 +31,15 @@
   height: 100%;
   object-fit: cover;
 }
+.contact-online {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  position: absolute;
+  left: 16px;
+  bottom: 7px;
+  z-index: 5;
+}
 .contact-care-img,
 .contact-uncare-img {
   width: 16px;
@@ -49,9 +58,11 @@
 
 .contact-left {
   height: 100%;
-  width: calc(100% - 30px);
+  width: calc(100% - 75px);
   display: flex;
   align-items: center;
+  position: relative;
+  z-index: 1;
 }
 .contact-right {
   width: 25px;
@@ -117,7 +128,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
-  padding:0px 9px;
+  padding: 0px 9px;
   box-sizing: border-box;
 }
 .contact-search-input {
@@ -130,4 +141,11 @@
   height: 30px;
   margin-left: 10px;
   color: #fff;
+}
+.contact-icon-right {
+  width: 75px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }

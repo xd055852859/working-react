@@ -12,10 +12,11 @@ import format from '../../components/common/format';
 interface HeaderBgProps {
   setMoveState?: any;
   setChooseWallKey?: any;
+  headerType?: string;
 }
 
 const HeaderBg: React.FC<HeaderBgProps> = (props) => {
-  const { setMoveState, setChooseWallKey } = props;
+  const { setMoveState, setChooseWallKey, headerType } = props;
   const dispatch = useDispatch();
   const theme = useTypedSelector((state) => state.auth.theme);
   const themeBg = useTypedSelector((state) => state.auth.themeBg);
@@ -44,6 +45,11 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
     '#D2F1F1',
     '#E7ECF0',
   ];
+  useEffect(() => {
+    if (!theme.randomVisible) {
+      dispatch(getThemeBg(1));
+    }
+  }, [theme]);
   const changeBoard = (type: string) => {
     let newTheme = _.cloneDeep(theme);
     newTheme[type] = newTheme[type] ? false : true;
@@ -90,44 +96,16 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
       themeBg.length < themeBgTotal
     ) {
       newPage = newPage + 1;
-      console.log(newPage);
       dispatch(getThemeBg(newPage));
       setBgPage(newPage);
     }
   };
   return (
-    <div className="bg">
-      <div className="bg-header">
-        <div>
-          <img
-            src={leftArrowPng}
-            alt=""
-            style={{
-              width: '10px',
-              height: '13px',
-              marginRight: '10px',
-            }}
-            onClick={() => {
-              setMoveState('left');
-            }}
-          />
-          壁纸设置
-        </div>
-        <div>
-          <Switch
-            checked={theme.randomVisible ? true : false}
-            onChange={() => {
-              changeBoard('randomVisible');
-            }}
-            name="checkedD"
-            inputProps={{ 'aria-label': 'secondary checkbox' }}
-          />
-        </div>
-      </div>
+    <React.Fragment>
       {theme.randomVisible ? (
         <div
           className="contentHeader-set-item"
-          style={{ margin: '30px 0px 0px 0px' }}
+          style={{ marginTop: headerType === 'show' ? '0px' : '30px' }}
         >
           <div className="contentHeader-set-item-title">
             <img
@@ -220,7 +198,7 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
                     backgroundImage:
                       'url(' +
                       imgBigArr2Item.url +
-                      '?imageMogr2/auto-orient/thumbnail/160x160/format/jpg)',
+                      '?imageMogr2/auto-orient/thumbnail/90x)',
                     border:
                       theme.backgroundImg === imgBigArr2Item.url
                         ? '2px solid #87B940'
@@ -241,8 +219,7 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
           );
         })}
       </div>
-      <canvas ref={canvasRef} className="appCanvas"></canvas>
-    </div>
+    </React.Fragment>
   );
 };
 HeaderBg.defaultProps = {};
