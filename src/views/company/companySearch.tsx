@@ -34,10 +34,10 @@ const CompanySearch: React.FC<CompanySearchProps> = (props) => {
           _key: data[key]._key,
           contract: false,
           father: data[key].parentOrgKey,
-          name:
+          nickName:
             data[key].orgType === 1
-              ? data[key].name
-              : data[key].name +
+              ? data[key].nickName
+              : data[key].nickName +
                 ' (' +
                 (data[key].post ? data[key].post : '无职务') +
                 ' )',

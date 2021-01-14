@@ -18,6 +18,7 @@ import {
 } from '@material-ui/core';
 import _ from 'lodash';
 import api from '../../services/api';
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
 const useStyles = makeStyles({
   root: {},
   // container: {
@@ -25,14 +26,19 @@ const useStyles = makeStyles({
   // },
 });
 
-const columns = [
+let columns = [
   {
     id: 'operation',
     label: '操作',
     minWidth: 80,
   },
   {
-    id: 'name',
+    id: 'avatar',
+    label: '头像',
+    minWidth: 100,
+  },
+  {
+    id: 'nickName',
     label: '姓名',
     minWidth: 100,
   },
@@ -78,12 +84,13 @@ const columns = [
   },
 ];
 interface CompanySearchListProps {
-  addMember: any;
+  addMember?: any;
   targetGroupKey: string;
+  searchType: string;
 }
 
 const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
-  const { addMember, targetGroupKey } = props;
+  const { addMember, targetGroupKey, searchType } = props;
   const dispatch = useDispatch();
   const classes = useStyles();
   const user = useTypedSelector((state) => state.auth.user);
@@ -106,6 +113,12 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
       getCompanyRow(page, rowsPerPage, searchInput);
     }
   }, [page]);
+  useEffect(() => {
+    if (searchType === '查看') {
+      columns.splice(0, 1);
+    }
+  }, [searchType]);
+
   const getCompanyRow = async (
     page: number,
     limit: number,
@@ -212,7 +225,8 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
                         const value = row[column.id];
                         return (
                           <React.Fragment key={column.id}>
-                            {column.id === 'operation' ? (
+                            {column.id === 'operation' &&
+                            searchType === '添加' ? (
                               <TableCell align={column.align}>
                                 <IconButton
                                   color="primary"
@@ -227,6 +241,22 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
                                     style={{ height: '16px', width: '16px' }}
                                   />
                                 </IconButton>
+                              </TableCell>
+                            ) : column.id === 'avatar' ? (
+                              <TableCell key={column.id} align="center">
+                                <div className="company-avatar-container ">
+                                  <div className="company-avatar">
+                                    <img
+                                      src={
+                                        row.avatar
+                                          ? row.avatar +
+                                            '?imageMogr2/auto-orient/thumbnail/80x'
+                                          : defaultPersonPng
+                                      }
+                                      alt=""
+                                    />
+                                  </div>
+                                </div>
                               </TableCell>
                             ) : (
                               <TableCell align={column.align}>

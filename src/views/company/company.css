@@ -23,7 +23,7 @@
   width: 100%;
   height: 40px;
   line-height: 40px;
-  color:#fff;
+  color: #fff;
   text-align: center;
 }
 .company-menu {
@@ -121,4 +121,22 @@
 }
 .MuiTableContainer-root::-webkit-scrollbar {
   height: 8px;
+}
+.company-avatar-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.company-avatar {
+  width: 40px;
+  height: 40px;
+  overflow: hidden;
+  border-radius: 50%;
+}
+.company-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }

@@ -188,6 +188,39 @@ textarea:focus {
     transform: scale(0.45);
   }
 } */
+
+/* markdown */
+.preview-container pre {
+  border: 1px solid #ccc;
+}
+
+.preview-container blockquote {
+  color: #666;
+  margin: 0;
+  padding-left: 3em;
+  border-left: 0.5em #eee solid;
+}
+
+.preview-container tr {
+  border-top: 1px solid #c6cbd1;
+  background: #fff;
+}
+
+.preview-container th,
+.preview-container td {
+  padding: 6px 13px;
+  border: 1px solid #dfe2e5;
+}
+
+.preview-container table tr:nth-child(2n) {
+  background: #f6f8fa;
+}
+.react-codemirror2 {
+  height: 100% !important;
+}
+.CodeMirror {
+  height: 100% !important;
+}
 @keyframes moveIn {
   from {
     width: 320px;

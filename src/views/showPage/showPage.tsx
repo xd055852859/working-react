@@ -306,7 +306,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
       user.profile.lo ? (
         <div
           className="showPage-weather"
-          style={{ left: theme.searchShow !== false ? '280px' : '10px' }}
+          style={{ left: theme.searchShow !== false ? '320px' : '10px' }}
         >
           <div className="showPage-weather-item">
             <div className="showPage-weather-item-top">
@@ -513,7 +513,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
             {timeOsToken ? (
               <iframe
                 src={
-                  'https://timeos.qingtime.cn/office/login?token=' +
+                  'https://mindcute.com/login?token=' +
                   timeOsToken +
                   '&redirect-router=/office/home/recent&chatToken=5PgR5CuV1awS7deh_NCgqzldKJsv9LgGGK3iHSH5K3z'
                 }

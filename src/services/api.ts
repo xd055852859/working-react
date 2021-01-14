@@ -1,8 +1,8 @@
 import axios from 'axios';
 import moment from 'moment';
-import { getMainGroupKey } from '../redux/actions/authActions';
 const AUTH_URL = 'https://baokudata.qingtime.cn/sgbh';
 const HOME_URL = 'https://workingdata.qingtime.cn/sgbh';
+// const AUTH_URL = 'http://192.168.0.101:8529/_db/working/my_sgbh';
 // const HOME_URL = 'http://192.168.0.101:8529/_db/working/my_sgbh';
 const ROCKET_CHAT_URL = 'https://chat.qingtime.cn';
 // const SOCKET_URL = 'http://192.168.0.101:9033';
@@ -1062,6 +1062,13 @@ const company = {
         enterpriseGroupKey: enterpriseGroupKey,
       }
     );
+  },
+  //修改群成员属性
+  updatePerson(params: any) {
+    return request.post(HOME_URL + '/organization/updateRosterUserInfo', {
+      token: auth_token,
+      ...params,
+    });
   },
 };
 export default {

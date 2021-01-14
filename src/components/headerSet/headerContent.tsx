@@ -551,7 +551,7 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                     : moveType === 2
                     ? '客户端下载'
                     : moveType === 3
-                    ? '企业群列表'
+                    ? '机构列表'
                     : ''}
                   {moveType === 0 ? (
                     <Switch
@@ -562,6 +562,24 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                       name="checkedD"
                       inputProps={{ 'aria-label': 'secondary checkbox' }}
                     />
+                  ) : null}
+                  {moveType === 3 ? (
+                    <span
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 400,
+                        color: 'rgba(94, 138, 251, 1)',
+                        cursor: 'pointer',
+                        marginLeft: '115px',
+                      }}
+                      onClick={() => {
+                        window.open(
+                          'https://baoku.qingtime.cn/OHPRQG_1585745644894/article?key=1409189932'
+                        );
+                      }}
+                    >
+                      帮助/说明
+                    </span>
                   ) : null}
                 </div>
                 {moveType === 0 ? (

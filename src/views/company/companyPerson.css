@@ -9,12 +9,13 @@
   outline: none;
 }
 .company-header-button {
-  width: 330px;
+  width: 425px;
   height: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 .MuiTableCell-stickyHeader {
   background-color: #fff;
 }

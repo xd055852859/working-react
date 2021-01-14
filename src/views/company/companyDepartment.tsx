@@ -27,7 +27,7 @@ import defaultDepartMentSvg from '../../assets/svg/defaultDepartMent.svg';
 interface CompanyDepartmentProps {}
 const columns1 = [
   {
-    id: 'name',
+    id: 'nickName',
     label: '姓名',
     minWidth: 100,
   },
@@ -72,6 +72,11 @@ const columns2 = [
     id: 'groupName',
     label: '群名',
     minWidth: 200,
+  },
+  {
+    id: 'groupLogo',
+    label: '群图标',
+    minWidth: 100,
   },
   {
     id: 'targetRole2',
@@ -243,6 +248,7 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
             newRow[index] = {
               groupName: item.groupName,
               role: item.myRole,
+              groupLogo: item.groupLogo,
             };
             newRow[index]['targetRole' + item.targetRole] = item.targetRole;
             newRow[index].checkIndex = item.targetRole;
@@ -386,7 +392,7 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
     );
     if (updateCompanyRes.msg === 'OK') {
       newCompanyData[newRow[index].staffKey].name =
-        newRow[index].name + '( ' + postInput + ' )';
+        newRow[index].nickName + '( ' + postInput + ' )';
       setCompanyData(newCompanyData);
     } else {
       dispatch(setMessage(true, updateCompanyRes.msg, 'error'));
@@ -501,7 +507,7 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
                     ? columns1.map((column: any) => (
                         <TableCell
                           key={column.id}
-                          align={column.align}
+                          align="center"
                           style={{ minWidth: column.minWidth }}
                         >
                           {column.label}
@@ -511,7 +517,7 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
                     ? columns2.map((column: any) => (
                         <TableCell
                           key={column.id}
-                          align={column.align}
+                          align="center"
                           style={{ minWidth: column.minWidth }}
                         >
                           {column.label}
@@ -535,9 +541,9 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
                           ? columns1.map((column: any) => {
                               const value = row[column.id];
                               return (
-                                <React.Fragment key={column.id}>
+                                <React.Fragment>
                                   {column.id === 'isLeader' ? (
-                                    <TableCell align={column.align}>
+                                    <TableCell align="center">
                                       <Checkbox
                                         checked={
                                           rows[index].isLeader ? true : false
@@ -550,7 +556,7 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
                                       />
                                     </TableCell>
                                   ) : column.id === 'post' ? (
-                                    <TableCell align={column.align}>
+                                    <TableCell align="center">
                                       <input
                                         type="text"
                                         value={rows[index].post}
@@ -566,7 +572,7 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
                                       />
                                     </TableCell>
                                   ) : column.id === 'operation' ? (
-                                    <TableCell align={column.align}>
+                                    <TableCell align="center">
                                       <IconButton
                                         color="primary"
                                         component="span"
@@ -586,10 +592,7 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
                                       </IconButton>
                                     </TableCell>
                                   ) : (
-                                    <TableCell
-                                      key={column.id}
-                                      align={column.align}
-                                    >
+                                    <TableCell key={column.id} align="center">
                                       {column.format &&
                                       typeof value === 'number'
                                         ? column.format(value)
@@ -603,19 +606,35 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
                           ? columns2.map((column: any, columnIndex: number) => {
                               const value = row[column.id];
                               return column.id === 'groupName' ? (
-                                <TableCell key={column.id} align={column.align}>
+                                <TableCell key={column.id} align="center">
                                   {column.format && typeof value === 'number'
                                     ? column.format(value)
                                     : value}
                                 </TableCell>
                               ) : column.id === 'operation' ? (
-                                <TableCell key={column.id} align={column.align}>
+                                <TableCell key={column.id} align="center">
                                   {column.format && typeof value === 'number'
                                     ? column.format(value)
                                     : value}
                                 </TableCell>
+                              ) : column.id === 'groupLogo' ? (
+                                <TableCell key={column.id} align="center">
+                                  <div className="company-avatar-container ">
+                                    <div className="company-avatar">
+                                      <img
+                                        src={
+                                          row.groupLogo
+                                            ? row.groupLogo +
+                                              '?imageMogr2/auto-orient/thumbnail/80x'
+                                            : defaultGroupPng
+                                        }
+                                        alt=""
+                                      />
+                                    </div>
+                                  </div>
+                                </TableCell>
                               ) : (
-                                <TableCell key={column.id} align={column.align}>
+                                <TableCell key={column.id} align="center">
                                   <React.Fragment>
                                     <Checkbox
                                       checked={value ? true : false}
@@ -687,6 +706,7 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
         <CompanySearchList
           addMember={addMember}
           targetGroupKey={companyObj && companyObj.enterpriseGroupKey}
+          searchType="添加"
         />
       </Dialog>
     </div>

@@ -9,7 +9,7 @@ import { setGroupKey, getGroupInfo } from '../../redux/actions/groupActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import Loading from '../../components/common/loading';
 import Dialog from '../../components/common/dialog';
-import UserCenter from '../../components/userCenter/userCenter';
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import {
   Table,
   TableBody,
@@ -23,8 +23,12 @@ import {
 import _ from 'lodash';
 import api from '../../services/api';
 import CompanySearch from './companySearch';
+import CompanySearchList from './companySearchList';
+import CompanyEdit from './companyEdit';
+
 import deletePng from '../../assets/img/deleteDiary.png';
 import set6Svg from '../../assets/svg/set6.svg';
+import { setTargetUserKey } from '../../redux/actions/authActions';
 const useStyles = makeStyles({
   root: {},
   // container: {
@@ -33,6 +37,11 @@ const useStyles = makeStyles({
 });
 
 const columns = [
+  {
+    id: 'avatar',
+    label: '头像',
+    minWidth: 100,
+  },
   {
     id: 'nickName',
     label: '姓名',
@@ -123,6 +132,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const [updateValue, setUpdateValue] = useState<any>('');
   const [searchDialogShow, setSearchDialogShow] = useState(false);
+  const [searchVisible, setSearchVisible] = useState(false);
   const [rows, setRows] = useState<any>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -132,6 +142,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
   const [personKey, setPersonKey] = useState<any>('');
   const [personIndex, setPersonIndex] = useState<any>(null);
   const [userVisible, setUserVisible] = useState(false);
+  const [targetUser, setTargetUser] = useState<any>(null);
   const personRef: React.RefObject<any> = useRef();
   let unDistory = true;
   useEffect(() => {
@@ -184,7 +195,13 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
           newRow[index].birthday = moment(parseInt(item.birthday)).format(
             'YYYY/MM/DD'
           );
+          if (item.loginTime) {
+            newRow[index].loginTime = moment(parseInt(item.loginTime)).format(
+              'YYYY/MM/DD HH:mm:ss'
+            );
+          }
         });
+
         console.log('newRow', newRow);
         setRows(newRow);
         setTotal(companyPersonRes.totalNumber);
@@ -294,7 +311,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
       let res: any = await api.company.addCompanyUser(groupKey, newsheetArr);
       if (res.msg === 'OK') {
         setLoading(false);
-        setRows(newRow);
+        getCompanyRow(0, rowsPerPage);
       } else {
         setLoading(false);
         dispatch(setMessage(true, res.msg, 'error'));
@@ -337,6 +354,61 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
       dispatch(setMessage(true, deletePersonRes.msg, 'error'));
     }
   };
+  const editPerson = async () => {
+    let newRow: any = _.cloneDeep(rows);
+    let newTargetUser = _.cloneDeep(targetUser);
+    if (targetUser._key) {
+      let updatePersonRes: any = await api.company.updatePerson({
+        groupMemberKey: newTargetUser._key,
+        nickName: newTargetUser.nickName,
+        trueName: newTargetUser.trueName,
+        avatar: newTargetUser.avatar,
+        email: newTargetUser.email,
+        birthday: moment(newTargetUser.birthday).valueOf(),
+        lunarBirthday: newTargetUser.lunarBirthday,
+        emergencyContact: newTargetUser.emergencyContact,
+        emergencyContactTel: newTargetUser.emergencyContactTel,
+        address: newTargetUser.address,
+      });
+      if (updatePersonRes.msg === 'OK') {
+        dispatch(setMessage(true, '编辑人员成功', 'success'));
+        let rowIndex = _.findIndex(newRow, { _key: newTargetUser._key });
+        for (let key in newRow[rowIndex]) {
+          if (newTargetUser[key] && key !== 'key') {
+            newRow[rowIndex][key] = newTargetUser[key];
+          }
+        }
+        // newRow.splice(personIndex, 1);
+        setRows(newRow);
+        setUserVisible(false);
+      } else {
+        dispatch(setMessage(true, updatePersonRes.msg, 'error'));
+      }
+    } else {
+      if (!newTargetUser || !newTargetUser.mobile) {
+        dispatch(setMessage(true, '请输入手机号', 'error'));
+        return;
+      }
+      if (newTargetUser.birthday) {
+        newTargetUser.birthday = moment(newTargetUser.birthday).valueOf();
+      }
+      if (newTargetUser.nickName) {
+        newTargetUser.name = newTargetUser.nickName;
+      }
+      let res: any = await api.company.addCompanyUser(groupKey, [
+        {
+          ...newTargetUser,
+        },
+      ]);
+      if (res.msg === 'OK') {
+        dispatch(setMessage(true, '添加人员成功', 'success'));
+        getCompanyRow(0, rowsPerPage);
+        setUserVisible(false);
+      } else {
+        dispatch(setMessage(true, res.msg, 'error'));
+      }
+    }
+  };
   return (
     <div className="company-info">
       {loading ? <Loading /> : null}
@@ -352,11 +424,28 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
           <div
             className="company-button"
             onClick={() => {
+              setTargetUser(null);
+              setUserVisible(true);
+            }}
+          >
+            新增成员
+          </div>
+          <div
+            className="company-button"
+            onClick={() => {
+              setSearchVisible(true);
+            }}
+          >
+            查找成员
+          </div>
+          {/* <div
+            className="company-button"
+            onClick={() => {
               setSearchDialogShow(true);
             }}
           >
             查找成员组织
-          </div>
+          </div> */}
           {groupInfo && groupInfo.role === 1 ? (
             <div className="company-button">
               ＋ 添加成员
@@ -384,7 +473,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
                 {columns.map((column: any) => (
                   <TableCell
                     key={column.id}
-                    align={column.align}
+                    align="center"
                     style={{ minWidth: column.minWidth }}
                   >
                     {column.label}
@@ -406,7 +495,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
                       return (
                         <React.Fragment key={column.id}>
                           {column.id === 'operation' ? (
-                            <TableCell>
+                            <TableCell align="center">
                               <React.Fragment>
                                 {row.mainEnterpriseGroupKey === groupKey ? (
                                   <IconButton
@@ -414,6 +503,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
                                     component="span"
                                     onClick={() => {
                                       setUserVisible(true);
+                                      setTargetUser(row);
                                     }}
                                   >
                                     <img
@@ -448,8 +538,24 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
                                 ) : null}
                               </React.Fragment>
                             </TableCell>
+                          ) : column.id === 'avatar' ? (
+                            <TableCell key={column.id} align="center">
+                              <div className="company-avatar-container ">
+                                <div className="company-avatar">
+                                  <img
+                                    src={
+                                      row.avatar
+                                        ? row.avatar +
+                                          '?imageMogr2/auto-orient/thumbnail/80x'
+                                        : defaultPersonPng
+                                    }
+                                    alt=""
+                                  />
+                                </div>
+                              </div>
+                            </TableCell>
                           ) : (
-                            <TableCell key={column.id} align={column.align}>
+                            <TableCell key={column.id} align="center">
                               {column.format && typeof value === 'number'
                                 ? column.format(value)
                                 : value}
@@ -495,25 +601,30 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
       >
         <CompanySearch
           targetGroupKey={groupInfo && groupInfo._key}
-          searchType="添加"
+          searchType="查看"
         />
       </Dialog>
       <Dialog
-        visible={userVisible}
-        footer={false}
+        visible={searchVisible}
         onClose={() => {
-          setUserVisible(false);
+          setSearchVisible(false);
         }}
-        title={'用户设置'}
+        title={'搜索人员'}
         dialogStyle={{
-          width: '400px',
-          height: '90%',
+          position: 'fixed',
+          top: '60px',
+          right: '0px',
+          width: '600px',
+          height: 'calc(100% - 65px)',
+          overflow: 'auto',
+          padding: '0px 15px',
         }}
+        footer={false}
+        showMask={false}
       >
-        <UserCenter
-          onClose={() => {
-            setUserVisible(false);
-          }}
+        <CompanySearchList
+          targetGroupKey={groupInfo && groupInfo._key}
+          searchType="查看"
         />
       </Dialog>
       <Dialog
@@ -530,6 +641,23 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
         <div className="dialog-onlyTitle">
           是否将该人员从所有群组和组织中删除
         </div>
+      </Dialog>
+      <Dialog
+        visible={userVisible}
+        onOK={() => {
+          editPerson();
+        }}
+        onClose={() => {
+          setUserVisible(false);
+        }}
+        title={'用户设置'}
+        dialogStyle={{
+          width: '400px',
+          height: '90%',
+          overflow: 'auto',
+        }}
+      >
+        <CompanyEdit targetUser={targetUser} setTargetUser={setTargetUser} />
       </Dialog>
     </div>
   );

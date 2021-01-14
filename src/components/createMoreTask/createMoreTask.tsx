@@ -265,16 +265,17 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
                     }}
                   />
                 </div> */}
+                <input
+                  type="text"
+                  className="createMoreTask-left-input"
+                  placeholder={'输入项目名…'}
+                  onChange={(e: any) => {
+                    searchGroup(e, 'group');
+                  }}
+                  value={searchGroupInput}
+                />
               </div>
-              <input
-                type="text"
-                className="createMoreTask-left-input"
-                placeholder={'输入项目名…'}
-                onChange={(e: any) => {
-                  searchGroup(e, 'group');
-                }}
-                value={searchGroupInput}
-              />
+
               <div className="createMoreTask-left-container">
                 {searchGroupArray.length > 0
                   ? searchGroupArray.map((item: any, index: number) => {

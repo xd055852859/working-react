@@ -22,7 +22,7 @@
 .createMoreTask-left-container,
 .createMoreTask-right-container {
   width: 100%;
-  height: calc(100% - 75px);
+  height: calc(100% - 30px);
   overflow: auto;
 }
 .createMoreTask-item {
@@ -103,12 +103,10 @@
   word-break: break-all;
 }
 .createMoreTask-left-input {
-  width: calc(100% - 16px);
+  width: calc(100% - 65px);
   height: 30px;
   border: 1px solid #dfdfdf;
   border-radius: 5px;
-  margin-left: 8px;
-  margin-bottom:10px;
   padding:0px 5px;
   box-sizing: border-box;
 }

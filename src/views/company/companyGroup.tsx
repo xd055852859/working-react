@@ -8,7 +8,7 @@ import _ from 'lodash';
 import api from '../../services/api';
 import Dialog from '../../components/common/dialog';
 import GroupSet from '../../views/tabs/groupSet';
-
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import CompanySearchList from './companySearchList';
 import CompanySearch from './companySearch';
 import {
@@ -27,6 +27,11 @@ import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import { setMessage } from '../../redux/actions/commonActions';
 interface CompanyGroupProps {}
 const columns = [
+  {
+    id: 'avatar',
+    label: '头像',
+    minWidth: 100,
+  },
   {
     id: 'name',
     label: '姓名',
@@ -138,6 +143,7 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
         if (item.userId !== user._key) {
           newRow.push({
             name: item.nickName,
+            avatar: item.avatar,
             role: node.role,
             userId: item.userId,
             groupId: item.groupId,
@@ -334,11 +340,12 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
     if (addMemberRes.msg === 'OK') {
       dispatch(setMessage(true, '添加群成员成功', 'success'));
       newRow.push({
-        name: node.name,
+        name: node.nickName,
+        avatar: node.avatar,
         role: 1,
         userId: node.userId,
         groupId: newCompanyObj._key,
-        targetRole4: 4,
+        targetRole4: 5,
         checkIndex: 4,
       });
       setRows(newRow);
@@ -470,7 +477,7 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
                   {columns.map((column: any) => (
                     <TableCell
                       key={column.id}
-                      align={column.align}
+                      align="center"
                       style={{ minWidth: column.minWidth }}
                     >
                       {column.label}
@@ -494,13 +501,13 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
                           return (
                             <React.Fragment key={column.id}>
                               {column.id === 'name' ? (
-                                <TableCell align={column.align}>
+                                <TableCell align="center">
                                   {column.format && typeof value === 'number'
                                     ? column.format(value)
                                     : value}
                                 </TableCell>
                               ) : column.id === 'operation' ? (
-                                <TableCell align={column.align}>
+                                <TableCell align="center">
                                   <IconButton
                                     color="primary"
                                     component="span"
@@ -515,6 +522,22 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
                                       style={{ height: '15px', width: '16px' }}
                                     />
                                   </IconButton>
+                                </TableCell>
+                              ) : column.id === 'avatar' ? (
+                                <TableCell key={column.id} align="center">
+                                  <div className="company-avatar-container ">
+                                    <div className="company-avatar">
+                                      <img
+                                        src={
+                                          row.avatar
+                                            ? row.avatar +
+                                              '?imageMogr2/auto-orient/thumbnail/80x'
+                                            : defaultPersonPng
+                                        }
+                                        alt=""
+                                      />
+                                    </div>
+                                  </div>
                                 </TableCell>
                               ) : (
                                 <TableCell align={column.align}>
@@ -625,6 +648,7 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
         <CompanySearchList
           addMember={addMember}
           targetGroupKey={companyObj && companyObj.enterpriseGroupKey}
+          searchType="添加"
         />
       </Dialog>
       <Dialog

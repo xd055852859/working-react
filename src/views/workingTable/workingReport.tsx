@@ -717,16 +717,19 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                     <div>
                       {headerIndex === 1 || headerType ? (
                         <React.Fragment>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => {
-                              saveNote();
-                            }}
-                            className="save-button"
-                          >
-                            保存
-                          </Button>
+                          {parseInt(diaryIndex) <
+                          moment().startOf('day').valueOf() ? (
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              onClick={() => {
+                                saveNote();
+                              }}
+                              className="save-button"
+                            >
+                              保存
+                            </Button>
+                          ) : null}
                           <Button
                             variant="contained"
                             color="primary"

@@ -45,7 +45,7 @@ import ellipsisbPng from '../../assets/img/ellipsisb.png';
 import taskAddPng from '../../assets/img/contact-plus.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
-
+import contactTree from '../../assets/svg/contactTreeb.svg';
 import messageHandSvg from '../../assets/svg/messageHand.svg';
 import messageunHandSvg from '../../assets/svg/messageunHand.svg';
 import urlSvg from '../../assets/svg/url.svg';
@@ -610,6 +610,15 @@ const Task: React.FC<TaskProps> = (props) => {
                       //       : '#e0e0e0',
                       // }}
                     >
+                      <img
+                        src={contactTree}
+                        alt=""
+                        style={{
+                          width: '9px',
+                          height: '9px',
+                          marginRight: '5px',
+                        }}                      
+                      ></img>
                       <div
                         className="taskItem-path"
                         style={{
@@ -629,7 +638,9 @@ const Task: React.FC<TaskProps> = (props) => {
                                       }
                                     }}
                                   >
-                                    {' / ' + pathItem.title}
+                                    {pathIndex === 0
+                                      ? pathItem.title
+                                      : ' / ' + pathItem.title}
                                   </span>
                                 ) : null}
                               </React.Fragment>

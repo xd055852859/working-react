@@ -62,7 +62,13 @@ const Dialog: React.FC<dialogProp> = (prop) => {
         <div className="dialog-info" style={!title ? { height: '100%' } : {}}>
           <div
             className="dialog-container"
-            style={!footer ? { height: '100%' } : {}}
+            style={
+              !footer
+                ? { height: '100%' }
+                : {
+                    overflow: 'auto',
+                  }
+            }
           >
             {children}
           </div>
