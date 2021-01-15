@@ -21,11 +21,17 @@ import moment from 'moment';
 import _ from 'lodash';
 import api from '../../services/api';
 import deletePng from '../../assets/img/deleteDiary.png';
-import defaultPersonPng from '../../assets/img/defaultPerson.png';
+import defaultPersonPng from '../../assets/svg/defaultPerson.svg';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import defaultDepartMentSvg from '../../assets/svg/defaultDepartMent.svg';
+import DropMenu from '../../components/common/dropMenu';
 interface CompanyDepartmentProps {}
 const columns1 = [
+  {
+    id: 'avatar',
+    label: '头像',
+    minWidth: 100,
+  },
   {
     id: 'nickName',
     label: '姓名',
@@ -122,8 +128,11 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
   const [messageCheck, setMessageCheck] = useState<any>(0);
   const [postInput, setPostInput] = useState<any>('');
   const [total, setTotal] = useState<any>('');
+  const [moreTop, setMoreTop] = useState<any>('');
   const [searchDialogShow, setSearchDialogShow] = useState(false);
   const [deleteDialogShow, setDeleteDialogShow] = useState(false);
+  const [infoDialogShow, setInfoDialogShow] = useState(false);
+
   const departmentRef: React.RefObject<any> = useRef();
   const targetTreeRef: React.RefObject<any> = useRef();
   let unDistory = true;
@@ -174,8 +183,9 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
             newCompanyData[key].icon = defaultDepartMentSvg;
           }
           if (data[key].orgType === 2) {
+            //?imageMogr2/auto-orient/thumbnail/80x
             newCompanyData[key].icon = data[key].avatar
-              ? data[key].avatar + '?imageMogr2/auto-orient/thumbnail/80x'
+              ? data[key].avatar + '?roundPic/radius/!50p'
               : defaultPersonPng;
           }
           if (!nodeId && !data[key].parentOrgKey) {
@@ -457,7 +467,12 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
           {companyData && startId ? (
             <MenuTree
               // disabled
-              // handleClickMoreButton={function noRefCheck() {}}
+              handleClickMoreButton={(node: any) => {
+                if (companyData[node._key].orgType === 1) {
+                  setMoreTop(node.y);
+                  setInfoDialogShow(true);
+                }
+              }}
               ref={targetTreeRef}
               nodes={companyData}
               uncontrolled={false}
@@ -591,6 +606,22 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
                                         />
                                       </IconButton>
                                     </TableCell>
+                                  ) : column.id === 'avatar' ? (
+                                    <TableCell key={column.id} align="center">
+                                      <div className="company-avatar-container ">
+                                        <div className="company-avatar">
+                                          <img
+                                            src={
+                                              row.avatar
+                                                ? row.avatar +
+                                                  '?imageMogr2/auto-orient/thumbnail/80x'
+                                                : defaultPersonPng
+                                            }
+                                            alt=""
+                                          />
+                                        </div>
+                                      </div>
+                                    </TableCell>
                                   ) : (
                                     <TableCell key={column.id} align="center">
                                       {column.format &&
@@ -671,6 +702,44 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
             labelRowsPerPage="分页"
           />
         </div>
+        <DropMenu
+          visible={infoDialogShow}
+          onClose={() => {
+            setInfoDialogShow(false);
+          }}
+          title={'节点详情'}
+          dropStyle={{
+            top: moreTop - 20,
+            left: '240px',
+            width: '200px',
+            height: '180px',
+          }}
+        >
+          <div
+            className="company-choose-info"
+            onClick={() => {
+              addCompany(selectedId, 'child');
+            }}
+          >
+            新增子节点
+          </div>
+          <div
+            className="company-choose-info"
+            onClick={() => {
+              addCompany(selectedId, 'next');
+            }}
+          >
+            新增节点
+          </div>
+          <div
+            className="company-choose-info"
+            onClick={() => {
+              setDeleteDialogShow(true);
+            }}
+          >
+            删除节点
+          </div>
+        </DropMenu>
       </div>
       <Dialog
         visible={deleteDialogShow}

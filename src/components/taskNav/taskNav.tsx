@@ -4,6 +4,7 @@ import { getWorkingTableTask } from '../../redux/actions/taskActions';
 import { Button, Tooltip, Chip, IconButton } from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import moment from 'moment';
+import _ from 'lodash';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import api from '../../services/api';
 import DropMenu from '../common/dropMenu';
@@ -16,7 +17,11 @@ import ellipsisPng from '../../assets/img/ellipsis.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import checkPersonPng from '../../assets/img/checkPerson.png';
 import urlSvg from '../../assets/svg/url.svg';
-import { getGroupTask, setChooseKey } from '../../redux/actions/taskActions';
+import {
+  getGroupTask,
+  setChooseKey,
+  changeLabelarray,
+} from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import { changeCreateMusic } from '../../redux/actions/authActions';
 
@@ -34,6 +39,7 @@ interface TaskNavProps {
   changeLabelAvatar?: any;
   arrlength?: number;
   taskNavTask?: any;
+  changeLabelTaskType?: any;
 }
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -75,9 +81,11 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
     changeLabelAvatar,
     taskNavTask,
     arrlength,
+    changeLabelTaskType,
   } = prop;
   const classes = useStyles();
   const groupKey = useTypedSelector((state) => state.group.groupKey);
+  const labelArray = useTypedSelector((state) => state.task.labelArray);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const user = useTypedSelector((state) => state.auth.user);
@@ -101,7 +109,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
 
   const [addInput, setAddInput] = useState('');
   const [unFinsihNum, setUnFinsihNum] = useState(0);
-  const [taskTypeIndex, setTaskTypeIndex] = useState(0);
+  const [taskTypeIndex, setTaskTypeIndex] = useState<any>(null);
   const [allNum, setAllNum] = useState(0);
   const [moveState, setMoveState] = useState(false);
   const [urlInput, setUrlInput] = useState('');
@@ -135,6 +143,12 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       setLabelAvatar(avatar);
     }
   }, [avatar]);
+  // useEffect(() => {
+  //   if (taskNavArray && taskNavArray[1] && taskNavArray[1].taskType) {
+  //     setTaskTypeIndex(taskNavArray[1].taskType);
+  //   }
+  // }, [taskNavArray]);
+
   useEffect(() => {
     if (name) {
       setLabelName(name);
@@ -267,6 +281,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
     api.group.setLabelOrGroupExecutorKey(key, targetKey, type);
   };
   const changeDefaultTaskType = (taskType: number) => {
+    let newLabelArray = _.cloneDeep(labelArray);
     let key = taskNavArray[1]._key
       ? taskNavArray[1]._key
       : taskNavArray[0]._key;
@@ -274,12 +289,20 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
     if (headerIndex !== 3) {
       newlabelName = labelName.split(' / ')[1];
     }
-    console.log(newlabelName);
     if (taskNavArray[1]._key) {
+      let labelIndex = _.findIndex(newLabelArray, {
+        _key: taskNavArray[1]._key,
+      });
+      newLabelArray[labelIndex].cardLabelName = newlabelName;
+      newLabelArray[labelIndex].taskType = taskType;
       api.group.setCardLabel(key, newlabelName, taskType);
     } else {
+      newLabelArray[0].cardLabelName = newlabelName;
+      newLabelArray[0].taskType = taskType;
       api.group.setCardLabel(key, newlabelName, taskType, taskNavArray[0]._key);
     }
+    console.log(newLabelArray);
+    dispatch(changeLabelarray(newLabelArray));
   };
   const batchAddTask = async () => {
     let batchTaskRes: any = await api.task.batchCard(
@@ -531,7 +554,11 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                         : taskNavArray[0]._key
                     );
                     setBatchVisible(true);
-                    if (taskNavArray && taskNavArray[1]._key) {
+                    if (
+                      taskNavArray &&
+                      taskNavArray[1]._key &&
+                      taskTypeIndex === null
+                    ) {
                       let taskType = taskNavArray[1]._key
                         ? taskNavArray[1].taskType
                         : taskNavArray[0].taskType;
@@ -560,6 +587,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                   onClose={() => {
                     setChooseLabelKey('');
                     setBatchVisible(false);
+                    setTaskTypeVisible(false);
                   }}
                   title={'设置频道'}
                 >
@@ -567,17 +595,64 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                     {role > 0 && role < 4 ? (
                       <div onClick={batchTaskArray}>归档全部已完成任务</div>
                     ) : null}
-                    {role > 0 && role < 4 ? (
+                    {role > 0 && role < 4 && headerIndex === 3 ? (
                       <div
                         onClick={() => {
                           setTaskTypeVisible(true);
                         }}
                         style={{
-                          color: color[taskTypeIndex],
-                          backgroundColor: backgroundColor[taskTypeIndex],
+                          display: 'flex',
+                          alignItems: 'center',
                         }}
                       >
                         任务类型
+                        <div
+                          style={{
+                            backgroundColor: color[taskTypeIndex],
+                            borderRadius: '50%',
+                            width: '15px',
+                            height: '15px',
+                            cursor: 'pointer',
+                            marginLeft: '10px',
+                          }}
+                        ></div>
+                        <DropMenu
+                          visible={taskTypeVisible}
+                          onClose={() => {
+                            setTaskTypeVisible(false);
+                          }}
+                          // title={'默认任务类型'}
+                          dropStyle={{
+                            width: '65px',
+                            height: '120px',
+                            left: '8px',
+                            top: '0px',
+                          }}
+                        >
+                          {taskTypeArr.map((taskTypeItem, taskTypeIndex) => {
+                            return (
+                              <div
+                                key={'taskType' + taskTypeIndex}
+                                className="taskNav-taskType"
+                                style={{
+                                  backgroundColor:
+                                    backgroundColor[taskTypeIndex],
+                                  color: color[taskTypeIndex],
+                                  height: '20px',
+                                  lineHeight: '20px',
+                                  fontSize: '10px',
+                                }}
+                                onClick={() => {
+                                  setTaskTypeIndex(taskTypeIndex);
+                                  setTaskTypeVisible(false);
+                                  changeDefaultTaskType(taskTypeItem.id);
+                                }}
+                              >
+                                {taskTypeItem.name}
+                              </div>
+                            );
+                          })}
+                        </DropMenu>
                       </div>
                     ) : null}
                     <div
@@ -597,40 +672,6 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                       </div>
                     ) : null}
                   </div>
-                </DropMenu>
-                <DropMenu
-                  visible={taskTypeVisible}
-                  onClose={() => {
-                    setTaskTypeVisible(false);
-                  }}
-                  // title={'默认任务类型'}
-                  dropStyle={{
-                    width: '82px',
-                    height: '228px',
-                    left: '341px',
-                    top: '150px',
-                    zIndex: 5,
-                  }}
-                >
-                  {taskTypeArr.map((taskTypeItem, taskTypeIndex) => {
-                    return (
-                      <div
-                        key={'taskType' + taskTypeIndex}
-                        className="taskNav-taskType"
-                        style={{
-                          color: color[taskTypeIndex],
-                          backgroundColor: backgroundColor[taskTypeIndex],
-                        }}
-                        onClick={() => {
-                          setTaskTypeIndex(taskTypeIndex);
-                          setTaskTypeVisible(false);
-                          changeDefaultTaskType(taskTypeItem.id);
-                        }}
-                      >
-                        {taskTypeItem.name}
-                      </div>
-                    );
-                  })}
                 </DropMenu>
                 {/* <DropMenu
                 visible={addTaskVisible}

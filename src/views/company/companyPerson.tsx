@@ -20,6 +20,7 @@ import {
   TableRow,
   IconButton,
 } from '@material-ui/core';
+import AssignmentOutlinedIcon from '@material-ui/icons/AssignmentOutlined';
 import _ from 'lodash';
 import api from '../../services/api';
 import CompanySearch from './companySearch';
@@ -133,6 +134,8 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
   const [updateValue, setUpdateValue] = useState<any>('');
   const [searchDialogShow, setSearchDialogShow] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
+  const [postVisible, setPostVisible] = useState(false);
+  const [postArray, setPostArray] = useState<any>([]);
   const [rows, setRows] = useState<any>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -140,6 +143,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
   const [loading, setLoading] = useState(false);
   const [deleteDialogShow, setDeleteDialogShow] = useState(false);
   const [personKey, setPersonKey] = useState<any>('');
+  const [searchInput, setSearchInput] = useState<any>('');
   const [personIndex, setPersonIndex] = useState<any>(null);
   const [userVisible, setUserVisible] = useState(false);
   const [targetUser, setTargetUser] = useState<any>(null);
@@ -156,25 +160,36 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
   }, [user]);
   useEffect(() => {
     if (groupInfo) {
-      getCompanyRow(0, rowsPerPage);
+      getCompanyRow(0, rowsPerPage, searchInput);
     }
     return () => {
       unDistory = false;
     };
   }, [groupInfo]);
   useEffect(() => {
+    if (searchInput === '') {
+      setPage(0);
+      getCompanyRow(0, rowsPerPage, '');
+    }
+  }, [searchInput]);
+  useEffect(() => {
     if (rowsPerPage * page < total) {
-      getCompanyRow(page, rowsPerPage);
+      getCompanyRow(page, rowsPerPage, searchInput);
     }
   }, [page]);
-  const getCompanyRow = async (page: number, limit: number) => {
+  const getCompanyRow = async (
+    page: number,
+    limit: number,
+    searchInput: string
+  ) => {
     let newRow: any = [];
     page = page + 1;
     let companyPersonRes: any = await api.company.getCompanyList(
       1,
       groupKey,
       page,
-      limit
+      limit,
+      searchInput
     );
     if (unDistory) {
       if (companyPersonRes.msg === 'OK') {
@@ -300,6 +315,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
               birthday: moment(item['生日']).format('YYYY/MM/DD'),
               role: groupInfo.defaultPower,
               notActive: '未激活',
+              organizationInfo: [],
             });
           } else {
             dispatch(setMessage(true, '有人员无手机号', 'error'));
@@ -311,7 +327,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
       let res: any = await api.company.addCompanyUser(groupKey, newsheetArr);
       if (res.msg === 'OK') {
         setLoading(false);
-        getCompanyRow(0, rowsPerPage);
+        getCompanyRow(0, rowsPerPage, '');
       } else {
         setLoading(false);
         dispatch(setMessage(true, res.msg, 'error'));
@@ -402,7 +418,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
       ]);
       if (res.msg === 'OK') {
         dispatch(setMessage(true, '添加人员成功', 'success'));
-        getCompanyRow(0, rowsPerPage);
+        getCompanyRow(0, rowsPerPage, '');
         setUserVisible(false);
       } else {
         dispatch(setMessage(true, res.msg, 'error'));
@@ -413,7 +429,23 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
     <div className="company-info">
       {loading ? <Loading /> : null}
       <div className="company-header">
-        <div className="company-header-title">通讯录</div>
+        <div className="company-header-title">
+          通讯录{' '}
+          <input
+            type="text"
+            value={searchInput}
+            onChange={(e: any) => {
+              setSearchInput(e.target.value);
+            }}
+            placeholder="请输入成员名"
+            className="companyPerson-input"
+            onKeyDown={(e: any) => {
+              if (e.keyCode === 13) {
+                getCompanyRow(0, rowsPerPage, searchInput);
+              }
+            }}
+          />
+        </div>
         <div className="company-header-button">
           <a
             href="https://cdn-icare.qingtime.cn/花名册示例.xlsx"
@@ -430,22 +462,6 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
           >
             新增成员
           </div>
-          <div
-            className="company-button"
-            onClick={() => {
-              setSearchVisible(true);
-            }}
-          >
-            查找成员
-          </div>
-          {/* <div
-            className="company-button"
-            onClick={() => {
-              setSearchDialogShow(true);
-            }}
-          >
-            查找成员组织
-          </div> */}
           {groupInfo && groupInfo.role === 1 ? (
             <div className="company-button">
               ＋ 添加成员
@@ -497,6 +513,17 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
                           {column.id === 'operation' ? (
                             <TableCell align="center">
                               <React.Fragment>
+                                <IconButton
+                                  color="primary"
+                                  component="span"
+                                  onClick={() => {
+                                    console.log(row.organizationInfo);
+                                    setPostVisible(true);
+                                    setPostArray(row.organizationInfo);
+                                  }}
+                                >
+                                  <AssignmentOutlinedIcon />
+                                </IconButton>
                                 {row.mainEnterpriseGroupKey === groupKey ? (
                                   <IconButton
                                     color="primary"
@@ -582,52 +609,6 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
         />
       </div>
       <Dialog
-        visible={searchDialogShow}
-        onClose={() => {
-          setSearchDialogShow(false);
-        }}
-        title={'搜索人员'}
-        dialogStyle={{
-          position: 'fixed',
-          top: '60px',
-          right: '0px',
-          width: '430px',
-          height: 'calc(100% - 65px)',
-          overflow: 'auto',
-          padding: '0px 15px',
-        }}
-        footer={false}
-        showMask={false}
-      >
-        <CompanySearch
-          targetGroupKey={groupInfo && groupInfo._key}
-          searchType="查看"
-        />
-      </Dialog>
-      <Dialog
-        visible={searchVisible}
-        onClose={() => {
-          setSearchVisible(false);
-        }}
-        title={'搜索人员'}
-        dialogStyle={{
-          position: 'fixed',
-          top: '60px',
-          right: '0px',
-          width: '600px',
-          height: 'calc(100% - 65px)',
-          overflow: 'auto',
-          padding: '0px 15px',
-        }}
-        footer={false}
-        showMask={false}
-      >
-        <CompanySearchList
-          targetGroupKey={groupInfo && groupInfo._key}
-          searchType="查看"
-        />
-      </Dialog>
-      <Dialog
         visible={deleteDialogShow}
         onClose={() => {
           setDeleteDialogShow(false);
@@ -658,6 +639,37 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
         }}
       >
         <CompanyEdit targetUser={targetUser} setTargetUser={setTargetUser} />
+      </Dialog>
+      <Dialog
+        visible={postVisible}
+        onClose={() => {
+          setPostVisible(false);
+        }}
+        title={'用户职位'}
+        dialogStyle={{
+          minWidth: '300px',
+          maxHeight: '90%',
+          overflow: 'auto',
+        }}
+        footer={false}
+      >
+        {postArray.length > 0 ? (
+          postArray.map((item: any, index: number) => {
+            return (
+              <div className="company-choose-info" key={'post' + index}>
+                {item.path1.map((pathItem: any, pathIndex: number) => {
+                  return (
+                    <span key={'postItem' + pathIndex}>
+                      {pathIndex === 0 ? pathItem : ' / ' + pathItem}
+                    </span>
+                  );
+                })}
+              </div>
+            );
+          })
+        ) : (
+          <div className="company-choose-info">暂无职位</div>
+        )}
       </Dialog>
     </div>
   );

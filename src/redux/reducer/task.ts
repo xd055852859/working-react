@@ -75,6 +75,12 @@ export const task = (state = defaultState, action: any) => {
         labelArray: labelArray,
         taskArray: taskArray,
       };
+    case actionTypes.CHANGE_LABELARRAY:
+      let newLabelArray = _.cloneDeep(action.labelArray);
+      return {
+        ...state,
+        labelArray: newLabelArray,
+      };
     case actionTypes.GET_TEAM_TASK_SUCCESS:
       return {
         ...state,

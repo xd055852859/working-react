@@ -97,6 +97,7 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const [searchInput, setSearchInput] = useState<any>('');
+  const [total, setTotal] = React.useState(0);
   const [rows, setRows] = useState<any>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(10);
@@ -114,17 +115,23 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
     }
   }, [page]);
   useEffect(() => {
-    if (searchType === '查看') {
-      columns.splice(0, 1);
+    if (searchInput === '') {
+      setPage(0);
+      getCompanyRow(0, rowsPerPage, '');
     }
-  }, [searchType]);
-
+  }, [searchInput]);
+  useEffect(() => {
+    if (rowsPerPage * page < total) {
+      getCompanyRow(page, rowsPerPage, searchInput);
+    }
+  }, [page]);
   const getCompanyRow = async (
     page: number,
     limit: number,
     searchInput: string
   ) => {
     let newRow: any = [];
+    page = page + 1;
     let companyPersonRes: any = await api.company.getCompanyList(
       1,
       groupKey,
@@ -148,6 +155,7 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
               : item.mobileArea;
         });
         setRows(newRow);
+        setTotal(companyPersonRes.totalNumber);
       } else {
         dispatch(setMessage(true, companyPersonRes.msg, 'error'));
       }
@@ -159,7 +167,6 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
 
   const handleChangeRowsPerPage = (event: any) => {
     setRowsPerPage(+event.target.value);
-    setPage(0);
   };
   // const [updateValue, setUpdateValue] = useState<any>('');
   return (
@@ -211,73 +218,71 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {rows
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((row: any, index: number) => {
-                  return (
-                    <TableRow
-                      hover
-                      role="checkbox"
-                      tabIndex={-1}
-                      key={'row' + index}
-                    >
-                      {columns.map((column: any) => {
-                        const value = row[column.id];
-                        return (
-                          <React.Fragment key={column.id}>
-                            {column.id === 'operation' &&
-                            searchType === '添加' ? (
-                              <TableCell align={column.align}>
-                                <IconButton
-                                  color="primary"
-                                  component="span"
-                                  onClick={() => {
-                                    addMember(row);
-                                  }}
-                                >
+              {rows.map((row: any, index: number) => {
+                return (
+                  <TableRow
+                    hover
+                    role="checkbox"
+                    tabIndex={-1}
+                    key={'row' + index}
+                  >
+                    {columns.map((column: any) => {
+                      const value = row[column.id];
+                      return (
+                        <React.Fragment key={column.id}>
+                          {column.id === 'operation' &&
+                          searchType === '添加' ? (
+                            <TableCell align={column.align}>
+                              <IconButton
+                                color="primary"
+                                component="span"
+                                onClick={() => {
+                                  addMember(row);
+                                }}
+                              >
+                                <img
+                                  src={addPng}
+                                  alt=""
+                                  style={{ height: '16px', width: '16px' }}
+                                />
+                              </IconButton>
+                            </TableCell>
+                          ) : column.id === 'avatar' ? (
+                            <TableCell key={column.id} align="center">
+                              <div className="company-avatar-container ">
+                                <div className="company-avatar">
                                   <img
-                                    src={addPng}
+                                    src={
+                                      row.avatar
+                                        ? row.avatar +
+                                          '?imageMogr2/auto-orient/thumbnail/80x'
+                                        : defaultPersonPng
+                                    }
                                     alt=""
-                                    style={{ height: '16px', width: '16px' }}
                                   />
-                                </IconButton>
-                              </TableCell>
-                            ) : column.id === 'avatar' ? (
-                              <TableCell key={column.id} align="center">
-                                <div className="company-avatar-container ">
-                                  <div className="company-avatar">
-                                    <img
-                                      src={
-                                        row.avatar
-                                          ? row.avatar +
-                                            '?imageMogr2/auto-orient/thumbnail/80x'
-                                          : defaultPersonPng
-                                      }
-                                      alt=""
-                                    />
-                                  </div>
                                 </div>
-                              </TableCell>
-                            ) : (
-                              <TableCell align={column.align}>
-                                {column.format && typeof value === 'number'
-                                  ? column.format(value)
-                                  : value}
-                              </TableCell>
-                            )}
-                          </React.Fragment>
-                        );
-                      })}
-                    </TableRow>
-                  );
-                })}
+                              </div>
+                            </TableCell>
+                          ) : (
+                            <TableCell align={column.align}>
+                              {column.format && typeof value === 'number'
+                                ? column.format(value)
+                                : value}
+                            </TableCell>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>
         <TablePagination
           rowsPerPageOptions={[10, 25, 100]}
           component="div"
-          count={rows.length}
+          count={total}
           rowsPerPage={rowsPerPage}
           page={page}
           onChangePage={handleChangePage}

@@ -606,7 +606,7 @@ const GroupTableHeader: React.FC = (prop) => {
         />
       </Tooltip> */}
         <div className="view-container">
-          {memberHeaderIndex === 0 || memberHeaderIndex > 5 ? (
+          {/* {memberHeaderIndex === 0 || memberHeaderIndex > 5 ? ( */}
             <div
               className="workingTableHeader-logo"
               style={{ width: '90px' }}
@@ -672,7 +672,7 @@ const GroupTableHeader: React.FC = (prop) => {
                 })}
               </DropMenu>
             </div>
-          ) : null}
+          {/* ) : null} */}
           {memberHeaderIndex < 5 ? (
             <React.Fragment>
               <div

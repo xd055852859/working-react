@@ -11,6 +11,7 @@ import GroupSet from '../../views/tabs/groupSet';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import CompanySearchList from './companySearchList';
 import CompanySearch from './companySearch';
+import DropMenu from '../../components/common/dropMenu';
 import {
   Table,
   TableBody,
@@ -77,14 +78,14 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
   const [groupObj, setGroupObj] = useState<any>(null);
   const [targetGroupInfo, setTargetGroupInfo] = useState<any>(null);
   const [targetGroupKey, setTargetGroupKey] = useState<any>('');
-
+  const [moreTop, setMoreTop] = useState<any>('');
   const [rowsPerPage, setRowsPerPage] = React.useState(100);
   const [selectedId, setSelectedId] = useState<any>(null);
   const [userId, setUserId] = useState<any>('');
   const [startId, setStartId] = useState<any>(null);
   const [searchDialogShow, setSearchDialogShow] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
-
+  const [infoDialogShow, setInfoDialogShow] = useState(false);
   const [setDialogShow, setSetDialogShow] = useState(false);
   const [deleteDialogShow, setDeleteDialogShow] = useState(false);
   const [deleteVisible, setDeleteVisible] = useState(false);
@@ -404,6 +405,11 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
+  const editContract = (node: any) => {
+    let newCompanyData = _.cloneDeep(companyData);
+    newCompanyData[node._key].contract = !node.contract;
+    setCompanyData(newCompanyData);
+  };
   return (
     <div className="company-info">
       <div className="company-header">
@@ -448,7 +454,8 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
                 chooseNode(node);
               }}
               handleClickMoreButton={(node: any) => {
-                setSetDialogShow(true);
+                setMoreTop(node.y);
+                setInfoDialogShow(true);
               }}
               handleAddChild={(selectedNode: any) => {
                 addChildrenGroup(selectedNode, 'child');
@@ -462,6 +469,7 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
               handleChangeNodeText={(nodeId: string, text: string) => {
                 editGroupName(nodeId, text);
               }}
+              handleClickExpand={editContract}
             />
           ) : null}
         </div>
@@ -576,6 +584,44 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
             labelRowsPerPage="分页"
           />
         </div>
+        <DropMenu
+          visible={infoDialogShow}
+          onClose={() => {
+            setInfoDialogShow(false);
+          }}
+          title={'节点详情'}
+          dropStyle={{
+            top: moreTop - 20,
+            left: '240px',
+            width: '200px',
+            height: '180px',
+          }}
+        >
+          <div
+            className="company-choose-info"
+            onClick={() => {
+              addChildrenGroup(selectedId, 'child');
+            }}
+          >
+            新增子群
+          </div>
+          <div
+            className="company-choose-info"
+            onClick={() => {
+              addChildrenGroup(selectedId, 'next');
+            }}
+          >
+            新增群
+          </div>
+          <div
+            className="company-choose-info"
+            onClick={() => {
+              setSetDialogShow(true);
+            }}
+          >
+            群属性
+          </div>
+        </DropMenu>
       </div>
       <Dialog
         visible={deleteDialogShow}

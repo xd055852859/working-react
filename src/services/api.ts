@@ -323,6 +323,7 @@ const task = {
       type2: type2,
       finishPercentArray: finishPercentArray,
       fileDay: fileDay,
+      typeArray: [2, 6],
     });
   },
   getTeamTask(

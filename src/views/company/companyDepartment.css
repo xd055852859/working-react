@@ -1,6 +1,8 @@
 .companyDepartment {
   display: flex;
   justify-content: space-between;
+  position: relative;
+  z-index: 1;
 }
 .companyDepartment-left {
   width: 237px;

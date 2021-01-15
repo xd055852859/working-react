@@ -184,7 +184,7 @@ const CompanyEdit: React.FC<CompanyEditProps> = (props) => {
   };
   return (
     <div className="companyEdit-home-content">
-      {targetUser._key ? (
+      {targetUser && targetUser._key ? (
         <div className="companyEdit-home-avatar">
           <div className="companyEdit-title">头像</div>
           <div className="companyEdit-home-avatar-img">

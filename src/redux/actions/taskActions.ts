@@ -24,6 +24,7 @@ export const actionTypes = {
   GET_CALENDAR_LIST_SUCCESS: 'GET_CALENDAR_LIST_SUCCESS',
   SET_NEW_TASK_ARRAY: 'SET_NEW_TASK_ARRAY',
   CLEAR_TASK: 'CLEAR_TASK',
+  CHANGE_LABELARRAY:'CHANGE_LABELARRAY'
 };
 
 export function getGroupTask(
@@ -202,4 +203,7 @@ export function setNewTaskArray(taskArrayType: string, taskArray: any) {
 }
 export function clearTask(clearType: any) {
   return { type: actionTypes.CLEAR_TASK, clearType: clearType };
+}
+export function changeLabelarray(labelArray: any) {
+  return { type: actionTypes.CHANGE_LABELARRAY, labelArray: labelArray };
 }

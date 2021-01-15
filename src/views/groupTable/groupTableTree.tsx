@@ -37,7 +37,7 @@ import taskType7Svg from '../../assets/svg/taskType7.svg';
 import taskType8Svg from '../../assets/svg/taskType8.svg';
 import taskType9Svg from '../../assets/svg/taskType9.svg';
 import Loading from '../../components/common/loading';
-
+import { Moveable } from '../../components/common/moveable';
 // import taskType9Svg from '../../assets/svg/taskType9.svg';
 import DropMenu from '../../components/common/dropMenu';
 import checkPersonPng from '../../assets/img/checkPerson.png';
@@ -923,242 +923,248 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
           </div>
           <div
             className="tree-container"
-            onMouseDown={startMove}
-            onContextMenu={endMove}
-            ref={treeRef}
+            // onMouseDown={startMove}
+            // onContextMenu={endMove}
+            // ref={treeRef}
             // style={{
             //   height: treeRef.current
             //     ? boxRef.current.offsetHeight + 'px'
             //     : '0px',
             // }}
           >
-            <div className="tree-box" ref={boxRef}>
-              {nodeObj && startId ? (
-                <Tree
-                  ref={targetTreeRef}
-                  nodes={nodeObj}
-                  startId={startId}
-                  // renameSelectedNode={true}
-                  showIcon={true}
-                  showAvatar={true}
-                  showMoreButton={true}
-                  showPreviewButton={true}
-                  // showStatus={true}
-                  indent={22}
-                  uncontrolled={false}
-                  defaultSelectedId={defaultSelectedId}
-                  handleAddChild={(selectedNode: any) => {
-                    addChildrenTask(selectedNode, 'child', 1);
+            <Moveable
+              scrollable={true}
+              style={{ display: 'flex' }}
+              rightClickToStart={true}
+            >
+              <div className="tree-box" ref={boxRef}>
+                {nodeObj && startId ? (
+                  <Tree
+                    ref={targetTreeRef}
+                    nodes={nodeObj}
+                    startId={startId}
+                    // renameSelectedNode={true}
+                    showIcon={true}
+                    showAvatar={true}
+                    showMoreButton={true}
+                    showPreviewButton={true}
+                    // showStatus={true}
+                    indent={22}
+                    uncontrolled={false}
+                    defaultSelectedId={defaultSelectedId}
+                    handleAddChild={(selectedNode: any) => {
+                      addChildrenTask(selectedNode, 'child', 1);
+                    }}
+                    handleAddNext={(selectedNode: any) => {
+                      addChildrenTask(selectedNode, 'next', 1);
+                    }}
+                    handleClickNode={(node: any) => chooseNode(node)}
+                    handleClickMoreButton={(node: any) => {
+                      chooseNode(node);
+                      setTreeMenuLeft(node.x);
+                      setTreeMenuTop(node.y);
+                      setItemDialogShow(true);
+                    }}
+                    handleDeleteNode={(node: any) => {
+                      setDeleteDialogShow(true);
+                    }}
+                    handleChangeNodeText={editTaskText}
+                    handleCheck={editFinishPercent}
+                    handleShiftUpDown={editSortList}
+                    handleClickExpand={editContract}
+                    handleClickPreviewButton={(node: any) => {
+                      checkNode(node);
+                    }}
+                    // showCheckbox={true}
+                    handleDrag={dragNode}
+                    handleClickDot={
+                      clickDot
+                      // setSelectedId(node._key);
+                    }
+                    handleClickAvatar={(node: any) => {
+                      // set
+                      chooseNode(node);
+                      setTreeMenuLeft(node.x);
+                      setTreeMenuTop(node.y);
+                      setAvatarDialogShow(true);
+                    }}
+                    handleClickStatus={(node: any) => {
+                      // set
+                      chooseNode(node);
+                      setTreeMenuLeft(node.x);
+                      setTreeMenuTop(node.y);
+                      setStatusDialogShow(true);
+                    }}
+                    // nodeOptions={
+                    //   <GroupTableTreeItem
+                    //     taskDetail={gridList[targetIndex]}
+                    //     editTargetTask={editTargetTask}
+                    //   />
+                    // }
+                    // handleClickDot
+                  />
+                ) : null}
+                <DropMenu
+                  visible={statusDialogShow}
+                  dropStyle={{
+                    width: '300px',
+                    height: '160px',
+                    top: treeMenuTop + 35,
+                    left: treeMenuLeft,
+                    color: '#333',
+                    overflow: 'auto',
                   }}
-                  handleAddNext={(selectedNode: any) => {
-                    addChildrenTask(selectedNode, 'next', 1);
+                  onClose={() => {
+                    setStatusDialogShow(false);
                   }}
-                  handleClickNode={(node: any) => chooseNode(node)}
-                  handleClickMoreButton={(node: any) => {
-                    chooseNode(node);
-                    setTreeMenuLeft(node.x);
-                    setTreeMenuTop(node.y);
-                    setItemDialogShow(true);
+                >
+                  <TimeSet
+                    timeSetClick={changeTimeSet}
+                    percentClick={changeFinishPercent}
+                    dayNumber={dayNumber + 1}
+                    timeNumber={timeNumber}
+                    endDate={
+                      gridList[targetIndex] && gridList[targetIndex].taskEndDate
+                    }
+                    viewStyle={'tree'}
+                  />
+                </DropMenu>
+                <DropMenu
+                  visible={avatarDialogShow}
+                  dropStyle={{
+                    width: '150px',
+                    height: '300px',
+                    top: treeMenuTop + 35,
+                    left: treeMenuLeft,
+                    color: '#333',
+                    overflow: 'auto',
                   }}
-                  handleDeleteNode={(node: any) => {
-                    setDeleteDialogShow(true);
+                  onClose={() => {
+                    setAvatarDialogShow(false);
                   }}
-                  handleChangeNodeText={editTaskText}
-                  handleCheck={editFinishPercent}
-                  handleShiftUpDown={editSortList}
-                  handleClickExpand={editContract}
-                  handleClickPreviewButton={(node: any) => {
-                    checkNode(node);
-                  }}
-                  // showCheckbox={true}
-                  handleDrag={dragNode}
-                  handleClickDot={
-                    clickDot
-                    // setSelectedId(node._key);
-                  }
-                  handleClickAvatar={(node: any) => {
-                    // set
-                    chooseNode(node);
-                    setTreeMenuLeft(node.x);
-                    setTreeMenuTop(node.y);
-                    setAvatarDialogShow(true);
-                  }}
-                  handleClickStatus={(node: any) => {
-                    // set
-                    chooseNode(node);
-                    setTreeMenuLeft(node.x);
-                    setTreeMenuTop(node.y);
-                    setStatusDialogShow(true);
-                  }}
-                  // nodeOptions={
-                  //   <GroupTableTreeItem
-                  //     taskDetail={gridList[targetIndex]}
-                  //     editTargetTask={editTargetTask}
-                  //   />
-                  // }
-                  // handleClickDot
-                />
-              ) : null}
-              <DropMenu
-                visible={statusDialogShow}
-                dropStyle={{
-                  width: '300px',
-                  height: '160px',
-                  top: treeMenuTop + 35,
-                  left: treeMenuLeft,
-                  color: '#333',
-                  overflow: 'auto',
-                }}
-                onClose={() => {
-                  setStatusDialogShow(false);
-                }}
-              >
-                <TimeSet
-                  timeSetClick={changeTimeSet}
-                  percentClick={changeFinishPercent}
-                  dayNumber={dayNumber + 1}
-                  timeNumber={timeNumber}
-                  endDate={
-                    gridList[targetIndex] && gridList[targetIndex].taskEndDate
-                  }
-                  viewStyle={'tree'}
-                />
-              </DropMenu>
-              <DropMenu
-                visible={avatarDialogShow}
-                dropStyle={{
-                  width: '150px',
-                  height: '300px',
-                  top: treeMenuTop + 35,
-                  left: treeMenuLeft,
-                  color: '#333',
-                  overflow: 'auto',
-                }}
-                onClose={() => {
-                  setAvatarDialogShow(false);
-                }}
-              >
-                <div className="task-executor-dropMenu-info">
-                  {groupMemberArray
-                    ? groupMemberArray.map(
-                        (taskMemberItem: any, taskMemberIndex: number) => {
-                          return (
-                            <div
-                              className="task-executor-dropMenu-container"
-                              key={'taskMember' + taskMemberIndex}
-                              style={
-                                gridList[targetIndex] &&
-                                gridList[targetIndex].executorKey ===
-                                  taskMemberItem.userId
-                                  ? { background: '#F0F0F0' }
-                                  : {}
-                              }
-                              onClick={() => {
-                                changeExecutor(
-                                  taskMemberItem.userId,
-                                  taskMemberItem.nickName,
-                                  taskMemberItem.avatar
-                                );
-                              }}
-                            >
-                              <div className="task-executor-dropMenu-left">
-                                <div
-                                  className="task-executor-dropMenu-img"
-                                  style={
-                                    gridList[targetIndex] &&
-                                    ((gridList[targetIndex].followUKeyArray &&
-                                      gridList[
-                                        targetIndex
-                                      ].followUKeyArray.indexOf(
-                                        taskMemberItem.userId
-                                      ) !== -1) ||
-                                      gridList[targetIndex].executorKey ===
-                                        taskMemberItem.userId ||
-                                      gridList[targetIndex].creatorKey ===
-                                        taskMemberItem.userId)
-                                      ? { border: '3px solid #17b881' }
-                                      : {}
-                                  }
-                                >
-                                  <img
-                                    src={
-                                      taskMemberItem.avatar
-                                        ? taskMemberItem.avatar +
-                                          '?imageMogr2/auto-orient/thumbnail/80x'
-                                        : defaultPersonPng
+                >
+                  <div className="task-executor-dropMenu-info">
+                    {groupMemberArray
+                      ? groupMemberArray.map(
+                          (taskMemberItem: any, taskMemberIndex: number) => {
+                            return (
+                              <div
+                                className="task-executor-dropMenu-container"
+                                key={'taskMember' + taskMemberIndex}
+                                style={
+                                  gridList[targetIndex] &&
+                                  gridList[targetIndex].executorKey ===
+                                    taskMemberItem.userId
+                                    ? { background: '#F0F0F0' }
+                                    : {}
+                                }
+                                onClick={() => {
+                                  changeExecutor(
+                                    taskMemberItem.userId,
+                                    taskMemberItem.nickName,
+                                    taskMemberItem.avatar
+                                  );
+                                }}
+                              >
+                                <div className="task-executor-dropMenu-left">
+                                  <div
+                                    className="task-executor-dropMenu-img"
+                                    style={
+                                      gridList[targetIndex] &&
+                                      ((gridList[targetIndex].followUKeyArray &&
+                                        gridList[
+                                          targetIndex
+                                        ].followUKeyArray.indexOf(
+                                          taskMemberItem.userId
+                                        ) !== -1) ||
+                                        gridList[targetIndex].executorKey ===
+                                          taskMemberItem.userId ||
+                                        gridList[targetIndex].creatorKey ===
+                                          taskMemberItem.userId)
+                                        ? { border: '3px solid #17b881' }
+                                        : {}
                                     }
-                                    onClick={(e: any) => {
-                                      e.stopPropagation();
-                                      changeFollow(taskMemberItem.userId);
+                                  >
+                                    <img
+                                      src={
+                                        taskMemberItem.avatar
+                                          ? taskMemberItem.avatar +
+                                            '?imageMogr2/auto-orient/thumbnail/80x'
+                                          : defaultPersonPng
+                                      }
+                                      onClick={(e: any) => {
+                                        e.stopPropagation();
+                                        changeFollow(taskMemberItem.userId);
+                                      }}
+                                    />
+                                  </div>
+                                  <div>{taskMemberItem.nickName}</div>
+                                </div>
+                                {gridList[targetIndex] &&
+                                gridList[targetIndex].executorKey ===
+                                  taskMemberItem.userId ? (
+                                  <img
+                                    src={checkPersonPng}
+                                    alt=""
+                                    style={{
+                                      width: '20px',
+                                      height: '12px',
                                     }}
                                   />
-                                </div>
-                                <div>{taskMemberItem.nickName}</div>
+                                ) : null}
                               </div>
-                              {gridList[targetIndex] &&
-                              gridList[targetIndex].executorKey ===
-                                taskMemberItem.userId ? (
-                                <img
-                                  src={checkPersonPng}
-                                  alt=""
-                                  style={{
-                                    width: '20px',
-                                    height: '12px',
-                                  }}
-                                />
-                              ) : null}
-                            </div>
-                          );
-                        }
-                      )
-                    : null}
-                </div>
-              </DropMenu>
+                            );
+                          }
+                        )
+                      : null}
+                  </div>
+                </DropMenu>
 
-              <DropMenu
-                visible={itemDialogShow}
-                dropStyle={{
-                  width: '200px',
-                  // height: '70px',
-                  top: treeMenuTop + 35,
-                  left: treeMenuLeft,
-                  color: '#333',
-                  overflow: 'auto',
-                }}
-                onClose={() => {
-                  if (!typeDialogShow) {
+                <DropMenu
+                  visible={itemDialogShow}
+                  dropStyle={{
+                    width: '200px',
+                    // height: '70px',
+                    top: treeMenuTop + 35,
+                    left: treeMenuLeft,
+                    color: '#333',
+                    overflow: 'auto',
+                  }}
+                  onClose={() => {
+                    if (!typeDialogShow) {
+                      setItemDialogShow(false);
+                    }
+                  }}
+                >
+                  <GroupTableTreeItem
+                    taskDetail={gridList[targetIndex]}
+                    editTargetTask={editTargetTask}
+                    setTypeDialogShow={setTypeDialogShow}
+                  />
+                </DropMenu>
+                <DropMenu
+                  visible={typeDialogShow !== 0}
+                  dropStyle={{
+                    width: '200px',
+                    // height: '70px',
+                    top: treeMenuTop + (typeDialogShow === 1 ? 35 : 85),
+                    left: treeMenuLeft + 205,
+                    color: '#333',
+                    overflow: 'auto',
+                  }}
+                  onClose={() => {
                     setItemDialogShow(false);
-                  }
-                }}
-              >
-                <GroupTableTreeItem
-                  taskDetail={gridList[targetIndex]}
-                  editTargetTask={editTargetTask}
-                  setTypeDialogShow={setTypeDialogShow}
-                />
-              </DropMenu>
-              <DropMenu
-                visible={typeDialogShow !== 0}
-                dropStyle={{
-                  width: '200px',
-                  // height: '70px',
-                  top: treeMenuTop + (typeDialogShow === 1 ? 35 : 85),
-                  left: treeMenuLeft + 205,
-                  color: '#333',
-                  overflow: 'auto',
-                }}
-                onClose={() => {
-                  setItemDialogShow(false);
-                  setTypeDialogShow(0);
-                }}
-              >
-                <GroupTableTreeType
-                  targetNodeKey={targetNode && targetNode._key}
-                  addChildrenTask={addChildrenTask}
-                  typeshow={typeDialogShow}
-                />
-              </DropMenu>
-            </div>
+                    setTypeDialogShow(0);
+                  }}
+                >
+                  <GroupTableTreeType
+                    targetNodeKey={targetNode && targetNode._key}
+                    addChildrenTask={addChildrenTask}
+                    typeshow={typeDialogShow}
+                  />
+                </DropMenu>
+              </div>
+            </Moveable>
             <Dialog
               visible={deleteDialogShow}
               onClose={() => {
@@ -1295,18 +1301,20 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                             : {}
                         }
                       >
-                        <img
-                          src={
-                            taskMemberItem.avatar
-                              ? taskMemberItem.avatar +
-                                '?imageMogr2/auto-orient/thumbnail/80x'
-                              : defaultPersonPng
-                          }
-                          onClick={(e: any) => {
-                            e.stopPropagation();
-                            changeFollow(taskMemberItem.userId);
-                          }}
-                        />
+                        <Tooltip title={taskMemberItem.nickName}>
+                          <img
+                            src={
+                              taskMemberItem.avatar
+                                ? taskMemberItem.avatar +
+                                  '?imageMogr2/auto-orient/thumbnail/80x'
+                                : defaultPersonPng
+                            }
+                            onClick={(e: any) => {
+                              e.stopPropagation();
+                              changeFollow(taskMemberItem.userId);
+                            }}
+                          />
+                        </Tooltip>
                       </div>
                       {/* <div>{taskMemberItem.nickName}</div> */}
                       {gridList[targetIndex] &&

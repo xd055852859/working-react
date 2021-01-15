@@ -180,7 +180,7 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
         if (
           eval(state) &&
           item.taskEndDate &&
-          item.type === 2 &&
+          (item.type === 2 || item.type === 6) &&
           (item.executorKey === user._key || item.creatorKey === user._key)
         ) {
           if (item.executorKey === user._key) {

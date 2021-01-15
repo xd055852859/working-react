@@ -477,11 +477,13 @@ const GroupTableGroup: React.FC = (prop) => {
       };
     }
     setLoading(true);
+    let labelIndex = _.findIndex(labelArray, { _key: labelInfo._key });
     let addTaskRes: any = await api.task.addTask({
       groupKey: groupInfo._key,
       groupRole: groupInfo.groupRole,
       labelKey: labelInfo._key,
       executorKey: labelInfo.executorKey,
+      taskType: labelArray[labelIndex].taskType,
       title: addInput,
       extraData: obj,
     });
@@ -526,6 +528,7 @@ const GroupTableGroup: React.FC = (prop) => {
       setTaskLoading(false);
     }
   };
+
   return (
     <div
       className="task"
