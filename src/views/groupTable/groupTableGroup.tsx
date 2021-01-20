@@ -483,7 +483,10 @@ const GroupTableGroup: React.FC = (prop) => {
       groupRole: groupInfo.groupRole,
       labelKey: labelInfo._key,
       executorKey: labelInfo.executorKey,
-      taskType: labelArray[labelIndex].taskType,
+      taskType:
+        labelArray[labelIndex] && labelArray[labelIndex].taskType
+          ? labelArray[labelIndex].taskType
+          : 1,
       title: addInput,
       extraData: obj,
     });

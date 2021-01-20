@@ -23,6 +23,7 @@ import {
   Checkbox,
   IconButton,
 } from '@material-ui/core';
+import AssignmentOutlinedIcon from '@material-ui/icons/AssignmentOutlined';
 import deletePng from '../../assets/img/deleteDiary.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import { setMessage } from '../../redux/actions/commonActions';
@@ -141,17 +142,15 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
     let chooseCompanyRes: any = await api.member.getMember(node._key);
     if (chooseCompanyRes.msg === 'OK') {
       chooseCompanyRes.result.map((item: any, index: number) => {
-        if (item.userId !== user._key) {
-          newRow.push({
-            name: item.nickName,
-            avatar: item.avatar,
-            role: node.role,
-            userId: item.userId,
-            groupId: item.groupId,
-          });
-          newRow[newRow.length - 1]['targetRole' + item.role] = item.role;
-          newRow[newRow.length - 1].checkIndex = item.role;
-        }
+        newRow.push({
+          name: item.nickName,
+          avatar: item.avatar,
+          role: node.role,
+          userId: item.userId,
+          groupId: item.groupId,
+        });
+        newRow[newRow.length - 1]['targetRole' + item.role] = item.role;
+        newRow[newRow.length - 1].checkIndex = item.role;
       });
 
       setPage(0);
@@ -514,7 +513,8 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
                                     ? column.format(value)
                                     : value}
                                 </TableCell>
-                              ) : column.id === 'operation' ? (
+                              ) : column.id === 'operation' &&
+                                rows[index].userId !== user._key ? (
                                 <TableCell align="center">
                                   <IconButton
                                     color="primary"
@@ -547,8 +547,8 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
                                     </div>
                                   </div>
                                 </TableCell>
-                              ) : (
-                                <TableCell align={column.align}>
+                              ) : rows[index].userId !== user._key ? (
+                                <TableCell align="center">
                                   <Checkbox
                                     checked={value ? true : false}
                                     disabled={
@@ -563,6 +563,8 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
                                     color="primary"
                                   />
                                 </TableCell>
+                              ) : (
+                                <TableCell align="center"></TableCell>
                               )}
                             </React.Fragment>
                           );
@@ -693,8 +695,8 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
       >
         <CompanySearchList
           addMember={addMember}
-          targetGroupKey={companyObj && companyObj.enterpriseGroupKey}
-          searchType="添加"
+          targetGroupKey={companyObj && companyObj._key}
+          searchType="群"
         />
       </Dialog>
       <Dialog

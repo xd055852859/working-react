@@ -137,7 +137,8 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
       groupKey,
       page,
       limit,
-      searchInput
+      searchInput,
+      targetGroupKey && searchType === '群' ? targetGroupKey : null
     );
     if (unDistory) {
       if (companyPersonRes.msg === 'OK') {
@@ -231,7 +232,7 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
                       return (
                         <React.Fragment key={column.id}>
                           {column.id === 'operation' &&
-                          searchType === '添加' ? (
+                          (searchType === '添加'||searchType === '群') ? (
                             <TableCell align={column.align}>
                               <IconButton
                                 color="primary"

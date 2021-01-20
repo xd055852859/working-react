@@ -82,6 +82,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const unMessageNum = useTypedSelector((state) => state.common.unMessageNum);
   const socket = useTypedSelector((state) => state.auth.socket);
   const user = useTypedSelector((state) => state.auth.user);
+  const groupKey = useTypedSelector((state) => state.group.groupKey);
   const [contentSetVisilble, setContentSetVisilble] = useState(false);
 
   const [clockInVisible, setClockInVisible] = useState(false);
@@ -98,6 +99,8 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const [avatar, setAvatar] = useState<any>(null);
 
   const [searchCheck, setSearchCheck] = useState(false);
+  const [groupCheck, setGroupCheck] = useState(false);
+  const [meCheck, setMeCheck] = useState(false);
 
   let timer1Ref = useRef<any>(null);
   let timer2Ref = useRef<any>(null);
@@ -118,6 +121,11 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       setAvatar(user.profile.avatar);
     }
   }, [user]);
+  useEffect(() => {
+    setPage(1);
+    setSearchTaskList([]);
+    setSearchInput('');
+  }, [groupKey, headerIndex]);
 
   // useEffect(() => {
   //   if (finishPos) {
@@ -167,10 +175,15 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const searchTask = () => {
     if (searchInput !== '') {
       // this.getSearchList({ param: { name: this.searchInput }, type: 1 })
-      getTaskSearch(page, searchCheck);
+      getTaskSearch(page, searchCheck, groupCheck, meCheck);
     }
   };
-  const getTaskSearch = async (page: number, check: boolean) => {
+  const getTaskSearch = async (
+    page: number,
+    check: boolean,
+    groupCheck: boolean,
+    meCheck: boolean
+  ) => {
     let newSearchTaskList: any = [];
     if (page === 1) {
       setSearchTaskList([]);
@@ -181,9 +194,17 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       curPage: page,
       perPage: limit,
       searchCondition: searchInput,
+      searchType: 1,
     };
     if (check) {
       obj.finishPercentStr = '1,2,3';
+    }
+    if (groupCheck) {
+      obj.groupKey = groupKey;
+      obj.searchType = 3;
+    }
+    if (meCheck) {
+      obj.searchType = 2;
     }
     let res: any = await api.task.getCardSearch(obj);
     if (res.msg === 'OK') {
@@ -209,7 +230,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     ) {
       newPage = newPage + 1;
       setPage(newPage);
-      getTaskSearch(newPage, searchCheck);
+      getTaskSearch(newPage, searchCheck, groupCheck, meCheck);
     }
   };
 
@@ -422,16 +443,60 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
         </div>
         <div>
           <Checkbox
+            checked={meCheck}
+            onChange={(e: any) => {
+              setMeCheck(e.target.checked);
+              if (e.target.checked) {
+                setGroupCheck(false);
+              }
+
+              getTaskSearch(
+                1,
+                searchCheck,
+                !e.target.checked,
+                e.target.checked
+              );
+              setPage(1);
+            }}
+            color="primary"
+          />
+          与我有关
+        </div>
+        <div>
+          <Checkbox
             checked={searchCheck}
             onChange={(e: any) => {
               setSearchCheck(e.target.checked);
-              getTaskSearch(1, e.target.checked);
+              getTaskSearch(1, e.target.checked, groupCheck, meCheck);
               setPage(1);
             }}
             color="primary"
           />
           已归档任务
         </div>
+        {headerIndex == 3 ? (
+          <div>
+            <Checkbox
+              checked={groupCheck}
+              onChange={(e: any) => {
+                setGroupCheck(e.target.checked);
+                if (e.target.checked) {
+                  setMeCheck(false);
+                }
+                getTaskSearch(
+                  1,
+                  searchCheck,
+                  e.target.checked,
+                  !e.target.checked
+                );
+                setPage(1);
+              }}
+              color="primary"
+            />
+            当前项目下搜索
+          </div>
+        ) : null}
+
         {searchTaskList.length > 0 ? (
           <div className="headerSet-search-info" onScroll={scrollSearchLoading}>
             {searchTaskList.map((taskItem: any, taskIndex: number) => {

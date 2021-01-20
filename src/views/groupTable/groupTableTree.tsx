@@ -72,14 +72,15 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
   const [deleteDialogShow, setDeleteDialogShow] = useState(false);
   const [itemDialogShow, setItemDialogShow] = useState(false);
   const [typeDialogShow, setTypeDialogShow] = useState(0);
-
+  const [fullType, setFullType] = useState('small');
   const [infoVisible, setInfoVisible] = useState(false);
+  const [infoBigVisible, setInfoBigVisible] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [memberCheckIndex, setMemberCheckIndex] = useState<any>(null);
   const [dayNumber, setDayNumber] = useState<any>(null);
   const [endtime, setEndtime] = useState(0);
   const [timeNumber, setTimeNumber] = useState<any>(null);
-  const [moveState, setMoveState] = useState<any>(null);
+  const [moveState, setMoveState] = useState<any>('bottom');
 
   const treeRef: React.RefObject<any> = useRef();
   const boxRef: React.RefObject<any> = useRef();
@@ -201,6 +202,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                 ? taskItem.name
                 : taskItem.title,
             // father	父節點 id	String
+            type: taskItem.type,
             disabled:
               taskItem._key === groupInfo.taskTreeRootCardKey || !editRole,
             strikethrough: taskItem.finishPercent === 2,
@@ -250,7 +252,9 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
             newNodeObj[taskItem._key].icon =
               taskItem.taskType !== 0 ? taskTypeArray[taskItem.taskType] : null;
           } else {
-            newNodeObj[taskItem._key].icon = iconArray[taskItem.type - 10];
+            newNodeObj[taskItem._key].icon = taskItem.extraData.icon
+              ? taskItem.extraData.icon
+              : iconArray[taskItem.type - 10];
           }
         });
         // for (let key in newNodeObj) {
@@ -326,6 +330,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
       let icon: any = '';
       newGridList.push(_.cloneDeep(result));
       setGridList(newGridList);
+      setTargetIndex(newGridList.length - 1);
       let gridTime = moment(result.taskEndDate)
         .endOf('day')
         .diff(moment().endOf('day'), 'days');
@@ -333,6 +338,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
         _key: result._key,
         name: result.title,
         // father	父節點 id	String
+        type: taskType,
         contract: false,
         checked: result.finishPercent > 0,
         showCheckbox: result.type === 6,
@@ -386,6 +392,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
   const chooseNode = (node: any, type?: number) => {
     let newGridList = _.cloneDeep(gridList);
     setTargetNode(node);
+    console.log('node', node);
     let nodeIndex = _.findIndex(newGridList, { _key: node._key });
     if (nodeIndex !== -1) {
       setTargetIndex(nodeIndex);
@@ -528,6 +535,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
         .endOf('day')
         .diff(moment().endOf('day'), 'days');
       newNodeObj[taskItem._key].name = taskItem.title;
+      newNodeObj[taskItem._key].type = taskItem.type;
       newNodeObj[taskItem._key].contract =
         taskItem.finishPercent === 2 ? true : false;
       newNodeObj[taskItem._key].checked = taskItem.finishPercent > 0;
@@ -855,14 +863,36 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
     });
     newGridList[nodeIndex] = node;
     newNodeObj[node._key].name = node.title;
+    newNodeObj[node._key].icon = node.extraData.icon
+      ? node.extraData.icon
+      : iconArray[node.type - 10];
     setGridList(newGridList);
     setNodeObj(newNodeObj);
+  };
+  const changeFullType = (fullType: string) => {
+    if (fullType === 'small') {
+      setFullType('big');
+      setInfoVisible(false);
+      setInfoBigVisible(true);
+    } else {
+      setFullType('small');
+      setInfoVisible(true);
+      setInfoBigVisible(false);
+    }
   };
   return (
     <div className="tree">
       {loading ? <Loading /> : null}
       {groupInfo ? (
-        <div className="tree-info">
+        <div
+          className="tree-info"
+          style={{
+            width:
+              targetNode && targetNode.type === 6
+                ? 'calc(100% - 50px)'
+                : '100%',
+          }}
+        >
           <div className="tree-time">
             <div className="tree-time-taskType">
               {taskTypeArray.map((item: any, index: number) => {
@@ -889,6 +919,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                   gridList[targetIndex] && gridList[targetIndex].taskEndDate
                 }
                 viewStyle={'horizontal'}
+                targetNode={targetNode}
               />
             </div>
           </div>
@@ -1186,18 +1217,21 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
               title={'节点详情'}
               dialogStyle={{
                 position: 'fixed',
-                top: '65px',
+                top: '68px',
                 right: '0px',
                 width: '600px',
                 height: 'calc(100% - 70px)',
-                overflow: 'visible',
+                // overflow: 'visible',
               }}
               showMask={false}
               footer={false}
+              closePngState={true}
             >
               <GroupTableInfo
                 targetItem={gridList[targetIndex]}
                 changeGridList={changeGridList}
+                fullType={fullType}
+                changeFullType={changeFullType}
               />
             </Dialog>
             <Dialog
@@ -1238,117 +1272,132 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
           </div>
         </div>
       ) : null}
-
-      <div
-        className="tree-member"
-        style={
-          moveState === 'top'
-            ? {
-                animation: 'rightTop 500ms',
-                // animationFillMode: 'forwards',
-                height: '50px',
-              }
-            : moveState === 'bottom'
-            ? {
-                animation: 'rightBottom 500ms',
-                height: '100%',
-                // animationFillMode: 'forwards',
-              }
-            : { height: '50px' }
-        }
-      >
-        <Tooltip title="选择执行人">
-          <img
-            src={memberSvg}
-            alt=""
-            className="tree-logo"
-            onClick={() => {
-              setMoveState(moveState === 'bottom' ? 'top' : 'bottom');
-            }}
-          />
-        </Tooltip>
-        {/* <div style={{ color: '#fff', fontSize: '14px', margin: '5px 0px' }}>
+      {targetNode && targetNode.type === 6 ? (
+        <div
+          className="tree-member"
+          style={
+            moveState === 'top'
+              ? {
+                  animation: 'rightTop 500ms',
+                  // animationFillMode: 'forwards',
+                  height: '50px',
+                }
+              : moveState === 'bottom'
+              ? {
+                  animation: 'rightBottom 500ms',
+                  height: '100%',
+                  // animationFillMode: 'forwards',
+                }
+              : { height: '50px' }
+          }
+        >
+          <Tooltip title="选择执行人">
+            <img
+              src={memberSvg}
+              alt=""
+              className="tree-logo"
+              onClick={() => {
+                setMoveState(moveState === 'bottom' ? 'top' : 'bottom');
+              }}
+            />
+          </Tooltip>
+          {/* <div style={{ color: '#fff', fontSize: '14px', margin: '5px 0px' }}>
           任务树
         </div> */}
-        <div className="tree-member-container">
-          {groupMemberArray
-            ? groupMemberArray.map(
-                (taskMemberItem: any, taskMemberIndex: number) => {
-                  return (
-                    <div
-                      className="tree-member-item "
-                      key={'taskMember' + taskMemberIndex}
-                      onMouseEnter={() => {
-                        setMemberCheckIndex(taskMemberIndex);
-                      }}
-                      onMouseLeave={() => {
-                        setMemberCheckIndex(null);
-                      }}
-                    >
+          <div className="tree-member-container">
+            {groupMemberArray
+              ? groupMemberArray.map(
+                  (taskMemberItem: any, taskMemberIndex: number) => {
+                    return (
                       <div
-                        className="tree-member-img"
-                        style={
-                          gridList[targetIndex] &&
-                          ((gridList[targetIndex].followUKeyArray &&
-                            gridList[targetIndex].followUKeyArray.indexOf(
-                              taskMemberItem.userId
-                            ) !== -1) ||
-                            gridList[targetIndex].executorKey ===
-                              taskMemberItem.userId ||
-                            gridList[targetIndex].creatorKey ===
-                              taskMemberItem.userId)
-                            ? { border: '3px solid #17b881' }
-                            : {}
-                        }
+                        className="tree-member-item "
+                        key={'taskMember' + taskMemberIndex}
+                        onMouseEnter={() => {
+                          setMemberCheckIndex(taskMemberIndex);
+                        }}
+                        onMouseLeave={() => {
+                          setMemberCheckIndex(null);
+                        }}
                       >
-                        <Tooltip title={taskMemberItem.nickName}>
+                        <div
+                          className="tree-member-img"
+                          style={
+                            gridList[targetIndex] &&
+                            ((gridList[targetIndex].followUKeyArray &&
+                              gridList[targetIndex].followUKeyArray.indexOf(
+                                taskMemberItem.userId
+                              ) !== -1) ||
+                              gridList[targetIndex].executorKey ===
+                                taskMemberItem.userId ||
+                              gridList[targetIndex].creatorKey ===
+                                taskMemberItem.userId)
+                              ? { border: '3px solid #17b881' }
+                              : {}
+                          }
+                        >
+                          <Tooltip title={taskMemberItem.nickName}>
+                            <img
+                              src={
+                                taskMemberItem.avatar
+                                  ? taskMemberItem.avatar +
+                                    '?imageMogr2/auto-orient/thumbnail/80x'
+                                  : defaultPersonPng
+                              }
+                              onClick={(e: any) => {
+                                e.stopPropagation();
+                                changeFollow(taskMemberItem.userId);
+                              }}
+                            />
+                          </Tooltip>
+                        </div>
+                        {/* <div>{taskMemberItem.nickName}</div> */}
+                        {gridList[targetIndex] &&
+                        gridList[targetIndex].executorKey ===
+                          taskMemberItem.userId ? (
                           <img
-                            src={
-                              taskMemberItem.avatar
-                                ? taskMemberItem.avatar +
-                                  '?imageMogr2/auto-orient/thumbnail/80x'
-                                : defaultPersonPng
-                            }
-                            onClick={(e: any) => {
-                              e.stopPropagation();
-                              changeFollow(taskMemberItem.userId);
+                            src={taskFinishPng}
+                            alt=""
+                            className="tree-member-check"
+                            onClick={() => {
+                              changeExecutor('', '', '');
                             }}
                           />
-                        </Tooltip>
+                        ) : memberCheckIndex === taskMemberIndex ? (
+                          <img
+                            src={taskUnfinishPng}
+                            alt=""
+                            className="tree-member-check"
+                            onClick={() => {
+                              changeExecutor(
+                                taskMemberItem.userId,
+                                taskMemberItem.nickName,
+                                taskMemberItem.avatar
+                              );
+                            }}
+                          />
+                        ) : null}
                       </div>
-                      {/* <div>{taskMemberItem.nickName}</div> */}
-                      {gridList[targetIndex] &&
-                      gridList[targetIndex].executorKey ===
-                        taskMemberItem.userId ? (
-                        <img
-                          src={taskFinishPng}
-                          alt=""
-                          className="tree-member-check"
-                          onClick={() => {
-                            changeExecutor('', '', '');
-                          }}
-                        />
-                      ) : memberCheckIndex === taskMemberIndex ? (
-                        <img
-                          src={taskUnfinishPng}
-                          alt=""
-                          className="tree-member-check"
-                          onClick={() => {
-                            changeExecutor(
-                              taskMemberItem.userId,
-                              taskMemberItem.nickName,
-                              taskMemberItem.avatar
-                            );
-                          }}
-                        />
-                      ) : null}
-                    </div>
-                  );
-                }
-              )
-            : null}
+                    );
+                  }
+                )
+              : null}
+          </div>
         </div>
-      </div>
+      ) : null}
+      {infoBigVisible ? (
+        <div
+          className="groupTableTree-full"
+          style={{ width: theme.moveState ? 'calc(100% - 320px)' : '100%' }}
+        >
+          {/* <div className="groupTableTree-full-title">节点详情</div> */}
+          <GroupTableInfo
+            targetItem={gridList[targetIndex]}
+            changeGridList={changeGridList}
+            fullType={fullType}
+            changeFullType={changeFullType}
+          />
+        </div>
+      ) : null}
     </div>
   );
 };

@@ -24,6 +24,7 @@ interface timeSetProp {
   timestate?: string;
   viewStyle?: string;
   type?: string;
+  targetNode?: any;
 }
 
 const TimeSet: React.FC<timeSetProp> = (prop) => {
@@ -36,6 +37,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
     timestate,
     viewStyle,
     type,
+    targetNode,
   } = prop;
   const dispatch = useDispatch();
   const taskInfo = useTypedSelector((state) => state.task.taskInfo);
@@ -233,10 +235,17 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
             <img
               src={timeSet1Svg}
               onClick={() => {
-                if (type) {
-                  changeTime('finishPercent', 10);
-                } else {
-                  percentClick(10, viewStyle);
+                if (
+                  viewStyle !== 'horizontal' ||
+                  (viewStyle === 'horizontal' &&
+                    targetNode &&
+                    targetNode.type == 1)
+                ) {
+                  if (type) {
+                    changeTime('finishPercent', 10);
+                  } else {
+                    percentClick(10, viewStyle);
+                  }
                 }
               }}
               // style={{ marginRight: !viewStyle ? '' : '5px' }}
@@ -245,10 +254,17 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
             <img
               src={timeSet2Svg}
               onClick={() => {
-                if (type) {
-                  changeTime('finishPercent', 0);
-                } else {
-                  percentClick(0, viewStyle);
+                if (
+                  viewStyle !== 'horizontal' ||
+                  (viewStyle === 'horizontal' &&
+                    targetNode &&
+                    targetNode.type == 1)
+                ) {
+                  if (type) {
+                    changeTime('finishPercent', 0);
+                  } else {
+                    percentClick(0, viewStyle);
+                  }
                 }
               }}
               // style={{ marginRight: !viewStyle ? '' : '5px' }}
@@ -256,10 +272,17 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
             <img
               src={timeSet3Svg}
               onClick={() => {
-                if (type) {
-                  changeTime('finishPercent', 1);
-                } else {
-                  percentClick(1, viewStyle);
+                if (
+                  viewStyle !== 'horizontal' ||
+                  (viewStyle === 'horizontal' &&
+                    targetNode &&
+                    targetNode.type == 1)
+                ) {
+                  if (type) {
+                    changeTime('finishPercent', 1);
+                  } else {
+                    percentClick(1, viewStyle);
+                  }
                 }
               }}
               // style={{ marginRight: !viewStyle ? '' : '5px' }}
@@ -267,10 +290,17 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
             <img
               src={timeSet4Svg}
               onClick={() => {
-                if (type) {
-                  changeTime('finishPercent', 2);
-                } else {
-                  percentClick(2, viewStyle);
+                if (
+                  viewStyle !== 'horizontal' ||
+                  (viewStyle === 'horizontal' &&
+                    targetNode &&
+                    targetNode.type == 1)
+                ) {
+                  if (type) {
+                    changeTime('finishPercent', 2);
+                  } else {
+                    percentClick(2, viewStyle);
+                  }
                 }
               }}
               style={{
@@ -300,7 +330,14 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
               cursor: 'pointer',
             }}
             onClick={() => {
-              setFreeTimeVisible(true);
+              if (
+                viewStyle !== 'horizontal' ||
+                (viewStyle === 'horizontal' &&
+                  targetNode &&
+                  targetNode.type == 1)
+              ) {
+                setFreeTimeVisible(true);
+              }
               // changeTimeDateType(1);
             }}
           />
@@ -358,11 +395,18 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                 key={'time' + timeIndex}
                 // className="timeSet-item"
                 onClick={() => {
-                  if (type) {
-                    changeTime('hour', timeItem);
-                  } else {
-                    timeSetClick('hour', timeItem);
-                    setFreeTimeVisible(false);
+                  if (
+                    viewStyle !== 'horizontal' ||
+                    (viewStyle === 'horizontal' &&
+                      targetNode &&
+                      targetNode.type == 1)
+                  ) {
+                    if (type) {
+                      changeTime('hour', timeItem);
+                    } else {
+                      timeSetClick('hour', timeItem);
+                      setFreeTimeVisible(false);
+                    }
                   }
                 }}
                 className="timeSet-time-item"
@@ -409,7 +453,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                     height: '55px',
                     padding: '5px 10px',
                   }
-                : { width: '360px', height: '41px', marginLeft: '10px' }
+                : { width: '350px', height: '41px', marginLeft: '10px' }
             }
           >
             <div
@@ -428,10 +472,17 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
               <img
                 src={timeSet5Svg}
                 onClick={() => {
-                  if (type) {
-                    changeTime('infinite');
-                  } else {
-                    timeSetClick('infinite');
+                  if (
+                    viewStyle !== 'horizontal' ||
+                    (viewStyle === 'horizontal' &&
+                      targetNode &&
+                      targetNode.type == 1)
+                  ) {
+                    if (type) {
+                      changeTime('infinite');
+                    } else {
+                      timeSetClick('infinite');
+                    }
                   }
                 }}
                 // style={{ marginRight: !viewStyle ? '' : '5px' }}
@@ -455,10 +506,17 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                     key={'date' + dateTimeIndex}
                     className="timeSet-date-item"
                     onClick={() => {
-                      if (type) {
-                        changeTime('day', dateTimeIndex + 1);
-                      } else {
-                        timeSetClick('day', dateTimeIndex + 1);
+                      if (
+                        viewStyle !== 'horizontal' ||
+                        (viewStyle === 'horizontal' &&
+                          targetNode &&
+                          targetNode.type == 1)
+                      ) {
+                        if (type) {
+                          changeTime('day', dateTimeIndex + 1);
+                        } else {
+                          timeSetClick('day', dateTimeIndex + 1);
+                        }
                       }
                     }}
                     style={{

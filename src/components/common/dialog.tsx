@@ -13,6 +13,7 @@ interface dialogProp {
   title?: string;
   footer?: boolean;
   showMask?: boolean;
+  closePngState?: boolean;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -34,6 +35,7 @@ const Dialog: React.FC<dialogProp> = (prop) => {
     title,
     footer,
     showMask,
+    closePngState,
   } = prop;
   const classes = useStyles();
   const dialog = () => {
@@ -42,7 +44,7 @@ const Dialog: React.FC<dialogProp> = (prop) => {
         {title ? (
           <div className="dialog-title">
             {title}
-            {!showMask ? (
+            {!showMask && !closePngState ? (
               <img
                 src={closePng}
                 onClick={onClose}

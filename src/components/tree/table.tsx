@@ -3,7 +3,7 @@ import ShareOutlinedIcon from '@material-ui/icons/ShareOutlined';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import { useDispatch } from 'react-redux';
-import Loading from './loading';
+import Loading from '../common/loading';
 interface Props {
   node: any;
   bookid?: string;

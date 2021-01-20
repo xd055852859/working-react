@@ -15,7 +15,7 @@
   background-color: #fff;
 }
 /* 隐藏版权信息 */
-.fr-wrapper > div:first-child,
+/* .fr-wrapper > div:first-child,
 #logo,
 .fr-view > p[data-f-id='pbf'] {
   position: absolute;
@@ -23,7 +23,7 @@
   opacity: 0;
   left: 0;
   height: 1px;
-}
+} */
 .second-toolbar a {
   display: none !important;
 }

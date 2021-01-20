@@ -7,11 +7,11 @@
   <meta name="theme-color" content="#000000" />
   <meta name="description" content="Web site created using create-react-app" />
   <script src="./jquery-3.5.1.min.js"></script>
-  <link rel="stylesheet" href="../static/luckysheet/plugins/css/pluginsCss.css" />
-  <link rel="stylesheet" href="../static/luckysheet/plugins/plugins.css" />
-  <link rel="stylesheet" href="../static/luckysheet/css/luckysheet.css" />
-  <script src="../static/luckysheet/plugins/js/plugin.js"></script>
-  <script src="../static/luckysheet/luckysheet.umd.js"></script>
+  <link rel="stylesheet" href="./luckysheet/plugins/css/pluginsCss.css" />
+  <link rel="stylesheet" href="./luckysheet/plugins/plugins.css" />
+  <link rel="stylesheet" href="./luckysheet/css/luckysheet.css" />
+  <script src="./luckysheet/plugins/js/plugin.js"></script>
+  <script src="./luckysheet/luckysheet.umd.js"></script>
   <title>时光表格</title>
   <style>
     button:hover {
@@ -49,8 +49,8 @@
 
       api.getTaskInfo(token,key).then(function (res) {
         if (res.msg==='OK') {
-          var docName = res.data.title || '请输入标题名';
-          var luckysheetfile = res.data.content;
+          var docName = res.result.title || '请输入标题名';
+          var luckysheetfile = res.result.content;
           //配置项
           var options = {
             container: 'luckysheet', //luckysheet为容器id
@@ -59,7 +59,7 @@
             myFolderUrl: '/',
             allowEdit: true,
             forceCalculation: false,
-            functionButton: res.data.readOnly ? '' : "<button id='save'>保存</button>",
+            functionButton: res.result.readOnly ? '' : "<button id='save'>保存</button>",
             // data: [sheetFormula, sheetFormula2],
           };
           if (luckysheetfile instanceof Array && luckysheetfile.length) {
@@ -80,9 +80,9 @@
               }
             }
             api.updateNode(token,key, docName, luckysheetfile).then(function (res) {
-              if (res.status === 200) {
+              if (res.msg === 'OK') {
                 alert('保存成功！');
-                window.parent.postMessage({ eventName: 'refresh-finder', data: { nodeKey: key, name: docName } }, '*');
+                // window.parent.postMessage({ eventName: 'refresh-finder', data: { nodeKey: key, name: docName } }, '*');
               } else {
                 alert('服务出错！');
               }

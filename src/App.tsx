@@ -262,65 +262,69 @@ const App: React.FC = () => {
   useEffect(() => {
     if (finishPos.length > 0) {
       let newFinishIndex = finishIndex;
-      let dom = document.createElement('div');
-      dom.style.top = finishPos[1] - 20 + 'px';
-      dom.style.right = pageRef.current.clientWidth - finishPos[0] - 20 + 'px';
-      dom.style.animation =
-        'run-right-right' +
-        newFinishIndex +
-        ' 2s 0.4s 1 linear,run-right-top' +
-        newFinishIndex +
-        ' 2s 0.4s 1 cubic-bezier(0,1,0,1)';
-      // Math.random().toFixed(2) +
-      // ', ' +
-      // Math.random().toFixed(2) +
-      // ', ' +
-      // Math.random().toFixed(2) +
-      // ', ' +
-      // Math.random().toFixed(2) +
-
-      //  cubic-bezier(.66,.1,1,.41)';
-
-      dom.style.animationFillMode = 'forwards';
-      let img = new Image();
-      img.src = moveSvg;
-      img.width = 40;
-      img.height = 40;
-      dom.classList.add('ball');
-      // dom.classList.add('run_top_right');
-      dom.appendChild(img);
-      pageRef.current.appendChild(dom);
       let style: any = document.styleSheets[0];
-      starRef.current = setTimeout(() => {
-        if (pageRef.current) {
-          pageRef.current.removeChild(dom);
-        }
-        if (style) {
-          style.deleteRule(style.cssRules.length - 5);
-          style.deleteRule(style.cssRules.length - 4);
-        }
-        // clearTimeout(starRef.current);
-      }, 2800);
-      style.insertRule(
-        '@keyframes run-right-top' +
+      if (style && !style.href) {
+        let dom = document.createElement('div');
+        dom.style.top = finishPos[1] - 20 + 'px';
+        dom.style.right =
+          pageRef.current.clientWidth - finishPos[0] - 20 + 'px';
+        dom.style.animation =
+          'run-right-right' +
           newFinishIndex +
-          ' { 0% {top: ' +
-          (finishPos[1] - 20) +
-          'px}  30% {top: ' +
-          (finishPos[1] - 20) +
-          'px} 100% {top: 15px}}',
-        0
-      );
-      style.insertRule(
-        '@keyframes run-right-right' +
+          ' 2s 0.4s 1 linear,run-right-top' +
           newFinishIndex +
-          '  {0% {transform: scale(1)} 30% { right: ' +
-          (pageRef.current.clientWidth - finishPos[0] - 20) +
-          'px;transform: scale(1.25);} 100% { right: 30px;transform: scale(0.45);}',
-        1
-      );
-      newFinishIndex++;
-      setFinishIndex(newFinishIndex);
+          ' 2s 0.4s 1 cubic-bezier(0,1,0,1)';
+        // Math.random().toFixed(2) +
+        // ', ' +
+        // Math.random().toFixed(2) +
+        // ', ' +
+        // Math.random().toFixed(2) +
+        // ', ' +
+        // Math.random().toFixed(2) +
+
+        //  cubic-bezier(.66,.1,1,.41)';
+
+        dom.style.animationFillMode = 'forwards';
+        let img = new Image();
+        img.src = moveSvg;
+        img.width = 40;
+        img.height = 40;
+        dom.classList.add('ball');
+        // dom.classList.add('run_top_right');
+        dom.appendChild(img);
+        pageRef.current.appendChild(dom);
+        starRef.current = setTimeout(() => {
+          if (pageRef.current) {
+            pageRef.current.removeChild(dom);
+          }
+          if (style) {
+            style.deleteRule(style.cssRules.length - 5);
+            style.deleteRule(style.cssRules.length - 4);
+          }
+          // clearTimeout(starRef.current);
+        }, 2800);
+
+        style.insertRule(
+          '@keyframes run-right-top' +
+            newFinishIndex +
+            ' { 0% {top: ' +
+            (finishPos[1] - 20) +
+            'px}  30% {top: ' +
+            (finishPos[1] - 20) +
+            'px} 100% {top: 15px}}',
+          0
+        );
+        style.insertRule(
+          '@keyframes run-right-right' +
+            newFinishIndex +
+            '  {0% {transform: scale(1)} 30% { right: ' +
+            (pageRef.current.clientWidth - finishPos[0] - 20) +
+            'px;transform: scale(1.25);} 100% { right: 30px;transform: scale(0.45);}',
+          1
+        );
+        newFinishIndex++;
+        setFinishIndex(newFinishIndex);
+      }
     }
   }, [finishPos]);
   useEffect(() => {

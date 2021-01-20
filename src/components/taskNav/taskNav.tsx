@@ -201,7 +201,10 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
     let addTaskRes: any = await api.task.addTask({
       groupKey: groupInfo._key,
       groupRole: groupInfo.groupRole,
-      taskType: taskTypeArr[taskTypeIndex].id,
+      taskType:
+        taskTypeArr[taskTypeIndex] && taskTypeArr[taskTypeIndex].id
+          ? taskTypeArr[taskTypeIndex].id
+          : 1,
       labelKey: labelInfo._key,
       executorKey: labelInfo.executorKey,
       title: addInput,
@@ -246,14 +249,15 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
     console.log(labelInfo, groupInfo);
     if (labelName !== name) {
       if (labelInfo._key) {
-        api.group.setCardLabel(labelInfo._key, labelName, labelInfo.taskType);
+        api.group.setCardLabel({
+          labelKey: labelInfo._key,
+          newLabelName: labelName,
+        });
       } else {
-        api.group.setCardLabel(
-          labelInfo._key,
-          labelName,
-          groupInfo.taskType,
-          groupInfo._key
-        );
+        api.group.setCardLabel({
+          groupKey: groupInfo._key,
+          newLabelName: labelName,
+        });
       }
     }
     setLabelNameVisible(false);
@@ -295,11 +299,17 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       });
       newLabelArray[labelIndex].cardLabelName = newlabelName;
       newLabelArray[labelIndex].taskType = taskType;
-      api.group.setCardLabel(key, newlabelName, taskType);
+      api.group.setCardLabel({
+        labelKey: key,
+        taskType: taskType,
+      });
     } else {
       newLabelArray[0].cardLabelName = newlabelName;
       newLabelArray[0].taskType = taskType;
-      api.group.setCardLabel(key, newlabelName, taskType, taskNavArray[0]._key);
+      api.group.setCardLabel({
+        groupKey: key,
+        taskType: taskType,
+      });
     }
     console.log(newLabelArray);
     dispatch(changeLabelarray(newLabelArray));
@@ -540,6 +550,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                           : taskNavArray[0]._key
                       );
                       setAddTaskVisible(true);
+                      setBatchVisible(false);
                     }
                   }}
                 >
@@ -554,6 +565,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                         : taskNavArray[0]._key
                     );
                     setBatchVisible(true);
+                    setAddTaskVisible(false);
                     if (
                       taskNavArray &&
                       taskNavArray[1]._key &&

@@ -1,44 +1,64 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './groupTableTree.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
+import { IconButton, Tooltip } from '@material-ui/core';
+import {
+  EditOutlined,
+  SaveOutlined,
+  FullscreenOutlined,
+  FullscreenExitOutlined,
+} from '@material-ui/icons';
+
 import { editTask } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import { useDispatch } from 'react-redux';
 import { Button } from '@material-ui/core';
 import Editor from '../../components/common/Editor';
-import Table from '../../components/common/table';
-import Markdown from '../../components/markDown/Markdown';
-
+import Table from '../../components/tree/table';
+import Link from '../../components/tree/link';
+// import Draw from '../../components/common/draw';
+import Markdown from '../../components/tree/markDown/Markdown';
+import DrawView from '../../components/tree/DrawView';
+import DrawEditor from '../../components/tree/Topology';
+import Book from '../../components/tree/book';
+import fullscreenSvg from '../../assets/svg/fullscreen.svg';
 import DropMenu from '../../components/common/dropMenu';
 
 import moment from 'moment';
 import _ from 'lodash';
+import api from '../../services/api';
 interface GroupTableTreeInfoProps {
   targetItem?: any;
   changeGridList?: any;
+  fullType: string;
+  changeFullType: Function;
 }
 
 const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
-  const { targetItem, changeGridList } = props;
+  const { targetItem, changeGridList, fullType, changeFullType } = props;
   const dispatch = useDispatch();
   const [content, setContent] = useState<any>('');
   const [editable, setEditable] = useState<any>(false);
+  const [targetNode, setTargetNode] = useState<any>(null);
   const containerRef: React.RefObject<any> = useRef();
 
   useEffect(() => {
-    if (targetItem.type === 10) {
-      if (targetItem.content) {
-        setContent(targetItem.content);
-      } else {
-        setContent('<p>备注信息:</p>');
+    if (targetItem) {
+      if (targetItem.type === 10) {
+        if (targetItem.content) {
+          setContent(targetItem.content);
+        } else {
+          setContent('<p>备注信息:</p>');
+        }
       }
+      setTargetNode(targetItem);
     }
   }, [targetItem]);
   const changeTaskContent = (value: any) => {
-    console.log(value);
+    let newTargetNode = _.cloneDeep(targetNode);
     if (value) {
       setContent(value);
-    } else if (targetItem.type === 10) {
+    } else if (newTargetNode.type === 10) {
       setContent('<p>备注信息:</p>');
     }
   };
@@ -77,72 +97,212 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
       return title;
     }
   };
-  const changeContent = async () => {
-    let newTargetItem = _.cloneDeep(targetItem);
-    let title: any = newTargetItem.title;
-    if (targetItem.type === 13) {
-      title = saveMarkDown();
+  const changeContent = async (value?: string, title?: string) => {
+    let newTargetNode = _.cloneDeep(targetNode);
+    let newContent: any = '';
+    let linkUrl = '';
+    if (newTargetNode.type === 14 && value) {
+      if (value.includes('http://') || value.includes('https://')) {
+        linkUrl = value;
+      } else {
+        linkUrl = `https://${value}`;
+      }
+      let urlRes: any = await api.auth.getUrlIcon(linkUrl);
+      if (urlRes.msg === 'OK') {
+        dispatch(
+          editTask(
+            {
+              key: newTargetNode._key,
+              extraData: { url: value, icon: urlRes.icon },
+            },
+            3
+          )
+        );
+
+        if (urlRes.icon) {
+          newTargetNode.extraData = { url: value, icon: urlRes.icon };
+        } else {
+          newTargetNode.extraData = { url: value };
+        }
+        dispatch(setMessage(true, '保存成功', 'success'));
+        changeGridList(newTargetNode);
+      } else {
+        dispatch(setMessage(true, urlRes.msg, 'error'));
+      }
+    } else {
+      let newTitle: any = newTargetNode.title;
+      if (newTargetNode.type === 11) {
+        newTitle = title;
+        newContent = value;
+      }
+      if (newTargetNode.type === 13) {
+        newTitle = saveMarkDown();
+        newContent = content;
+      }
+      dispatch(
+        editTask(
+          { key: newTargetNode._key, content: newContent, title: newTitle },
+          3
+        )
+      );
+      newTargetNode.content = newContent;
+      newTargetNode.title = newTitle;
+      dispatch(setMessage(true, '保存成功', 'success'));
+      changeGridList(newTargetNode);
     }
-    await dispatch(
-      editTask({ key: targetItem._key, content: content, title: title }, 3)
-    );
-    newTargetItem.content = content;
-    newTargetItem.title = title;
-    dispatch(setMessage(true, '保存成功', 'success'));
-    changeGridList(newTargetItem);
-    if (targetItem.type === 10) {
+    if (
+      newTargetNode.type === 10 ||
+      newTargetNode.type === 11 ||
+      newTargetNode.type === 13 ||
+      newTargetNode.type === 15
+    ) {
       setEditable(false);
     }
   };
   return (
     <React.Fragment>
-      <div className="groupTableTreeInfo-container" ref={containerRef}>
-        {containerRef.current &&
-        containerRef.current.offsetHeight &&
-        targetItem.type === 10 ? (
-          <React.Fragment>
-            <Editor
-              editorHeight={containerRef.current.offsetHeight}
-              data={content}
-              onChange={changeTaskContent}
-              editable={editable}
-              fullType={'small'}
-            />
-          </React.Fragment>
-        ) : null}
-        {targetItem.type === 12 ? <Table node={targetItem} /> : null}
-        {targetItem.type === 13 ? (
-          <Markdown
-            targetData={targetItem}
-            onChange={changeTaskContent}
-            editable={editable}
-          />
-        ) : null}
-      </div>
-      {targetItem.type !== 12 ? (
-        <div className="groupTableTreeInfo-button">
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              if (
-                !editable &&
-                (targetItem.type === 10 || targetItem.type === 13)
-              ) {
-                setEditable(true);
-              } else {
-                changeContent();
-              }
+      {targetNode ? (
+        <React.Fragment>
+          <div className="groupTableTreeInfo-container" ref={containerRef}>
+            {containerRef.current &&
+            containerRef.current.offsetHeight &&
+            targetNode.type === 10 ? (
+              <React.Fragment>
+                <Editor
+                  editorHeight={containerRef.current.offsetHeight}
+                  data={content}
+                  onChange={changeTaskContent}
+                  editable={editable}
+                  fullType={fullType}
+                />
+              </React.Fragment>
+            ) : null}
+            {targetNode.type === 11 ? (
+              editable ? (
+                <DrawEditor
+                  //@ts-ignore
+                  targetNode={targetNode}
+                  onChange={changeContent}
+                />
+              ) : (
+                <DrawView
+                  //@ts-ignore
+                  targetNode={targetNode}
+                  // onChange={changeContent}
+                />
+              )
+            ) : null}
+            {targetNode.type === 12 ? <Table node={targetNode} /> : null}
+            {targetNode.type === 13 ? (
+              <Markdown
+                targetData={targetNode}
+                onChange={changeTaskContent}
+                editable={editable}
+              />
+            ) : null}
+            {targetNode.type === 14 ? (
+              <Link targetData={targetNode} onChange={changeContent} />
+            ) : null}
+            {targetNode.type === 15 ? (
+              <Book
+                targetData={targetNode}
+                editable={editable}
+                onChange={changeTaskContent}
+              />
+            ) : null}
+          </div>
+          {(targetNode.type !== 12 &&
+            targetNode.type !== 14 &&
+            targetNode.type !== 11) ||
+          (targetNode.type === 11 && !editable) ? (
+            <div
+              className="groupTableTreeInfo-button"
+              style={{ top: fullType === 'small' ? '10px' : '5px' }}
+            >
+              <IconButton
+                color="primary"
+                component="span"
+                onClick={() => {
+                  if (
+                    targetNode.type === 10 ||
+                    targetNode.type === 13 ||
+                    targetNode.type === 11 ||
+                    targetNode.type === 15
+                  ) {
+                    if (!editable) {
+                      setEditable(true);
+                    } else {
+                      if (targetNode.type === 15) {
+                        setEditable(false);
+                      } else {
+                        changeContent();
+                      }
+                    }
+                  }
+                }}
+              >
+                {targetNode.type === 10 ||
+                targetNode.type === 13 ||
+                targetNode.type === 11 ||
+                targetNode.type === 15 ? (
+                  editable ? (
+                    <Tooltip title="保存">
+                      <SaveOutlined />
+                    </Tooltip>
+                  ) : (
+                    <Tooltip title="编辑">
+                      <EditOutlined />
+                    </Tooltip>
+                  )
+                ) : (
+                  ''
+                )}
+              </IconButton>
+            </div>
+          ) : null}
+          <div
+            className="groupTableTree-full-img"
+            style={{
+              top:
+                fullType === 'small'
+                  ? '10px'
+                  : targetNode.type !== 12 && targetNode.type !== 11
+                  ? '5px'
+                  : targetNode.type === 11
+                  ? editable
+                    ? '0px'
+                    : '5px'
+                  : '-10px',
+
+              right:
+                fullType === 'big'
+                  ? targetNode.type === 12
+                    ? '70px'
+                    : targetNode.type === 11
+                    ? editable
+                      ? '80px'
+                      : '13px'
+                    : '5px'
+                  : '13px',
             }}
-            style={{ color: '#fff' }}
           >
-            {targetItem.type === 10 || targetItem.type === 13
-              ? editable
-                ? '保存'
-                : '编辑'
-              : ''}
-          </Button>
-        </div>
+            <IconButton
+              color="primary"
+              component="span"
+              onClick={() => {
+                changeFullType(fullType);
+              }}
+            >
+              <Tooltip title={fullType === 'small' ? '全屏' : '缩小'}>
+                {fullType === 'small' ? (
+                  <FullscreenOutlined />
+                ) : (
+                  <FullscreenExitOutlined />
+                )}
+              </Tooltip>
+            </IconButton>
+          </div>
+        </React.Fragment>
       ) : null}
     </React.Fragment>
   );

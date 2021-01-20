@@ -64,7 +64,7 @@ const GroupTableTreeType: React.FC<GroupTableTreeTypeProps> = (props) => {
         <Gesture />
         <div className="groupTableTreeItem-title">新建绘图</div>
       </div>
-      {/* <div
+      <div
         className="groupTableTreeItem-item"
         onClick={() => {
           addChildrenTask(targetNodeKey, typeshow === 1 ? 'child' : 'next', 12);
@@ -72,7 +72,7 @@ const GroupTableTreeType: React.FC<GroupTableTreeTypeProps> = (props) => {
       >
         <TableChart />
         <div className="groupTableTreeItem-title">新建表格</div>
-      </div> */}
+      </div>
       <div
         className="groupTableTreeItem-item"
         onClick={() => {
@@ -82,7 +82,7 @@ const GroupTableTreeType: React.FC<GroupTableTreeTypeProps> = (props) => {
         <InsertDriveFile />
         <div className="groupTableTreeItem-title">新建MD</div>
       </div>
-      {/* <div
+      <div
         className="groupTableTreeItem-item"
         onClick={() => {
           addChildrenTask(targetNodeKey, typeshow === 1 ? 'child' : 'next', 14);
@@ -99,7 +99,7 @@ const GroupTableTreeType: React.FC<GroupTableTreeTypeProps> = (props) => {
       >
         <Book />
         <div className="groupTableTreeItem-title">新建电子书</div>
-      </div> */}
+      </div>
     </div>
   );
 };

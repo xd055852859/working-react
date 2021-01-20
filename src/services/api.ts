@@ -307,6 +307,11 @@ const auth = {
       type: 3,
     });
   },
+  getUrlIcon(linkUrl: string) {
+    return request.get('http://nodeserver.qingtime.cn/urlIcon', {
+      linkUrl: linkUrl,
+    });
+  },
 };
 const task = {
   getGroupTask(
@@ -467,7 +472,6 @@ const task = {
   getCardSearch(params: any) {
     return request.get(HOME_URL + '/card/searchCard', {
       token: auth_token,
-      searchType: 1,
       ...params,
     });
   },
@@ -797,18 +801,10 @@ const group = {
     });
   },
   //修改标签名
-  setCardLabel(
-    labelKey: string,
-    newLabelName: string,
-    taskType: number,
-    groupKey?: string
-  ) {
+  setCardLabel(params: any) {
     return request.patch(HOME_URL + '/card/setLabelProperty', {
       token: auth_token,
-      labelKey: labelKey,
-      groupKey: groupKey,
-      newLabelName: newLabelName,
-      taskType: taskType,
+      ...params,
     });
   },
   //获取群标签
@@ -972,7 +968,8 @@ const company = {
     enterpriseGroupOrOrganizationKey: string,
     curPage: number,
     perPage: number,
-    searchCondition?: string
+    searchCondition?: string,
+    sonGroupKey?: any
   ) {
     return request.post(
       HOME_URL + '/organization/getEnterpriseGroupOrOrganizationMemberList',
@@ -983,6 +980,7 @@ const company = {
         curPage: curPage,
         perPage: perPage,
         searchCondition: searchCondition,
+        sonGroupKey: sonGroupKey,
       }
     );
   },
