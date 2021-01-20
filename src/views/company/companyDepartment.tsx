@@ -25,7 +25,7 @@ import defaultPersonPng from '../../assets/svg/defaultPerson.svg';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import defaultDepartMentSvg from '../../assets/svg/defaultDepartMent.svg';
 import DropMenu from '../../components/common/dropMenu';
-interface CompanyDepartmentProps {}
+interface CompanyDepartmentProps { }
 const columns1 = [
   {
     id: 'avatar',
@@ -112,7 +112,7 @@ const columns2 = [
 ];
 
 const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
-  const {} = props;
+  const { } = props;
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
@@ -168,9 +168,9 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
               data[key].orgType === 1
                 ? data[key].name
                 : data[key].name +
-                  ' (' +
-                  (data[key].post ? data[key].post : '无职务') +
-                  ' )',
+                ' (' +
+                (data[key].post ? data[key].post : '无职务') +
+                ' )',
             sortList: data[key].children,
             enterpriseGroupKey: data[key].enterpriseGroupKey,
             groupMemberKey: data[key].groupMemberKey,
@@ -363,7 +363,7 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
     }
     //}
   };
-  const changeRole = (e: any, index: number, columnIndex: number) => {
+  const changeRole = async (e: any, index: number, columnIndex: number) => {
     let newRow = _.cloneDeep(rows);
     let targetRole = '';
     for (let key in newRow[index]) {
@@ -373,10 +373,17 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
       }
     }
     // if (targetRole !== 'targetRole' + (columnIndex + 1)) {
-    newRow[index]['targetRole' + (columnIndex + 1)] = columnIndex + 1;
+    newRow[index]['targetRole' + (columnIndex)] = columnIndex;
     // }
-    api.auth.setRole(newRow[index], companyObj.staffKey, columnIndex + 1);
-    setRows(newRow);
+    console.log('newRow',newRow[index])
+    let roleRes: any = await api.auth.setRole(
+      newRow[index].groupKey, companyObj.staffKey, columnIndex
+    );
+    if (roleRes.msg === 'OK') {
+      setRows(newRow);
+    } else {
+      dispatch(setMessage(true, roleRes.msg, 'error'));
+    }
   };
   const changeLeader = async (index: number) => {
     let newRow = _.cloneDeep(rows);
@@ -502,10 +509,10 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
                   setDeleteDialogShow(true);
                 }
               }}
-              // itemHeight={32}
-              // blockHeight={
-              //   departmentRef.current ? departmentRef.current.offsetHeight : 0
-              // }
+            // itemHeight={32}
+            // blockHeight={
+            //   departmentRef.current ? departmentRef.current.offsetHeight : 0
+            // }
             />
           ) : null}
         </div>
@@ -520,16 +527,16 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
                 <TableRow>
                   {selectedType === 1
                     ? columns1.map((column: any) => (
-                        <TableCell
-                          key={column.id}
-                          align="center"
-                          style={{ minWidth: column.minWidth }}
-                        >
-                          {column.label}
-                        </TableCell>
-                      ))
+                      <TableCell
+                        key={column.id}
+                        align="center"
+                        style={{ minWidth: column.minWidth }}
+                      >
+                        {column.label}
+                      </TableCell>
+                    ))
                     : selectedType === 2
-                    ? columns2.map((column: any) => (
+                      ? columns2.map((column: any) => (
                         <TableCell
                           key={column.id}
                           align="center"
@@ -538,7 +545,7 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
                           {column.label}
                         </TableCell>
                       ))
-                    : null}
+                      : null}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -554,87 +561,87 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
                       >
                         {selectedType === 1
                           ? columns1.map((column: any) => {
-                              const value = row[column.id];
-                              return (
-                                <React.Fragment>
-                                  {column.id === 'isLeader' ? (
-                                    <TableCell align="center">
-                                      <Checkbox
-                                        checked={
-                                          rows[index].isLeader ? true : false
-                                        }
-                                        onChange={(e: any) => {
-                                          changeLeader(index);
-                                          // setMessageCheck(e.target.checked);
+                            const value = row[column.id];
+                            return (
+                              <React.Fragment>
+                                {column.id === 'isLeader' ? (
+                                  <TableCell align="center">
+                                    <Checkbox
+                                      checked={
+                                        rows[index].isLeader ? true : false
+                                      }
+                                      onChange={(e: any) => {
+                                        changeLeader(index);
+                                        // setMessageCheck(e.target.checked);
+                                      }}
+                                      color="primary"
+                                    />
+                                  </TableCell>
+                                ) : column.id === 'post' ? (
+                                  <TableCell align="center">
+                                    <input
+                                      type="text"
+                                      value={rows[index].post}
+                                      onChange={(e: any) => {
+                                        let newRow = _.cloneDeep(rows);
+                                        setPostInput(e.target.value);
+                                        newRow[index].post = e.target.value;
+                                        setRows(newRow);
+                                      }}
+                                      onBlur={(e: any) => {
+                                        changePost(index);
+                                      }}
+                                    />
+                                  </TableCell>
+                                ) : column.id === 'operation' ? (
+                                  <TableCell align="center">
+                                    <IconButton
+                                      color="primary"
+                                      component="span"
+                                      onClick={() => {
+                                        setDeleteDialogShow(true);
+                                        setSelectedId(rows[index].staffKey);
+                                      }}
+                                    >
+                                      <img
+                                        src={deletePng}
+                                        alt=""
+                                        style={{
+                                          height: '15px',
+                                          width: '16px',
                                         }}
-                                        color="primary"
                                       />
-                                    </TableCell>
-                                  ) : column.id === 'post' ? (
-                                    <TableCell align="center">
-                                      <input
-                                        type="text"
-                                        value={rows[index].post}
-                                        onChange={(e: any) => {
-                                          let newRow = _.cloneDeep(rows);
-                                          setPostInput(e.target.value);
-                                          newRow[index].post = e.target.value;
-                                          setRows(newRow);
-                                        }}
-                                        onBlur={(e: any) => {
-                                          changePost(index);
-                                        }}
-                                      />
-                                    </TableCell>
-                                  ) : column.id === 'operation' ? (
-                                    <TableCell align="center">
-                                      <IconButton
-                                        color="primary"
-                                        component="span"
-                                        onClick={() => {
-                                          setDeleteDialogShow(true);
-                                          setSelectedId(rows[index].staffKey);
-                                        }}
-                                      >
+                                    </IconButton>
+                                  </TableCell>
+                                ) : column.id === 'avatar' ? (
+                                  <TableCell key={column.id} align="center">
+                                    <div className="company-avatar-container ">
+                                      <div className="company-avatar">
                                         <img
-                                          src={deletePng}
+                                          src={
+                                            row.avatar
+                                              ? row.avatar +
+                                              '?imageMogr2/auto-orient/thumbnail/80x'
+                                              : defaultPersonPng
+                                          }
                                           alt=""
-                                          style={{
-                                            height: '15px',
-                                            width: '16px',
-                                          }}
                                         />
-                                      </IconButton>
-                                    </TableCell>
-                                  ) : column.id === 'avatar' ? (
-                                    <TableCell key={column.id} align="center">
-                                      <div className="company-avatar-container ">
-                                        <div className="company-avatar">
-                                          <img
-                                            src={
-                                              row.avatar
-                                                ? row.avatar +
-                                                  '?imageMogr2/auto-orient/thumbnail/80x'
-                                                : defaultPersonPng
-                                            }
-                                            alt=""
-                                          />
-                                        </div>
                                       </div>
-                                    </TableCell>
-                                  ) : (
-                                    <TableCell key={column.id} align="center">
-                                      {column.format &&
-                                      typeof value === 'number'
-                                        ? column.format(value)
-                                        : value}
-                                    </TableCell>
-                                  )}
-                                </React.Fragment>
-                              );
-                            })
+                                    </div>
+                                  </TableCell>
+                                ) : (
+                                          <TableCell key={column.id} align="center">
+                                            {column.format &&
+                                              typeof value === 'number'
+                                              ? column.format(value)
+                                              : value}
+                                          </TableCell>
+                                        )}
+                              </React.Fragment>
+                            );
+                          })
                           : selectedType === 2
-                          ? columns2.map((column: any, columnIndex: number) => {
+                            ? columns2.map((column: any, columnIndex: number) => {
                               const value = row[column.id];
                               return column.id === 'groupName' ? (
                                 <TableCell key={column.id} align="center">
@@ -656,7 +663,7 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
                                         src={
                                           row.groupLogo
                                             ? row.groupLogo +
-                                              '?imageMogr2/auto-orient/thumbnail/80x'
+                                            '?imageMogr2/auto-orient/thumbnail/80x'
                                             : defaultGroupPng
                                         }
                                         alt=""
@@ -665,27 +672,27 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
                                   </div>
                                 </TableCell>
                               ) : (
-                                <TableCell key={column.id} align="center">
-                                  <React.Fragment>
-                                    <Checkbox
-                                      checked={value ? true : false}
-                                      disabled={
-                                        rows[index].role >
-                                        rows[index].checkIndex
-                                          ? true
-                                          : false
-                                      }
-                                      onChange={(e: any) => {
-                                        changeRole(e, index, columnIndex);
-                                        // setMessageCheck(e.target.checked);
-                                      }}
-                                      color="primary"
-                                    />
-                                  </React.Fragment>
-                                </TableCell>
-                              );
+                                      <TableCell key={column.id} align="center">
+                                        <React.Fragment>
+                                          <Checkbox
+                                            checked={value ? true : false}
+                                            disabled={
+                                              rows[index].role >
+                                                rows[index].checkIndex
+                                                ? true
+                                                : false
+                                            }
+                                            onChange={(e: any) => {
+                                              changeRole(e, index, columnIndex);
+                                              // setMessageCheck(e.target.checked);
+                                            }}
+                                            color="primary"
+                                          />
+                                        </React.Fragment>
+                                      </TableCell>
+                                    );
                             })
-                          : null}
+                            : null}
                       </TableRow>
                     );
                   })}

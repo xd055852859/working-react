@@ -11,7 +11,10 @@ import {
 } from '../../redux/actions/commonActions';
 import { setTheme } from '../../redux/actions/authActions';
 import { setFilterObject, getGroupTask } from '../../redux/actions/taskActions';
-import { changeGroupInfo, getGroup } from '../../redux/actions/groupActions';
+import {
+  changeGroupInfo, getGroup, setGroupKey,
+  getGroupInfo,
+} from '../../redux/actions/groupActions';
 import { getGroupMember } from '../../redux/actions/memberActions';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import _ from 'lodash';
@@ -159,6 +162,7 @@ const GroupTableHeader: React.FC = (prop) => {
   const [groupMember, setGroupMember] = useState<any>([]);
   const [groupObj, setGroupObj] = React.useState<any>(null);
   const [groupTabIndex, setGroupTabIndex] = React.useState(0);
+  const [cloneGroupVisible, setCloneGroupVisible] = useState(false);
   const [filterCheckedArray, setFilterCheckedArray] = useState<any>([
     false,
     false,
@@ -171,6 +175,8 @@ const GroupTableHeader: React.FC = (prop) => {
   const [outGroupVisible, setOutGroupVisible] = useState(false);
   const [fileState, setFileState] = useState(true);
   const [fileInput, setFileInput] = useState('7');
+  const [infoChangeState, setInfoChangeState] = useState(false);
+
   const chooseMemberHeader = async (headIndex: number) => {
     dispatch(setHeaderIndex(headIndex));
     setViewVisible(false);
@@ -190,22 +196,10 @@ const GroupTableHeader: React.FC = (prop) => {
     }
   }, [groupMemberItem]);
   useEffect(() => {
-    //   dispatch(
-    //     setFilterObject({
-    //       groupKey: null,
-    //       groupName: '',
-    //       groupLogo: '',
-    //       creatorKey: null,
-    //       creatorAvatar: '',
-    //       creatorName: '',
-    //       executorKey: null,
-    //       executorAvatar: '',
-    //       executorName: '',
-    //       filterType: ['过期', '今天', '已完成'],
-    //     })
-    //   );
-    // dispatch(setHeaderIndex(0));
-  }, [headerIndex]);
+    if (groupInfo && infoChangeState)
+      dispatch(getGroup(3));
+    setInfoChangeState(false)
+  }, [groupInfo]);
 
   useEffect(() => {
     let index = memberHeaderIndex === 0 ? 0 : memberHeaderIndex - 6;
@@ -242,9 +236,9 @@ const GroupTableHeader: React.FC = (prop) => {
   };
   const setGroup = async () => {
     if (groupObj) {
-      await dispatch(changeGroupInfo(groupKey, groupObj));
+      setInfoChangeState(true)
+      dispatch(changeGroupInfo(groupKey, groupObj));
       // dispatch(setMessage(true, '修改群属性成功', 'success'));
-      dispatch(getGroup(3));
     }
   };
   const setMember = (groupMember: any) => {
@@ -334,8 +328,8 @@ const GroupTableHeader: React.FC = (prop) => {
       modelUrl: groupInfo.modelUrl
         ? groupInfo.modelUrl
         : theme.backgroundImg
-        ? theme.backgroundImg
-        : '',
+          ? theme.backgroundImg
+          : '',
       templateJson: [
         // {
         //   name: '测试频道1',
@@ -407,6 +401,25 @@ const GroupTableHeader: React.FC = (prop) => {
       dispatch(setMessage(true, res.msg, 'error'));
     }
   };
+  const cloneGroup = async () => {
+    let cloneRes: any = await api.group.cloneGroup(
+      groupInfo._key,
+      groupInfo.groupName + '_副本'
+    );
+    if (cloneRes.msg === 'OK') {
+      dispatch(setMessage(true, '克隆群成功', 'success'));
+      dispatch(setGroupKey(cloneRes.result));
+      dispatch(getGroupInfo(cloneRes.result));
+      dispatch(setCommonHeaderIndex(3));
+      if (!theme.moveState) {
+        dispatch(setMoveState('in'));
+      }
+      await api.group.visitGroupOrFriend(2, cloneRes.result);
+      dispatch(getGroup(3));
+    } else {
+      dispatch(setMessage(true, cloneRes.msg, 'error'));
+    }
+  };
   return (
     <React.Fragment>
       <div className="workingTableHeader">
@@ -432,7 +445,7 @@ const GroupTableHeader: React.FC = (prop) => {
               src={
                 groupInfo && groupInfo.groupLogo
                   ? groupInfo.groupLogo +
-                    '?imageMogr2/auto-orient/thumbnail/80x'
+                  '?imageMogr2/auto-orient/thumbnail/80x'
                   : defaultGroupPng
               }
               alt=""
@@ -499,7 +512,7 @@ const GroupTableHeader: React.FC = (prop) => {
               onClose={() => {
                 setInfoVisible(false);
               }}
-              // title={'视图切换'}
+            // title={'视图切换'}
             >
               <div className="groupTableHeader-info-container">
                 <div
@@ -580,7 +593,7 @@ const GroupTableHeader: React.FC = (prop) => {
                   </div>
                 ) : null}
                 {/* {groupInfo && groupInfo.role == 1 ? ( */}
-                <div
+                {/* <div
                   className="groupTableHeader-info-item"
                   onClick={() => {
                     addTemplate();
@@ -592,6 +605,19 @@ const GroupTableHeader: React.FC = (prop) => {
                     style={{ width: '17px', height: '17px' }}
                   />
                   设为模板
+                </div> */}
+                <div
+                  className="groupTableHeader-info-item"
+                  onClick={() => {
+                    setCloneGroupVisible(true);
+                  }}
+                >
+                  <img
+                    src={groupSet3Png}
+                    alt=""
+                    style={{ width: '17px', height: '17px' }}
+                  />
+                  克隆群
                 </div>
                 {/* ) : null} */}
               </div>
@@ -606,7 +632,7 @@ const GroupTableHeader: React.FC = (prop) => {
         />
       </Tooltip> */}
         <div className="view-container">
-          {/* {memberHeaderIndex === 0 || memberHeaderIndex > 5 ? ( */}
+          {memberHeaderIndex === 0 || memberHeaderIndex > 5 ? (
             <div
               className="workingTableHeader-logo"
               style={{ width: '90px' }}
@@ -672,7 +698,7 @@ const GroupTableHeader: React.FC = (prop) => {
                 })}
               </DropMenu>
             </div>
-          {/* ) : null} */}
+          ) : null}
           {memberHeaderIndex < 5 ? (
             <React.Fragment>
               <div
@@ -751,7 +777,7 @@ const GroupTableHeader: React.FC = (prop) => {
                           src={
                             filterObject.groupLogo
                               ? filterObject.groupLogo +
-                                '?imageMogr2/auto-orient/thumbnail/80x'
+                              '?imageMogr2/auto-orient/thumbnail/80x'
                               : defaultGroupPng
                           }
                         />
@@ -773,7 +799,7 @@ const GroupTableHeader: React.FC = (prop) => {
                           src={
                             filterObject.creatorAvatar
                               ? filterObject.creatorAvatar +
-                                '?imageMogr2/auto-orient/thumbnail/80x'
+                              '?imageMogr2/auto-orient/thumbnail/80x'
                               : defaultPersonPng
                           }
                         />
@@ -795,7 +821,7 @@ const GroupTableHeader: React.FC = (prop) => {
                           src={
                             filterObject.executorAvatar
                               ? filterObject.executorAvatar +
-                                '?imageMogr2/auto-orient/thumbnail/80x'
+                              '?imageMogr2/auto-orient/thumbnail/80x'
                               : defaultPersonPng
                           }
                         />
@@ -863,22 +889,22 @@ const GroupTableHeader: React.FC = (prop) => {
                                   ( 近{fileInput}天 )
                                 </div>
                               ) : (
-                                <div style={{ marginLeft: '8px' }}>
-                                  ( 近
-                                  <input
-                                    type="number"
-                                    value={fileInput}
-                                    onChange={(e) => {
-                                      setFileInput(e.target.value);
-                                    }}
-                                    onBlur={(e) => {
-                                      changeFileDay(parseInt(e.target.value));
-                                    }}
-                                    className="fileday"
-                                  />
+                                  <div style={{ marginLeft: '8px' }}>
+                                    ( 近
+                                    <input
+                                      type="number"
+                                      value={fileInput}
+                                      onChange={(e) => {
+                                        setFileInput(e.target.value);
+                                      }}
+                                      onBlur={(e) => {
+                                        changeFileDay(parseInt(e.target.value));
+                                      }}
+                                      className="fileday"
+                                    />
                                   天 )
-                                </div>
-                              )}
+                                  </div>
+                                )}
                             </React.Fragment>
                           ) : null}
                         </div>
@@ -952,7 +978,7 @@ const GroupTableHeader: React.FC = (prop) => {
           width: '850px',
           height: '700px',
         }}
-        // showMask={false}
+      // showMask={false}
       >
         <div className="groupSet-tab">
           <div
@@ -964,9 +990,9 @@ const GroupTableHeader: React.FC = (prop) => {
             style={
               groupTabIndex == 0
                 ? {
-                    borderBottom: '2px solid #17B881',
-                    color: '#17B881',
-                  }
+                  borderBottom: '2px solid #17B881',
+                  color: '#17B881',
+                }
                 : {}
             }
           >
@@ -981,9 +1007,9 @@ const GroupTableHeader: React.FC = (prop) => {
             style={
               groupTabIndex == 1
                 ? {
-                    borderBottom: '2px solid #17B881',
-                    color: '#17B881',
-                  }
+                  borderBottom: '2px solid #17B881',
+                  color: '#17B881',
+                }
                 : {}
             }
           >
@@ -999,9 +1025,9 @@ const GroupTableHeader: React.FC = (prop) => {
             style={
               groupTabIndex == 2
                 ? {
-                    borderBottom: '2px solid #17B881',
-                    color: '#17B881',
-                  }
+                  borderBottom: '2px solid #17B881',
+                  color: '#17B881',
+                }
                 : {}
             }
           >
@@ -1051,6 +1077,20 @@ const GroupTableHeader: React.FC = (prop) => {
         dialogStyle={{ width: '400px', height: '200px' }}
       >
         <div className="dialog-onlyTitle">是否退出该群</div>
+      </Dialog>
+      <Dialog
+        visible={cloneGroupVisible}
+        onClose={() => {
+          setCloneGroupVisible(false);
+        }}
+        onOK={() => {
+          setCloneGroupVisible(false);
+          cloneGroup();
+        }}
+        title={'克隆群'}
+        dialogStyle={{ width: '400px', height: '200px' }}
+      >
+        <div className="dialog-onlyTitle">是否克隆群:{groupInfo?.groupName}</div>
       </Dialog>
     </React.Fragment>
   );

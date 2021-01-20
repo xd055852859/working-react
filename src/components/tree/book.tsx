@@ -2,7 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import './book.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { MenuTree } from 'tree-graph-react';
-import { Button } from '@material-ui/core';
+// import { Button } from '@material-ui/core';
+import { IconButton, Tooltip, Button } from '@material-ui/core';
+import {
+  EditOutlined,
+  SaveOutlined,
+  LockOpenOutlined,
+  LockOutlined,
+} from '@material-ui/icons';
 import { useDispatch } from 'react-redux';
 import { setMessage } from '../../redux/actions/commonActions';
 import { editTask } from '../../redux/actions/taskActions';
@@ -13,12 +20,11 @@ import _ from 'lodash';
 import { StepContent } from '@material-ui/core';
 interface BookProps {
   targetData: any;
-  editable: boolean;
   onChange: Function;
 }
 
 const Book: React.FC<BookProps> = (props) => {
-  const { targetData, editable, onChange } = props;
+  const { targetData, onChange } = props;
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const dispatch = useDispatch();
@@ -29,10 +35,11 @@ const Book: React.FC<BookProps> = (props) => {
   const [targetIndex, setTargetIndex] = useState(0);
   const [selectedId, setSelectedId] = useState('');
   const [content, setContent] = useState<any>('');
-
+  const [editable, setEditable] = useState<any>(false);
   const [defaultSelectedId, setDefaultSelectedId] = useState<any>(null);
   const [deleteDialogShow, setDeleteDialogShow] = useState(false);
   const targetTreeRef: React.RefObject<any> = useRef();
+  const bookRef: React.RefObject<any> = useRef();
   let unDistory = true;
   useEffect(() => {
     if (targetData) {
@@ -83,7 +90,11 @@ const Book: React.FC<BookProps> = (props) => {
     if (nodeIndex !== -1) {
       setTargetIndex(nodeIndex);
     }
+    // if (targetNode) {
+    //   editTaskContent();
+    // }
     setTargetNode(node);
+    // console.log(content, node.content);
     if (node.content) {
       setContent(node.content);
     } else {
@@ -91,6 +102,7 @@ const Book: React.FC<BookProps> = (props) => {
     }
     setSelectedId(node._key);
   };
+
   const addChildrenTask = async (selectedNode: any, type: string) => {
     let newNodeObj = _.cloneDeep(nodeObj);
     let newGridList = _.cloneDeep(gridList);
@@ -107,8 +119,8 @@ const Book: React.FC<BookProps> = (props) => {
         type === 'child'
           ? selectedNode
           : type === 'next'
-          ? newNodeObj[selectedNode].father
-          : '',
+            ? newNodeObj[selectedNode].father
+            : '',
       type: 15,
     });
     if (addTaskRes.msg === 'OK') {
@@ -123,7 +135,7 @@ const Book: React.FC<BookProps> = (props) => {
         contract: false,
         father: result.parentCardKey,
         sortList: result.children,
-        content: result.content,
+        content: '<p>标题</p>',
       };
       newNodeObj[newNode._key] = newNode;
       if (type === 'child') {
@@ -131,12 +143,12 @@ const Book: React.FC<BookProps> = (props) => {
       } else if (type === 'next') {
         newNodeObj[newNodeObj[selectedNode].father].sortList.push(newNode._key);
       }
+      setContent('<p>标题</p>');
       setSelectedId(newNode._key);
       setTargetNode(newNodeObj[newNode._key]);
       setNodeObj(newNodeObj);
       setDefaultSelectedId(newNode._key);
       targetTreeRef.current.rename();
-      // dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
     } else {
       dispatch(setMessage(true, addTaskRes.msg, 'error'));
     }
@@ -161,11 +173,8 @@ const Book: React.FC<BookProps> = (props) => {
     setGridList(newGridList);
   };
   const changeTaskContent = (value: string) => {
-    if (value) {
-      setContent(value);
-    } else {
-      setContent('<p>  </p>');
-    }
+    value = value ? value : '<p>标题</p>'
+    setContent(value);
   };
   const editTaskContent = async () => {
     let newNodeObj = _.cloneDeep(nodeObj);
@@ -178,6 +187,7 @@ const Book: React.FC<BookProps> = (props) => {
     dispatch(setMessage(true, '保存成功', 'success'));
     setNodeObj(newNodeObj);
     setGridList(newGridList);
+    onChange(content);
   };
 
   const editContract = (node: any) => {
@@ -223,22 +233,35 @@ const Book: React.FC<BookProps> = (props) => {
     //}
   };
   return (
-    <div className="book">
+    <div className="book" ref={bookRef}>
       <div className="book-left">
+        <div className="book-left-title">
+          目录
+          <IconButton
+            color="primary"
+            component="span"
+            onClick={() => {
+              setEditable(!editable)
+            }}
+          >
+            {editable ? (
+              <Tooltip title="解锁">
+                <LockOpenOutlined />
+              </Tooltip>
+            ) : (
+                <Tooltip title="锁定">
+                  <LockOutlined />
+                </Tooltip>
+              )
+            }
+          </IconButton>
+        </div>
         {nodeObj && targetData && targetData._key ? (
           <MenuTree
             disabled={!editable}
-            handleClickMoreButton={(node: any) => {
-              // if (companyData[node._key].orgType === 1) {
-              //   setMoreTop(node.y);
-              //   setInfoDialogShow(true);
-              // }
-            }}
             ref={targetTreeRef}
             nodes={nodeObj}
             uncontrolled={false}
-            showIcon={true}
-            showMoreButton
             startId={targetData._key}
             backgroundColor="#f5f5f5"
             color="#333"
@@ -260,34 +283,39 @@ const Book: React.FC<BookProps> = (props) => {
             handleDeleteNode={(nodeId: any) => {
               setDeleteDialogShow(true);
             }}
-            // itemHeight={32}
-            // blockHeight={
-            //   departmentRef.current ? departmentRef.current.offsetHeight : 0
-            // }
+          // itemHeight={32}
+          // blockHeight={
+          //   departmentRef.current ? departmentRef.current.offsetHeight : 0
+          // }
           />
         ) : null}
       </div>
       <div className="book-right">
         <Editor
-          editorHeight={'100%'}
+          editorHeight={bookRef?.current?.offsetHeight}
           data={content}
           onChange={changeTaskContent}
           editable={editable}
           fullType={'big'}
         />
-        {editable ? (
-          <Button
-            variant="contained"
-            color="primary"
-            className="book-editor-button"
-            onClick={() => {
-              editTaskContent();
-              // dispatch(changeTaskInfoVisible(false));
-            }}
-            style={{ color: '#fff' }}
-          >
-            保存
-          </Button>
+        {editable ? (<IconButton
+          color="primary"
+          component="span"
+          onClick={() => {
+            editTaskContent();
+          }}
+          className="book-editor-button "
+        // style={{
+        //   width: '60px',
+        //   height: '60px'
+        // }}
+        ><Tooltip title="保存">
+            <SaveOutlined style={{
+              width: '40px',
+              height: '40px'
+            }} />
+          </Tooltip>
+        </IconButton>
         ) : null}
       </div>
       <Dialog

@@ -131,7 +131,7 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
       }
     } else {
       let newTitle: any = newTargetNode.title;
-      if (newTargetNode.type === 11) {
+      if (title) {
         newTitle = title;
         newContent = value;
       }
@@ -139,22 +139,23 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
         newTitle = saveMarkDown();
         newContent = content;
       }
-      dispatch(
-        editTask(
-          { key: newTargetNode._key, content: newContent, title: newTitle },
-          3
-        )
-      );
+      if (newTargetNode.type !== 15) {
+        dispatch(
+          editTask(
+            { key: newTargetNode._key, content: newContent, title: newTitle },
+            3
+          )
+        );
+        dispatch(setMessage(true, '保存成功', 'success'));
+      }
       newTargetNode.content = newContent;
       newTargetNode.title = newTitle;
-      dispatch(setMessage(true, '保存成功', 'success'));
       changeGridList(newTargetNode);
     }
     if (
       newTargetNode.type === 10 ||
       newTargetNode.type === 11 ||
-      newTargetNode.type === 13 ||
-      newTargetNode.type === 15
+      newTargetNode.type === 13
     ) {
       setEditable(false);
     }
@@ -165,18 +166,18 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
         <React.Fragment>
           <div className="groupTableTreeInfo-container" ref={containerRef}>
             {containerRef.current &&
-            containerRef.current.offsetHeight &&
-            targetNode.type === 10 ? (
-              <React.Fragment>
-                <Editor
-                  editorHeight={containerRef.current.offsetHeight}
-                  data={content}
-                  onChange={changeTaskContent}
-                  editable={editable}
-                  fullType={fullType}
-                />
-              </React.Fragment>
-            ) : null}
+              containerRef.current.offsetHeight &&
+              targetNode.type === 10 ? (
+                <React.Fragment>
+                  <Editor
+                    editorHeight={containerRef.current.offsetHeight}
+                    data={content}
+                    onChange={changeTaskContent}
+                    editable={editable}
+                    fullType={fullType}
+                  />
+                </React.Fragment>
+              ) : null}
             {targetNode.type === 11 ? (
               editable ? (
                 <DrawEditor
@@ -185,12 +186,12 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
                   onChange={changeContent}
                 />
               ) : (
-                <DrawView
-                  //@ts-ignore
-                  targetNode={targetNode}
+                  <DrawView
+                    //@ts-ignore
+                    targetNode={targetNode}
                   // onChange={changeContent}
-                />
-              )
+                  />
+                )
             ) : null}
             {targetNode.type === 12 ? <Table node={targetNode} /> : null}
             {targetNode.type === 13 ? (
@@ -206,60 +207,59 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
             {targetNode.type === 15 ? (
               <Book
                 targetData={targetNode}
-                editable={editable}
-                onChange={changeTaskContent}
+                onChange={changeContent}
               />
             ) : null}
           </div>
           {(targetNode.type !== 12 &&
             targetNode.type !== 14 &&
             targetNode.type !== 11) ||
-          (targetNode.type === 11 && !editable) ? (
-            <div
-              className="groupTableTreeInfo-button"
-              style={{ top: fullType === 'small' ? '10px' : '5px' }}
-            >
-              <IconButton
-                color="primary"
-                component="span"
-                onClick={() => {
-                  if (
-                    targetNode.type === 10 ||
-                    targetNode.type === 13 ||
-                    targetNode.type === 11 ||
-                    targetNode.type === 15
-                  ) {
-                    if (!editable) {
-                      setEditable(true);
-                    } else {
-                      if (targetNode.type === 15) {
-                        setEditable(false);
+            (targetNode.type === 11 && !editable) ? (
+              <div
+                className="groupTableTreeInfo-button"
+                style={{ top: fullType === 'small' ? '10px' : '5px' }}
+              >
+                <IconButton
+                  color="primary"
+                  component="span"
+                  onClick={() => {
+                    if (
+                      targetNode.type === 10 ||
+                      targetNode.type === 13 ||
+                      targetNode.type === 11
+                    ) {
+                      if (!editable) {
+                        setEditable(true);
                       } else {
                         changeContent();
                       }
                     }
-                  }
-                }}
-              >
-                {targetNode.type === 10 ||
-                targetNode.type === 13 ||
-                targetNode.type === 11 ||
-                targetNode.type === 15 ? (
-                  editable ? (
-                    <Tooltip title="保存">
-                      <SaveOutlined />
-                    </Tooltip>
-                  ) : (
-                    <Tooltip title="编辑">
-                      <EditOutlined />
-                    </Tooltip>
-                  )
-                ) : (
-                  ''
-                )}
-              </IconButton>
-            </div>
-          ) : null}
+                  }}
+                >
+                  {targetNode.type === 10 ||
+                    targetNode.type === 13 ||
+                    targetNode.type === 11 ? (
+                      editable ? (
+                        <Tooltip title="保存">
+                          <SaveOutlined style={{
+                            width: '30px',
+                            height: '30px'
+                          }} />
+                        </Tooltip>
+                      ) : (
+                          <Tooltip title="编辑">
+                            <EditOutlined style={{
+                              width: '30px',
+                              height: '30px'
+                            }} />
+                          </Tooltip>
+                        )
+                    ) : (
+                      ''
+                    )}
+                </IconButton>
+              </div>
+            ) : null}
           <div
             className="groupTableTree-full-img"
             style={{
@@ -267,23 +267,21 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
                 fullType === 'small'
                   ? '10px'
                   : targetNode.type !== 12 && targetNode.type !== 11
-                  ? '5px'
-                  : targetNode.type === 11
-                  ? editable
-                    ? '0px'
-                    : '5px'
-                  : '-10px',
+                    ? '5px'
+                    : targetNode.type === 11
+                      ? editable
+                        ? '0px'
+                        : '5px'
+                      : '-10px',
 
               right:
                 fullType === 'big'
                   ? targetNode.type === 12
                     ? '70px'
-                    : targetNode.type === 11
-                    ? editable
-                      ? '80px'
-                      : '13px'
                     : '5px'
-                  : '13px',
+                  : targetNode.type === 11 && editable
+                    ? '80px'
+                    : '13px',
             }}
           >
             <IconButton
@@ -295,16 +293,23 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
             >
               <Tooltip title={fullType === 'small' ? '全屏' : '缩小'}>
                 {fullType === 'small' ? (
-                  <FullscreenOutlined />
+                  <FullscreenOutlined style={{
+                    width: '30px',
+                    height: '30px'
+                  }} />
                 ) : (
-                  <FullscreenExitOutlined />
-                )}
+                    <FullscreenExitOutlined style={{
+                      width: '30px',
+                      height: '30px'
+                    }} />
+                  )}
               </Tooltip>
             </IconButton>
           </div>
         </React.Fragment>
-      ) : null}
-    </React.Fragment>
+      ) : null
+      }
+    </React.Fragment >
   );
 };
 GroupTableTreeInfo.defaultProps = {};

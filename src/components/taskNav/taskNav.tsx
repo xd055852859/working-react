@@ -192,7 +192,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       obj = {
         url:
           urlInput.indexOf('http://') !== -1 ||
-          urlInput.indexOf('https://') !== -1
+            urlInput.indexOf('https://') !== -1
             ? urlInput
             : 'http://' + urlInput,
       };
@@ -247,6 +247,13 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
   };
   const changeLabelName = (labelInfo: any, groupInfo: any) => {
     console.log(labelInfo, groupInfo);
+    console.log("labelName", labelName)
+    if (labelName == '') {
+      setLabelName(name);
+      setLabelNameVisible(false);
+      dispatch(setMessage(true, '频道名不能为空', 'error'));
+      return;
+    }
     if (labelName !== name) {
       if (labelInfo._key) {
         api.group.setCardLabel({
@@ -377,7 +384,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
             height:
               (taskNavArray[1]._key + '' == chooseLabelKey ||
                 taskNavArray[0]._key + '' == chooseLabelKey) &&
-              addTaskVisible
+                addTaskVisible
                 ? '172px'
                 : '60px',
           }}
@@ -435,50 +442,50 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                     <div className="defaultExecutor-info">
                       {groupMemberArray
                         ? groupMemberArray.map(
-                            (
-                              groupMemberItem: any,
-                              groupMemberIndex: number
-                            ) => {
-                              return (
-                                <div
-                                  key={'groupMember' + groupMemberIndex}
-                                  className="defaultExecutor-info-item"
-                                  style={{ justifyContent: 'space-between' }}
-                                  onClick={() => {
-                                    changeDefaultExecutor(
-                                      groupMemberItem,
-                                      taskNavArray[1]._key
-                                    );
-                                  }}
-                                >
-                                  <div className="defaultExecutor-info-left">
-                                    <div className="defaultExecutor-info-avatar">
-                                      <img
-                                        src={
-                                          groupMemberItem.avatar
-                                            ? groupMemberItem.avatar +
-                                              '?imageMogr2/auto-orient/thumbnail/80x'
-                                            : defaultPersonPng
-                                        }
-                                        alt=""
-                                      />
-                                    </div>
-                                    {groupMemberItem.nickName}
-                                  </div>
-                                  {executorKey === groupMemberItem.userId ? (
+                          (
+                            groupMemberItem: any,
+                            groupMemberIndex: number
+                          ) => {
+                            return (
+                              <div
+                                key={'groupMember' + groupMemberIndex}
+                                className="defaultExecutor-info-item"
+                                style={{ justifyContent: 'space-between' }}
+                                onClick={() => {
+                                  changeDefaultExecutor(
+                                    groupMemberItem,
+                                    taskNavArray[1]._key
+                                  );
+                                }}
+                              >
+                                <div className="defaultExecutor-info-left">
+                                  <div className="defaultExecutor-info-avatar">
                                     <img
-                                      src={checkPersonPng}
+                                      src={
+                                        groupMemberItem.avatar
+                                          ? groupMemberItem.avatar +
+                                          '?imageMogr2/auto-orient/thumbnail/80x'
+                                          : defaultPersonPng
+                                      }
                                       alt=""
-                                      style={{
-                                        width: '20px',
-                                        height: '12px',
-                                      }}
                                     />
-                                  ) : null}
+                                  </div>
+                                  {groupMemberItem.nickName}
                                 </div>
-                              );
-                            }
-                          )
+                                {executorKey === groupMemberItem.userId ? (
+                                  <img
+                                    src={checkPersonPng}
+                                    alt=""
+                                    style={{
+                                      width: '20px',
+                                      height: '12px',
+                                    }}
+                                  />
+                                ) : null}
+                              </div>
+                            );
+                          }
+                        )
                         : null}
                     </div>
                   </DropMenu>
@@ -488,7 +495,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                 <Tooltip
                   title={
                     labelName.split('_')[1] !== '副本' &&
-                    labelName.split('_')[1]
+                      labelName.split('_')[1]
                       ? labelName.split('_')[0] + '/' + labelName.split('/')[1]
                       : labelName
                   }
@@ -502,25 +509,25 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                     }}
                   >
                     {labelName.split('_')[1] !== '副本' &&
-                    labelName.split('_')[1]
+                      labelName.split('_')[1]
                       ? labelName.split('_')[0] + '/' + labelName.split('/')[1]
                       : labelName}
                   </div>
                 </Tooltip>
               ) : (
-                <input
-                  // variant="outlined"
-                  placeholder="请输入标题名"
-                  onChange={(e: any) => {
-                    setLabelName(e.target.value);
-                  }}
-                  className="taskNav-input"
-                  value={labelName}
-                  onBlur={() => {
-                    changeLabelName(taskNavArray[1], taskNavArray[0]);
-                  }}
-                />
-              )}
+                  <input
+                    // variant="outlined"
+                    placeholder="请输入标题名"
+                    onChange={(e: any) => {
+                      setLabelName(e.target.value);
+                    }}
+                    className="taskNav-input"
+                    value={labelName}
+                    onBlur={() => {
+                      changeLabelName(taskNavArray[1], taskNavArray[0]);
+                    }}
+                  />
+                )}
               {unFinsihNum || allNum ? (
                 <Chip
                   size="small"
@@ -741,91 +748,91 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
           </div>
           {(taskNavArray[1]._key + '' == chooseLabelKey ||
             taskNavArray[0]._key + '' == chooseLabelKey) &&
-          addTaskVisible &&
-          headerIndex !== 3 ? (
-            <div className="taskItem-plus-title taskNav-plus-title">
-              <div className="taskItem-plus-input">
-                <input
-                  // required
-                  placeholder="任务标题"
-                  value={addInput}
-                  autoComplete="off"
-                  onChange={(e) => {
-                    setAddInput(e.target.value);
-                  }}
-                  style={{ fontSize: '14px' }}
-                />
-              </div>
-              <div
-                className="taskItem-plus-button"
-                style={{ marginTop: '10px' }}
-              >
-                <div className="taskNav-url">
-                  <IconButton
-                    color="primary"
-                    component="span"
-                    onClick={() => {
-                      setMoveState(true);
-                    }}
-                  >
-                    <img
-                      src={urlSvg}
-                      alt=""
-                      style={{ height: '25px', width: '25px' }}
-                    />
-                  </IconButton>
-
+            addTaskVisible &&
+            headerIndex !== 3 ? (
+              <div className="taskItem-plus-title taskNav-plus-title">
+                <div className="taskItem-plus-input">
                   <input
-                    className="taskNav-url-input"
-                    value={urlInput}
-                    onChange={(e: any) => {
-                      setUrlInput(e.target.value);
+                    // required
+                    placeholder="任务标题"
+                    value={addInput}
+                    autoComplete="off"
+                    onChange={(e) => {
+                      setAddInput(e.target.value);
                     }}
-                    placeholder="请输入链接地址"
-                    style={
-                      moveState
-                        ? {
+                    style={{ fontSize: '14px' }}
+                  />
+                </div>
+                <div
+                  className="taskItem-plus-button"
+                  style={{ marginTop: '10px' }}
+                >
+                  <div className="taskNav-url">
+                    <IconButton
+                      color="primary"
+                      component="span"
+                      onClick={() => {
+                        setMoveState(true);
+                      }}
+                    >
+                      <img
+                        src={urlSvg}
+                        alt=""
+                        style={{ height: '25px', width: '25px' }}
+                      />
+                    </IconButton>
+
+                    <input
+                      className="taskNav-url-input"
+                      value={urlInput}
+                      onChange={(e: any) => {
+                        setUrlInput(e.target.value);
+                      }}
+                      placeholder="请输入链接地址"
+                      style={
+                        moveState
+                          ? {
                             animation: 'urlOut 500ms',
                             animationFillMode: 'forwards',
                           }
-                        : {}
-                    }
-                  />
-                </div>
-                <Button
-                  onClick={() => {
-                    setChooseLabelKey('');
-                    setAddTaskVisible(false);
-                    setAddInput('');
-                    setMoveState(false);
-                  }}
-                  style={{ marginRight: '10px', color: '#efefef' }}
-                >
-                  取消
-                </Button>
-                {addInput && !loading ? (
+                          : {}
+                      }
+                    />
+                  </div>
                   <Button
-                    variant="contained"
-                    color="primary"
                     onClick={() => {
-                      addTask(taskNavArray[0], taskNavArray[1]);
+                      setChooseLabelKey('');
+                      setAddTaskVisible(false);
+                      setAddInput('');
+                      setMoveState(false);
                     }}
-                    style={{ marginLeft: '10px', color: '#fff' }}
+                    style={{ marginRight: '10px', color: '#efefef' }}
                   >
-                    确定
-                  </Button>
-                ) : (
-                  <Button
-                    variant="contained"
-                    disabled
-                    style={{ marginLeft: '10px', color: '#fff' }}
-                  >
-                    确定
-                  </Button>
-                )}
+                    取消
+                </Button>
+                  {addInput && !loading ? (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        addTask(taskNavArray[0], taskNavArray[1]);
+                      }}
+                      style={{ marginLeft: '10px', color: '#fff' }}
+                    >
+                      确定
+                    </Button>
+                  ) : (
+                      <Button
+                        variant="contained"
+                        disabled
+                        style={{ marginLeft: '10px', color: '#fff' }}
+                      >
+                        确定
+                      </Button>
+                    )}
+                </div>
               </div>
-            </div>
-          ) : null}
+            ) : null}
         </div>
       ) : null}
     </React.Fragment>

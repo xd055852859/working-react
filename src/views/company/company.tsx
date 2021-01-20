@@ -9,7 +9,7 @@ import {
 } from '../../redux/actions/commonActions';
 import { useDispatch } from 'react-redux';
 import { Route, Switch, Link } from 'react-router-dom';
-import { Collapse, List, ListItem } from '@material-ui/core';
+import { Collapse, List, ListItem, Button } from '@material-ui/core';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 
 import companyIcon1 from '../../assets/svg/companyIcon1.svg';
@@ -40,10 +40,10 @@ const CompanyAccount = Loadable({
   loader: () => import('./companyAccount'),
   loading: () => null,
 });
-interface CompanyProps {}
+interface CompanyProps { }
 
 const Company: React.FC<CompanyProps> = (props) => {
-  const {} = props;
+  const { } = props;
   const dispatch = useDispatch();
   const history = useHistory();
   const [linkIndex, setLinkIndex] = useState(0);
@@ -62,10 +62,6 @@ const Company: React.FC<CompanyProps> = (props) => {
       <div className="company-menu">
         <div
           className="company-menu-logo"
-          onClick={async () => {
-            dispatch(setCommonHeaderIndex(3));
-            history.push('/home/basic/groupTable');
-          }}
         >
           <img
             src={
@@ -76,7 +72,7 @@ const Company: React.FC<CompanyProps> = (props) => {
             alt=""
           />
         </div>
-        <div  className="company-menu-name">{groupInfo && groupInfo.groupName}</div>
+        <div className="company-menu-name">{groupInfo && groupInfo.groupName}</div>
         {/* <div> 企业中心</Link></div> */}
         <ListItem
           button
@@ -89,8 +85,8 @@ const Company: React.FC<CompanyProps> = (props) => {
           style={
             firstOpen
               ? {
-                  background: '#37373C',
-                }
+                background: '#37373C',
+              }
               : {}
           }
         >
@@ -111,8 +107,8 @@ const Company: React.FC<CompanyProps> = (props) => {
             style={
               firstOpen
                 ? {
-                    background: '#37373C',
-                  }
+                  background: '#37373C',
+                }
                 : {}
             }
           >
@@ -200,8 +196,8 @@ const Company: React.FC<CompanyProps> = (props) => {
           style={
             linkIndex === 5
               ? {
-                  background: '#37373C',
-                }
+                background: '#37373C',
+              }
               : {}
           }
         >
@@ -211,6 +207,17 @@ const Company: React.FC<CompanyProps> = (props) => {
             style={{ width: '15px', height: '17px', marginRight: '10px' }}
           />
           企业账户
+        </div>
+        <div className="company-menu-button">
+          <Button
+            color="primary"
+            onClick={() => {
+              dispatch(setCommonHeaderIndex(3));
+              history.push('/home/basic/groupTable');
+            }}
+          >
+            退出中台
+              </Button>
         </div>
       </div>
       <div className="company-container">

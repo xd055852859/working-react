@@ -34,10 +34,10 @@ const CompanySearch: React.FC<CompanySearchProps> = (props) => {
           _key: data[key]._key,
           contract: false,
           father: data[key].parentOrgKey,
-          nickName:
+          name:
             data[key].orgType === 1
-              ? data[key].nickName
-              : data[key].nickName +
+              ? data[key].name
+              : data[key].name +
                 ' (' +
                 (data[key].post ? data[key].post : '无职务') +
                 ' )',
@@ -52,6 +52,7 @@ const CompanySearch: React.FC<CompanySearchProps> = (props) => {
           setStartId(data[key]._key);
         }
       }
+      console.log("?????",newSearchData)
       setSearchData(newSearchData);
       // setRows(newRow);
     } else {

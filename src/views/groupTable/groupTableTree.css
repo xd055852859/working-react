@@ -4,9 +4,11 @@
   display: flex;
   background: #eeeeee;
 }
+
 .tree-info {
   height: 100%;
 }
+
 .tree-container {
   width: 100%;
   height: calc(100% - 110px);
@@ -15,11 +17,13 @@
   /* justify-content: center; */
   overflow: auto;
 }
+
 .tree-box {
   position: absolute;
   top: 10px;
   /* margin-top: 10px; */
 }
+
 .tree-time {
   width: 100%;
   height: 50px;
@@ -28,11 +32,13 @@
   justify-content: center;
   background-color: #fff;
 }
+
 .tree-time-container {
   height: 100%;
   display: flex;
   align-items: center;
 }
+
 .tree-time-taskType {
   width: 120px;
   height: 40px;
@@ -40,15 +46,18 @@
   flex-wrap: wrap;
   align-content: space-between;
 }
+
 .tree-time-line {
   color: #b7b7b7;
   margin: 0px 15px 0px 10px;
 }
+
 .tree-path {
   width: 100%;
   height: 32px;
   display: flex;
 }
+
 .tree-path-item {
   height: 32px;
   line-height: 32px;
@@ -59,9 +68,11 @@
   padding: 0px 0px 0px 25px;
   position: relative;
 }
+
 .tree-path-item:nth-child(1) {
   padding: 0px 0px 0px 7px;
 }
+
 .tree-path-icon {
   width: 18px;
   height: 32px;
@@ -70,6 +81,7 @@
   right: -18px;
   z-index: 1;
 }
+
 .tree-path-icon-top {
   width: 0;
   height: 0;
@@ -81,6 +93,7 @@
   top: 0px;
   z-index: 3;
 }
+
 .tree-path-icon-bottom {
   width: 0;
   height: 0;
@@ -92,6 +105,7 @@
   top: 0px;
   z-index: 2;
 }
+
 .tree-member {
   width: 50px;
   /* height: 100%; */
@@ -104,11 +118,13 @@
   box-sizing: border-box;
   background: #333333;
 }
+
 .tree-member-container {
   width: 100%;
   height: calc(100% - 45px);
   overflow: auto;
 }
+
 .tree-member-item {
   width: 100%;
   height: 45px;
@@ -118,6 +134,7 @@
   justify-content: center;
   margin-bottom: 3px;
 }
+
 .tree-member-img {
   width: 40px;
   height: 40px;
@@ -127,11 +144,13 @@
   z-index: 2;
   cursor: pointer;
 }
+
 .tree-member-img img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
+
 .tree-member-check {
   width: 20px;
   height: 20px;
@@ -141,6 +160,7 @@
   z-index: 3;
   cursor: pointer;
 }
+
 .tree-close {
   width: 32px;
   height: 32px;
@@ -150,17 +170,20 @@
   z-index: 91;
   cursor: pointer;
 }
+
 .tree-logo {
   width: 35px;
   height: 32px;
   margin-bottom: 10px;
   cursor: pointer;
 }
+
 .iconBig-container {
   width: 20%;
   margin: 20px 5px;
   cursor: pointer;
 }
+
 .iconBig-img {
   width: 75px;
   height: 75px;
@@ -168,11 +191,13 @@
   align-items: center;
   justify-content: flex-start;
 }
+
 .iconBig-container:nth-child(5) .iconBig-img {
   width: 82px;
   height: 82px;
   margin-left: -10px;
 }
+
 .iconBig-title {
   width: 100%;
   height: 20px;
@@ -180,9 +205,11 @@
   line-height: 20px;
   text-align: center;
 }
+
 .iconBig-container:nth-child(5) .iconBig-title {
   margin-top: 3px;
 }
+
 .groupTableTreeInfo-container {
   width: 100%;
   height: 100%;
@@ -190,11 +217,13 @@
   position: relative;
   z-index: 1;
 }
+
 .groupTableTreeInfo-button {
   position: absolute;
   right: 60px;
   z-index: 5;
 }
+
 .groupTableTree-full {
   height: 100%;
   position: fixed;
@@ -203,6 +232,7 @@
   z-index: 20;
   background-color: #fff;
 }
+
 .groupTableTree-full-title {
   width: 100%;
   height: 54px;
@@ -213,6 +243,7 @@
   align-items: center;
   justify-content: space-between;
 }
+
 .groupTableTree-full-img {
   position: absolute;
   top: 10px;
@@ -220,6 +251,7 @@
   z-index: 5;
   cursor: pointer;
 }
+
 @keyframes rightTop {
   from {
     height: 100%;

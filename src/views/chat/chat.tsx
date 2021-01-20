@@ -12,7 +12,7 @@ import _ from 'lodash';
 import api from '../../services/api';
 import closePng from '../../assets/img/close.png';
 import moment from 'moment';
-interface ChatProps {}
+interface ChatProps { }
 
 const Chat: React.FC<ChatProps> = (prop) => {
   const dispatch = useDispatch();
@@ -78,7 +78,7 @@ const Chat: React.FC<ChatProps> = (prop) => {
     }
   };
   const goChat = async () => {
-    const dom: any = document.querySelector('iframe');
+    const dom: any = document.querySelector('#chat');
     if (dom) {
       if (headerIndex === 2) {
         const privatePerson =
@@ -127,6 +127,7 @@ const Chat: React.FC<ChatProps> = (prop) => {
   return (
     <React.Fragment>
       <div
+
         className="chat-iframe"
         style={
           // headerIndex === 4
@@ -139,25 +140,26 @@ const Chat: React.FC<ChatProps> = (prop) => {
           chatState
             ? !clickType
               ? {
-                  width: '420px',
-                }
+                width: '420px',
+              }
               : {
-                  width: '600px',
-                }
+                width: '600px',
+              }
             : { opacity: 0, width: '0px', height: '0px' }
         }
       >
         <iframe
+          id="chat"
           src={url}
           className="chat"
           style={
             !clickType
               ? {
-                  left: '-180px',
-                }
+                left: '-180px',
+              }
               : {
-                  left: '0px',
-                }
+                left: '0px',
+              }
           }
         ></iframe>
         <div
@@ -168,11 +170,11 @@ const Chat: React.FC<ChatProps> = (prop) => {
           style={
             !clickType
               ? {
-                  left: '10px',
-                }
+                left: '10px',
+              }
               : {
-                  left: '192px',
-                }
+                left: '192px',
+              }
           }
         ></div>
         {chatState ? (

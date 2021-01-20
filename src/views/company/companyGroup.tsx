@@ -27,7 +27,7 @@ import AssignmentOutlinedIcon from '@material-ui/icons/AssignmentOutlined';
 import deletePng from '../../assets/img/deleteDiary.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import { setMessage } from '../../redux/actions/commonActions';
-interface CompanyGroupProps {}
+interface CompanyGroupProps { }
 const columns = [
   {
     id: 'avatar',
@@ -66,7 +66,7 @@ const columns = [
   },
 ];
 const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
-  const {} = props;
+  const { } = props;
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
@@ -123,7 +123,7 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
               ? data[key].groupLogo + '?imageMogr2/auto-orient/thumbnail/80x'
               : defaultGroupPng,
           };
-          if (!data[key].parentGroupKey && !nodeId) {
+          if (data[key]._key === groupKey && !nodeId) {
             setStartId(data[key]._key);
             nodeId = data[key]._key;
             chooseNode(data[key]);
@@ -152,7 +152,7 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
         newRow[newRow.length - 1]['targetRole' + item.role] = item.role;
         newRow[newRow.length - 1].checkIndex = item.role;
       });
-
+      console.log(newRow);
       setPage(0);
       setSelectedId(node._key);
       setRows(newRow);
@@ -243,7 +243,7 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
     //   dispatch(setMessage(true, addCompanyRes.msg, 'error'));
     // }
   };
-  const changeRole = (e: any, index: number, columnIndex: number) => {
+  const changeRole = async (e: any, index: number, columnIndex: number) => {
     let newRow = _.cloneDeep(rows);
     let targetRole = '';
     for (let key in newRow[index]) {
@@ -253,14 +253,20 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
       }
     }
     // if (targetRole !== 'targetRole' + (columnIndex + 1)) {
-    newRow[index]['targetRole' + (columnIndex + 1)] = columnIndex + 1;
+    newRow[index]['targetRole' + (columnIndex)] = columnIndex;
     // }
-    api.auth.setRole(
+    let roleRes: any = await api.auth.setRole(
       newRow[index].groupId,
       newRow[index].userId,
-      columnIndex + 1
+      columnIndex
     );
-    setRows(newRow);
+    if (roleRes.msg === 'OK') {
+      setRows(newRow);
+    } else {
+      dispatch(setMessage(true, roleRes.msg, 'error'));
+    }
+
+
   };
   const deleteGroup = async () => {
     setDeleteDialogShow(false);
@@ -515,57 +521,57 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
                                 </TableCell>
                               ) : column.id === 'operation' &&
                                 rows[index].userId !== user._key ? (
-                                <TableCell align="center">
-                                  <IconButton
-                                    color="primary"
-                                    component="span"
-                                    onClick={() => {
-                                      setDeleteVisible(true);
-                                      setUserId(rows[index].userId);
-                                    }}
-                                  >
-                                    <img
-                                      src={deletePng}
-                                      alt=""
-                                      style={{ height: '15px', width: '16px' }}
-                                    />
-                                  </IconButton>
-                                </TableCell>
-                              ) : column.id === 'avatar' ? (
-                                <TableCell key={column.id} align="center">
-                                  <div className="company-avatar-container ">
-                                    <div className="company-avatar">
-                                      <img
-                                        src={
-                                          row.avatar
-                                            ? row.avatar +
-                                              '?imageMogr2/auto-orient/thumbnail/80x'
-                                            : defaultPersonPng
+                                    <TableCell align="center">
+                                      <IconButton
+                                        color="primary"
+                                        component="span"
+                                        onClick={() => {
+                                          setDeleteVisible(true);
+                                          setUserId(rows[index].userId);
+                                        }}
+                                      >
+                                        <img
+                                          src={deletePng}
+                                          alt=""
+                                          style={{ height: '15px', width: '16px' }}
+                                        />
+                                      </IconButton>
+                                    </TableCell>
+                                  ) : column.id === 'avatar' ? (
+                                    <TableCell key={column.id} align="center">
+                                      <div className="company-avatar-container ">
+                                        <div className="company-avatar">
+                                          <img
+                                            src={
+                                              row.avatar
+                                                ? row.avatar +
+                                                '?imageMogr2/auto-orient/thumbnail/80x'
+                                                : defaultPersonPng
+                                            }
+                                            alt=""
+                                          />
+                                        </div>
+                                      </div>
+                                    </TableCell>
+                                  ) : rows[index].userId !== user._key ? (
+                                    <TableCell align="center">
+                                      <Checkbox
+                                        checked={value ? true : false}
+                                        disabled={
+                                          rows[index].role > rows[index].checkIndex
+                                            ? true
+                                            : false
                                         }
-                                        alt=""
+                                        onChange={(e: any) => {
+                                          changeRole(e, index, columnIndex);
+                                          // setMessageCheck(e.target.checked);
+                                        }}
+                                        color="primary"
                                       />
-                                    </div>
-                                  </div>
-                                </TableCell>
-                              ) : rows[index].userId !== user._key ? (
-                                <TableCell align="center">
-                                  <Checkbox
-                                    checked={value ? true : false}
-                                    disabled={
-                                      rows[index].role > rows[index].checkIndex
-                                        ? true
-                                        : false
-                                    }
-                                    onChange={(e: any) => {
-                                      changeRole(e, index, columnIndex);
-                                      // setMessageCheck(e.target.checked);
-                                    }}
-                                    color="primary"
-                                  />
-                                </TableCell>
-                              ) : (
-                                <TableCell align="center"></TableCell>
-                              )}
+                                    </TableCell>
+                                  ) : (
+                                        <TableCell align="center"></TableCell>
+                                      )}
                             </React.Fragment>
                           );
                         })}
