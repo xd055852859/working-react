@@ -192,7 +192,7 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
             nodeId = data[key]._key;
             setStartId(data[key]._key);
             newCompanyData[key].icon = groupInfo.groupLogo
-              ? groupInfo.groupLogo + '?imageMogr2/auto-orient/thumbnail/80x'
+              ? groupInfo.groupLogo + '?roundPic/radius/!50p'
               : defaultGroupPng;
           }
         }

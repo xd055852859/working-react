@@ -25,7 +25,7 @@ import {
 } from '@material-ui/core';
 import AssignmentOutlinedIcon from '@material-ui/icons/AssignmentOutlined';
 import deletePng from '../../assets/img/deleteDiary.png';
-import defaultGroupPng from '../../assets/img/defaultGroup.png';
+import defaultGroupSvg from '../../assets/svg/defaultGroup.svg';
 import { setMessage } from '../../redux/actions/commonActions';
 interface CompanyGroupProps { }
 const columns = [
@@ -120,8 +120,8 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
             sortList: data[key].children,
             role: data[key].groupRole,
             icon: data[key].groupLogo
-              ? data[key].groupLogo + '?imageMogr2/auto-orient/thumbnail/80x'
-              : defaultGroupPng,
+              ? data[key].groupLogo + '?roundPic/radius/!50p'
+              : defaultGroupSvg,
           };
           if (data[key]._key === groupKey && !nodeId) {
             setStartId(data[key]._key);
@@ -193,7 +193,7 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
           name: groupRes.result.groupName,
           sortList: groupRes.result.children,
           role: 1,
-          icon: defaultGroupPng,
+          icon: defaultGroupSvg,
         };
         if (type === 'child') {
           newCompanyData[selectedNode].sortList.push(groupRes.result._key);

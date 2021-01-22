@@ -83,6 +83,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const socket = useTypedSelector((state) => state.auth.socket);
   const user = useTypedSelector((state) => state.auth.user);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
+  const chatState = useTypedSelector((state) => state.common.chatState);
   const [contentSetVisilble, setContentSetVisilble] = useState(false);
 
   const [clockInVisible, setClockInVisible] = useState(false);
@@ -328,7 +329,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                       cursor: 'pointer',
                     }}
                     onClick={() => {
-                      dispatch(setChatState(true));
+                      dispatch(setChatState(!chatState));
                     }}
                   />
                 </Badge>

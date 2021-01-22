@@ -192,6 +192,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
         fatherGroupName: newFatherObj.groupName,
       });
       setFatherDialogVisible(false);
+      dispatch(getGroupInfo(groupKey));
     } else {
       dispatch(setMessage(true, res.msg, 'error'));
     }
@@ -243,7 +244,6 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
     if (fatherRes.msg === 'OK') {
       setFatherList(fatherRes.result);
       setSearchFatherList(fatherRes.result);
-      setFatherVisible(true);
     } else {
       dispatch(setMessage(true, fatherRes.msg, 'error'));
     }
@@ -321,6 +321,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
               className="group-member-father"
               onClick={() => {
                 if (groupRole === 1) {
+                  setFatherVisible(true);
                   getFatherList();
                 }
               }}
@@ -410,7 +411,10 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
                             />
                           </div>
                           <Tooltip title={groupItem.groupName}>
-                            <div className="group-member-name">
+                            <div
+                              className="group-member-name"
+                              style={{ width: 'calc(100% - 45px)' }}
+                            >
                               {groupItem.groupName}
                             </div>
                           </Tooltip>
