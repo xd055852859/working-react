@@ -60,7 +60,7 @@ const GroupTableTreeItem: React.FC<GroupTableTreeItemProps> = (props) => {
         <div className="groupTableTreeItem-title">新建节点</div>
         <ArrowRight />
       </div>
-      <div
+      {/* <div
         className="groupTableTreeItem-item"
         onMouseEnter={() => {
           setTypeDialogShow(0);
@@ -86,7 +86,7 @@ const GroupTableTreeItem: React.FC<GroupTableTreeItemProps> = (props) => {
         >
           删除节点
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

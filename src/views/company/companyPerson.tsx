@@ -328,6 +328,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
       if (res.msg === 'OK') {
         setLoading(false);
         getCompanyRow(0, rowsPerPage, '');
+        dispatch(setMessage(true, '导入人员成功', 'success'));
       } else {
         setLoading(false);
         dispatch(setMessage(true, res.msg, 'error'));

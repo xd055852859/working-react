@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './groupMember.css';
-import { Checkbox, TextField, Button } from '@material-ui/core';
+import { Checkbox, IconButton, Tooltip, Button } from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
+import { HelpOutlineOutlined } from '@material-ui/icons';
 import { useDispatch } from 'react-redux';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import _ from 'lodash';
@@ -551,7 +552,14 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
         </div>
       </div>
       <div className="group-member-team">
-        <div className="group-member-title">群权限设置</div>
+        <div className="group-member-title">
+          群权限设置
+          <IconButton color="primary" component="span" onClick={() => {}}>
+            <Tooltip title="权限说明">
+              <HelpOutlineOutlined />
+            </Tooltip>
+          </IconButton>
+        </div>
         <div className="group-member-container contact-team-container">
           {memberList.map((newItem: any, newIndex: number) => {
             return (

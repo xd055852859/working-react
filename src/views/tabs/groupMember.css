@@ -50,6 +50,8 @@
   display: flex;
   font-size: 14px;
   color: #23384b;
+  position: relative;
+  z-index: 1;
 }
 
 .group-member-container {
