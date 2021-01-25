@@ -10,6 +10,7 @@ import _ from 'lodash';
 import Avatar from '@material-ui/core/Avatar';
 import theme from '../../theme';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
+import Loading from '../../components/common/loading';
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     avatar: {
@@ -106,9 +107,11 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
   const [mainArray, setMainArray] = useState<any>([]);
   const [finishNum, setFinishNum] = useState<any>(0);
   const [allNum, setAllNum] = useState<any>(0);
+  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   useEffect(() => {
     if (user && user._key) {
+      setLoading(true);
       dispatch(
         getSelfTask(
           1,
@@ -123,6 +126,7 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
   }, [user]);
   useEffect(() => {
     if (selfTaskArray) {
+      setLoading(false);
       let groupObj: any = {};
       let groupArray = [];
       let createNum = 0;
@@ -238,6 +242,7 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
   };
   return (
     <div className="mainBoard">
+      {loading ? <Loading loadingWidth="80px" loadingHeight="80px" /> : null}
       {!showType ? (
         <div className="mainBoard-maintitle">
           今日事务 ({allNum - finishNum} / {allNum})

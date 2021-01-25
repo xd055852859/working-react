@@ -237,7 +237,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
   };
   return (
     <div className="messageBoard" style={{ width: type ? '100%' : '360px' }}>
-      {loading ? <Loading /> : null}
+      {loading ? <Loading loadingWidth="80px" loadingHeight="80px" /> : null}
       <div
         className="messageBoard-maintitle"
         style={

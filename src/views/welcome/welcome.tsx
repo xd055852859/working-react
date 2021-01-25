@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import { useTypedSelector } from '../../redux/reducer/RootState';
+import { changeStartMusic } from '../../redux/actions/authActions';
 import Button from '@material-ui/core/Button';
 import { useDispatch } from 'react-redux';
 import bgWSvg from '../../assets/svg/bg-white.svg';
@@ -55,13 +56,18 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export default function Welcome() {
   const classes = useStyles();
-  const dispatch = useDispatch();
   const history = useHistory();
   const user = useTypedSelector((state) => state.auth.user);
   const [clientHeight, setClientHeight] = useState(0);
   const [clientWidth, setClientWidth] = useState(0);
   const bootpageRef: React.RefObject<any> = useRef();
   useEffect(() => {
+    let url = window.location.href;
+    // 自动切换为https
+    if (url.indexOf('http://localhost') == -1 && url.indexOf('https') < 0) {
+      url = url.replace('http:', 'https:');
+      window.location.replace(url);
+    }
     if (localStorage.getItem('token') && !localStorage.getItem('viewWelcome')) {
       history.push('/home/basic');
     }

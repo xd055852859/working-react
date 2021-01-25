@@ -288,7 +288,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
           top: '38px',
         }}
         filterStyle={{ padding: '0px 18px' }}
-        filterIndex={executorIndex}
+        filterIndex={executorIndex}      
         onOpen={() => {
           setExecutorFilterVisible(true);
         }}

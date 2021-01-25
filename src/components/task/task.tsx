@@ -572,7 +572,11 @@ const Task: React.FC<TaskProps> = (props) => {
                           width: '100%',
                           minHeight: '28px',
                           backgroundColor: bottomtype ? 'transparent' : '',
-                          color: bottomtype ? '#fff' : '#333',
+                          color: bottomtype
+                            ? '#fff'
+                            : taskDetail.finishPercent === 0
+                            ? '#333'
+                            : '#8091a0',
                           textDecoration:
                             taskDetail.finishPercent === 2
                               ? 'line-through #333 solid'
@@ -617,7 +621,7 @@ const Task: React.FC<TaskProps> = (props) => {
                           width: '9px',
                           height: '9px',
                           marginRight: '5px',
-                        }}                      
+                        }}
                       ></img>
                       <div
                         className="taskItem-path"

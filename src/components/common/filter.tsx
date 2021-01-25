@@ -51,8 +51,8 @@ const Filter: React.FC<FilterProps> = (prop) => {
       <div className="filter-title">{title + ' :'}</div>
       <div
         className="filter-menu"
-        onMouseEnter={onOpen}
-        onMouseLeave={onClose}
+        // onMouseEnter={onOpen}
+        // onMouseLeave={onClose}
         onClick={onOpen}
       >
         {filterArray.length > 0 ? (

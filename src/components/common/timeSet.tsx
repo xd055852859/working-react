@@ -239,7 +239,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                   viewStyle !== 'horizontal' ||
                   (viewStyle === 'horizontal' &&
                     targetNode &&
-                    targetNode.type == 1)
+                    (targetNode.type === 1||targetNode.type === 6))
                 ) {
                   if (type) {
                     changeTime('finishPercent', 10);
@@ -258,7 +258,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                   viewStyle !== 'horizontal' ||
                   (viewStyle === 'horizontal' &&
                     targetNode &&
-                    targetNode.type == 1)
+                    (targetNode.type === 1||targetNode.type === 6))
                 ) {
                   if (type) {
                     changeTime('finishPercent', 0);
@@ -276,7 +276,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                   viewStyle !== 'horizontal' ||
                   (viewStyle === 'horizontal' &&
                     targetNode &&
-                    targetNode.type == 1)
+                    (targetNode.type === 1||targetNode.type === 6))
                 ) {
                   if (type) {
                     changeTime('finishPercent', 1);
@@ -294,7 +294,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                   viewStyle !== 'horizontal' ||
                   (viewStyle === 'horizontal' &&
                     targetNode &&
-                    targetNode.type == 1)
+                    (targetNode.type === 1||targetNode.type === 6))
                 ) {
                   if (type) {
                     changeTime('finishPercent', 2);
@@ -334,7 +334,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                 viewStyle !== 'horizontal' ||
                 (viewStyle === 'horizontal' &&
                   targetNode &&
-                  targetNode.type == 1)
+                  (targetNode.type === 1||targetNode.type === 6))
               ) {
                 setFreeTimeVisible(true);
               }
@@ -399,7 +399,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                     viewStyle !== 'horizontal' ||
                     (viewStyle === 'horizontal' &&
                       targetNode &&
-                      targetNode.type == 1)
+                      (targetNode.type === 1||targetNode.type === 6))
                   ) {
                     if (type) {
                       changeTime('hour', timeItem);
@@ -476,7 +476,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                     viewStyle !== 'horizontal' ||
                     (viewStyle === 'horizontal' &&
                       targetNode &&
-                      targetNode.type == 1)
+                      (targetNode.type === 1||targetNode.type === 6))
                   ) {
                     if (type) {
                       changeTime('infinite');
@@ -510,7 +510,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                         viewStyle !== 'horizontal' ||
                         (viewStyle === 'horizontal' &&
                           targetNode &&
-                          targetNode.type == 1)
+                          (targetNode.type === 1||targetNode.type === 6))
                       ) {
                         if (type) {
                           changeTime('day', dateTimeIndex + 1);

@@ -12,7 +12,7 @@ import {
 import { setNewTaskArray } from '../../redux/actions/taskActions';
 import HeaderSet from '../../components/headerSet/headerSet';
 import Home from '../home/home';
-
+import { getSearchParamValue } from '../../services/util';
 import { Route, Switch } from 'react-router-dom';
 import Loadable from 'react-loadable';
 import _ from 'lodash';
@@ -38,6 +38,10 @@ const Basic: React.FC<BasicProps> = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const socket = useTypedSelector((state) => state.auth.socket);
+  const user = useTypedSelector((state) => state.auth.user);
+  const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
+  const groupInfo = useTypedSelector((state) => state.group.groupInfo);
+
   const socketObj = useTypedSelector((state) => state.common.socketObj);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const unMessageNum = useTypedSelector((state) => state.common.unMessageNum);
@@ -143,6 +147,7 @@ const Basic: React.FC<BasicProps> = (props) => {
     }
   }, [socketObj]);
   useEffect(() => {
+    let title = 'Workfly';
     switch (headerIndex) {
       case 0:
         history.push('/home/basic/content');
@@ -152,15 +157,22 @@ const Basic: React.FC<BasicProps> = (props) => {
         break;
       case 2:
         history.push('/home/basic/workTable');
+        if (targetUserInfo) {
+          title = targetUserInfo.profile.nickName;
+        }
         break;
       case 3:
         history.push('/home/basic/groupTable');
+        if (groupInfo) {
+          title = groupInfo.groupName;
+        }
         break;
       case 5:
         history.push('/home/basic/calendar');
         break;
     }
-  }, [headerIndex]);
+    document.title = title;
+  }, [headerIndex, targetUserInfo, groupInfo]);
   //清理redux数据
 
   return (

@@ -112,7 +112,7 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
   };
   const changeContent = async (value?: string, title?: string) => {
     let newTargetNode = _.cloneDeep(targetNode);
-    let newContent: any = '';
+    let newContent: any = _.cloneDeep(content);
     let linkUrl = '';
     if (newTargetNode.type === 14 && value) {
       if (value.includes('http://') || value.includes('https://')) {
@@ -150,7 +150,6 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
       }
       if (newTargetNode.type === 13) {
         newTitle = saveMarkDown();
-        newContent = content;
       }
       if (newTargetNode.type !== 15) {
         dispatch(
@@ -173,17 +172,16 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
       setEditable(false);
     }
   };
+  console.log(containerRef.current && containerRef.current.offsetHeight);
   return (
     <React.Fragment>
       {targetNode ? (
         <React.Fragment>
           <div className="groupTableTreeInfo-container" ref={containerRef}>
-            {containerRef.current &&
-            containerRef.current.offsetHeight &&
-            targetNode.type === 10 ? (
+            {targetNode.type === 10 ? (
               <React.Fragment>
                 <Editor
-                  editorHeight={containerRef.current.offsetHeight}
+                  editorHeight={containerRef.current?.offsetHeight?containerRef.current.offsetHeight:'500px'}
                   data={content}
                   onChange={changeTaskContent}
                   editable={editable}
@@ -306,7 +304,7 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
               color="primary"
               component="span"
               onClick={() => {
-                changeFullType(fullType);
+                changeFullType();
               }}
             >
               <Tooltip title={fullType === 'small' ? '全屏' : '缩小'}>

@@ -1,7 +1,7 @@
 import { Node } from '@topology/core';
 
 // 1. 绘制形状
-export function myShapeData(ctx: CanvasRenderingContext2D, node: Node) {
+export function myShapeData(ctx, node) {
   ctx.beginPath();
   const offsetX = node.rect.width / 7;
   ctx.moveTo(node.rect.x + offsetX, node.rect.y);

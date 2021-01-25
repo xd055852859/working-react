@@ -379,7 +379,7 @@ const GroupTableHeader: React.FC = (prop) => {
       dispatch(getGroup(3));
       dispatch(setCommonHeaderIndex(1));
       if (!theme.moveState) {
-        dispatch(setMoveState('in'));
+        dispatch(setMoveState('out'));
       }
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));

@@ -19,6 +19,8 @@ import companySvg from '../../assets/svg/company.svg';
 import phoneSvg from '../../assets/svg/phone.svg';
 import phone1Svg from '../../assets/svg/phone1.svg';
 import phone2Svg from '../../assets/svg/phone2.svg';
+import chromeSvg from '../../assets/svg/chrome.svg';
+
 import rightArrowPng from '../../assets/img/rightArrow.png';
 import leftArrowPng from '../../assets/img/leftArrow.png';
 import logoutPng from '../../assets/img/logout.png';
@@ -675,7 +677,7 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                     >
                       <div className="contentHeader-set-item-title">
                         <img
-                          src={phone2Svg}
+                          src={chromeSvg}
                           alt=""
                           style={{
                             width: '20px',
@@ -734,7 +736,7 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                                 marginRight: '5px',
                               }}
                             />
-                            <div>{item.groupName}</div>
+                            <div style={{width:'150px'}} className="toLong">{item.groupName}</div>
                           </div>
                           <div>
                             <Tooltip title="设置主企业群">

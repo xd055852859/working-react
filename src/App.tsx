@@ -14,6 +14,7 @@ import {
   changeunMusic,
   changeBatchMusic,
   changeCreateMusic,
+  changeStartMusic,
   clearAuth,
   getThemeBg,
   getMainGroupKey,
@@ -68,6 +69,7 @@ const App: React.FC = () => {
   const unFinishMusic = useTypedSelector((state) => state.auth.unFinishMusic);
   const batchMusic = useTypedSelector((state) => state.auth.batchMusic);
   const createMusic = useTypedSelector((state) => state.auth.createMusic);
+  const startMusic = useTypedSelector((state) => state.auth.startMusic);
   const finishPos = useTypedSelector((state) => state.auth.finishPos);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const taskInfoVisible = useTypedSelector(
@@ -90,6 +92,7 @@ const App: React.FC = () => {
   const undoneAudioRef: React.RefObject<any> = useRef();
   const createRef: React.RefObject<any> = useRef();
   const batchRef: React.RefObject<any> = useRef();
+  const startRef: React.RefObject<any> = useRef();
   const [timesetObj, setTimesetObj] = useState<any>(null);
   const [taskMemberObj, setTaskMemberObj] = useState<any>(null);
   const [showType, setShowType] = useState('3');
@@ -97,6 +100,16 @@ const App: React.FC = () => {
   let bgRef = useRef<any>(null);
   let starRef = useRef<any>(null);
   useEffect(() => {
+    let url = window.location.href;
+    // 自动切换为https
+    console.log(url);
+    if (url.indexOf('http://localhost') == -1 && url.indexOf('https') < 0) {
+      url = url.replace('http:', 'https:');
+      window.location.replace(url);
+    }
+    if (getSearchParamValue(location.search, 'token')) {
+      dispatch(changeStartMusic(true));
+    }
     return () => {
       if (bgRef.current) {
         clearInterval(bgRef.current);
@@ -178,7 +191,7 @@ const App: React.FC = () => {
       if (showType) {
         localStorage.setItem('showType', showType);
       }
-      let url = window.location.href;
+
       if (getSearchParamValue(location.search, 'token')) {
         if (showType) {
           history.push('/home/showPage');
@@ -186,13 +199,8 @@ const App: React.FC = () => {
           history.push('/home/basic');
         }
       }
-      // 自动切换为https
-      if (url.indexOf('http://localhost') == -1 && url.indexOf('https') < 0) {
-        url = url.replace('http:', 'https:');
-        window.location.replace(url);
-      }
     }
-  }, [user, token]);
+  }, [user]);
   useEffect(() => {
     if (theme.moveState) {
       dispatch(setMoveState(''));
@@ -259,6 +267,13 @@ const App: React.FC = () => {
       dispatch(changeCreateMusic(false));
     }
   }, [createMusic]);
+  useEffect(() => {
+    if (startMusic) {
+      startRef.current.play();
+      dispatch(changeStartMusic(false));
+    }
+  }, [startMusic]);
+
   useEffect(() => {
     if (finishPos.length > 0) {
       let newFinishIndex = finishIndex;
@@ -507,6 +522,15 @@ const App: React.FC = () => {
       <audio
         ref={createRef}
         src="https://cdn-icare.qingtime.cn/1607480783765_workingVip"
+        // muted
+        // controls
+        style={{ position: 'fixed', zIndex: -5, opacity: 0 }}
+      >
+        您的浏览器不支持 audio 标签。
+      </audio>
+      <audio
+        ref={startRef}
+        src="https://cdn-icare.qingtime.cn/EB137B51.mp3"
         // muted
         // controls
         style={{ position: 'fixed', zIndex: -5, opacity: 0 }}

@@ -24,16 +24,8 @@ const CompanyDepartment = Loadable({
   loader: () => import('./companyDepartment'),
   loading: () => null,
 });
-const CompanyMember = Loadable({
-  loader: () => import('./companyMember'),
-  loading: () => null,
-});
 const CompanyGroup = Loadable({
   loader: () => import('./companyGroup'),
-  loading: () => null,
-});
-const CompanySonGroup = Loadable({
-  loader: () => import('./companySonGroup'),
   loading: () => null,
 });
 const CompanyAccount = Loadable({
@@ -234,18 +226,8 @@ const Company: React.FC<CompanyProps> = (props) => {
           />
           <Route
             exact
-            path="/home/company/companyMember"
-            component={CompanyMember}
-          />
-          <Route
-            exact
             path="/home/company/companyGroup"
             component={CompanyGroup}
-          />
-          <Route
-            exact
-            path="/home/company/CompanySonGroup"
-            component={CompanySonGroup}
           />
           <Route
             exact

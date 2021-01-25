@@ -32,7 +32,12 @@
   left: 320px;
   top: 0px;
 }
-
+.toLong {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  word-break: break-all;
+}
 *::-webkit-scrollbar {
   width: 1.5px;
   height: 5px;
@@ -71,7 +76,7 @@ img {
   vertical-align: initial;
 }
 
-body>div[role] {
+body > div[role] {
   display: block;
 }
 

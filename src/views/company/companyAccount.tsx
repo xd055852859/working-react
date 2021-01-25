@@ -54,7 +54,7 @@ const CompanyAccount: React.FC<CompanyAccountProps> = (props) => {
   const dispatch = useDispatch();
   const [rows, setRows] = useState<any>([]);
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [rowsPerPage, setRowsPerPage] = React.useState(100);
   const [startDate, setStartDate] = React.useState<Date | null>(new Date());
   const [endDate, setEndDate] = React.useState<Date | null>(new Date());
   const [value, setValue] = React.useState(0);

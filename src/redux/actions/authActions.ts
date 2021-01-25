@@ -21,6 +21,7 @@ export const actionTypes = {
   CHANGE_UNFINISH_MUSIC: 'CHANGE_UNFINISH_MUSIC',
   CHANGE_BATCH_MUSIC: 'CHANGE_BATCH_MUSIC',
   CHANGE_CREATE_MUSIC: 'CHANGE_CREATE_MUSIC',
+  CHANGE_START_MUSIC:'CHANGE_START_MUSIC',
   CHANGE_MOVE: 'CHANGE_MOVE',
   CLEAR_AUTH: 'CLEAR_AUTH',
 };
@@ -163,6 +164,12 @@ export function changeCreateMusic(createMusic: boolean) {
   return {
     type: actionTypes.CHANGE_CREATE_MUSIC,
     createMusic,
+  };
+}
+export function changeStartMusic(startMusic: boolean) {
+  return {
+    type: actionTypes.CHANGE_START_MUSIC,
+    startMusic,
   };
 }
 export function changeMove(finishPos: any) {

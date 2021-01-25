@@ -49,6 +49,11 @@ const columns = [
     minWidth: 100,
   },
   {
+    id: 'loginTime',
+    label: '最近上线时间',
+    minWidth: 120,
+  },
+  {
     id: 'mobileArea',
     label: '手机区号',
     minWidth: 100,
@@ -99,16 +104,6 @@ const columns = [
     minWidth: 120,
   },
   {
-    id: 'loginTime',
-    label: '最近上线时间',
-    minWidth: 120,
-  },
-  {
-    id: 'online',
-    label: '在线',
-    minWidth: 80,
-  },
-  {
     id: 'disable',
     label: '禁用',
     minWidth: 80,
@@ -116,7 +111,7 @@ const columns = [
   {
     id: 'operation',
     label: '操作',
-    minWidth: 120,
+    minWidth: 160,
     align: 'center',
   },
 ];
@@ -138,7 +133,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
   const [postArray, setPostArray] = useState<any>([]);
   const [rows, setRows] = useState<any>([]);
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [rowsPerPage, setRowsPerPage] = React.useState(100);
   const [total, setTotal] = React.useState(0);
   const [loading, setLoading] = useState(false);
   const [deleteDialogShow, setDeleteDialogShow] = useState(false);
@@ -176,7 +171,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
     if (rowsPerPage * page < total) {
       getCompanyRow(page, rowsPerPage, searchInput);
     }
-  }, [page]);
+  }, [page,rowsPerPage]);
   const getCompanyRow = async (
     page: number,
     limit: number,
@@ -206,7 +201,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
               ? '+' + item.mobileArea
               : item.mobileArea;
           newRow[index].notActive = item.notActive ? '未激活' : '已激活';
-          newRow[index].online = item.online ? '在线' : '下线';
+          // newRow[index].online = item.online ? '在线' : '下线';
           newRow[index].birthday = moment(parseInt(item.birthday)).format(
             'YYYY/MM/DD'
           );
@@ -454,18 +449,9 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
           >
             点击下载示例
           </a>
-          <div
-            className="company-button"
-            onClick={() => {
-              setTargetUser(null);
-              setUserVisible(true);
-            }}
-          >
-            新增成员
-          </div>
           {groupInfo && groupInfo.role === 1 ? (
             <div className="company-button">
-              ＋ 添加成员
+              批量导入
               <input
                 type="file"
                 className="file-button"
@@ -476,6 +462,15 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
               />
             </div>
           ) : null}
+          <div
+            className="company-button"
+            onClick={() => {
+              setTargetUser(null);
+              setUserVisible(true);
+            }}
+          >
+            新增成员
+          </div>
         </div>
       </div>
       <div className="company-info-container" ref={personRef}>
@@ -579,6 +574,14 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
                                     }
                                     alt=""
                                   />
+                                  <div
+                                    className="companyPerson-online"
+                                    style={{
+                                      backgroundColor: row.online
+                                        ? '#7ED321'
+                                        : '#B3B3B3',
+                                    }}
+                                  ></div>
                                 </div>
                               </div>
                             </TableCell>

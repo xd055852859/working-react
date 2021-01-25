@@ -29,3 +29,12 @@
   box-sizing: border-box;
   margin-left: 20px;
 }
+.companyPerson-online {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  position: absolute;
+  right: 13px;
+  bottom: 0px;
+  z-index: 5;
+}

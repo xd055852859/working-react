@@ -5,7 +5,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux';
 import moment from 'moment';
 import { Button, IconButton } from '@material-ui/core';
-import addPng from '../../assets/img/contact-plus.png';
+import { AddOutlined } from '@material-ui/icons';
+// import addPng from '../../assets/img/contact-plus.png';
 import { setMessage } from '../../redux/actions/commonActions';
 import {
   Table,
@@ -100,7 +101,7 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
   const [total, setTotal] = React.useState(0);
   const [rows, setRows] = useState<any>([]);
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
+  const [rowsPerPage, setRowsPerPage] = React.useState(100);
   const personRef: React.RefObject<any> = useRef();
   let unDistory = true;
   useEffect(() => {
@@ -124,7 +125,7 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
     if (rowsPerPage * page < total) {
       getCompanyRow(page, rowsPerPage, searchInput);
     }
-  }, [page]);
+  }, [page, rowsPerPage]);
   const getCompanyRow = async (
     page: number,
     limit: number,
@@ -232,7 +233,7 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
                       return (
                         <React.Fragment key={column.id}>
                           {column.id === 'operation' &&
-                          (searchType === '添加'||searchType === '群') ? (
+                          (searchType === '添加' || searchType === '群') ? (
                             <TableCell align={column.align}>
                               <IconButton
                                 color="primary"
@@ -241,11 +242,7 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
                                   addMember(row);
                                 }}
                               >
-                                <img
-                                  src={addPng}
-                                  alt=""
-                                  style={{ height: '16px', width: '16px' }}
-                                />
+                                <AddOutlined />
                               </IconButton>
                             </TableCell>
                           ) : column.id === 'avatar' ? (

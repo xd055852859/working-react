@@ -72,6 +72,8 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
   const [roleVisible, setRoleVisible] = useState(false);
   const [chooseIndex, setChooseIndex] = useState(0);
   const [roleIndex, setRoleIndex] = useState<any>(null);
+  const [roleHelpVisible, setRoleHelpVisible] = useState<any>(false);
+
   const [pos, setPos] = useState<any>([]);
   const [page, setPage] = React.useState(1);
   const [total, setTotal] = React.useState(0);
@@ -554,11 +556,60 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       <div className="group-member-team">
         <div className="group-member-title">
           群权限设置
-          <IconButton color="primary" component="span" onClick={() => {}}>
+          <IconButton
+            color="primary"
+            component="span"
+            onClick={() => {
+              setRoleHelpVisible(true);
+            }}
+          >
             <Tooltip title="权限说明">
               <HelpOutlineOutlined />
             </Tooltip>
           </IconButton>
+          <DropMenu
+            visible={roleHelpVisible}
+            dropStyle={{
+              width: '320px',
+              height: '400px',
+              top: '34px',
+              left: '88px',
+              padding: '0px 16px'
+            }}
+            onClose={() => {
+              setRoleHelpVisible(false);
+            }}
+            title={'权限说明'}
+          >
+            <div className="roleHelp-item">
+              <div>管理员</div>
+              <div>
+                <div>1.设置他人为编辑及以下权限</div>
+                <div>2.邀请进群</div>
+                <div>3.增删频道</div>
+                <div>4.增删改项目任务</div>
+              </div>
+            </div>
+            <div className="roleHelp-item">
+              <div>编辑</div>
+              <div>
+                <div>1.增删频道</div>
+                <div>2.指派任务</div>
+                <div> 3.增、删、改自己及下级的任务</div>
+              </div>
+            </div>
+            <div className="roleHelp-item">
+              <div>作者</div>
+              <div>
+                <div>1.指派任务</div>
+                <div>2.增、删、改自己指派的任务</div>
+              </div>
+            </div>
+            <div className="roleHelp-item">
+              <div>成员</div>
+              <div><div>1.被指派任务</div></div>
+            </div>
+          </DropMenu>
         </div>
         <div className="group-member-container contact-team-container">
           {memberList.map((newItem: any, newIndex: number) => {

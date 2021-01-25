@@ -13,10 +13,11 @@ interface TaskMemberProps {
   targetGroupKey?: string;
   onClose?: any;
   chooseFollow?: any;
+  showMemberVisible?:boolean
 }
 
 const TaskMember: React.FC<TaskMemberProps> = (props) => {
-  const { targetGroupKey, onClose, chooseFollow } = props;
+  const { targetGroupKey,onClose,chooseFollow,showMemberVisible} = props;
   const dispatch = useDispatch();
   const taskInfo = useTypedSelector((state) => state.task.taskInfo);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
@@ -32,10 +33,11 @@ const TaskMember: React.FC<TaskMemberProps> = (props) => {
   let unDistory = true;
   useEffect(() => {
     // 用户已登录
-    console.log('targetGroupKey', targetGroupKey);
+    console.log('targetGroupKey', taskInfo);
     if (targetGroupKey) {
       getTaskMemberArray(targetGroupKey);
-    } else if (taskInfo && taskMemberVisible) {
+    } else if (taskInfo && (taskMemberVisible||showMemberVisible)) {
+      console.log('taskInfo',taskInfo)
       getTaskMemberArray(taskInfo.groupKey);
     }
     return () => {

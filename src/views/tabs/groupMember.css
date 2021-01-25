@@ -195,3 +195,23 @@
   align-items: center;
   cursor: pointer;
 }
+.roleHelp-item {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom:10px;
+}
+.roleHelp-item > div:nth-child(1) {
+  width: 50px;
+  height: 30px;
+  line-height: 30px;
+  margin-right: 10px;
+}
+.roleHelp-item > div:nth-child(2) {
+  flex: 1;
+}
+.roleHelp-item > div:nth-child(2) > div {
+  min-height: 30px;
+  line-height: 30px;
+}

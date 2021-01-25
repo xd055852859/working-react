@@ -20,6 +20,7 @@ export interface AuthType {
   unFinishMusic: boolean;
   batchMusic: boolean;
   createMusic: boolean;
+  startMusic: boolean;
   finishPos: any;
 }
 
@@ -75,6 +76,7 @@ const defaultState: AuthType = {
   unFinishMusic: false,
   batchMusic: false,
   createMusic: false,
+  startMusic: false,
   finishPos: [],
 };
 
@@ -190,6 +192,11 @@ export const auth = (state = defaultState, action: any) => {
       return {
         ...state,
         createMusic: action.createMusic,
+      };
+    case actionTypes.CHANGE_START_MUSIC:
+      return {
+        ...state,
+        startMusic: action.startMusic,
       };
     case actionTypes.CHANGE_MOVE:
       return {

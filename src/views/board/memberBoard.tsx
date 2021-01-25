@@ -279,7 +279,7 @@ const MemberBoard: React.FC = () => {
   };
   return (
     <div className="memberBoard">
-      {loading ? <Loading /> : null}
+      {loading ? <Loading loadingWidth="80px" loadingHeight="80px" /> : null}
       <div
         className="memberBoard-maintitle"
         onClick={() => {

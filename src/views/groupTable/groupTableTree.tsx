@@ -10,12 +10,13 @@ import {
   changeTaskInfoVisible,
   setTaskInfo,
 } from '../../redux/actions/taskActions';
-import { setMessage, setMoveState } from '../../redux/actions/commonActions';
+import { setMessage } from '../../redux/actions/commonActions';
 import { changeStartId } from '../../redux/actions/groupActions';
 import moment from 'moment';
 import _ from 'lodash';
 import api from '../../services/api';
 import TimeSet from '../../components/common/timeSet';
+import TaskMember from '../../components/task/taskMember';
 import GroupTableTreeType from './groupTableTreeType';
 import Dialog from '../../components/common/dialog';
 import GroupTableInfo from './groupTableInfo';
@@ -220,7 +221,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                 ? true
                 : false,
             hour: taskItem.hour,
-            limitDay: gridTime < 0 ? gridTime : gridTime + 1,
+            limitDay: taskItem.taskEndDate ? taskItem.taskEndDate : 0,
             avatarUri:
               taskItem.executorKey && taskItem.type === 6
                 ? taskItem.executorAvatar
@@ -301,16 +302,16 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
     let addTaskRes: any = await api.task.addTask({
       groupKey: groupInfo._key,
       groupRole: groupInfo.role,
-      executorKey:
-        type === 'child'
-          ? newGridList[targetIndex].type === 6
-            ? newGridList[targetIndex].executorKey
-            : null
-          : type === 'next'
-          ? newGridList[fatherIndex].type === 6
-            ? newGridList[fatherIndex].executorKey
-            : null
-          : null,
+      // executorKey:
+      //   type === 'child'
+      //     ? newGridList[targetIndex].type === 6
+      //       ? newGridList[targetIndex].executorKey
+      //       : null
+      //     : type === 'next'
+      //     ? newGridList[fatherIndex].type === 6
+      //       ? newGridList[fatherIndex].executorKey
+      //       : null
+      //     : null,
       parentCardKey:
         type === 'child'
           ? selectedNode
@@ -349,13 +350,13 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
         showCheckbox: result.type === 6,
         showStatus: result.type === 6 ? true : false,
         hour: result.hour,
-        limitDay: gridTime < 0 ? gridTime : gridTime + 1,
+        limitDay: result.taskEndDate ? result.taskEndDate : 0,
         father: result.parentCardKey,
         sortList: result.children,
         avatarUri:
           result.executorKey && result.type === 6
             ? result.executorAvatar
-              ? result.executorAvatar
+              ? result.executorAvatar + '?imageMogr2/auto-orient/thumbnail/80x'
               : defaultPersonPng
             : null,
         backgroundColor:
@@ -383,13 +384,14 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
         newNodeObj[newNodeObj[selectedNode].father].sortList.push(newNode._key);
       }
       setNodeObj(newNodeObj);
-      checkNode(newNodeObj[newNode._key], newGridList);
-      setInfoBigVisible(true);
+      // checkNode(newNodeObj[newNode._key], newGridList);
+      // setInfoBigVisible(true);
       setTargetNode(newNodeObj[newNode._key]);
       setDefaultSelectedId(newNode._key);
       setAvatarDialogShow(false);
       setStatusDialogShow(false);
       setItemDialogShow(false);
+      setTypeDialogShow(0);
       targetTreeRef.current.rename();
       // dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
     } else {
@@ -549,8 +551,9 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
       newNodeObj[taskItem._key].showCheckbox = taskItem.type === 6;
       newNodeObj[taskItem._key].showStatus = true;
       newNodeObj[taskItem._key].hour = taskItem.hour;
-      newNodeObj[taskItem._key].limitDay =
-        gridTime < 0 ? gridTime : gridTime + 1;
+      newNodeObj[taskItem._key].limitDay = taskItem.taskEndDate
+        ? taskItem.taskEndDate
+        : 0;
       newNodeObj[taskItem._key].showStatus =
         taskItem._key !== groupInfo.taskTreeRootCardKey && taskItem.type === 6
           ? true
@@ -558,7 +561,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
       newNodeObj[taskItem._key].avatarUri =
         taskItem.executorKey && taskItem.type === 6
           ? taskItem.executorAvatar
-            ? taskItem.executorAvatar
+            ? taskItem.executorAvatar + '?imageMogr2/auto-orient/thumbnail/80x'
             : defaultPersonPng
           : null;
       newNodeObj[taskItem._key].backgroundColor =
@@ -820,10 +823,13 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
       } else {
         newTaskItem.finishPercent = finishPercent;
       }
+      if (newTaskItem.type === 1) {
+        newTaskItem.taskEndDate = moment().endOf('day').valueOf();
+      }
       newTaskItem.type = 6;
 
       if (newTaskItem.finishPercent === 1) {
-        newTaskItem.taskEndDate = moment().valueOf();
+        newTaskItem.taskEndDate = moment().endOf('day').valueOf();
       }
     }
     dispatch(
@@ -845,7 +851,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
     if (targetGridList) {
       newGridList = _.cloneDeep(targetGridList);
       setEditInfoType('新增');
-      setFullType('big');
+      // setFullType('big');
     }
     let nodeIndex = _.findIndex(newGridList, {
       _key: node._key,
@@ -854,6 +860,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
     if (nodeIndex !== -1) {
       setTargetIndex(nodeIndex);
     }
+    console.log("xxxxxxxxxxxxxxxxxxxxxxxxx")
     switch (newGridList[nodeIndex].type) {
       case 1:
         setMenuVisible(true);
@@ -882,7 +889,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
     setGridList(newGridList);
     setNodeObj(newNodeObj);
   };
-  const changeFullType = (fullType: string) => {
+  const changeFullType = () => {
     if (fullType === 'small') {
       setFullType('big');
       setInfoVisible(false);
@@ -1028,10 +1035,16 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                       // setSelectedId(node._key);
                     }
                     handleClickAvatar={(node: any) => {
-                      // set
+                      let newGridList = _.cloneDeep(gridList);
+                      let nodeIndex = _.findIndex(newGridList, {
+                        _key: node._key,
+                      });
                       chooseNode(node);
                       setTreeMenuLeft(node.x);
                       setTreeMenuTop(node.y);
+                      dispatch(setChooseKey(node._key));
+                      console.log(newGridList[nodeIndex]);
+                      dispatch(setTaskInfo(newGridList[nodeIndex]));
                       setAvatarDialogShow(true);
                     }}
                     handleClickStatus={(node: any) => {
@@ -1076,6 +1089,27 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                   />
                 </DropMenu>
                 <DropMenu
+                  visible={avatarDialogShow}
+                  dropStyle={{
+                    width: '260px',
+                    height: '300px',
+                    top: treeMenuTop + 35,
+                    left: treeMenuLeft,
+                    color: '#333',
+                    overflow: 'auto',
+                  }}
+                  onClose={() => {
+                    setAvatarDialogShow(false);
+                  }}
+                >
+                  <TaskMember
+                    // targetGroupKey={groupKey}
+                    // onClose={setAvatarDialogShow(false)}
+                    // chooseFollow={changeFollow}
+                    showMemberVisible={avatarDialogShow}
+                  />
+                </DropMenu>
+                {/* <DropMenu
                   visible={avatarDialogShow}
                   dropStyle={{
                     width: '150px',
@@ -1164,7 +1198,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                         )
                       : null}
                   </div>
-                </DropMenu>
+                </DropMenu> */}
 
                 <DropMenu
                   visible={itemDialogShow}
@@ -1288,118 +1322,116 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
           </div>
         </div>
       ) : null}
-      {targetNode && targetNode.type === 6 ? (
-        <div
-          className="tree-member"
-          style={
-            moveState === 'top'
-              ? {
-                  animation: 'rightTop 500ms',
-                  // animationFillMode: 'forwards',
-                  height: '50px',
-                }
-              : moveState === 'bottom'
-              ? {
-                  animation: 'rightBottom 500ms',
-                  height: '100%',
-                  // animationFillMode: 'forwards',
-                }
-              : { height: '50px' }
-          }
-        >
-          <Tooltip title="选择执行人">
-            <img
-              src={memberSvg}
-              alt=""
-              className="tree-logo"
-              onClick={() => {
-                setMoveState(moveState === 'bottom' ? 'top' : 'bottom');
-              }}
-            />
-          </Tooltip>
-          {/* <div style={{ color: '#fff', fontSize: '14px', margin: '5px 0px' }}>
+      <div
+        className="tree-member"
+        style={
+          moveState === 'top'
+            ? {
+                animation: 'rightTop 500ms',
+                // animationFillMode: 'forwards',
+                height: '50px',
+              }
+            : moveState === 'bottom'
+            ? {
+                animation: 'rightBottom 500ms',
+                height: '100%',
+                // animationFillMode: 'forwards',
+              }
+            : { height: '50px' }
+        }
+      >
+        <Tooltip title="选择执行人">
+          <img
+            src={memberSvg}
+            alt=""
+            className="tree-logo"
+            onClick={() => {
+              setMoveState(moveState === 'bottom' ? 'top' : 'bottom');
+            }}
+          />
+        </Tooltip>
+        {/* <div style={{ color: '#fff', fontSize: '14px', margin: '5px 0px' }}>
           任务树
         </div> */}
-          <div className="tree-member-container">
-            {groupMemberArray
-              ? groupMemberArray.map(
-                  (taskMemberItem: any, taskMemberIndex: number) => {
-                    return (
+        <div className="tree-member-container">
+          {groupMemberArray
+            ? groupMemberArray.map(
+                (taskMemberItem: any, taskMemberIndex: number) => {
+                  return (
+                    <div
+                      className="tree-member-item "
+                      key={'taskMember' + taskMemberIndex}
+                      onMouseEnter={() => {
+                        setMemberCheckIndex(taskMemberIndex);
+                      }}
+                      onMouseLeave={() => {
+                        setMemberCheckIndex(null);
+                      }}
+                    >
                       <div
-                        className="tree-member-item "
-                        key={'taskMember' + taskMemberIndex}
-                        onMouseEnter={() => {
-                          setMemberCheckIndex(taskMemberIndex);
-                        }}
-                        onMouseLeave={() => {
-                          setMemberCheckIndex(null);
-                        }}
+                        className="tree-member-img"
+                        style={
+                          gridList[targetIndex] &&
+                          ((gridList[targetIndex].followUKeyArray &&
+                            gridList[targetIndex].followUKeyArray.indexOf(
+                              taskMemberItem.userId
+                            ) !== -1) ||
+                            gridList[targetIndex].executorKey ===
+                              taskMemberItem.userId ||
+                            gridList[targetIndex].creatorKey ===
+                              taskMemberItem.userId)
+                            ? { border: '3px solid #17b881' }
+                            : {}
+                        }
                       >
-                        <div
-                          className="tree-member-img"
-                          style={
-                            gridList[targetIndex] &&
-                            ((gridList[targetIndex].followUKeyArray &&
-                              gridList[targetIndex].followUKeyArray.indexOf(
-                                taskMemberItem.userId
-                              ) !== -1) ||
-                              gridList[targetIndex].executorKey ===
-                                taskMemberItem.userId ||
-                              gridList[targetIndex].creatorKey ===
-                                taskMemberItem.userId)
-                              ? { border: '3px solid #17b881' }
-                              : {}
-                          }
-                        >
-                          <Tooltip title={taskMemberItem.nickName}>
-                            <img
-                              src={
-                                taskMemberItem.avatar
-                                  ? taskMemberItem.avatar +
-                                    '?imageMogr2/auto-orient/thumbnail/80x'
-                                  : defaultPersonPng
-                              }
-                              onClick={(e: any) => {
-                                e.stopPropagation();
-                                changeFollow(taskMemberItem.userId);
-                              }}
-                            />
-                          </Tooltip>
-                        </div>
-                        {/* <div>{taskMemberItem.nickName}</div> */}
-                        {gridList[targetIndex] &&
-                        gridList[targetIndex].executorKey ===
-                          taskMemberItem.userId ? (
+                        <Tooltip title={taskMemberItem.nickName}>
                           <img
-                            src={taskFinishPng}
-                            alt=""
-                            className="tree-member-check"
-                            onClick={() => {
-                              changeExecutor('', '', '');
+                            src={
+                              taskMemberItem.avatar
+                                ? taskMemberItem.avatar +
+                                  '?imageMogr2/auto-orient/thumbnail/80x'
+                                : defaultPersonPng
+                            }
+                            onClick={(e: any) => {
+                              e.stopPropagation();
+                              changeFollow(taskMemberItem.userId);
                             }}
                           />
-                        ) : memberCheckIndex === taskMemberIndex ? (
-                          <img
-                            src={taskUnfinishPng}
-                            alt=""
-                            className="tree-member-check"
-                            onClick={() => {
-                              changeExecutor(
-                                taskMemberItem.userId,
-                                taskMemberItem.nickName,
-                                taskMemberItem.avatar
-                              );
-                            }}
-                          />
-                        ) : null}
+                        </Tooltip>
                       </div>
-                    );
-                  }
-                )
-              : null}
-          </div>
+                      {/* <div>{taskMemberItem.nickName}</div> */}
+                      {gridList[targetIndex] &&
+                      gridList[targetIndex].executorKey ===
+                        taskMemberItem.userId ? (
+                        <img
+                          src={taskFinishPng}
+                          alt=""
+                          className="tree-member-check"
+                          onClick={() => {
+                            changeExecutor('', '', '');
+                          }}
+                        />
+                      ) : memberCheckIndex === taskMemberIndex ? (
+                        <img
+                          src={taskUnfinishPng}
+                          alt=""
+                          className="tree-member-check"
+                          onClick={() => {
+                            changeExecutor(
+                              taskMemberItem.userId,
+                              taskMemberItem.nickName,
+                              taskMemberItem.avatar
+                            );
+                          }}
+                        />
+                      ) : null}
+                    </div>
+                  );
+                }
+              )
+            : null}
         </div>
-      ) : null}
+      </div>
       {infoBigVisible ? (
         <div
           className="groupTableTree-full"
