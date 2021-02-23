@@ -53,14 +53,13 @@ const BookEditor: React.FC<BookEditorProps> = (props) => {
   const targetTreeRef: React.RefObject<any> = useRef();
   const bookRef: React.RefObject<any> = useRef();
   useEffect(() => {
-    if (selectId&&nodeObj) {
+    if (selectId && nodeObj) {
       if (nodeObj[selectId].content) {
         setContent(nodeObj[selectId].content);
       } else {
         setContent('<p>标题</p>');
       }
     }
-   
   }, [onChange]);
   const chooseNode = (node: any, type?: number) => {
     let newGridList = _.cloneDeep(gridList);
@@ -223,12 +222,12 @@ const BookEditor: React.FC<BookEditorProps> = (props) => {
             }}
           >
             {editable ? (
-              <Tooltip title="解锁">
-                <LockOpenOutlined />
+              <Tooltip title="保存">
+                <SaveOutlined />
               </Tooltip>
             ) : (
-              <Tooltip title="锁定">
-                <LockOutlined />
+              <Tooltip title="编辑">
+                <EditOutlined />
               </Tooltip>
             )}
           </IconButton>
@@ -276,27 +275,17 @@ const BookEditor: React.FC<BookEditorProps> = (props) => {
           fullType={'big'}
         />
         {editable ? (
-          <IconButton
+          <Button
+            variant="contained"
             color="primary"
             component="span"
             onClick={() => {
               editTaskContent();
             }}
-            className="book-editor-button "
-            // style={{
-            //   width: '60px',
-            //   height: '60px'
-            // }}
+            className="book-editor-button"
           >
-            <Tooltip title="保存">
-              <SaveOutlined
-                style={{
-                  width: '40px',
-                  height: '40px',
-                }}
-              />
-            </Tooltip>
-          </IconButton>
+            保存
+          </Button>
         ) : null}
       </div>
       <Dialog

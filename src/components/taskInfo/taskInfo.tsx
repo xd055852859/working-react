@@ -184,7 +184,6 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   const getTaskItem = async () => {
     setLoading(true);
     let taskItemRes: any = await api.task.getTaskInfo(chooseKey);
-    console.log(unDistory);
     if (unDistory) {
       if (taskItemRes.msg === 'OK') {
         let taskInfo = _.cloneDeep(taskItemRes.result);
@@ -229,7 +228,6 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     if (!type) {
       setLoading(true);
       let taskItemRes: any = await api.task.getTaskInfo(chooseKey);
-      console.log(unDistory);
       if (unDistory) {
         if (taskItemRes.msg === 'OK') {
           setLoading(false);
@@ -500,20 +498,20 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       dispatch(setMessage(true, '无编辑权限,请提升权限或加入对应群', 'error'));
     }
     let newTaskItem = _.cloneDeep(taskItem);
-    if (urlInput && newTaskItem) {
+    if (newTaskItem) {
       if (!newTaskItem.extraData) {
         newTaskItem.extraData = {};
       }
       newTaskItem.extraData.url = urlInput;
-    }
-    dispatch(setTaskInfo(newTaskItem));
-    if (onClose) {
-      onClose();
-    }
-    if (editState) {
-      dispatch(
-        editTask({ key: newTaskItem._key, ...newTaskItem }, headerIndex)
-      );
+      dispatch(setTaskInfo(newTaskItem));
+      if (onClose) {
+        onClose();
+      }
+      if (editState) {
+        dispatch(
+          editTask({ key: newTaskItem._key, ...newTaskItem }, headerIndex)
+        );
+      }
     }
     dispatch(changeTaskInfoVisible(false));
   };
@@ -616,6 +614,10 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                                         '?imageMogr2/auto-orient/thumbnail/80x'
                                       : defaultPersonPng
                                   }
+                                  onError={(e: any) => {
+                                    e.target.onerror = null;
+                                    e.target.src = defaultPersonPng;
+                                  }}
                                 />
                               </div>
                               <div>{taskMemberItem.nickName}</div>
@@ -999,7 +1001,12 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                           >
                             <div className="taskInfo-comment-avatar">
                               <img
-                                src={historyItem.etc && historyItem.etc.avatar}
+                                src={
+                                  historyItem.etc && historyItem.etc.avatar
+                                    ? historyItem.etc.avatar +
+                                      '?imageMogr2/auto-orient/thumbnail/80x'
+                                    : defaultPersonPng
+                                }
                                 alt=""
                               />
                             </div>

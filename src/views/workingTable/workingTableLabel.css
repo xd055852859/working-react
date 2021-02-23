@@ -75,14 +75,14 @@
 .workingTableLabel-info-item-label-container {
   height: calc(100% - 34px);
 }
-.workingTableLabel-container::-webkit-scrollbar {
+/* .workingTableLabel-container::-webkit-scrollbar {
   width: 3px;
   height: 12px;
 }
 .workingTableLabel-container::-webkit-scrollbar-thumb {
   background: #dedede;
   border-radius: 100px;
-}
+} */
 .workingTableLabel-info-labelInfo {
   height: calc(100% - 30px);
 }

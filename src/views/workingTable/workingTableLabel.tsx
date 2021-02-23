@@ -141,7 +141,6 @@ const WorkingTableLabel: React.FC = (prop) => {
             };
           }
         });
-        console.log(labelArray);
         labelArray = labelArray.map((item: any, index: number) => {
           let arr = [];
           for (let key in item) {
@@ -372,6 +371,8 @@ const WorkingTableLabel: React.FC = (prop) => {
                   avatar={
                     labelItem.groupObj && labelItem.groupObj.groupLogo
                       ? labelItem.groupObj.groupLogo
+                      : labelItem.groupObj._key === mainGroupKey
+                      ? user.profile.avatar
                       : defaultGroupPng
                   }
                   name={

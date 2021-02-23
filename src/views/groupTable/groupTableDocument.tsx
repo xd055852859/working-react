@@ -27,7 +27,6 @@ const GroupTableDocument: React.FC<GroupTableProps> = (prop) => {
     }
   }, [user, groupKey]);
   useEffect(() => {
-    console.log(groupDocument, initState);
     if (initState) {
       formatHtml(documentRef.current);
     }
@@ -103,7 +102,6 @@ const GroupTableDocument: React.FC<GroupTableProps> = (prop) => {
         });
       }
     }
-    console.log('arr', arr);
     setFileArr(_.drop(arr, 4));
   };
   const saveFile = async () => {

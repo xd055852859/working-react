@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './companyPerson.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
+import { MiniMenu } from 'tree-graph-react';
 import { makeStyles } from '@material-ui/core/styles';
+
 import { useDispatch } from 'react-redux';
 import moment from 'moment';
 import XLSX from 'xlsx';
@@ -9,7 +11,12 @@ import { setGroupKey, getGroupInfo } from '../../redux/actions/groupActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import Loading from '../../components/common/loading';
 import Dialog from '../../components/common/dialog';
+import DropMenu from '../../components/common/dropMenu';
+import MiniTree from '../../components/common/miniTree';
+
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
+import defaultDepartMentSvg from '../../assets/svg/defaultDepartMent.svg';
 import {
   Table,
   TableBody,
@@ -19,8 +26,25 @@ import {
   TablePagination,
   TableRow,
   IconButton,
+  Button,
+  Breadcrumbs,
+  Link,
+  Typography,
+  Chip,
+  Tooltip,
 } from '@material-ui/core';
-import AssignmentOutlinedIcon from '@material-ui/icons/AssignmentOutlined';
+import {
+  AssignmentOutlined,
+  ExpandMoreOutlined,
+  CancelOutlined,
+  DeleteOutlineOutlined,
+  NavigateNext,
+  Edit,
+  Search,
+  Done,
+  CloudUpload,
+  GroupAddOutlined,
+} from '@material-ui/icons';
 import _ from 'lodash';
 import api from '../../services/api';
 import CompanySearch from './companySearch';
@@ -39,9 +63,14 @@ const useStyles = makeStyles({
 
 const columns = [
   {
+    id: 'batchNumber',
+    label: '批次号',
+    minWidth: 200,
+  },
+  {
     id: 'avatar',
     label: '头像',
-    minWidth: 100,
+    minWidth: 50,
   },
   {
     id: 'nickName',
@@ -51,7 +80,7 @@ const columns = [
   {
     id: 'loginTime',
     label: '最近上线时间',
-    minWidth: 120,
+    minWidth: 220,
   },
   {
     id: 'mobileArea',
@@ -62,6 +91,11 @@ const columns = [
     id: 'mobile',
     label: '手机号',
     minWidth: 100,
+  },
+  {
+    id: 'post',
+    label: '职位',
+    minWidth: 400,
   },
   {
     id: 'email',
@@ -76,7 +110,7 @@ const columns = [
   {
     id: 'lunarBirthday',
     label: '农历生日',
-    minWidth: 100,
+    minWidth: 120,
   },
   {
     id: 'gender',
@@ -96,6 +130,11 @@ const columns = [
   {
     id: 'address',
     label: '住址',
+    minWidth: 170,
+  },
+  {
+    id: 'status',
+    label: '状态',
     minWidth: 170,
   },
   {
@@ -129,19 +168,39 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
   const [updateValue, setUpdateValue] = useState<any>('');
   const [searchDialogShow, setSearchDialogShow] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
+  const [batchVisible, setBatchVisible] = useState(false);
+  const [batchDialogShow, setBatchDialogShow] = useState(false);
+
   const [postVisible, setPostVisible] = useState(false);
   const [postArray, setPostArray] = useState<any>([]);
+  const [batchArray, setBatchArray] = useState<any>([]);
+  const [batchIndex, setBatchIndex] = useState(0);
+  const [batchMoveIndex, setBatchMoveIndex] = useState<any>(null);
+
   const [rows, setRows] = useState<any>([]);
   const [page, setPage] = React.useState(0);
   const [rowsPerPage, setRowsPerPage] = React.useState(100);
   const [total, setTotal] = React.useState(0);
   const [loading, setLoading] = useState(false);
   const [deleteDialogShow, setDeleteDialogShow] = useState(false);
+  const [deleteVisible, setDeleteVisible] = useState(false);
+
+  const [companyData, setCompanyData] = useState<any>(null);
+  const [startId, setStartId] = useState<any>(null);
+  const [companyObj, setCompanyObj] = useState<any>(null);
+  const [nodeData, setNodeData] = useState<any>(null);
+
+  const [selectedId, setSelectedId] = useState<any>(null);
+  const [treeVisible, setTreeVisible] = useState<any>(false);
+  const [treeDialogShow, setTreeDialogShow] = useState<any>(false);
+  const [treeMenuVisible, setTreeMenuVisible] = useState<any>(false);
+
   const [personKey, setPersonKey] = useState<any>('');
   const [searchInput, setSearchInput] = useState<any>('');
   const [personIndex, setPersonIndex] = useState<any>(null);
   const [userVisible, setUserVisible] = useState(false);
   const [targetUser, setTargetUser] = useState<any>(null);
+  const [isQuit, setIsQuit] = useState<any>(false);
   const personRef: React.RefObject<any> = useRef();
   let unDistory = true;
   useEffect(() => {
@@ -156,11 +215,14 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
   useEffect(() => {
     if (groupInfo) {
       getCompanyRow(0, rowsPerPage, searchInput);
+      // getCompanyTree('', 1);
+      getBatchArray();
     }
     return () => {
       unDistory = false;
     };
   }, [groupInfo]);
+
   useEffect(() => {
     if (searchInput === '') {
       setPage(0);
@@ -168,26 +230,63 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
     }
   }, [searchInput]);
   useEffect(() => {
+    if (isQuit) {
+      setPage(0);
+      getCompanyRow(0, rowsPerPage, '', null, '', isQuit);
+    }
+  }, [isQuit]);
+
+  useEffect(() => {
     if (rowsPerPage * page < total) {
       getCompanyRow(page, rowsPerPage, searchInput);
     }
-  }, [page,rowsPerPage]);
+  }, [page, rowsPerPage]);
+  useEffect(() => {
+    if (treeVisible) {
+      getCompanyTree('', 1);
+    }
+  }, [treeVisible]);
+  useEffect(() => {
+    if (selectedId) {
+      chooseNode(companyData[selectedId]);
+      getCompanyRow(page, rowsPerPage, searchInput, companyData[selectedId]);
+    }
+  }, [selectedId]);
   const getCompanyRow = async (
     page: number,
     limit: number,
-    searchInput: string
+    searchInput: string,
+    node?: any,
+    batchNumber?: string,
+    isQuit?: boolean
   ) => {
     let newRow: any = [];
+    let companyPersonRes: any = '';
     page = page + 1;
-    let companyPersonRes: any = await api.company.getCompanyList(
-      1,
-      groupKey,
-      page,
-      limit,
-      searchInput
-    );
+    setLoading(true);
+    if (node) {
+      companyPersonRes = await api.company.getCompanyList(
+        2,
+        node._key,
+        page,
+        limit
+      );
+    } else {
+      companyPersonRes = await api.company.getCompanyList(
+        1,
+        groupKey,
+        page,
+        limit,
+        searchInput,
+        batchNumber,
+        null,
+        isQuit ? 2 : 1
+      );
+    }
+
     if (unDistory) {
       if (companyPersonRes.msg === 'OK') {
+        setLoading(false);
         companyPersonRes.result.map((item: any, index: number) => {
           newRow[index] = {
             ...item,
@@ -212,11 +311,110 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
           }
         });
 
-        console.log('newRow', newRow);
         setRows(newRow);
         setTotal(companyPersonRes.totalNumber);
       } else {
+        setLoading(false);
         dispatch(setMessage(true, companyPersonRes.msg, 'error'));
+      }
+    }
+  };
+  const getCompanyTree = async (nodeId: any, type: number) => {
+    let newStartId: string = '';
+    let newCompanyData: any = {};
+    let newNodeData: any = {};
+    // if (nodeId) {
+    //   setSelectedId(nodeId);
+    // }
+    setLoading(true);
+    let companyDepartmentRes: any = await api.company.getOrganizationTree(
+      groupKey,
+      type
+    );
+    if (unDistory) {
+      if (companyDepartmentRes.msg === 'OK') {
+        setLoading(false);
+        let data = companyDepartmentRes.result;
+        for (let key in data) {
+          newCompanyData[key] = {
+            _key: data[key]._key,
+            father: data[key].parentOrgKey,
+            name: data[key].name,
+            sortList: data[key].children,
+            path: data[key].path1,
+            nodes: [],
+          };
+          if (!nodeId && !data[key].parentOrgKey) {
+            nodeId = data[key]._key;
+            setStartId(data[key]._key);
+          }
+        }
+        // newCompanyData = addPath(newCompanyData, nodeId);
+        newNodeData = formatData(newCompanyData, nodeId);
+        setNodeData(newNodeData);
+        chooseNode(newCompanyData[nodeId]);
+        console.log(newCompanyData);
+        setCompanyData(newCompanyData);
+      } else {
+        setLoading(false);
+        dispatch(setMessage(true, companyDepartmentRes.msg, 'error'));
+      }
+    }
+  };
+  const formatData = (nodeObj: any, nodeId: string) => {
+    let obj: any = {
+      _key: nodeId,
+      name: nodeObj[nodeId].name,
+      children: [],
+    };
+    if (nodeObj[nodeId].sortList.length > 0) {
+      nodeObj[nodeId].sortList.forEach((item: any) => {
+        let nodeItem = formatData(nodeObj, item);
+        obj.children.push(nodeItem);
+      });
+    }
+    return obj;
+  };
+  // const addPath = (nodeObj: any, nodeId: string) => {
+  //   nodeObj[nodeId].path = nodeObj[nodeId].father
+  //     ? [
+  //         ...nodeObj[nodeObj[nodeId].father].path,
+  //         {
+  //           name: nodeObj[nodeId].name,
+  //           _key: nodeObj[nodeId]._key,
+  //         },
+  //       ]
+  //     : [
+  //         {
+  //           name: nodeObj[nodeId].name,
+  //           _key: nodeObj[nodeId]._key,
+  //         },
+  //       ];
+  //   if (nodeObj[nodeId].sortList.length > 0) {
+  //     nodeObj[nodeId].sortList.forEach((item: any) => {
+  //       addPath(nodeObj, item);
+  //     });
+  //   }
+  //   return nodeObj;
+  // };
+  const chooseNode = async (node: any) => {
+    // setSelectedId(node._key);
+    // setSelectedType(node.orgType);
+    setPage(0);
+    setCompanyObj(node);
+    console.log(node);
+    // setRows([]);
+    // getCompanyRow(0, rowsPerPage, node);
+  };
+  const getBatchArray = async () => {
+    let newBatchArray: any = [];
+    let batchRes: any = await api.company.getBatchList(groupKey);
+    if (unDistory) {
+      if (batchRes.msg === 'OK') {
+        newBatchArray = ['全部', ...batchRes.results];
+        setBatchArray(newBatchArray);
+      } else {
+        dispatch(setMessage(true, batchRes.msg, 'error'));
       }
     }
   };
@@ -323,6 +521,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
       if (res.msg === 'OK') {
         setLoading(false);
         getCompanyRow(0, rowsPerPage, '');
+        getBatchArray();
         dispatch(setMessage(true, '导入人员成功', 'success'));
       } else {
         setLoading(false);
@@ -366,6 +565,24 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
       dispatch(setMessage(true, deletePersonRes.msg, 'error'));
     }
   };
+  const deleteBatch = async () => {
+    setDeleteVisible(false);
+    let newBatchArray: any = _.cloneDeep(batchArray);
+    let deletePersonRes: any = await api.company.deleteBatch(
+      groupKey,
+      batchArray[batchIndex]
+    );
+    if (deletePersonRes.msg === 'OK') {
+      dispatch(setMessage(true, '删除批次成功', 'success'));
+      newBatchArray.splice(batchIndex, 1);
+      setBatchIndex(0);
+      setBatchArray(newBatchArray);
+      getCompanyRow(0, rowsPerPage, '');
+    } else {
+      dispatch(setMessage(true, deletePersonRes.msg, 'error'));
+    }
+  };
+
   const editPerson = async () => {
     let newRow: any = _.cloneDeep(rows);
     let newTargetUser = _.cloneDeep(targetUser);
@@ -426,32 +643,39 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
       {loading ? <Loading /> : null}
       <div className="company-header">
         <div className="company-header-title">
-          通讯录{' '}
-          <input
-            type="text"
-            value={searchInput}
-            onChange={(e: any) => {
-              setSearchInput(e.target.value);
-            }}
-            placeholder="请输入成员名"
-            className="companyPerson-input"
-            onKeyDown={(e: any) => {
-              if (e.keyCode === 13) {
-                getCompanyRow(0, rowsPerPage, searchInput);
-              }
-            }}
-          />
+          <span style={{ fontSize: '18px' }}>通讯录</span>
         </div>
         <div className="company-header-button">
           <a
             href="https://cdn-icare.qingtime.cn/花名册示例.xlsx"
             download="花名册（例子）.xlsx"
+            style={{ marginRight: '8px' }}
           >
             点击下载示例
           </a>
+
+          <Button
+            variant="outlined"
+            color="primary"
+            // className={classes.button}
+            startIcon={<GroupAddOutlined />}
+            onClick={() => {
+              setTargetUser(null);
+              setUserVisible(true);
+            }}
+          >
+            新增成员
+          </Button>
           {groupInfo && groupInfo.role === 1 ? (
             <div className="company-button">
-              批量导入
+              <Button
+                variant="outlined"
+                color="primary"
+                // className={classes.button}
+                startIcon={<CloudUpload />}
+              >
+                上传花名册
+              </Button>
               <input
                 type="file"
                 className="file-button"
@@ -459,37 +683,331 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
                 onChange={(e) => {
                   uploadData(e, 0);
                 }}
+                id="companyPerson-upload"
               />
             </div>
           ) : null}
-          <div
-            className="company-button"
-            onClick={() => {
-              setTargetUser(null);
-              setUserVisible(true);
-            }}
-          >
-            新增成员
-          </div>
         </div>
       </div>
       <div className="company-info-container" ref={personRef}>
+        <div className="company-info-left">
+          <div className="company-info-title">
+            <div
+              className="companySearch-container"
+              style={{ margin: '0px 10px' }}
+            >
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e: any) => {
+                  setSearchInput(e.target.value);
+                }}
+                placeholder="请输入成员名"
+                className="companySearch-input"
+                onKeyDown={(e: any) => {
+                  if (e.keyCode === 13) {
+                    getCompanyRow(0, rowsPerPage, searchInput);
+                  }
+                }}
+              />
+              <IconButton
+                color="primary"
+                component="span"
+                className="companySearch-button"
+                onClick={() => {
+                  getCompanyRow(0, rowsPerPage, searchInput);
+                }}
+                size="small"
+              >
+                <Search />
+              </IconButton>
+            </div>
+            {batchVisible ? (
+              <div className="company-header-batch">
+                <div>{batchArray[batchIndex]}</div>
+                <IconButton
+                  color="primary"
+                  component="span"
+                  onClick={() => {
+                    setBatchDialogShow(true);
+                  }}
+                  size="small"
+                >
+                  <ExpandMoreOutlined />
+                </IconButton>
+                <DropMenu
+                  visible={batchDialogShow}
+                  dropStyle={{
+                    width: '250px',
+                    maxHeight: '250px',
+                    top: '39px',
+                    left: '0px',
+                    color: '#333',
+                    overflow: 'auto',
+                    zIndex: 20,
+                    padding: '15px 0px',
+                    boxSizing: 'border-box',
+                  }}
+                  onClose={() => {
+                    setBatchDialogShow(false);
+                  }}
+                >
+                  {batchArray.map((item: any, index: number) => {
+                    return (
+                      <div
+                        key={'batch' + index}
+                        className="company-header-batch-item"
+                        onClick={() => {
+                          setBatchIndex(index);
+                          if (index === 0) {
+                            getCompanyRow(0, rowsPerPage, searchInput);
+                          } else {
+                            getCompanyRow(
+                              0,
+                              rowsPerPage,
+                              '',
+                              null,
+                              batchArray[index]
+                            );
+                          }
+                        }}
+                        onMouseEnter={() => {
+                          setBatchMoveIndex(index);
+                        }}
+                      >
+                        {item}
+                        {batchMoveIndex === index ? (
+                          <IconButton
+                            color="secondary"
+                            component="span"
+                            onClick={() => {
+                              setDeleteVisible(true);
+                            }}
+                            size="small"
+                          >
+                            <CancelOutlined />
+                          </IconButton>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </DropMenu>
+              </div>
+            ) : null}
+            {companyObj && companyObj.path && treeVisible ? (
+              <div className="company-path-tree">
+                {/* {pathItem.name}
+                      <div className="tree-path-icon">
+                        <div className="tree-path-icon-top"></div>
+                        <div className="tree-path-icon-bottom"></div>
+                      </div> */}
+                <Breadcrumbs
+                  aria-label="breadcrumb"
+                  maxItems={3}
+                  separator={<NavigateNext fontSize="small" />}
+                >
+                  {companyObj.path.map((pathItem: any, pathIndex: number) => {
+                    const dom: any =
+                      pathIndex < companyObj.path.length - 1 ||
+                      companyObj.path.length == 1 ? (
+                        <Link
+                          href="#"
+                          onClick={() => {
+                            setTreeDialogShow(true);
+                          }}
+                          style={{ fontSize: '14px' }}
+                          color={'secondary'}
+                          underline={'always'}
+                          key={'path' + pathIndex}
+                        >
+                          {pathItem.name}
+                        </Link>
+                      ) : (
+                        <Typography
+                          color="textPrimary"
+                          onClick={() => {
+                            setTreeDialogShow(true);
+                          }}
+                          style={{ fontSize: '14px' }}
+                          key={'path' + pathIndex}
+                        >
+                          {pathItem.name}
+                        </Typography>
+                      );
+                    return dom;
+                  })}
+                </Breadcrumbs>
+                <DropMenu
+                  visible={treeDialogShow}
+                  dropStyle={{
+                    width: '400px',
+                    minHeight: '260px',
+                    top: '45px',
+                    left: '0px',
+                    color: '#333',
+                    overflow: 'auto',
+                    zIndex: 20,
+                    padding: '15px 0px',
+                    boxSizing: 'border-box',
+                  }}
+                  onClose={() => {
+                    setTreeDialogShow(false);
+                  }}
+                >
+                  {nodeData ? (
+                    <MiniTree
+                      startId={startId}
+                      nodes={nodeData}
+                      clickFunc={setSelectedId}
+                    />
+                  ) : null}
+                </DropMenu>
+              </div>
+            ) : null}
+          </div>
+          <div className="company-info-right">
+            {!postVisible ? (
+              <Chip
+                label="职位"
+                onClick={() => {
+                  setPostVisible(true);
+                }}
+                onDelete={() => {
+                  setPostVisible(true);
+                }}
+                deleteIcon={<Done />}
+                variant="outlined"
+                size="small"
+                style={{ marginRight: '8px' }}
+              />
+            ) : (
+              <Chip
+                label="职位"
+                color="primary"
+                onClick={() => {
+                  setPostVisible(false);
+                }}
+                onDelete={() => {
+                  setPostVisible(false);
+                }}
+                variant="outlined"
+                size="small"
+                style={{ marginRight: '8px' }}
+              />
+            )}
+            {!batchVisible ? (
+              <Chip
+                label="批次"
+                onDelete={() => {
+                  setBatchVisible(true);
+                }}
+                onClick={() => {
+                  setBatchVisible(true);
+                }}
+                deleteIcon={<Done />}
+                variant="outlined"
+                size="small"
+                style={{ marginRight: '8px' }}
+              />
+            ) : (
+              <Chip
+                label="批次"
+                color="primary"
+                onDelete={() => {
+                  setBatchVisible(false);
+                }}
+                onClick={() => {
+                  setBatchVisible(false);
+                }}
+                variant="outlined"
+                size="small"
+                style={{ marginRight: '8px' }}
+              />
+            )}
+            {!treeVisible ? (
+              <Chip
+                label="组织树"
+                onDelete={() => {
+                  setTreeVisible(true);
+                }}
+                onClick={() => {
+                  setTreeVisible(true);
+                }}
+                deleteIcon={<Done />}
+                variant="outlined"
+                size="small"
+                style={{ marginRight: '8px' }}
+              />
+            ) : (
+              <Chip
+                label="组织树"
+                color="primary"
+                onDelete={() => {
+                  setTreeVisible(false);
+                  getCompanyRow(0, rowsPerPage, searchInput);
+                }}
+                onClick={() => {
+                  setTreeVisible(false);
+                  getCompanyRow(0, rowsPerPage, searchInput);
+                }}
+                variant="outlined"
+                size="small"
+                style={{ marginRight: '8px' }}
+              />
+            )}
+            {!isQuit ? (
+              <Chip
+                label="离职"
+                onDelete={() => {
+                  setIsQuit(true);
+                }}
+                onClick={() => {
+                  setIsQuit(true);
+                }}
+                deleteIcon={<Done />}
+                variant="outlined"
+                size="small"
+                style={{ marginRight: '8px' }}
+              />
+            ) : (
+              <Chip
+                label="离职"
+                color="primary"
+                onDelete={() => {
+                  setIsQuit(false);
+                }}
+                onClick={() => {
+                  setIsQuit(false);
+                }}
+                variant="outlined"
+                size="small"
+                style={{ marginRight: '8px' }}
+              />
+            )}
+          </div>
+        </div>
         <TableContainer
           style={{
-            height: 'calc(100% - 60px)',
+            height: 'calc(100% - 105px)',
           }}
         >
-          <Table stickyHeader aria-label="sticky table">
+          <Table stickyHeader aria-label="sticky table" size="small">
             <TableHead>
               <TableRow>
                 {columns.map((column: any) => (
-                  <TableCell
-                    key={column.id}
-                    align="center"
-                    style={{ minWidth: column.minWidth }}
-                  >
-                    {column.label}
-                  </TableCell>
+                  <React.Fragment key={column.id}>
+                    {((!postVisible && column.id !== 'post') || postVisible) &&
+                    ((!batchVisible && column.id !== 'batchNumber') ||
+                      batchVisible) &&
+                    ((!isQuit && column.id !== 'status') || isQuit) ? (
+                      <TableCell
+                        align="center"
+                        style={{ minWidth: column.minWidth }}
+                      >
+                        {column.label}
+                      </TableCell>
+                    ) : null}
+                  </React.Fragment>
                 ))}
               </TableRow>
             </TableHead>
@@ -509,17 +1027,6 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
                           {column.id === 'operation' ? (
                             <TableCell align="center">
                               <React.Fragment>
-                                <IconButton
-                                  color="primary"
-                                  component="span"
-                                  onClick={() => {
-                                    console.log(row.organizationInfo);
-                                    setPostVisible(true);
-                                    setPostArray(row.organizationInfo);
-                                  }}
-                                >
-                                  <AssignmentOutlinedIcon />
-                                </IconButton>
                                 {row.mainEnterpriseGroupKey === groupKey ? (
                                   <IconButton
                                     color="primary"
@@ -528,35 +1035,23 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
                                       setUserVisible(true);
                                       setTargetUser(row);
                                     }}
+                                    size="small"
                                   >
-                                    <img
-                                      src={set6Svg}
-                                      alt=""
-                                      style={{
-                                        height: '16px',
-                                        width: '16px',
-                                      }}
-                                    />
+                                    <Edit />
                                   </IconButton>
                                 ) : null}
                                 {groupRole && groupRole < row.role ? (
                                   <IconButton
-                                    color="primary"
+                                    color="secondary"
                                     component="span"
                                     onClick={() => {
                                       setPersonIndex(index);
                                       setPersonKey(row.userId);
                                       setDeleteDialogShow(true);
                                     }}
+                                    size="small"
                                   >
-                                    <img
-                                      src={deletePng}
-                                      alt=""
-                                      style={{
-                                        height: '16px',
-                                        width: '16px',
-                                      }}
-                                    />
+                                    <CancelOutlined />
                                   </IconButton>
                                 ) : null}
                               </React.Fragment>
@@ -573,6 +1068,10 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
                                         : defaultPersonPng
                                     }
                                     alt=""
+                                    onError={(e: any) => {
+                                      e.target.onerror = null;
+                                      e.target.src = defaultPersonPng;
+                                    }}
                                   />
                                   <div
                                     className="companyPerson-online"
@@ -585,8 +1084,76 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
                                 </div>
                               </div>
                             </TableCell>
+                          ) : column.id === 'post' ? (
+                            <React.Fragment>
+                              {postVisible ? (
+                                <TableCell key={column.id} align="center">
+                                  {row.organizationInfo.length > 0 ? (
+                                    row.organizationInfo.map(
+                                      (item: any, index: number) => {
+                                        return (
+                                          <div
+                                            className="company-choose-info"
+                                            key={'post' + index}
+                                          >
+                                            {item.path1.map(
+                                              (
+                                                pathItem: any,
+                                                pathIndex: number
+                                              ) => {
+                                                return (
+                                                  <span
+                                                    key={'postItem' + pathIndex}
+                                                  >
+                                                    {pathIndex === 0
+                                                      ? pathItem
+                                                      : ' / ' + pathItem}
+                                                  </span>
+                                                );
+                                              }
+                                            )}
+                                            {' / ' +
+                                              (item.post
+                                                ? item.post
+                                                : '无职位')}
+                                          </div>
+                                        );
+                                      }
+                                    )
+                                  ) : (
+                                    <div className="company-choose-info">
+                                      暂无职位
+                                    </div>
+                                  )}
+                                </TableCell>
+                              ) : null}
+                            </React.Fragment>
+                          ) : column.id === 'batchNumber' ? (
+                            <React.Fragment>
+                              {batchVisible ? (
+                                <TableCell key={column.id} align="center">
+                                  {column.format && typeof value === 'number'
+                                    ? column.format(value)
+                                    : value}
+                                </TableCell>
+                              ) : null}
+                            </React.Fragment>
+                          ) : column.id === 'status' ? (
+                            <React.Fragment>
+                              {isQuit ? (
+                                <TableCell key={column.id} align="center">
+                                  {column.format && typeof value === 'number'
+                                    ? column.format(value)
+                                      ? '在职'
+                                      : '离职'
+                                    : value
+                                    ? '在职'
+                                    : '离职'}
+                                </TableCell>
+                              ) : null}
+                            </React.Fragment>
                           ) : (
-                            <TableCell key={column.id} align="center">
+                            <TableCell key={column.id} align={'center'}>
                               {column.format && typeof value === 'number'
                                 ? column.format(value)
                                 : value}
@@ -620,12 +1187,25 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
         onOK={() => {
           deletePerson();
         }}
-        title={'删除任务'}
+        title={'删除人员'}
         dialogStyle={{ width: '400px', height: '200px' }}
       >
         <div className="dialog-onlyTitle">
           是否将该人员从所有群组和组织中删除
         </div>
+      </Dialog>
+      <Dialog
+        visible={deleteVisible}
+        onClose={() => {
+          setDeleteVisible(false);
+        }}
+        onOK={() => {
+          deleteBatch();
+        }}
+        title={'删除批次'}
+        dialogStyle={{ width: '400px', height: '200px' }}
+      >
+        <div className="dialog-onlyTitle">是否将该批次下所有人员删除</div>
       </Dialog>
       <Dialog
         visible={userVisible}
@@ -644,7 +1224,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
       >
         <CompanyEdit targetUser={targetUser} setTargetUser={setTargetUser} />
       </Dialog>
-      <Dialog
+      {/* <Dialog
         visible={postVisible}
         onClose={() => {
           setPostVisible(false);
@@ -674,7 +1254,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
         ) : (
           <div className="company-choose-info">暂无职位</div>
         )}
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 };

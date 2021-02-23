@@ -51,6 +51,10 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
   const dispatch = useDispatch();
   const history = useHistory();
   const user = useTypedSelector((state) => state.auth.user);
+  const mainEnterpriseGroup = useTypedSelector(
+    (state) => state.auth.mainEnterpriseGroup
+  );
+
   const theme = useTypedSelector((state) => state.auth.theme);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const socket = useTypedSelector((state) => state.auth.socket);
@@ -148,7 +152,7 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
         >
           {/* s */}
           <div
-            className="contentHeader-user"
+            className="contentHeader-user  animate__animated animate__fadeIn"
             style={{
               height:
                 moveState === 'right'
@@ -322,7 +326,7 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                           changeBoard('messageVisible');
                         }}
                         name="checkedA"
-                        inputProps={{ 'aria-label': 'secondary checkbox' }}
+                        inputProps={{ 'aria-label': 'primary checkbox' }}
                       />
                     </div>
                   </div>
@@ -348,7 +352,7 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                           changeBoard('mainVisible');
                         }}
                         name="checkedB"
-                        inputProps={{ 'aria-label': 'secondary checkbox' }}
+                        inputProps={{ 'aria-label': 'primary checkbox' }}
                       />
                     </div>
                   </div>
@@ -374,7 +378,7 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                           changeBoard('memberVisible');
                         }}
                         name="checkedC"
-                        inputProps={{ 'aria-label': 'secondary checkbox' }}
+                        inputProps={{ 'aria-label': 'primary checkbox' }}
                       />
                     </div>
                   </div>
@@ -399,7 +403,7 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                         changeBoard('calendarVisible');
                       }}
                       name="checkedD"
-                      inputProps={{ 'aria-label': 'secondary checkbox' }}
+                      inputProps={{ 'aria-label': 'primary checkbox' }}
                     />
                   </div>
                 </div>
@@ -423,15 +427,17 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                         changeBoard('hourVisible');
                       }}
                       name="checkedD"
-                      inputProps={{ 'aria-label': 'secondary checkbox' }}
+                      inputProps={{ 'aria-label': 'primary checkbox' }}
                     />
                   </div>
                 </div>
                 <div
                   className="contentHeader-set-item"
                   onClick={() => {
-                    setMoveState('right');
-                    setMoveType(3);
+                    dispatch(
+                      setGroupKey(mainEnterpriseGroup.mainEnterpriseGroupKey)
+                    );
+                    history.push('/home/company');
                   }}
                 >
                   <div className="contentHeader-set-item-title">
@@ -446,21 +452,33 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                     />
                     <div>机构</div>
                   </div>
-                  <img
-                    src={rightArrowPng}
-                    alt=""
-                    style={{
-                      width: '7px',
-                      height: '11px',
-                      marginLeft: '5px',
-                    }}
-                  />
+                  <div>
+                    {mainEnterpriseGroup.mainEnterpriseGroupName
+                      ? mainEnterpriseGroup.mainEnterpriseGroupName
+                      : ''}
+                    <img
+                      src={rightArrowPng}
+                      alt=""
+                      style={{
+                        width: '7px',
+                        height: '11px',
+                        marginLeft: '10px',
+                        cursor: 'pointer',
+                      }}
+                      onClick={(e: any) => {
+                        e.stopPropagation();
+                        setMoveState('right');
+                        setMoveType(3);
+                      }}
+                    />
+                  </div>
                 </div>
                 <div
                   className="contentHeader-set-item"
                   onClick={() => {
-                    setMoveState('right');
-                    setMoveType(2);
+                    // setMoveState('right');
+                    // setMoveType(2);
+                    history.push('/home/download');
                   }}
                 >
                   <div className="contentHeader-set-item-title">
@@ -562,7 +580,7 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                         changeBoard('randomVisible');
                       }}
                       name="checkedD"
-                      inputProps={{ 'aria-label': 'secondary checkbox' }}
+                      inputProps={{ 'aria-label': 'primary checkbox' }}
                     />
                   ) : null}
                   {moveType === 3 ? (
@@ -721,7 +739,10 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                             // window.open('https://cheerchat.qingtime.cn');
                           }}
                         >
-                          <div className="contentHeader-set-item-title">
+                          <div
+                            className="contentHeader-set-item-title"
+                            style={{ borderRadius: '5px' }}
+                          >
                             <img
                               src={
                                 item.groupLogo
@@ -736,7 +757,9 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                                 marginRight: '5px',
                               }}
                             />
-                            <div style={{width:'150px'}} className="toLong">{item.groupName}</div>
+                            <div style={{ width: '150px' }} className="toLong">
+                              {item.groupName}
+                            </div>
                           </div>
                           <div>
                             <Tooltip title="设置主企业群">

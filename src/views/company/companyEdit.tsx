@@ -231,66 +231,74 @@ const CompanyEdit: React.FC<CompanyEditProps> = (props) => {
               }}
             />
           </div>
-          <div className="companyEdit-input">
-            <TextField
-              // required
-              id="outlined-basic"
-              variant="outlined"
-              label="部门2"
-              className={classes.input}
-              style={{ width: '100%' }}
-              value={department2}
-              onChange={(e: any) => {
-                setDepartment2(e.target.value);
-                changeTargetUser(e.target.value, 'department2');
-              }}
-            />
-          </div>
-          <div className="companyEdit-input">
-            <TextField
-              // required
-              id="outlined-basic"
-              variant="outlined"
-              label="部门3"
-              className={classes.input}
-              style={{ width: '100%' }}
-              value={department3}
-              onChange={(e: any) => {
-                setDepartment3(e.target.value);
-                changeTargetUser(e.target.value, 'department3');
-              }}
-            />
-          </div>
-          <div className="companyEdit-input">
-            <TextField
-              // required
-              id="outlined-basic"
-              variant="outlined"
-              label="部门4"
-              className={classes.input}
-              style={{ width: '100%' }}
-              value={department4}
-              onChange={(e: any) => {
-                setDepartment4(e.target.value);
-                changeTargetUser(e.target.value, 'department4');
-              }}
-            />
-          </div>
-          <div className="companyEdit-input">
-            <TextField
-              // required
-              id="outlined-basic"
-              variant="outlined"
-              label="部门5"
-              className={classes.input}
-              style={{ width: '100%' }}
-              value={department5}
-              onChange={(e: any) => {
-                setDepartment5(e.target.value);
-                changeTargetUser(e.target.value, 'department5');
-              }}
-            />
-          </div>
+          {department1 ? (
+            <div className="companyEdit-input">
+              <TextField
+                // required
+                id="outlined-basic"
+                variant="outlined"
+                label="部门2"
+                className={classes.input}
+                style={{ width: '100%' }}
+                value={department2}
+                onChange={(e: any) => {
+                  setDepartment2(e.target.value);
+                  changeTargetUser(e.target.value, 'department2');
+                }}
+              />
+            </div>
+          ) : null}
+          {department2 ? (
+            <div className="companyEdit-input">
+              <TextField
+                // required
+                id="outlined-basic"
+                variant="outlined"
+                label="部门3"
+                className={classes.input}
+                style={{ width: '100%' }}
+                value={department3}
+                onChange={(e: any) => {
+                  setDepartment3(e.target.value);
+                  changeTargetUser(e.target.value, 'department3');
+                }}
+              />
+            </div>
+          ) : null}
+          {department3 ? (
+            <div className="companyEdit-input">
+              <TextField
+                // required
+                id="outlined-basic"
+                variant="outlined"
+                label="部门4"
+                className={classes.input}
+                style={{ width: '100%' }}
+                value={department4}
+                onChange={(e: any) => {
+                  setDepartment4(e.target.value);
+                  changeTargetUser(e.target.value, 'department4');
+                }}
+              />
+            </div>
+          ) : null}
+          {department4 ? (
+            <div className="companyEdit-input">
+              <TextField
+                // required
+                id="outlined-basic"
+                variant="outlined"
+                label="部门5"
+                className={classes.input}
+                style={{ width: '100%' }}
+                value={department5}
+                onChange={(e: any) => {
+                  setDepartment5(e.target.value);
+                  changeTargetUser(e.target.value, 'department5');
+                }}
+              />
+            </div>
+          ) : null}
           <div className="companyEdit-input">
             <TextField
               // required

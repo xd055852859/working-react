@@ -147,6 +147,10 @@ const WorkingCanlendar: React.FC<WorkingCanlendarProps> = (prop) => {
                       : defaultPersonPng
                   }
                   alt=""
+                  onError={(e: any) => {
+                    e.target.onerror = null;
+                    e.target.src = defaultPersonPng;
+                  }}
                 />
               </div>
               <div className="dayCanlendar-name">

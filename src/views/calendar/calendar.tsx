@@ -50,6 +50,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const user = useTypedSelector((state) => state.auth.user);
+  const moveState = useTypedSelector((state) => state.common.moveState);
   // const workingTaskArray = useTypedSelector(
   //   (state) => state.task.workingTaskArray
   // );
@@ -80,6 +81,8 @@ const Calendar: React.FC<CalendarProps> = (props) => {
   const [calendarGroupIndex, setCalendarGroupIndex] = useState<any>(0);
   const [calendarGroupKey, setCalendarGroupKey] = useState<any>(mainGroupKey);
   const [followList, setFollowList] = useState<any>([]);
+  const [isEdit, setIsEdit] = useState(false);
+  const [followEdit, setFollowEdit] = useState(false);
 
   const weekArr = [
     '星期一',
@@ -160,7 +163,6 @@ const Calendar: React.FC<CalendarProps> = (props) => {
     }
   });
   const getData = async (startTime: number, endTime: number) => {
-    console.log(calendarGroupKey);
     let res: any = await api.task.getScheduleList(
       [calendarGroupKey],
       startTime,
@@ -337,7 +339,6 @@ const Calendar: React.FC<CalendarProps> = (props) => {
       //   'taskEndDate',
       // ]);
     });
-    console.log(newTaskList);
     setMonthTaskList(newTaskList);
     setCalendarDate(strDate);
   };
@@ -454,14 +455,12 @@ const Calendar: React.FC<CalendarProps> = (props) => {
       const canlendarIndex = _.findIndex(calendarObj.repeatArr, {
         _key: taskItem.origionalKey,
       });
-      console.log('canlendarIndex', canlendarIndex);
       if (canlendarIndex !== -1) {
         taskItem.circleData = calendarObj.repeatArr[canlendarIndex].circleData;
         taskItem.repeatCircle =
           calendarObj.repeatArr[canlendarIndex].repeatCircle;
       }
     }
-    console.log(taskItem);
     setFutureTime(calendarDate[calendarIndex].startTime);
     setCalendar(taskItem);
     setCalendarType('编辑');
@@ -471,7 +470,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
   const saveCalendar = async () => {
     let newCalendar = _.cloneDeep(calendar);
     let newTaskList = _.cloneDeep(taskList);
-    if (newCalendar && newCalendar.title === '') {
+    if (newCalendar && !newCalendar.title) {
       dispatch(setMessage(true, '请输入日程标题', 'error'));
       return;
     }
@@ -479,70 +478,95 @@ const Calendar: React.FC<CalendarProps> = (props) => {
       newCalendar.groupKeyArray = [mainGroupKey];
     }
     if (calendarType === '新建') {
+      if (
+        newCalendar.startDay === newCalendar.endDay &&
+        newCalendar.repeatCircle
+      ) {
+        dispatch(setMessage(true, '循环日程请选择正确的结束时间', 'error'));
+        return;
+      }
       let calendarRes: any = await api.task.createSchedule(newCalendar);
       if (calendarRes.msg === 'OK') {
         dispatch(setMessage(true, '创建日程成功', 'success'));
         getData(calendarStartTime, calendarEndTime);
+        setInfoVisible(false);
       } else {
         dispatch(setMessage(true, calendarRes.msg, 'error'));
       }
     } else if (calendarType === '编辑') {
-      let obj: any = {
-        repeatCircle: newCalendar.repeatCircle,
-        circleData: newCalendar.circleData,
-        title: newCalendar.title,
-        groupKey: newCalendar.groupKey,
-        content: '',
-        icon: '',
-        taskType: newCalendar.taskType,
-      };
-      
-      if (moment().startOf('day').valueOf() === futureTime) {
-        //今天
-        obj.type1 = 1;
-        obj.type2 = newCalendar.calendarEditType === 2 ? 2 : 1;
-      } else if (moment().endOf('day').valueOf() < futureTime) {
-        //未来
-        console.log('newCalendar', newCalendar);
-        obj.type1 = 2;
-        obj.type2 =
-          !newCalendar.type || newCalendar.calendarEditType === 2
-            ? // ? newCalendar.type === 8
-              //   ? 2
-              //   : 3
-              2
-            : 1;
-        obj.futureTime = futureTime;
-      }
-      if (newCalendar.type === 8) {
-        obj.taskKey = newCalendar._key;
-        obj.eventKey = newCalendar.origionalKey;
-        obj.taskEndDate = newCalendar.taskEndDate;
-      } else {
-        obj.eventKey = newCalendar._key;
-      }
-      let calendarRes: any = await api.task.changeCircleSchedule(obj);
-      if (calendarRes.msg === 'OK') {
-        dispatch(setMessage(true, '编辑日程成功', 'success'));
-        getData(calendarStartTime, calendarEndTime);
-        let followRes: any = await api.task.setEventFollowUser(
-          newCalendar._key,
-          followList
-        );
+      if (isEdit) {
+        let obj: any = {
+          repeatCircle: newCalendar.repeatCircle,
+          circleData: newCalendar.circleData,
+          title: newCalendar.title,
+          groupKey: newCalendar.groupKey,
+          content: '',
+          icon: '',
+          taskType: newCalendar.taskType,
+        };
+        if (
+          moment().startOf('day').valueOf() === futureTime ||
+          newCalendar.taskEndDate < moment().startOf('day').valueOf()
+        ) {
+          //今天
+          obj.type1 = 1;
+          obj.type2 = newCalendar.calendarEditType === 2 ? 2 : 1;
+        } else if (moment().endOf('day').valueOf() < futureTime) {
+          //未来
+          obj.type1 = 2;
+          obj.type2 =
+            !newCalendar.type || newCalendar.calendarEditType === 2
+              ? // ? newCalendar.type === 8
+                //   ? 2
+                //   : 3
+                2
+              : 1;
+          obj.futureTime = futureTime;
+        }
+        if (newCalendar.type === 8) {
+          obj.taskKey = newCalendar._key;
+          obj.eventKey = newCalendar.origionalKey;
+          obj.taskEndDate = newCalendar.taskEndDate;
+        } else {
+          obj.eventKey = newCalendar._key;
+        }
+        let calendarRes: any = await api.task.changeCircleSchedule(obj);
+        if (calendarRes.msg === 'OK') {
+          dispatch(setMessage(true, '编辑日程成功', 'success'));
+          getData(calendarStartTime, calendarEndTime);
+          setInfoVisible(false);
+        } else {
+          dispatch(setMessage(true, calendarRes.msg, 'error'));
+        }
+      } else if (followEdit) {
+        let obj: any = { followUKeyArray: followList };
+        if (newCalendar.origionalKey && newCalendar.calendarEditType === 2) {
+          obj.eventKey = newCalendar.origionalKey;
+        } else if (!newCalendar.type) {
+          obj.eventKey = newCalendar._key;
+        } else {
+          obj.cardKey = newCalendar._key;
+        }
+        let followRes: any = await api.task.setEventFollowUser(obj);
         if (followRes.msg === 'OK') {
           console.log(followRes);
+          dispatch(setMessage(true, '编辑日程成功', 'success'));
+          setInfoVisible(false);
         } else {
           dispatch(setMessage(true, followRes.msg, 'error'));
         }
       } else {
-        dispatch(setMessage(true, calendarRes.msg, 'error'));
+        setInfoVisible(false);
       }
     }
   };
   return (
     <div
       className="calendar"
-      style={{ width: targetGroupKey ? '100%' : 'calc(100% - 320px)' }}
+      style={{
+        width:
+          targetGroupKey || moveState === 'in' ? '100%' : 'calc(100% - 320px)',
+      }}
     >
       {loading ? <Loading /> : null}
       {!targetGroupKey ? (
@@ -554,7 +578,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
               setGroupVisible(true);
             }}
           >
-            <div className="calendar-logo">
+            <div className="calendar-logo" style={{ borderRadius: '5px' }}>
               <img
                 src={
                   calendarGroupArray &&
@@ -813,7 +837,6 @@ const Calendar: React.FC<CalendarProps> = (props) => {
         onOK={() => {
           // deleteTask();
           saveCalendar();
-          setInfoVisible(false);
         }}
         title={calendarType + '日程'}
         dialogStyle={{ width: '400px', height: '90%' }}
@@ -829,6 +852,12 @@ const Calendar: React.FC<CalendarProps> = (props) => {
             setInfoVisible(false);
           }}
           targetGroupKey={targetGroupKey ? targetGroupKey : mainGroupKey}
+          changeEdit={(isEdit: boolean) => {
+            setIsEdit(isEdit);
+          }}
+          changeFollowEdit={(followEdit: boolean) => {
+            setFollowEdit(followEdit);
+          }}
         />
       </Dialog>
     </div>

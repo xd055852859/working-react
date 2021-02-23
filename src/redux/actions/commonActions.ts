@@ -7,6 +7,7 @@ export const actionTypes = {
   SET_HEADERINDEX: 'SET_HEADERINDEX',
   SET_MOVESTATE: 'SET_MOVESTATE',
   LOADING: 'LOADING',
+  SET_SHOW_CHATSTATE: 'SET_SHOW_CHATSTATE',
   SET_CHATSTATE: 'SET_CHATSTATE',
   SET_UNCHATREADNUM: 'SET_UNCHATREADNUM',
   SET_UNMESSAGEREADNUM: 'SET_UNMESSAGEREADNUM',
@@ -76,6 +77,13 @@ export function setChatState(chatState: boolean) {
     chatState,
   };
 }
+export function setShowChatState(showChatState: boolean) {
+  return {
+    type: actionTypes.SET_SHOW_CHATSTATE,
+    showChatState,
+  };
+}
+
 export function setUnChatNum(unChatNum: number) {
   return {
     type: actionTypes.SET_UNCHATREADNUM,

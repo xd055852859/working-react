@@ -1,7 +1,7 @@
 @import '../../components/common/filter.css';
 
 .workingTableHeader {
-  width: calc(100% - 315px);
+  /* width: calc(100% - 315px); */
   height: 68px;
   color: #fff;
   display: flex;
@@ -31,7 +31,7 @@
   cursor: pointer;
 }
 
-.workingTableHeader-logo img,
+.workingTableHeader-logo > img,
 .viewTableHeader-logo img {
   width: 25px;
   height: 22px;
@@ -124,12 +124,12 @@
   position: relative;
 }
 
-.groupTableHeader-logo {
+.workingTableHeader-logo {
   width: 34px;
   height: 34px;
   overflow: hidden;
-  border-radius: 50%;
-  margin-right: 10px;
+  /* border-radius: 50%; */
+  margin-right: 5px;
   flex-shrink: 0;
 }
 
@@ -140,8 +140,47 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.groupTableHeader-logo img {
+.workingTableHeader-info {
+  width: 30px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  margin-right: 10px;
+}
+.workingTableHeader-name {
+  max-width: 250px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  margin-right: 20px;
+  flex-shrink: 0;
+  position: relative;
+}
+.workingTableHeader-info-container {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  padding: 17px 0px;
+  box-sizing: border-box;
+}
+
+.workingTableHeader-info-item {
+  width: 100%;
+  height: 38px;
+  line-height: 38px;
+  padding: 0px 19px;
+  box-sizing: border-box;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.workingTableHeader-info-item img {
+  margin-right: 10px;
+}
+
+.workingTableHeader-info-item:hover {
+  background: #f0f0f0;
 }

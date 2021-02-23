@@ -3,7 +3,15 @@ import './groupTableTree.css';
 import { Tree } from 'tree-graph-react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
-import { Tooltip } from '@material-ui/core';
+import { Tooltip, IconButton } from '@material-ui/core';
+import {
+  EditOutlined,
+  SaveOutlined,
+  FullscreenOutlined,
+  FullscreenExitOutlined,
+  KeyboardOutlined,
+  CallMadeOutlined,
+} from '@material-ui/icons';
 import {
   setChooseKey,
   editTask,
@@ -77,6 +85,8 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
   const [fullType, setFullType] = useState('small');
   const [infoVisible, setInfoVisible] = useState(false);
   const [infoBigVisible, setInfoBigVisible] = useState(false);
+  const [helpVisible, setHelpVisible] = useState(false);
+  const [editable, setEditable] = useState<any>(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [memberCheckIndex, setMemberCheckIndex] = useState<any>(null);
   const [dayNumber, setDayNumber] = useState<any>(null);
@@ -84,6 +94,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
   const [timeNumber, setTimeNumber] = useState<any>(null);
   const [moveState, setMoveState] = useState<any>('bottom');
   const [editInfoType, setEditInfoType] = useState<any>('');
+  const [content, setContent] = useState<any>('');
   const treeRef: React.RefObject<any> = useRef();
   const boxRef: React.RefObject<any> = useRef();
   const targetTreeRef: React.RefObject<any> = useRef();
@@ -154,16 +165,28 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
       editTargetTask(taskInfo, 0);
     }
   }, [taskInfo]);
-  const getData = async (key: string) => {
+  const getData = async (
+    key: string,
+    targetNodeObj?: any,
+    targetGridList?: any
+  ) => {
     setLoading(true);
-    let gridRes: any = await api.task.getTaskTreeList(key);
+    let gridRes: any = await api.task.getTaskTreeList(
+      groupInfo.taskTreeRootCardKey,
+      key
+    );
     if (unDistory) {
       if (gridRes.msg === 'OK') {
         let newNodeObj: any = _.cloneDeep(nodeObj);
+        let frontPath = gridRes.frontPath;
         if (!newNodeObj) {
           newNodeObj = {};
         }
         let newGridList: any = _.cloneDeep(gridList);
+        if (targetNodeObj) {
+          newNodeObj = targetNodeObj;
+          newGridList = targetGridList;
+        }
         gridRes.result.forEach((taskItem: any, taskIndex: number) => {
           let nodeIndex = _.findIndex(newGridList, { _key: taskItem._key });
           if (nodeIndex === -1) {
@@ -195,6 +218,9 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
               taskItem.groupRole < 4) ||
             taskItem.creatorKey === user._key ||
             taskItem.executorKey === user._key;
+          if (key !== groupInfo.taskTreeRootCardKey && taskItem._key !== key) {
+            taskItem.path1.splice(0, 1);
+          }
           newNodeObj[taskItem._key] = {
             _key: taskItem._key,
             name:
@@ -210,6 +236,9 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
             strikethrough: taskItem.finishPercent === 2,
             contract:
               taskItem.contract ||
+              (taskItem.finishPercent === 2 &&
+                taskItem.hasChildren &&
+                taskItem.children.length === 0) ||
               (taskItem.type === 15 && key === groupInfo.taskTreeRootCardKey)
                 ? true
                 : false,
@@ -233,7 +262,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
               taskItem.finishPercent === 2
                 ? 'rgba(229, 231, 234, 0.9)'
                 : 'rgb(255,255,255)',
-            path1: taskItem.path1,
+            path1: [...frontPath, ...taskItem.path1],
             father:
               taskItem.parentCardKey || key !== groupInfo.taskTreeRootCardKey
                 ? taskItem.parentCardKey
@@ -252,9 +281,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                   : 'F9F9F9'
                 : '#333',
           };
-          if (taskItem.type === 1) {
-            newNodeObj[taskItem._key].icon = '';
-          } else if (taskItem.type === 6) {
+          if (taskItem.type === 1 || taskItem.type === 6) {
             newNodeObj[taskItem._key].icon =
               taskItem.taskType !== 0 ? taskTypeArray[taskItem.taskType] : null;
           } else {
@@ -263,6 +290,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
               : iconArray[taskItem.type - 10];
           }
         });
+        console.log(newNodeObj);
         // for (let key in newNodeObj) {
         //   if (newNodeObj[key].sortList.length > 0) {
         //     newNodeObj[key].sortList = newNodeObj[key].sortList.filter(
@@ -272,12 +300,13 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
         //     );
         //   }
         // }
-        setTargetNode(newNodeObj[key]);
-        setSelectedId(newNodeObj[key]._key);
+
+        if (!targetNodeObj) {
+          setTargetNode(newNodeObj[key]);
+          setSelectedId(newNodeObj[key]._key);
+        }
         setGridList(newGridList);
         setNodeObj(newNodeObj);
-        console.log('key', newNodeObj);
-        setSelectedPath(newNodeObj[key].path1);
         setLoading(false);
       } else {
         setLoading(false);
@@ -290,15 +319,8 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
     type: string,
     taskType: number
   ) => {
-    console.log(selectedNode);
     let newNodeObj = _.cloneDeep(nodeObj);
     let newGridList = _.cloneDeep(gridList);
-    let fatherIndex = _.findIndex(newGridList, {
-      _key: newNodeObj[selectedNode].father,
-    });
-    let targetIndex = _.findIndex(newGridList, {
-      _key: selectedNode,
-    });
     let addTaskRes: any = await api.task.addTask({
       groupKey: groupInfo._key,
       groupRole: groupInfo.role,
@@ -318,7 +340,12 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
           : type === 'next'
           ? newNodeObj[selectedNode].father
           : '',
-
+      indexTree:
+        type === 'child'
+          ? newNodeObj[selectedNode].sortList.length
+          : type === 'next'
+          ? targetIndex + 1
+          : 0,
       type: taskType,
       // type === 'child'
       //   ? newGridList[targetIndex].type === 6
@@ -365,9 +392,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
             : 'rgb(255,255,255)',
         color: '#333',
       };
-      if (taskType === 1) {
-        newNode.icon = '';
-      } else if (taskType === 6) {
+      if (taskType === 1 || taskType === 6) {
         newNode.icon =
           result.taskType !== 0 ? taskTypeArray[result.taskType] : null;
       } else {
@@ -381,7 +406,14 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
       if (type === 'child') {
         newNodeObj[selectedNode].sortList.push(newNode._key);
       } else if (type === 'next') {
-        newNodeObj[newNodeObj[selectedNode].father].sortList.push(newNode._key);
+        let targetIndex = newNodeObj[
+          newNodeObj[selectedNode].father
+        ].sortList.indexOf(selectedNode);
+        newNodeObj[newNodeObj[selectedNode].father].sortList.splice(
+          targetIndex + 1,
+          0,
+          newNode._key
+        );
       }
       setNodeObj(newNodeObj);
       // checkNode(newNodeObj[newNode._key], newGridList);
@@ -399,9 +431,11 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
     }
   };
   const chooseNode = (node: any, type?: number) => {
+    // setMenuVisible(false);
+    // setInfoBigVisible(false);
+    // dispatch(changeTaskInfoVisible(false));
     let newGridList = _.cloneDeep(gridList);
     setTargetNode(node);
-    console.log('node', node);
     let nodeIndex = _.findIndex(newGridList, { _key: node._key });
     if (nodeIndex !== -1) {
       setTargetIndex(nodeIndex);
@@ -445,13 +479,19 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
   const editType = async (type: number) => {
     let newNodeObj = _.cloneDeep(nodeObj);
     let newGridList = _.cloneDeep(gridList);
+    let newTargetNode = _.cloneDeep(targetNode);
     let nodeId = _.cloneDeep(targetNode)._key;
     newNodeObj[nodeId].icon = iconArray[type - 10];
+    newNodeObj[nodeId].type = type;
     let nodeIndex = _.findIndex(newGridList, { _key: nodeId });
     newGridList[nodeIndex].type = type;
+    newTargetNode.type = type;
     dispatch(editTask({ key: nodeId, type: type }, 3));
     setNodeObj(newNodeObj);
     setGridList(newGridList);
+    setTargetNode(newTargetNode);
+    setMenuVisible(false);
+    setEditable(false);
   };
   const editFinishPercent = async (node: any) => {
     let newTargetNode = _.cloneDeep(targetNode);
@@ -464,6 +504,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
     newNodeObj[node._key].checked = !newNodeObj[node._key].checked;
     newNodeObj[node._key].strikethrough =
       newGridList[nodeIndex].finishPercent === 2;
+
     dispatch(
       editTask(
         { key: node._key, finishPercent: newGridList[nodeIndex].finishPercent },
@@ -537,16 +578,17 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
     let nodeIndex = _.findIndex(newGridList, { _key: taskItem._key });
     if (nodeIndex !== -1) {
       newGridList[nodeIndex] = taskItem;
-      if (taskItem.finishPercent == 2 && taskItem.children.length > 0) {
-        taskItem.contact = true;
-      }
+      // if (taskItem.finishPercent == 2 && taskItem.children.length > 0) {
+      //   taskItem.contact = true;
+      // }
       let gridTime = moment(taskItem.taskEndDate)
         .endOf('day')
         .diff(moment().endOf('day'), 'days');
       newNodeObj[taskItem._key].name = taskItem.title;
       newNodeObj[taskItem._key].type = taskItem.type;
-      newNodeObj[taskItem._key].contract =
-        taskItem.finishPercent === 2 ? true : false;
+      newNodeObj[taskItem._key].contract = newNodeObj[taskItem._key].contract
+        ? true
+        : false;
       newNodeObj[taskItem._key].checked = taskItem.finishPercent > 0;
       newNodeObj[taskItem._key].showCheckbox = taskItem.type === 6;
       newNodeObj[taskItem._key].showStatus = true;
@@ -569,16 +611,21 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
           ? 'rgba(229, 231, 234, 0.9)'
           : 'rgb(255,255,255)';
       newNodeObj[taskItem._key].strikethrough = taskItem.finishPercent === 2;
-      setGridList(newGridList);
-      setNodeObj(newNodeObj);
+      if (
+        nodeObj[taskItem._key].strikethrough &&
+        nodeObj[taskItem._key].hasChildren
+      ) {
+        getData(taskItem._key, newNodeObj, newGridList);
+      } else {
+        setGridList(newGridList);
+        setNodeObj(newNodeObj);
+      }
     }
   };
   const dragNode = async (dragInfo: any) => {
     let newNodeObj = _.cloneDeep(nodeObj);
     let newGridList = _.cloneDeep(gridList);
     let newTargetNode = _.cloneDeep(newNodeObj[dragInfo.dragNodeId]);
-    console.log(newTargetNode);
-    console.log(dragInfo);
     let obj = {};
 
     let fatherKey = newNodeObj[dragInfo.dropNodeId].father;
@@ -647,8 +694,6 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
     if (treeRelationRes.msg === 'OK') {
       setNodeObj(newNodeObj);
       setGridList(newGridList);
-      console.log('newNodeObj', newNodeObj);
-      console.log('newGridList', newGridList);
     } else {
       dispatch(setMessage(true, treeRelationRes.msg, 'error'));
     }
@@ -669,15 +714,20 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
     // setNodeObj(newNodeObj);
     // setGridList(newGridList);
   };
-  const editSortList = (id: string, sortList: any, type: string) => {
+  const editSortList = async(id: string, sortList: any, type: string) => {
     let newNodeObj = _.cloneDeep(nodeObj);
     let newGridList = _.cloneDeep(gridList);
     newNodeObj[newNodeObj[id].father].sortList = sortList;
     let nodeIndex = _.findIndex(newGridList, { _key: newNodeObj[id].father });
     newGridList[nodeIndex].children = sortList;
-    // dispatch(editTask({ key: id, ...newGridList[nodeIndex] }, 3));
-    setNodeObj(newNodeObj);
-    setGridList(newGridList);
+    console.log(sortList);
+    let treeRelationRes: any = await api.task.editCardSimple(newNodeObj[id].father,{children: sortList});
+    if (treeRelationRes.msg === 'OK') {
+      setNodeObj(newNodeObj);
+      setGridList(newGridList);
+    } else {
+      dispatch(setMessage(true, treeRelationRes.msg, 'error'));
+    }
   };
   const clickDot = (node: any) => {
     // targetTreeRef.current.closeOptions();
@@ -753,7 +803,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
   };
   const changeTaskType = (taskType: number) => {
     let newTargetNode = _.cloneDeep(targetNode);
-    if (newTargetNode.type === 6) {
+    if (newTargetNode.type === 6 || newTargetNode.type === 1) {
       let newNodeObj = _.cloneDeep(nodeObj);
       let newGridList = _.cloneDeep(gridList);
       newTargetNode.icon = taskTypeArray[taskType];
@@ -796,6 +846,9 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
     } else if (type === 'infinite') {
       newTaskItem.taskEndDate = 99999999999999;
     }
+    if (newTaskItem.type === 1) {
+      newTaskItem.taskEndDate = moment().endOf('day').valueOf();
+    }
     dispatch(
       editTask(
         {
@@ -815,12 +868,18 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
     let newTaskItem = _.cloneDeep(gridList)[targetIndex];
     // taskDetail.finishPercent = finishPercent !== 0 ? 0 : 1;
     let newNodeObj = _.cloneDeep(nodeObj);
+    console.log('??????', finishPercent, newTaskItem);
     if (finishPercent === 10) {
       newTaskItem.type = 1;
     } else {
       if (finishPercent === 2 && newTaskItem.finishPercent === 2) {
         newTaskItem.finishPercent = 1;
+        newTaskItem.contract = newTaskItem.hasChildren ? true : false;
       } else {
+        if (finishPercent !== 2 && newTaskItem.finishPercent === 2) {
+          console.log('newTaskItem.hasChildren', newTaskItem.hasChildren);
+          newTaskItem.contract = newTaskItem.hasChildren ? true : false;
+        }
         newTaskItem.finishPercent = finishPercent;
       }
       if (newTaskItem.type === 1) {
@@ -839,6 +898,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
           type: newTaskItem.type,
           finishPercent: newTaskItem.finishPercent,
           taskEndDate: newTaskItem.taskEndDate,
+          contract: newTaskItem.contract,
         },
         3
       )
@@ -857,10 +917,10 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
       _key: node._key,
     });
     setTargetNode(node);
+    console.log('node', node);
     if (nodeIndex !== -1) {
       setTargetIndex(nodeIndex);
     }
-    console.log("xxxxxxxxxxxxxxxxxxxxxxxxx")
     switch (newGridList[nodeIndex].type) {
       case 1:
         setMenuVisible(true);
@@ -871,7 +931,8 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
         dispatch(setTaskInfo(newGridList[nodeIndex]));
         break;
       default:
-        setInfoVisible(true);
+        setInfoBigVisible(true);
+        setFullType('small');
         break;
     }
   };
@@ -889,16 +950,130 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
     setGridList(newGridList);
     setNodeObj(newNodeObj);
   };
-  const changeFullType = () => {
-    if (fullType === 'small') {
-      setFullType('big');
-      setInfoVisible(false);
-      setInfoBigVisible(true);
-    } else {
-      setFullType('small');
-      setInfoVisible(true);
-      setInfoBigVisible(false);
+  const pasteNode = async (
+    pasteNodeKey: string,
+    pasteType: any,
+    targetNodeKey: string
+  ) => {
+    let newGridList = _.cloneDeep(gridList);
+    let newNodeObj = _.cloneDeep(nodeObj);
+    if (pasteType === 'copy') {
+      let copyRes: any = await api.task.copyTreeTask(
+        pasteNodeKey,
+        targetNodeKey,
+        groupInfo.taskTreeRootCardKey
+      );
+      if (copyRes.msg === 'OK') {
+        let targetIndex = _.findIndex(newGridList, {
+          _key: targetNodeKey,
+        });
+        newNodeObj[targetNodeKey].sortList.push(copyRes.newRoot);
+        newGridList[targetIndex].children.push(copyRes.newRoot);
+        getData(copyRes.newRoot, newNodeObj, newGridList);
+      } else {
+        dispatch(setMessage(true, copyRes.msg, 'error'));
+      }
+    } else if (pasteType === 'cut') {
+      dragNode({
+        dragNodeId: pasteNodeKey,
+        dropNodeId: targetNodeKey,
+        placement: 'in',
+      });
     }
+  };
+
+  const saveMarkDown = () => {
+    const imgReg = /<img.*?(?:>|\/>)/gi; // 匹配图片中的img标签
+    const srcReg = /src=['"]?([^'"]*)['"]?/i; // 匹配图片中的src
+    let innerHtml;
+    let cover: any = '';
+    let title: string = '';
+    let dom = document.getElementById('editor-preview');
+    if (dom) {
+      // 获取title，既一个dom
+      const firstNode: any = dom.childNodes[0];
+      title = firstNode ? firstNode.innerHTML : '';
+
+      innerHtml = dom.innerHTML;
+      // 筛选出所有的img
+      const arr = innerHtml.match(imgReg);
+      if (arr) {
+        const srcMatch = arr[0].match(srcReg);
+        if (srcMatch) {
+          // 将第一个图片作为封面
+          // eslint-disable-next-line prefer-destructuring
+          cover = srcMatch[1];
+        }
+      }
+
+      // 获取摘要
+      innerHtml = dom.innerHTML;
+      // 去除标签
+      innerHtml = innerHtml.replace(/<\/?.+?>/g, '');
+      innerHtml = innerHtml.replace(/&nbsp;/g, '');
+      // 去除标题
+      innerHtml = innerHtml.replace(title, '');
+      return title;
+    }
+  };
+  const changeContent = async (value?: string, title?: string) => {
+    let newTargetNode = _.cloneDeep(gridList[targetIndex]);
+    let newContent: any = _.cloneDeep(content);
+    let linkUrl = '';
+    if (newTargetNode.type === 14 && value) {
+      if (value.includes('http://') || value.includes('https://')) {
+        linkUrl = value;
+      } else {
+        linkUrl = `https://${value}`;
+      }
+      let urlRes: any = await api.auth.getUrlIcon(linkUrl);
+      if (urlRes.msg === 'OK') {
+        dispatch(
+          editTask(
+            {
+              key: newTargetNode._key,
+              extraData: { url: value, icon: urlRes.icon },
+            },
+            3
+          )
+        );
+
+        if (urlRes.icon) {
+          newTargetNode.extraData = { url: value, icon: urlRes.icon };
+        } else {
+          newTargetNode.extraData = { url: value };
+        }
+        dispatch(setMessage(true, '保存成功', 'success'));
+        changeGridList(newTargetNode);
+      } else {
+        dispatch(setMessage(true, urlRes.msg, 'error'));
+      }
+    } else {
+      let newTitle: any = newTargetNode.title;
+      if (title) {
+        newTitle = title;
+      }
+      if (value) {
+        newContent = value;
+      }
+      if (newTargetNode.type === 13) {
+        newTitle = saveMarkDown();
+      }
+      console.log(newContent);
+      if (newTargetNode.type !== 15) {
+        dispatch(
+          editTask(
+            { key: newTargetNode._key, content: newContent, title: newTitle },
+            3
+          )
+        );
+        dispatch(setMessage(true, '保存成功', 'success'));
+      }
+      newTargetNode.content = newContent;
+      newTargetNode.title = newTitle;
+      changeGridList(newTargetNode);
+    }
+    setEditable(false);
   };
   return (
     <div className="tree">
@@ -959,10 +1134,8 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                         }}
                         className="tree-path-item"
                       >
-                        {pathItem.title === '项目任务树根节点'
+                        {pathItem.title === '项目任务树根节点'||( pathItem.title === '任务树' && pathIndex === 0)
                           ? groupInfo.groupName
-                          : pathItem.title === '任务树' && pathIndex === 0
-                          ? '知识树'
                           : pathItem.title}
                         <div className="tree-path-icon">
                           <div className="tree-path-icon-top"></div>
@@ -1000,6 +1173,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                     showIcon={true}
                     showAvatar={true}
                     showMoreButton={true}
+                    showAddButton={true}
                     showPreviewButton={true}
                     // showStatus={true}
                     indent={22}
@@ -1028,6 +1202,9 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                     handleClickPreviewButton={(node: any) => {
                       checkNode(node);
                     }}
+                    handleClickAddButton={(node: any) => {
+                      addChildrenTask(node._key, 'child', 1);
+                    }}
                     // showCheckbox={true}
                     handleDrag={dragNode}
                     handleClickDot={
@@ -1043,7 +1220,6 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                       setTreeMenuLeft(node.x);
                       setTreeMenuTop(node.y);
                       dispatch(setChooseKey(node._key));
-                      console.log(newGridList[nodeIndex]);
                       dispatch(setTaskInfo(newGridList[nodeIndex]));
                       setAvatarDialogShow(true);
                     }}
@@ -1054,6 +1230,8 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                       setTreeMenuTop(node.y);
                       setStatusDialogShow(true);
                     }}
+                    hideHour={!theme.hourVisible}
+                    handlePaste={pasteNode}
                     // nodeOptions={
                     //   <GroupTableTreeItem
                     //     taskDetail={gridList[targetIndex]}
@@ -1109,97 +1287,6 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                     showMemberVisible={avatarDialogShow}
                   />
                 </DropMenu>
-                {/* <DropMenu
-                  visible={avatarDialogShow}
-                  dropStyle={{
-                    width: '150px',
-                    height: '300px',
-                    top: treeMenuTop + 35,
-                    left: treeMenuLeft,
-                    color: '#333',
-                    overflow: 'auto',
-                  }}
-                  onClose={() => {
-                    setAvatarDialogShow(false);
-                  }}
-                >
-                  <div className="task-executor-dropMenu-info">
-                    {groupMemberArray
-                      ? groupMemberArray.map(
-                          (taskMemberItem: any, taskMemberIndex: number) => {
-                            return (
-                              <div
-                                className="task-executor-dropMenu-container"
-                                key={'taskMember' + taskMemberIndex}
-                                style={
-                                  gridList[targetIndex] &&
-                                  gridList[targetIndex].executorKey ===
-                                    taskMemberItem.userId
-                                    ? { background: '#F0F0F0' }
-                                    : {}
-                                }
-                                onClick={() => {
-                                  changeExecutor(
-                                    taskMemberItem.userId,
-                                    taskMemberItem.nickName,
-                                    taskMemberItem.avatar
-                                  );
-                                }}
-                              >
-                                <div className="task-executor-dropMenu-left">
-                                  <div
-                                    className="task-executor-dropMenu-img"
-                                    style={
-                                      gridList[targetIndex] &&
-                                      ((gridList[targetIndex].followUKeyArray &&
-                                        gridList[
-                                          targetIndex
-                                        ].followUKeyArray.indexOf(
-                                          taskMemberItem.userId
-                                        ) !== -1) ||
-                                        gridList[targetIndex].executorKey ===
-                                          taskMemberItem.userId ||
-                                        gridList[targetIndex].creatorKey ===
-                                          taskMemberItem.userId)
-                                        ? { border: '3px solid #17b881' }
-                                        : {}
-                                    }
-                                  >
-                                    <img
-                                      src={
-                                        taskMemberItem.avatar
-                                          ? taskMemberItem.avatar +
-                                            '?imageMogr2/auto-orient/thumbnail/80x'
-                                          : defaultPersonPng
-                                      }
-                                      onClick={(e: any) => {
-                                        e.stopPropagation();
-                                        changeFollow(taskMemberItem.userId);
-                                      }}
-                                    />
-                                  </div>
-                                  <div>{taskMemberItem.nickName}</div>
-                                </div>
-                                {gridList[targetIndex] &&
-                                gridList[targetIndex].executorKey ===
-                                  taskMemberItem.userId ? (
-                                  <img
-                                    src={checkPersonPng}
-                                    alt=""
-                                    style={{
-                                      width: '20px',
-                                      height: '12px',
-                                    }}
-                                  />
-                                ) : null}
-                              </div>
-                            );
-                          }
-                        )
-                      : null}
-                  </div>
-                </DropMenu> */}
-
                 <DropMenu
                   visible={itemDialogShow}
                   dropStyle={{
@@ -1216,13 +1303,19 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                     }
                   }}
                 >
-                  <GroupTableTreeItem
+                  <GroupTableTreeType
+                    targetNodeKey={targetNode && targetNode._key}
+                    addChildrenTask={addChildrenTask}
+                    // typeshow={typeDialogShow}
+                    typeshow={1}
+                  />
+                  {/* <GroupTableTreeItem
                     taskDetail={gridList[targetIndex]}
                     editTargetTask={editTargetTask}
                     setTypeDialogShow={setTypeDialogShow}
-                  />
+                  /> */}
                 </DropMenu>
-                <DropMenu
+                {/* <DropMenu
                   visible={typeDialogShow !== 0}
                   dropStyle={{
                     width: '200px',
@@ -1242,7 +1335,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                     addChildrenTask={addChildrenTask}
                     typeshow={typeDialogShow}
                   />
-                </DropMenu>
+                </DropMenu> */}
               </div>
             </Moveable>
             <Dialog
@@ -1258,7 +1351,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
             >
               <div className="dialog-onlyTitle">是否删除该节点</div>
             </Dialog>
-            <Dialog
+            {/* <Dialog
               visible={infoVisible}
               onClose={() => {
                 setInfoVisible(false);
@@ -1283,6 +1376,58 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                 changeFullType={changeFullType}
                 editInfoType={editInfoType}
               />
+            </Dialog> */}
+            <Dialog
+              visible={helpVisible}
+              onClose={() => {
+                setHelpVisible(false);
+              }}
+              title={'快捷键'}
+              dialogStyle={{
+                position: 'fixed',
+                top: '175px',
+                right: moveState === 'top' ? '10px' : '60px',
+                width: '300px',
+                height: 'calc(100% - 225px)',
+                // overflow: 'visible',
+              }}
+              showMask={false}
+              footer={false}
+              closePngState={true}
+            >
+              <div className="help-item">
+                <span>拖动视图</span> <span>按住鼠标右键并拖动</span>
+              </div>
+              <div className="help-item">
+                <span>选中节点</span> <span>鼠标单击</span>
+              </div>
+              <div className="help-item">
+                <span>编辑节点名</span> <span>鼠标双击</span>
+              </div>
+              <div className="help-item">
+                <span>创建新节点</span> <span>Enter</span>
+              </div>
+              <div className="help-item">
+                <span>创建下级节点</span> <span>Tab</span>
+              </div>
+              <div className="help-item">
+                <span>复制节点</span> <span>Ctrl + C</span>
+              </div>
+              <div className="help-item">
+                <span>剪切节点</span> <span>Ctrl + X</span>
+              </div>
+              <div className="help-item">
+                <span>粘贴节点</span> <span>Ctrl + V</span>
+              </div>
+              <div className="help-item">
+                <span>删除节点</span> <span>Delete</span>
+              </div>
+              <div className="help-item">
+                <span>向上调整</span> <span>shift + ↑</span>
+              </div>
+              <div className="help-item">
+                <span>向下调整</span> <span>shift + ↓</span>
+              </div>
             </Dialog>
             <Dialog
               visible={menuVisible}
@@ -1319,6 +1464,24 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
               </React.Fragment>
               {/* editType */}
             </Dialog>
+          </div>
+          <div
+            className="help-container"
+            style={{
+              right: moveState === 'top' ? '10px' : '60px',
+            }}
+          >
+            <IconButton
+              color="primary"
+              component="span"
+              onClick={() => {
+                setHelpVisible(true);
+              }}
+            >
+              <Tooltip title="快捷键">
+                <KeyboardOutlined />
+              </Tooltip>
+            </IconButton>
           </div>
         </div>
       ) : null}
@@ -1434,15 +1597,106 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
       </div>
       {infoBigVisible ? (
         <div
-          className="groupTableTree-full"
-          style={{ width: theme.moveState ? 'calc(100% - 320px)' : '100%' }}
+          className="groupTableTree-full  animate__animated animate__slideInRight"
+          style={{
+            width:
+              fullType === 'big'
+                ? theme.moveState
+                  ? 'calc(100% - 320px)'
+                  : '100%'
+                : '600px',
+            height: fullType === 'big' ? '100%' : 'calc(100% - 70px)',
+            top: fullType === 'big' ? '0px' : '68px',
+            borderRadius: fullType === 'big' ? '0px' : '12px',
+          }}
         >
-          {/* <div className="groupTableTree-full-title">节点详情</div> */}
+          <div className="groupTableTree-full-title">
+            节点详情
+            <div className="groupTableTree-full-img">
+              {targetNode.type === 10 ||
+              (targetNode.type === 11 && !editable) ||
+              targetNode.type === 13 ? (
+                <IconButton
+                  color="primary"
+                  component="span"
+                  onClick={() => {
+                    if (!editable) {
+                      setEditable(true);
+                      setFullType('big');
+                    } else {
+                      changeContent();
+                    }
+                  }}
+                >
+                  {editable ? (
+                    <Tooltip title="保存">
+                      <SaveOutlined />
+                    </Tooltip>
+                  ) : (
+                    <Tooltip title="编辑">
+                      <EditOutlined />
+                    </Tooltip>
+                  )}
+                </IconButton>
+              ) : null}
+              {targetNode.type === 14 &&
+              gridList[targetIndex].extraData?.url ? (
+                <IconButton
+                  color="primary"
+                  component="span"
+                  onClick={() => {
+                    let linkUrl = '';
+                    let value = gridList[targetIndex].extraData.url;
+                    if (
+                      value.includes('http://') ||
+                      value.includes('https://')
+                    ) {
+                      linkUrl = value;
+                    } else {
+                      linkUrl = `https://${value}`;
+                    }
+                    console.log(linkUrl);
+                    window.open(linkUrl);
+                  }}
+                >
+                  <Tooltip title="跳转外部链接">
+                    <CallMadeOutlined />
+                  </Tooltip>
+                </IconButton>
+              ) : null}
+              <IconButton
+                color="primary"
+                component="span"
+                onClick={() => {
+                  setFullType(fullType === 'big' ? 'small' : 'big');
+                }}
+              >
+                <Tooltip title={fullType === 'small' ? '全屏' : '缩小'}>
+                  {fullType === 'small' ? (
+                    <FullscreenOutlined
+                      style={{
+                        width: '30px',
+                        height: '30px',
+                      }}
+                    />
+                  ) : (
+                    <FullscreenExitOutlined
+                      style={{
+                        width: '30px',
+                        height: '30px',
+                      }}
+                    />
+                  )}
+                </Tooltip>
+              </IconButton>
+            </div>
+          </div>
           <GroupTableInfo
             targetItem={gridList[targetIndex]}
-            changeGridList={changeGridList}
             fullType={fullType}
-            changeFullType={changeFullType}
+            editable={editable}
+            changeContent={changeContent}
+            changeTargetContent={setContent}
             editInfoType={editInfoType}
           />
           <img
@@ -1452,6 +1706,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
             onClick={() => {
               setInfoBigVisible(false);
               setEditInfoType('');
+              setEditable(false);
             }}
           />
         </div>

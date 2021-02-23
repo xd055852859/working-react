@@ -135,7 +135,7 @@ const Home: React.FC<HomeProps> = (props) => {
                 : {}
             }
             className="home-header-item"
-            onClick={() =>{
+            onClick={() => {
               dispatch(setCommonHeaderIndex(5));
             }}
           >

@@ -290,7 +290,6 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     let groupRes: any = await api.group.getGroupInfo(groupKey);
     if (groupRes.msg === 'OK') {
       let newGroupInfo = groupRes.result;
-      console.log(groupRes.result);
       if (newGroupInfo.joinType) {
         setQuestion(newGroupInfo.question);
         setJoinType(newGroupInfo.joinType);

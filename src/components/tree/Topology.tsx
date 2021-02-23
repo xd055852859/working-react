@@ -208,7 +208,6 @@ const DrawEditor: FC<{
         case 'paste':
           //@ts-ignore
           /*    navigator.clipboard.read().then((value) => {
-            console.log(value);
             
             if(value[0].types.includes("image/png")){
               canvas.delete([data]);

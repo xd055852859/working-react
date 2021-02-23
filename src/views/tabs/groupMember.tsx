@@ -80,6 +80,11 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
   const roleTypeArr = ['群主', '管理员', '编辑', '作者', '群成员'];
   const limit = 15;
   let unDistory = true;
+  // useEffect(() => {
+  //   if (groupKey) {
+  //     dispatch(getGroupMember(groupKey, 4));
+  //   }
+  // }, [groupKey]);
   useEffect(() => {
     if (memberArray && groupMemberArray && searchInput === '') {
       let newMemberList: any = [];
@@ -100,7 +105,6 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
         }
         return memberItem;
       });
-      console.log(newMemberArray);
       setMainMemberList(_.sortBy(newMemberArray, ['checked']));
       setGroupMemberList(_.sortBy(newMemberArray, ['checked']));
       setMemberList(_.sortBy(newMemberList, ['role']));
@@ -176,7 +180,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
     }
   };
   const searchPerson = (input?: string) => {
-    console.log(input);
+
     let newMainMemberList = _.cloneDeep(mainMemberList);
     let personInput = input ? input : searchInput;
     let searchPersonList: any = [];
@@ -574,7 +578,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
               height: '400px',
               top: '34px',
               left: '88px',
-              padding: '0px 16px'
+              padding: '0px 16px',
             }}
             onClose={() => {
               setRoleHelpVisible(false);
@@ -607,7 +611,9 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
             </div>
             <div className="roleHelp-item">
               <div>成员</div>
-              <div><div>1.被指派任务</div></div>
+              <div>
+                <div>1.被指派任务</div>
+              </div>
             </div>
           </DropMenu>
         </div>

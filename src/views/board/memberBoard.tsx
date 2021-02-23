@@ -61,6 +61,7 @@ const MemberBoardItem: React.FC<MemberBoardItemProps> = (props) => {
                       : defaultGroupPng
                   }
                   className={classes.logo}
+                  style={{borderRadius:'5px'}}
                 />
               ) : null}
               {item[0].groupName}

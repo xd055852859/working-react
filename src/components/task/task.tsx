@@ -316,7 +316,9 @@ const Task: React.FC<TaskProps> = (props) => {
       taskDayColor = !endState
         ? newTaskItem.finishPercent === 0
           ? { backgroundColor: 'red' }
-          : { backgroundColor: '#417505' }
+          : { backgroundColor: '#B6B7B7' }
+        : time > 0
+        ? { backgroundColor: '#555555' }
         : {};
       taskDayColor.margin = '5px 5px 0px 0px';
       setEndtime(endTime);
@@ -383,7 +385,9 @@ const Task: React.FC<TaskProps> = (props) => {
                   ? 'transparent'
                   : taskDetail.finishPercent === 0 ||
                     taskDetail.finishPercent === 10
-                  ? 'rgb(255,255,255,0.95)'
+                  ? taskDetail.taskEndDate > moment().endOf('day').valueOf()
+                    ? 'rgb(255,255,255,0.95)'
+                    : 'rgb(255,255,255)'
                   : 'rgb(229,231,234,0.9)',
                 // opacity:
                 //   taskDetail.finishPercent === 0 ||
@@ -403,7 +407,7 @@ const Task: React.FC<TaskProps> = (props) => {
                     <div className="taskItem-group">
                       <div
                         className="taskItem-img"
-                        style={{ marginRight: '5px' }}
+                        style={{ marginRight: '5px', borderRadius: '5px' }}
                       >
                         <img
                           src={
@@ -658,7 +662,10 @@ const Task: React.FC<TaskProps> = (props) => {
                     <div className="taskItem-footer">
                       <div className="taskItem-footer-left">
                         {reportState && headerIndex === 1 ? (
-                          <div className="taskItem-img">
+                          <div
+                            className="taskItem-img"
+                            style={{ borderRadius: '5px' }}
+                          >
                             <img
                               src={
                                 taskDetail.groupLogo
@@ -778,6 +785,11 @@ const Task: React.FC<TaskProps> = (props) => {
                                     '?imageMogr2/auto-orient/thumbnail/80x'
                                   : defaultPersonPng
                               }
+                              alt=""
+                              onError={(e: any) => {
+                                e.target.onerror = null;
+                                e.target.src = defaultPersonPng;
+                              }}
                             />
                           </div>
                         </div>

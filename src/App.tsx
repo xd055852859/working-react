@@ -17,7 +17,7 @@ import {
   changeStartMusic,
   clearAuth,
   getThemeBg,
-  getMainGroupKey,
+  // getMainGroupKey,
   getUploadToken,
   getTheme,
   getTargetUserInfo,
@@ -54,6 +54,10 @@ const Basic = Loadable({
   loader: () => import('./views/basic/basic'),
   loading: () => null,
 });
+const Download = Loadable({
+  loader: () => import('./views/download/download'),
+  loading: () => null,
+});
 const App: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
@@ -86,7 +90,6 @@ const App: React.FC = () => {
   const taskMemberX = useTypedSelector((state) => state.common.taskMemberX);
   const taskMemberY = useTypedSelector((state) => state.common.taskMemberY);
   const [finishIndex, setFinishIndex] = useState(0);
-  const [bgIntervalTime, setBgIntervalTime] = useState<any>(null);
   const doneAudioRef: React.RefObject<any> = useRef();
   const doneMessageRef: React.RefObject<any> = useRef();
   const undoneAudioRef: React.RefObject<any> = useRef();
@@ -102,7 +105,6 @@ const App: React.FC = () => {
   useEffect(() => {
     let url = window.location.href;
     // 自动切换为https
-    console.log(url);
     if (url.indexOf('http://localhost') == -1 && url.indexOf('https') < 0) {
       url = url.replace('http:', 'https:');
       window.location.replace(url);
@@ -123,7 +125,6 @@ const App: React.FC = () => {
     // 用户已登录
     if (user && token && token === localStorage.getItem('token')) {
       // dispatch(getMainGroupKey());
-      dispatch(getMainGroupKey());
       dispatch(getTheme());
       let headerIndex = localStorage.getItem('headerIndex')
         ? localStorage.getItem('headerIndex')
@@ -277,7 +278,7 @@ const App: React.FC = () => {
   useEffect(() => {
     if (finishPos.length > 0) {
       let newFinishIndex = finishIndex;
-      let style: any = document.styleSheets[0];
+      let style: any = document.styleSheets[8];
       if (style && !style.href) {
         let dom = document.createElement('div');
         dom.style.top = finishPos[1] - 20 + 'px';
@@ -356,6 +357,9 @@ const App: React.FC = () => {
         obj.right = pageRef.current.offsetWidth - timeSetX;
       }
       obj.display = 'block';
+      if(!theme.hourVisible){
+        obj.height = '160px';
+      }
       setTimesetObj(obj);
     }
   }, [timeSetX, timeSetY]);
@@ -458,6 +462,7 @@ const App: React.FC = () => {
           <Route path="/home/basic" component={Basic} />
           <Route exact path="/home/showPage" component={ShowPage} />
           <Route path="/home/company" component={Company} />
+          <Route exact path="/home/download" component={Download} />
         </Switch>
       ) : null}
       {taskInfoVisible ? <TaskInfo /> : null}

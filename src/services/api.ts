@@ -91,6 +91,11 @@ const common = {
       detail: 0,
     });
   },
+  getVersion(type: number) {
+    return request.get(AUTH_URL + '/version/dangGuiAndroidVersion', {
+      type: type,
+    });
+  },
 };
 const auth = {
   getUserInfo(token: string) {
@@ -117,6 +122,13 @@ const auth = {
       token: auth_token,
       type: type,
       friendOrGroupKey: friendOrGroupKey,
+      status: status,
+    });
+  },
+  dealGroupFold(groupKey: string, status: number) {
+    return request.post(HOME_URL + '/group/dealGroupFold', {
+      token: auth_token,
+      groupKey: groupKey,
       status: status,
     });
   },
@@ -285,7 +297,7 @@ const auth = {
     return request.get(PNG_URL + '/wallPaper', {
       style: 'web',
       page: page,
-      limit: 50,
+      limit: 54,
     });
   },
   viewWallPapers(wallKey: string) {
@@ -457,6 +469,7 @@ const task = {
         : moment().endOf('day').valueOf(),
       groupRole: params.groupRole,
       cardIndex: params.cardIndex ? params.cardIndex : 0,
+      indexTree: params.indexTree ? params.indexTree : 0,
       labelKey: params.labelKey ? params.labelKey : null,
       parentCardKey: params.parentCardKey,
       extraData: params.extraData ? params.extraData : {},
@@ -599,25 +612,25 @@ const task = {
     });
   },
   //获取日程详情
-  getCalendarInfo(eventKey: string) {
+  getCalendarInfo(params: any) {
     return request.post(HOME_URL + '/card/getEventInfo', {
       token: auth_token,
-      eventKey: eventKey,
+      ...params,
     });
   },
   //日程关注者
-  setEventFollowUser(eventKey: string, followUKeyArray: any) {
+  setEventFollowUser(params: any) {
     return request.post(HOME_URL + '/card/setEventFollowUser', {
       token: auth_token,
-      eventKey: eventKey,
-      followUKeyArray: followUKeyArray,
+      ...params,
     });
   },
   //获取树任务
-  getTaskTreeList(taskTreeRootCardKey: string) {
+  getTaskTreeList(taskTreeRootCardKey: string, currCardKey: string) {
     return request.post(HOME_URL + '/card/getTaskTreeList', {
       token: auth_token,
       taskTreeRootCardKey: taskTreeRootCardKey,
+      currCardKey: currCardKey,
     });
   },
   //修改树关系
@@ -656,6 +669,14 @@ const task = {
       ...params,
     });
   },
+  //删除循环任务
+  deleteEvent(eventKey: string) {
+    return request.post(HOME_URL + '/card/deleteEvent', {
+      token: auth_token,
+      eventKey: eventKey,
+    });
+  },
+
   //批量创建
   togetherCreateCard(params: any) {
     return request.post(HOME_URL + '/card/togetherCreateCard', {
@@ -664,6 +685,28 @@ const task = {
       type: 2,
       rootType: 0,
       taskEndDate: moment().endOf('day').valueOf(),
+    });
+  },
+  //复制树任务
+  copyTreeTask(
+    sonTaskKey: string,
+    newFatherTaskKey: string,
+    taskTreeRootCardKey: string,
+    childrenIndex?: number
+  ) {
+    return request.post(HOME_URL + '/card/copyFSTreeTask', {
+      token: auth_token,
+      sonTaskKey: sonTaskKey,
+      newFatherTaskKey: newFatherTaskKey,
+      taskTreeRootCardKey: taskTreeRootCardKey,
+      childrenIndex: childrenIndex,
+    });
+  },
+  editCardSimple(cardKey: string, patchData: any) {
+    return request.post(HOME_URL + '/card/updateCardSimple', {
+      token: auth_token,
+      cardKey: cardKey,
+      patchData: patchData,
     });
   },
 };
@@ -969,7 +1012,9 @@ const company = {
     curPage: number,
     perPage: number,
     searchCondition?: string,
-    sonGroupKey?: any
+    batchNumber?: string,
+    currOrgKey?: any,
+    isQuit?: number
   ) {
     return request.post(
       HOME_URL + '/organization/getEnterpriseGroupOrOrganizationMemberList',
@@ -980,9 +1025,44 @@ const company = {
         curPage: curPage,
         perPage: perPage,
         searchCondition: searchCondition,
-        sonGroupKey: sonGroupKey,
+        batchNumber: batchNumber,
+        currOrgKey: currOrgKey,
+        isQuit: isQuit,
       }
     );
+  },
+  getCompanyGroupList(
+    enterpriseGroupKey: string,
+    curPage: number,
+    perPage: number,
+    searchCondition?: string,
+    currOrgKey?: any
+  ) {
+    return request.post(HOME_URL + '/organization/getEnterpriseGroupList', {
+      token: auth_token,
+      enterpriseGroupKey: enterpriseGroupKey,
+      curPage: curPage,
+      perPage: perPage,
+      searchCondition: searchCondition,
+      currOrgKey: currOrgKey,
+    });
+  },
+  getOrgGroupList(
+    currOrgKey: string,
+    curPage: number,
+    perPage: number,
+    searchCondition?: string,
+    enterpriseGroupKey?: string
+  ) {
+    return request.post(HOME_URL + '/organization/getOrgGroupList', {
+      token: auth_token,
+      currOrgKey: currOrgKey,
+      curPage: curPage,
+      perPage: perPage,
+
+      searchCondition: searchCondition,
+      enterpriseGroupKey: enterpriseGroupKey,
+    });
   },
   getCompanyMemberList(enterpriseGroupKey: string, targetUKey: string) {
     return request.post(HOME_URL + '/organization/getOrgMemberGroupRoleInfo', {
@@ -991,10 +1071,11 @@ const company = {
       targetUKey: targetUKey,
     });
   },
-  getOrganizationTree(enterpriseGroupKey: string) {
+  getOrganizationTree(enterpriseGroupKey: string, type: number) {
     return request.post(HOME_URL + '/organization/getOrganizationTree', {
       token: auth_token,
       enterpriseGroupKey: enterpriseGroupKey,
+      type: type,
     });
   },
   addSonOrganization(
@@ -1052,6 +1133,18 @@ const company = {
       enterpriseGroupKey: enterpriseGroupKey,
     });
   },
+  batchAddOrgGroup(
+    currOrgKey: string,
+    groupKeyArray: any,
+    enterpriseGroupKey: string
+  ) {
+    return request.post(HOME_URL + '/organization/batchAddOrgGroup', {
+      token: auth_token,
+      currOrgKey: currOrgKey,
+      groupKeyArray: groupKeyArray,
+      enterpriseGroupKey: enterpriseGroupKey,
+    });
+  },
   deletePerson(targetUKey: string, enterpriseGroupKey: string) {
     return request.post(
       HOME_URL + '/organization/deleteFromEnterpriseGroupAndOrganization',
@@ -1067,6 +1160,31 @@ const company = {
     return request.post(HOME_URL + '/organization/updateRosterUserInfo', {
       token: auth_token,
       ...params,
+    });
+  },
+  //树修改父子关系
+  changeTreeCompanyRelation(params: any) {
+    return request.post(HOME_URL + '/organization/switchFSOrg', {
+      token: auth_token,
+      ...params,
+    });
+  },
+  //批次序号
+  getBatchList(enterpriseGroupKey: string) {
+    return request.post(
+      HOME_URL + '/groupmember/getEnterpriseRosterBatchList',
+      {
+        token: auth_token,
+        enterpriseGroupKey: enterpriseGroupKey,
+      }
+    );
+  },
+  //删除批次
+  deleteBatch(enterpriseGroupKey: string, batchNumber: string) {
+    return request.post(HOME_URL + '/groupmember/batchDeleteEnterpriseRoster', {
+      token: auth_token,
+      enterpriseGroupKey: enterpriseGroupKey,
+      batchNumber: batchNumber,
     });
   },
 };

@@ -40,14 +40,17 @@
 }
 *::-webkit-scrollbar {
   width: 1.5px;
-  height: 5px;
+  height: 10px;
 }
 
 *::-webkit-scrollbar-thumb {
-  background: #dedede;
+  background: #17b881;
   border-radius: 100px;
 }
-
+.animate__animated.animate__slideInRight {
+  --animate-duration: 600ms;
+  --animate-delay: 0.9s;
+}
 .upload-img {
   position: absolute;
   top: 0px;

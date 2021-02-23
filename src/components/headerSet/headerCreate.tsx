@@ -108,7 +108,6 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
     let newGroupChooseArray: any = [];
     let newLabelChooseArray: any = [];
     groupArray.forEach((item: any, index: number) => {
-      console.log(item.role, item.groupName);
       if (item.role && item.role < 4) {
         newGroupAllArray.push(_.cloneDeep(item));
         newLabelAllArray.push(_.cloneDeep(item.labelInfo));
@@ -169,6 +168,7 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
       labelArr[index] = [];
       item.map((labelItem: any, labelIndex: number) => {
         if (labelArr[index].indexOf(labelItem.labelKey)) {
+          // labelArr[index].push(labelItem.labelKey?labelItem.labelKey:'null');
           labelArr[index].push(labelItem.labelKey);
         }
       });
@@ -255,7 +255,7 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
       {visible ? (
         <React.Fragment>
           <div
-            className="headerCreate"
+            className="headerCreate  animate__animated animate__slideInRight"
             style={createStyle}
             onClick={() => {
               setGroupVisible(false);
@@ -315,7 +315,10 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
                           setChooseIndex(index);
                         }}
                       >
-                        <div className="headerCreate-title-avatar">
+                        <div
+                          className="headerCreate-title-avatar"
+                          style={{ borderRadius: '5px' }}
+                        >
                           <img
                             src={
                               item.groupLogo
@@ -326,12 +329,13 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
                             alt=""
                           />
                         </div>
-                        <div className="headerCreate-title-left-left">
-                          {item.groupName} /
+                        <div className="headerCreate-title-left-left toLong">
+                          {item.groupName}
                         </div>
-                        <div className="headerCreate-title-left-right">
+                        <div className="headerCreate-title-left-right toLong">
                           {labelChooseArray[index] ? (
                             <div className="headerCreate-title-left-title">
+                              /{' '}
                               {labelChooseArray[index][0].labelName
                                 ? labelChooseArray[index][0].labelName
                                 : labelChooseArray[index][0].labelKey

@@ -388,7 +388,7 @@ const Vitality: React.FC<VitalityProps> = (props) => {
           </div>
           <div className="vitality-top">
             {vitalityType === 3 ? (
-              <div className="vitality-img">
+              <div className="vitality-img" style={{ borderRadius: '5px' }}>
                 <img
                   src={
                     vitalityInfo.groupLogo
@@ -403,21 +403,25 @@ const Vitality: React.FC<VitalityProps> = (props) => {
               <div className="vitality-img">
                 <img
                   src={
-                    vitalityInfo.profile.avatar
+                    vitalityInfo.profile?.avatar
                       ? vitalityInfo.profile.avatar +
                         '?imageMogr2/auto-orient/thumbnail/80x'
                       : defaultPersonPng
                   }
                   alt=""
+                  onError={(e: any) => {
+                    e.target.onerror = null;
+                    e.target.src = defaultPersonPng;
+                  }}
                 />
               </div>
             )}
             <div className="vitality-top-info">
               <div className="vitality-title vitality-top-title">
                 <div>
-                  {vitalityType === 3
+                  {vitalityType === 3 && vitalityInfo
                     ? vitalityInfo.groupName
-                    : vitalityInfo.profile.nickName}
+                    : vitalityInfo.profile?.nickName}
                 </div>
                 <div className="vitality-top-num">
                   活力值

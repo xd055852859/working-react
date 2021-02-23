@@ -7,8 +7,8 @@
   justify-content: space-between;
   align-content: flex-start;
   flex-wrap: wrap;
-  position: relative;
-  z-index: 1;
+  /* position: relative;
+  z-index: 1; */
 }
 
 .calendarInfo-title {
@@ -29,12 +29,12 @@
 }
 
 .calendarInfo-item-title {
-  width: 18%;
+  width: 65px;
   height: 100%;
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  margin-right: 7%;
+  margin-right: 10px;
 }
 
 .calendarInfo-repeat-item {
@@ -49,7 +49,7 @@
 }
 
 .calendarInfo-repeat {
-  width: 75%;
+  width: calc(100% - 75px);
 }
 
 .calendarInfo-repeat-input {
@@ -63,7 +63,7 @@
 }
 
 .calendarInfo-week {
-  width: 75%;
+  width: calc(100% - 75px);
   display: flex;
   align-items: center;
   margin-bottom: 10px;
@@ -95,7 +95,7 @@
 
 .calendarInfo-item-color,
 .calendarInfo-item-notice {
-  width: 75%;
+  width: calc(100% - 75px);
   display: flex;
   /* flex-wrap: wrap; */
   justify-content: flex-start;
@@ -204,10 +204,11 @@
 }
 
 .calendarInfo-delete-icon {
-  width: 18px;
-  height: 19px;
+  width: 80px;
+  height: 30px;
   position: absolute;
-  top: -40px;
-  right: 45px;
+  bottom: 15px;
+  left: 7px;
   cursor: pointer;
+  font-size: 12px;
 }

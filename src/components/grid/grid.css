@@ -91,7 +91,7 @@
   height: 20px;
   line-height: 20px;
   padding: 3px 0px 0px 6px;
-  background-color: #535353;
+  background-color:#FFBD03;
   position: relative;
   overflow: hidden;
   box-sizing: border-box;
@@ -200,7 +200,7 @@
   width: 25px;
   height: 25px;
   overflow: hidden;
-  border-radius: 50%;
+  /* border-radius: 50%; */
   margin-right: 5px;
 }
 .grid-groupLogo img {

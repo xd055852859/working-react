@@ -289,7 +289,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
               style={{ width: '70%' }}
               value={groupName}
               onChange={changeGroupName}
-              disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
+              disabled={groupRole !== 1 && type === '设置'}
             />
           </div>
           <div
@@ -306,7 +306,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
               <Checkbox
                 checked={isOpen}
                 onChange={changeOpen}
-                disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
+                disabled={groupRole !== 1 && type === '设置'}
               />
             </div>
             <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -314,11 +314,11 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
               <Checkbox
                 checked={enterprise}
                 onChange={changeEnterprise}
-                disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
+                disabled={groupRole !== 1 && type === '设置'}
               />
             </div>
           </div>
-          <div
+          {/* <div
             className="contact-name-content"
             style={{ display: 'flex', justifyContent: 'space-between' }}
           >
@@ -333,10 +333,10 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
               <Checkbox
                 checked={statisticsSonGroupEnergy}
                 onChange={changeStatisticsSonGroupEnergy}
-                disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
+                disabled={groupRole !== 1 && type === '设置'}
               />
             </div>
-          </div>
+          </div> */}
           <div className="contact-name-content">
             <div className="contact-name-title">群简介</div>
             <TextField
@@ -347,7 +347,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
               className={classes.input}
               value={groupDesc}
               onChange={changeGroupDesc}
-              disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
+              disabled={groupRole !== 1 && type === '设置'}
             />
           </div>
           <div className="contact-name-content" style={{ height: '250px' }}>
@@ -394,22 +394,20 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
                   value="0"
                   control={<Radio />}
                   label="开放加入"
-                  disabled={
-                    (groupRole > 2 || groupRole === 0) && type === '设置'
-                  }
+                  disabled={groupRole !== 1 && type === '设置'}
                 />
               ) : null}
               <FormControlLabel
                 value="1"
                 control={<Radio />}
                 label="管理员通过审核后加入"
-                disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
+                disabled={groupRole !== 1 && type === '设置'}
               />
               <FormControlLabel
                 value="2"
                 control={<Radio />}
                 label="管理员邀请加入"
-                disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
+                disabled={groupRole !== 1 && type === '设置'}
               />
             </RadioGroup>
           </div>
@@ -421,7 +419,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
               checked={isHasPassword}
               style={{ marginRight: '10px' }}
               onChange={changeIsPassword}
-              disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
+              disabled={groupRole !== 1 && type === '设置'}
             />
             {isHasPassword ? (
               <React.Fragment>
@@ -434,9 +432,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
                   style={{ marginLeft: '15px', width: '45%' }}
                   value={question}
                   onChange={changeQuestion}
-                  disabled={
-                    (groupRole > 2 || groupRole === 0) && type === '设置'
-                  }
+                  disabled={groupRole !== 1 && type === '设置'}
                 />
                 <TextField
                   required
@@ -447,9 +443,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
                   style={{ marginLeft: '15px', width: '25%' }}
                   value={password}
                   onChange={changePassword}
-                  disabled={
-                    (groupRole > 2 || groupRole === 0) && type === '设置'
-                  }
+                  disabled={groupRole !== 1 && type === '设置'}
                 />
               </React.Fragment>
             ) : null}
@@ -466,7 +460,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
                 checked={isLinkJoin}
                 onChange={changeJoin}
                 style={{ marginRight: '10px' }}
-                disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
+                disabled={groupRole !== 1 && type === '设置'}
               />
               <TextField
                 required
@@ -477,7 +471,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
                 // onChange={changeInput}
                 style={{ marginLeft: '15px', width: '50%' }}
                 value={'https://working.vip?groupId=' + groupKey}
-                disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
+                disabled={groupRole !== 1 && type === '设置'}
               />
               <Button
                 variant="contained"
@@ -487,6 +481,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
                 onClick={() => {
                   shareGroup();
                 }}
+                disabled={groupRole !== 1 && type === '设置'}
               >
                 拷贝
               </Button>
@@ -496,7 +491,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
             <div className="contact-name-title">默认权限</div>
             <div
               onClick={() => {
-                if ((groupRole > 0 && groupRole < 3) || type === '创建') {
+                if ((groupRole === 1 && type === '设置') || type === '创建') {
                   setDefaultPowerVisible(true);
                 }
               }}
@@ -539,7 +534,9 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
           <div
             className="contact-dialog-logo"
             onClick={() => {
-              setDefaultPngVisible(true);
+              if ((groupRole === 1 && type === '设置') || type === '创建') {
+                setDefaultPngVisible(true);
+              }
             }}
             style={{ border: groupLogo ? 0 : '1px solid #d9d9d9' }}
           >
@@ -556,7 +553,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
                 e.stopPropagation();
               }}
               className="upload-img"
-              disabled={(groupRole > 2 || groupRole === 0) && type === '设置'}
+              disabled={groupRole !== 1 && type === '设置'}
             />
           </div>
           <DropMenu

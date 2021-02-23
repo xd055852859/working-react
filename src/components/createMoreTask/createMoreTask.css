@@ -71,7 +71,7 @@
   width: 30px;
   height: 30px;
   overflow: hidden;
-  border-radius: 50%;
+  border-radius: 5px;
   margin-right: 5px;
 }
 .createMoreTask-avatar img {

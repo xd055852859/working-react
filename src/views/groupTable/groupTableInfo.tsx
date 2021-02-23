@@ -1,22 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './groupTableTree.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-import { IconButton, Tooltip } from '@material-ui/core';
-import {
-  EditOutlined,
-  SaveOutlined,
-  FullscreenOutlined,
-  FullscreenExitOutlined,
-} from '@material-ui/icons';
-
+import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { editTask } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import { useDispatch } from 'react-redux';
-import { Button } from '@material-ui/core';
+import { Button, TextField } from '@material-ui/core';
 import Editor from '../../components/common/Editor';
+import Loading from '../../components/common/loading';
 import Table from '../../components/tree/table';
 import Link from '../../components/tree/link';
 // import Draw from '../../components/common/draw';
+import Comment from '../../components/comment/comment';
 import Markdown from '../../components/tree/markDown/Markdown';
 import DrawView from '../../components/tree/DrawView';
 import DrawEditor from '../../components/tree/Topology';
@@ -28,160 +23,253 @@ import moment from 'moment';
 import _ from 'lodash';
 import api from '../../services/api';
 interface GroupTableTreeInfoProps {
-  targetItem?: any;
-  changeGridList?: any;
+  targetItem: any;
   fullType: string;
-  changeFullType: Function;
+  editable: boolean;
   editInfoType: string;
+  changeContent: Function;
+  changeTargetContent: Function;
 }
-
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      width: '142px',
+      margin: '-10px 0px',
+    },
+    input: {
+      width: '80%',
+      color: '#fff',
+      '& .MuiInput-formControl': {
+        marginTop: '0px',
+        borderColor: '#fff',
+      },
+      '& .MuiOutlinedInput-input': {
+        padding: '10px 14px',
+        borderColor: '#fff',
+        // color: '#fff',
+      },
+      '& .MuiInputLabel-formControl': {
+        marginTop: '-10px',
+        // color: '#fff',
+      },
+    },
+    button: {
+      backgroundColor: '#17B881',
+      color: '#fff',
+    },
+    disbutton: {
+      backgroundColor: 'rgba(255,255,255,0.4)',
+    },
+    datePicker: {
+      '& .MuiInput-formControl': {
+        marginLeft: '5px',
+      },
+    },
+  })
+);
 const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
   const {
     targetItem,
-    changeGridList,
     fullType,
-    changeFullType,
     editInfoType,
+    editable,
+    changeContent,
+    changeTargetContent,
   } = props;
   const dispatch = useDispatch();
+  const classes = useStyles();
   const [content, setContent] = useState<any>('');
-  const [editable, setEditable] = useState<any>(false);
   const [targetNode, setTargetNode] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [commentIndex, setCommentIndex] = useState(0);
+  const [taskCommentTotal, setTaskCommentTotal] = useState<any>(null);
+  const [taskHistoryArray, setTaskHistoryArray] = useState<any>([]);
+  const [taskHistoryTotal, setTaskHistoryTotal] = useState<any>(null);
+  const [taskHistoryPage, setTaskHistoryPage] = useState(1);
+  const [taskCommentArray, setTaskCommentArray] = useState<any>([]);
+  const [taskCommentPage, setTaskCommentPage] = useState(1);
+  const [commentInput, setCommentInput] = useState('');
+  const [isEdit, setIsEdit] = useState(false);
   const containerRef: React.RefObject<any> = useRef();
-
+  const taskLimit = 10;
+  let unDistory = true;
   useEffect(() => {
-    if (targetItem) {
-      if (targetItem.type === 10) {
-        if (targetItem.content) {
-          setContent(targetItem.content);
+    if (!targetNode || targetItem._key !== targetNode._key) {
+      getTaskItem(targetItem._key);
+    }
+    return () => {
+      unDistory = false;
+    };
+  }, [targetItem]);
+  const getTaskItem = async (key: string) => {
+    setLoading(true);
+    let taskItemRes: any = await api.task.getTaskInfo(key);
+    if (unDistory) {
+      if (taskItemRes.msg === 'OK') {
+        let taskInfo = _.cloneDeep(taskItemRes.result);
+        setLoading(false);
+        if (taskInfo.content || taskInfo.type !== 10) {
+          setContent(taskInfo.content);
         } else {
           setContent('<p>备注信息:</p>');
         }
+        setTargetNode(taskInfo);
+        getHistoryList(taskHistoryPage, taskInfo);
+        getCommentList(taskHistoryPage, taskInfo);
+      } else {
+        setLoading(false);
+        dispatch(setMessage(true, taskItemRes.msg, 'error'));
       }
-      setTargetNode(targetItem);
     }
-  }, [targetItem]);
-
-  useEffect(() => {
-    if (editInfoType === '新增') {
-      setEditable(true);
-    }
-  }, [editInfoType]);
+  };
   const changeTaskContent = (value: any) => {
     let newTargetNode = _.cloneDeep(targetNode);
+    let content = '';
     if (value) {
-      setContent(value);
+      content = value;
     } else if (newTargetNode.type === 10) {
-      setContent('<p>备注信息:</p>');
+      content = '<p>备注信息:</p>';
+    }
+    newTargetNode.content = content;
+    setTargetNode(newTargetNode);
+    setContent(content);
+    changeTargetContent(content);
+    if (newTargetNode.type === 11) {
+      changeContent(content);
     }
   };
-  const saveMarkDown = () => {
-    const imgReg = /<img.*?(?:>|\/>)/gi; // 匹配图片中的img标签
-    const srcReg = /src=['"]?([^'"]*)['"]?/i; // 匹配图片中的src
-    let innerHtml;
-    let cover: any = '';
-    let title: string = '';
-    let dom = document.getElementById('editor-preview');
-    if (dom) {
-      // 获取title，既一个dom
-      const firstNode: any = dom.childNodes[0];
-      title = firstNode ? firstNode.innerHTML : '';
-
-      innerHtml = dom.innerHTML;
-      // 筛选出所有的img
-      const arr = innerHtml.match(imgReg);
-      if (arr) {
-        const srcMatch = arr[0].match(srcReg);
-        if (srcMatch) {
-          // 将第一个图片作为封面
-          // eslint-disable-next-line prefer-destructuring
-          cover = srcMatch[1];
-        }
+  const getCommentList = async (page: number, taskInfo: any) => {
+    let newCommentArray = _.cloneDeep(taskCommentArray);
+    if (page == 1) {
+      newCommentArray = [];
+    }
+    let commentRes: any = await api.task.getTaskComment(
+      taskInfo._key,
+      page,
+      taskLimit
+    );
+    if (unDistory) {
+      if (commentRes.msg === 'OK') {
+        newCommentArray.push(...commentRes.result);
+        setTaskCommentArray(newCommentArray);
+        setTaskCommentTotal(commentRes.totalNumber);
+      } else {
+        dispatch(setMessage(true, commentRes.msg, 'error'));
       }
-
-      // 获取摘要
-      innerHtml = dom.innerHTML;
-      // 去除标签
-      innerHtml = innerHtml.replace(/<\/?.+?>/g, '');
-      innerHtml = innerHtml.replace(/&nbsp;/g, '');
-      // 去除标题
-      innerHtml = innerHtml.replace(title, '');
-      // console.log(title, cover, content);
-      return title;
     }
   };
-  const changeContent = async (value?: string, title?: string) => {
-    let newTargetNode = _.cloneDeep(targetNode);
-    let newContent: any = _.cloneDeep(content);
-    let linkUrl = '';
-    if (newTargetNode.type === 14 && value) {
-      if (value.includes('http://') || value.includes('https://')) {
-        linkUrl = value;
+  const saveCommentMsg = async () => {
+    let newCommentArray = _.cloneDeep(taskCommentArray);
+    let newCommentTotal = taskCommentTotal;
+    if (commentInput !== '') {
+      //保存
+      let saveRes: any = await api.task.addComment(
+        targetNode._key,
+        commentInput
+      );
+      if (saveRes.msg === 'OK') {
+        dispatch(setMessage(true, '评论成功', 'success'));
+        newCommentArray.push(saveRes.result);
+        newCommentTotal = newCommentTotal + 1;
+        setTaskCommentArray(newCommentArray);
+        setTaskCommentTotal(newCommentTotal);
+        setCommentInput('');
       } else {
-        linkUrl = `https://${value}`;
+        dispatch(setMessage(true, saveRes.msg, 'error'));
       }
-      let urlRes: any = await api.auth.getUrlIcon(linkUrl);
-      if (urlRes.msg === 'OK') {
-        dispatch(
-          editTask(
-            {
-              key: newTargetNode._key,
-              extraData: { url: value, icon: urlRes.icon },
-            },
-            3
-          )
-        );
-
-        if (urlRes.icon) {
-          newTargetNode.extraData = { url: value, icon: urlRes.icon };
-        } else {
-          newTargetNode.extraData = { url: value };
-        }
-        dispatch(setMessage(true, '保存成功', 'success'));
-        changeGridList(newTargetNode);
-      } else {
-        dispatch(setMessage(true, urlRes.msg, 'error'));
-      }
+    }
+  };
+  const deleteCommentMsg = async (commentIndex: number, commentkey: string) => {
+    let newCommentArray = _.cloneDeep(taskCommentArray);
+    let newCommentTotal = taskCommentTotal;
+    let deleteRes: any = await api.task.deleteComment(commentkey);
+    if (deleteRes.msg === 'OK') {
+      dispatch(setMessage(true, '删除评论成功', 'success'));
+      newCommentArray.splice(commentIndex, 1);
+      newCommentTotal = newCommentTotal - 1;
+      setTaskCommentArray(newCommentArray);
+      setTaskCommentTotal(newCommentTotal);
     } else {
-      let newTitle: any = newTargetNode.title;
-      if (title) {
-        newTitle = title;
-        newContent = value;
-      }
-      if (newTargetNode.type === 13) {
-        newTitle = saveMarkDown();
-      }
-      if (newTargetNode.type !== 15) {
-        dispatch(
-          editTask(
-            { key: newTargetNode._key, content: newContent, title: newTitle },
-            3
-          )
-        );
-        dispatch(setMessage(true, '保存成功', 'success'));
-      }
-      newTargetNode.content = newContent;
-      newTargetNode.title = newTitle;
-      changeGridList(newTargetNode);
-    }
-    if (
-      newTargetNode.type === 10 ||
-      newTargetNode.type === 11 ||
-      newTargetNode.type === 13
-    ) {
-      setEditable(false);
+      dispatch(setMessage(true, deleteRes.msg, 'error'));
     }
   };
-  console.log(containerRef.current && containerRef.current.offsetHeight);
+  const getHistoryList = async (page: number, taskInfo: any) => {
+    let newHistoryArray = _.cloneDeep(taskHistoryArray);
+    if (page == 1) {
+      newHistoryArray = [];
+    }
+    let historyRes: any = await api.task.getTaskHistory(
+      taskInfo._key,
+      page,
+      taskLimit
+    );
+    if (unDistory) {
+      if (historyRes.msg === 'OK') {
+        newHistoryArray.push(...historyRes.result);
+        setTaskHistoryArray(newHistoryArray);
+        setTaskHistoryTotal(historyRes.totalNumber);
+      } else {
+        dispatch(setMessage(true, historyRes.msg, 'error'));
+      }
+    }
+  };
+  const scrollCommentLoading = async (e: any) => {
+    let page = taskCommentPage;
+    //文档内容实际高度（包括超出视窗的溢出部分）
+    let scrollHeight = e.target.scrollHeight;
+    //滚动条滚动距离
+    let scrollTop = e.target.scrollTop;
+    //窗口可视范围高度
+    let clientHeight = e.target.clientHeight;
+    if (
+      clientHeight + scrollTop >= scrollHeight &&
+      taskCommentArray.length < taskCommentTotal
+    ) {
+      page = page + 1;
+      setTaskCommentPage(page);
+      getCommentList(page, targetNode);
+    }
+  };
+  const scrollHistoryLoading = async (e: any) => {
+    let page = taskHistoryPage;
+    //文档内容实际高度（包括超出视窗的溢出部分）
+    let scrollHeight = e.target.scrollHeight;
+    //滚动条滚动距离
+    let scrollTop = e.target.scrollTop;
+    //窗口可视范围高度
+    let height = e.target.clientHeight;
+    if (
+      height + scrollTop >= scrollHeight &&
+      taskHistoryArray.length < taskHistoryTotal
+    ) {
+      page = page + 1;
+      setTaskHistoryPage(page);
+      getHistoryList(page, targetNode);
+    }
+  };
+  const changeInput = (e: any) => {
+    setCommentInput(e.target.value);
+    // setEditState(true);
+  };
   return (
     <React.Fragment>
       {targetNode ? (
         <React.Fragment>
-          <div className="groupTableTreeInfo-container" ref={containerRef}>
+          <div
+            className="groupTableTreeInfo-container"
+            ref={containerRef}
+          >
+            {loading ? (
+              <Loading loadingHeight="90px" loadingWidth="90px" />
+            ) : null}
             {targetNode.type === 10 ? (
               <React.Fragment>
                 <Editor
-                  editorHeight={containerRef.current?.offsetHeight?containerRef.current.offsetHeight:'500px'}
+                  editorHeight={
+                    containerRef.current?.offsetHeight
+                      ? containerRef.current.offsetHeight
+                      : '800px'
+                  }
                   data={content}
                   onChange={changeTaskContent}
                   editable={editable}
@@ -194,7 +282,7 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
                 <DrawEditor
                   //@ts-ignore
                   targetNode={targetNode}
-                  onChange={changeContent}
+                  onChange={changeTaskContent}
                 />
               ) : (
                 <DrawView
@@ -222,112 +310,138 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
                 fullType={fullType}
               />
             ) : null}
-          </div>
-          {(targetNode.type !== 12 &&
-            targetNode.type !== 14 &&
-            targetNode.type !== 11) ||
-          (targetNode.type === 11 && !editable) ? (
-            <div
-              className="groupTableTreeInfo-button"
-              style={{ top: fullType === 'small' ? '10px' : '5px' }}
-            >
-              <IconButton
-                color="primary"
-                component="span"
-                onClick={() => {
-                  if (
-                    targetNode.type === 10 ||
-                    targetNode.type === 13 ||
-                    targetNode.type === 11
-                  ) {
-                    if (!editable) {
-                      setEditable(true);
-                    } else {
-                      changeContent();
-                    }
+            <div className="taskInfo-comment">
+              <div className="taskInfo-comment-tabs">
+                <div
+                  className="taskInfo-comment-tabs-item"
+                  onClick={() => {
+                    setCommentIndex(0);
+                  }}
+                  style={
+                    commentIndex === 0
+                      ? {
+                          borderBottom: '1px solid #17B881',
+                          color: '#17B881',
+                        }
+                      : {}
                   }
-                }}
-              >
-                {targetNode.type === 10 ||
-                targetNode.type === 13 ||
-                targetNode.type === 11 ? (
-                  editable ? (
-                    <Tooltip title="保存">
-                      <SaveOutlined
-                        style={{
-                          width: '30px',
-                          height: '30px',
-                        }}
-                      />
-                    </Tooltip>
-                  ) : (
-                    <Tooltip title="编辑">
-                      <EditOutlined
-                        style={{
-                          width: '30px',
-                          height: '30px',
-                        }}
-                      />
-                    </Tooltip>
-                  )
-                ) : (
-                  ''
-                )}
-              </IconButton>
+                >
+                  评论({taskCommentTotal})
+                </div>
+                <div
+                  className="taskInfo-comment-tabs-item"
+                  onClick={() => {
+                    setCommentIndex(1);
+                  }}
+                  style={
+                    commentIndex === 1
+                      ? {
+                          borderBottom: '1px solid #17B881',
+                          color: '#17B881',
+                        }
+                      : {}
+                  }
+                >
+                  历史({taskHistoryTotal})
+                </div>
+              </div>
+              {commentIndex === 0 ? (
+                <React.Fragment>
+                  <div
+                    className="taskInfo-comment-tab"
+                    onScroll={scrollCommentLoading}
+                  >
+                    {taskCommentArray.map(
+                      (commentItem: any, commentIndex: number) => {
+                        return (
+                          <Comment
+                            commentItem={commentItem}
+                            commentIndex={commentIndex}
+                            key={'comment' + commentIndex}
+                            commentClick={deleteCommentMsg}
+                          />
+                        );
+                      }
+                    )}
+                  </div>
+                </React.Fragment>
+              ) : (
+                <div
+                  className="taskInfo-comment-tab"
+                  onScroll={scrollHistoryLoading}
+                >
+                  {taskHistoryArray.map(
+                    (historyItem: any, historyIndex: number) => {
+                      return (
+                        <div
+                          key={'history' + historyIndex}
+                          className="taskInfo-comment-historyLog"
+                        >
+                          <div className="taskInfo-comment-avatar">
+                            <img
+                              src={historyItem.etc && historyItem.etc.avatar}
+                              alt=""
+                            />
+                          </div>
+                          <div className="taskInfo-comment-info">
+                            <div>
+                              {moment(
+                                parseInt(historyItem.createTime)
+                              ).fromNow()}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#8091a0' }}>
+                              {historyItem.log}
+                            </div>
+                          </div>
+                          {/* {historyItem.log} */}
+                        </div>
+                      );
+                    }
+                  )}
+                </div>
+              )}
             </div>
-          ) : null}
-          <div
-            className="groupTableTree-full-img"
-            style={{
-              top:
-                fullType === 'small'
-                  ? '10px'
-                  : targetNode.type !== 12 && targetNode.type !== 11
-                  ? '5px'
-                  : targetNode.type === 11
-                  ? editable
-                    ? '0px'
-                    : '5px'
-                  : '-10px',
-
-              right:
-                fullType === 'big'
-                  ? targetNode.type === 12
-                    ? '70px'
-                    : '5px'
-                  : targetNode.type === 11 && editable
-                  ? '80px'
-                  : '13px',
-            }}
-          >
-            <IconButton
-              color="primary"
-              component="span"
-              onClick={() => {
-                changeFullType();
-              }}
-            >
-              <Tooltip title={fullType === 'small' ? '全屏' : '缩小'}>
-                {fullType === 'small' ? (
-                  <FullscreenOutlined
-                    style={{
-                      width: '30px',
-                      height: '30px',
-                    }}
-                  />
-                ) : (
-                  <FullscreenExitOutlined
-                    style={{
-                      width: '30px',
-                      height: '30px',
-                    }}
-                  />
-                )}
-              </Tooltip>
-            </IconButton>
           </div>
         </React.Fragment>
       ) : null}
+      <div className="taskInfo-comment-input">
+        <TextField
+          required
+          id="outlined-basic"
+          variant="outlined"
+          label="评论"
+          className={classes.input}
+          onChange={changeInput}
+          value={commentInput}
+          onKeyDown={(e: any) => {
+            if (e.keyCode === 13) {
+              saveCommentMsg();
+            }
+          }}
+          onFocus={() => {
+            setIsEdit(true);
+          }}
+          onBlur={() => {
+            setIsEdit(false);
+          }}
+        />
+        {commentInput ? (
+          <Button
+            variant="contained"
+            color="primary"
+            className={classes.button}
+            onClick={() => {
+              saveCommentMsg();
+            }}
+          >
+            发布
+          </Button>
+        ) : (
+          <Button variant="contained" className={classes.disbutton} disabled>
+            发布
+          </Button>
+        )}
+      </div>
     </React.Fragment>
   );
 };

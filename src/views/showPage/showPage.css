@@ -198,6 +198,9 @@
   flex: 1;
   color: #fff;
 }
+.showPage-input input::-webkit-input-placeholder{
+  color:#eee;
+}
 .showPage-input-img {
   height: 35px;
   width: 85px;

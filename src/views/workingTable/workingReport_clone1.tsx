@@ -387,6 +387,10 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                     : defaultPersonPng
                 }
                 alt=""
+                onError={(e: any) => {
+                  e.target.onerror = null;
+                  e.target.src = defaultPersonPng;
+                }}
               />
             </div>
             <div>{dayCanlendarItem[dayKey].executorArr[0].executorName}</div>

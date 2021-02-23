@@ -39,13 +39,13 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
     (state) => state.member.groupMemberItem
   );
   useEffect(() => {
-    if (user && user._key && groupKey) {
+    if (groupKey) {
       dispatch(getGroupMember(groupKey, 4));
       dispatch(getGroupInfo(groupKey));
       dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
       dispatch(getTheme());
     }
-  }, [user, groupKey]);
+  }, [groupKey]);
   useEffect(() => {
     if (user && user._key && groupKey && taskArray) {
       dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
@@ -78,7 +78,10 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
       }
     >
       <GroupTableHeader />
-      <div className="groupTableContent">
+      <div
+        className="groupTableContent"
+        style={memberHeaderIndex !== 0 ? { overflow: 'auto' } : {}}
+      >
         {memberHeaderIndex === 0 ? <GroupTableGroup /> : null}
         {memberHeaderIndex === 1 ? <Grid gridState={true} /> : null}
         {memberHeaderIndex === 2 ? <Grid gridState={false} /> : null}

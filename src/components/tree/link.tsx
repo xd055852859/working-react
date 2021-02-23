@@ -94,7 +94,6 @@ const Link: React.FC<LinkProps> = (props) => {
           color="primary"
           style={{ color: '#fff' }}
           onClick={() => {
-            console.log(url);
             onChange(url);
             // dispatch(
             //   editTask(

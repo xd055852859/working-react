@@ -143,7 +143,6 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
     let XYLeftchart: any = null;
     let XYRightchart: any = null;
     let state = false;
-    console.log(groupData);
     groupData.forEach((item: any) => {
       switch (taskState) {
         case 0:
@@ -261,8 +260,6 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
     setXYLeftlength(XYLeftdata.length);
     setXYRightlength(XYRightdata.length);
     dataChart = chart.createChordDiagramChart('chartdiv', data, '#333');
-    console.log(XYLeftdata);
-    console.log(XYRightdata);
     if (XYLeftdata.length > 0) {
       XYLeftchart = chart.createXYChart('XYLeftchartdiv', XYLeftdata);
     }
@@ -279,7 +276,6 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
     let newPersonObj: any = {};
     let newPersonGroupObj: any = {};
     let state = false;
-    console.log(arr)
     arr.forEach((item: any, index: number) => {
       // item.finishPercent == 1
       switch (taskState) {
@@ -409,7 +405,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
         <React.Fragment key={'personItem' + personIndex}>
           <div className="countdown-right-group" style={{ marginTop: '5px' }}>
             <React.Fragment>
-              <div className="countdown-right-group-logo">
+              <div className="countdown-right-group-logo"  style={{borderRadius:'5px'}}>
                 <img
                   src={
                     personItem[0].groupLogo
@@ -476,7 +472,12 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
                         '?imageMogr2/auto-orient/thumbnail/80x'
                       : defaultPersonPng
                   }
+                  alt=""
                   className="countdown-right-person-avatar"
+                  onError={(e: any) => {
+                    e.target.onerror = null;
+                    e.target.src = defaultPersonPng;
+                  }}
                 />
                 {item[0].executorName}
               </div>

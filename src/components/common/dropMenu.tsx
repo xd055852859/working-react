@@ -26,7 +26,7 @@ const DropMenu: React.FC<dropMenuProp> = (prop) => {
       {visible ? (
         <ClickAwayListener onClickAway={onClose ? onClose : () => {}}>
           <div
-            className="dropMenu"
+            className="dropMenu animate__animated animate__fadeIn faster"
             style={dropStyle}
             onMouseLeave={() => {
               if (closeType === 1) {

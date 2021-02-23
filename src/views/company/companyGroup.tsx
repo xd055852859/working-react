@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MenuTree } from 'tree-graph-react';
 import './companyDepartment.css';
+import './companyGroup.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import { getGroup } from '../../redux/actions/groupActions';
 import _ from 'lodash';
 import api from '../../services/api';
@@ -22,13 +24,57 @@ import {
   TableRow,
   Checkbox,
   IconButton,
+  Chip,
 } from '@material-ui/core';
-import AssignmentOutlinedIcon from '@material-ui/icons/AssignmentOutlined';
+import { CloseOutlined } from '@material-ui/icons';
 import deletePng from '../../assets/img/deleteDiary.png';
 import defaultGroupSvg from '../../assets/svg/defaultGroup.svg';
 import { setMessage } from '../../redux/actions/commonActions';
-interface CompanyGroupProps { }
-const columns = [
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
+interface CompanyGroupProps {}
+const columns1 = [
+  // {
+  //   id: 'updateTime',
+  //   label: '更新时间',
+  //   minWidth: 100,
+  // },
+  {
+    id: 'groupName',
+    label: '群名',
+    minWidth: 200,
+  },
+  {
+    id: 'groupLogo',
+    label: '群图标',
+    minWidth: 100,
+  },
+  {
+    id: 'targetRole2',
+    label: '管理员',
+    minWidth: 100,
+  },
+  {
+    id: 'targetRole3',
+    label: '编辑',
+    minWidth: 100,
+  },
+  {
+    id: 'targetRole4',
+    label: '作者',
+    minWidth: 100,
+  },
+  {
+    id: 'targetRole5',
+    label: '成员',
+    minWidth: 100,
+  },
+  {
+    id: 'operation',
+    label: '操作',
+    minWidth: 100,
+  },
+];
+const columns2 = [
   {
     id: 'avatar',
     label: '头像',
@@ -65,9 +111,11 @@ const columns = [
     minWidth: 170,
   },
 ];
+
 const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
-  const { } = props;
+  const {} = props;
   const dispatch = useDispatch();
+  const location = useLocation();
   const user = useTypedSelector((state) => state.auth.user);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
@@ -90,23 +138,30 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
   const [setDialogShow, setSetDialogShow] = useState(false);
   const [deleteDialogShow, setDeleteDialogShow] = useState(false);
   const [deleteVisible, setDeleteVisible] = useState(false);
+  const [departmentType, setDepartmentType] = useState(2);
   const departmentRef: React.RefObject<any> = useRef();
   const targetTreeRef: React.RefObject<any> = useRef();
   let unDistory = true;
   useEffect(() => {
     if (user && groupInfo) {
-      console.log(groupInfo, groupKey);
-      getGroupTree('');
+      let newDepartmentType = 0;
+      let typeArray = location.pathname.split('/');
+      newDepartmentType = parseInt(typeArray[typeArray.length - 1]);
+      setDepartmentType(newDepartmentType);
+      setRows([]);
+      getGroupTree('', newDepartmentType);
     }
     return () => {
       unDistory = false;
     };
-  }, [user, groupInfo]);
-  const getGroupTree = async (nodeId: any) => {
+  }, [user, groupInfo, location]);
+
+  const getGroupTree = async (nodeId: any, type: number) => {
     let newRow: any = [];
     let newCompanyData: any = {};
-    let companyDepartmentRes: any = await api.company.getLeaderGroupTree(
-      groupKey
+    let companyDepartmentRes: any = await api.company.getOrganizationTree(
+      groupKey,
+      type
     );
     if (unDistory) {
       if (companyDepartmentRes.msg === 'OK') {
@@ -115,21 +170,47 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
           newCompanyData[key] = {
             _key: data[key]._key,
             contract: false,
-            father: data[key].parentGroupKey,
-            name: data[key].groupName,
+            father: data[key].parentOrgKey,
+            name: data[key].name,
+            // data[key].orgType === 1
+            //   ? data[key].name
+            //   : data[key].name +
+            //     ' (' +
+            //     (data[key].post ? data[key].post : '无职务') +
+            //     ' )',
+            path: data[key].path1,
             sortList: data[key].children,
-            role: data[key].groupRole,
-            icon: data[key].groupLogo
-              ? data[key].groupLogo + '?roundPic/radius/!50p'
-              : defaultGroupSvg,
+            enterpriseGroupKey: data[key].enterpriseGroupKey,
+            groupMemberKey: data[key].groupMemberKey,
+            orgType: data[key].orgType,
+            staffKey: data[key].staffKey,
+            // disabled: data[key].orgType === 2,
+            childrenAll: data[key].childrenAll,
           };
-          if (data[key]._key === groupKey && !nodeId) {
-            setStartId(data[key]._key);
+          if (data[key].orgType === 2) {
+            //?imageMogr2/auto-orient/thumbnail/80x
+            newCompanyData[key].icon = data[key].avatar
+              ? data[key].avatar + '?roundPic/radius/!50p'
+              : defaultPersonPng;
+          }
+          if (data[key].orgType === 3) {
+            //?imageMogr2/auto-orient/thumbnail/80x
+            newCompanyData[key].icon = data[key].groupLogo
+              ? data[key].groupLogo + '?imageMogr2/auto-orient/thumbnail/80x'
+              : defaultPersonPng;
+            newCompanyData[key].groupKey = data[key].groupKey;
+          }
+          if (!nodeId && !data[key].parentOrgKey) {
             nodeId = data[key]._key;
-            chooseNode(data[key]);
+            newCompanyData[key].icon = groupInfo.groupLogo
+              ? groupInfo.groupLogo + '?imageMogr2/auto-orient/thumbnail/80x'
+              : defaultGroupPng;
+            setStartId(nodeId);
+            // setSelectedPath(newCompanyData[nodeId].path);
           }
         }
-        setSelectedId(nodeId);
+        console.log('path', newCompanyData[nodeId].path);
+        // setSelectedId(nodeId);
         setCompanyData(newCompanyData);
       } else {
         dispatch(setMessage(true, companyDepartmentRes.msg, 'error'));
@@ -138,28 +219,57 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
   };
   const chooseNode = async (node: any) => {
     let newRow: any = [];
-    getTargetGroup(node._key);
-    let chooseCompanyRes: any = await api.member.getMember(node._key);
-    if (chooseCompanyRes.msg === 'OK') {
-      chooseCompanyRes.result.map((item: any, index: number) => {
-        newRow.push({
-          name: item.nickName,
-          avatar: item.avatar,
-          role: node.role,
-          userId: item.userId,
-          groupId: item.groupId,
-        });
-        newRow[newRow.length - 1]['targetRole' + item.role] = item.role;
-        newRow[newRow.length - 1].checkIndex = item.role;
-      });
-      console.log(newRow);
-      setPage(0);
-      setSelectedId(node._key);
-      setRows(newRow);
-      setCompanyObj(node);
-      // setRows(newRow);
+    if (departmentType === 2) {
+      let companyPersonRes: any = await api.company.getCompanyMemberList(
+        node.enterpriseGroupKey,
+        node.staffKey
+      );
+      if (unDistory) {
+        if (companyPersonRes.msg === 'OK') {
+          console.log(companyPersonRes);
+          companyPersonRes.result.map((item: any, index: number) => {
+            newRow[index] = {
+              groupKey: item.groupKey,
+              groupName: item.groupName,
+              role: item.myRole,
+              groupLogo: item.groupLogo,
+            };
+            newRow[index]['targetRole' + item.targetRole] = item.targetRole;
+            newRow[index].checkIndex = item.targetRole;
+          });
+          console.log(newRow);
+          setPage(0);
+          setSelectedId(node._key);
+          setRows(newRow);
+          setCompanyObj(node);
+        } else {
+          dispatch(setMessage(true, companyPersonRes.msg, 'error'));
+        }
+      }
     } else {
-      dispatch(setMessage(true, chooseCompanyRes.msg, 'error'));
+      getTargetGroup(node.groupKey);
+      let chooseCompanyRes: any = await api.member.getMember(node.groupKey);
+      if (chooseCompanyRes.msg === 'OK') {
+        chooseCompanyRes.result.map((item: any, index: number) => {
+          newRow.push({
+            name: item.nickName,
+            avatar: item.avatar,
+            role: node.role,
+            userId: item.userId,
+            groupId: node.groupKey,
+          });
+          newRow[newRow.length - 1]['targetRole' + item.role] = item.role;
+          newRow[newRow.length - 1].checkIndex = item.role;
+        });
+
+        setPage(0);
+        setSelectedId(node._key);
+        setRows(newRow);
+        setCompanyObj(node);
+        // setRows(newRow);
+      } else {
+        dispatch(setMessage(true, chooseCompanyRes.msg, 'error'));
+      }
     }
   };
   const addChildrenGroup = async (selectedNode: any, type: string) => {
@@ -202,7 +312,7 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
             groupRes.result._key
           );
         }
-        console.log('groupKey', groupRes.result._key);
+
         setCompanyData(newCompanyData);
         setSelectedId(groupRes.result._key);
         dispatch(getGroup(3));
@@ -243,6 +353,49 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
     //   dispatch(setMessage(true, addCompanyRes.msg, 'error'));
     // }
   };
+  const changeMemberRole = async (
+    e: any,
+    index: number,
+    columnIndex: number
+  ) => {
+    let newRow = _.cloneDeep(rows);
+    let newCompanyObj = _.cloneDeep(companyObj);
+
+    for (let key in newRow[index]) {
+      if (key.indexOf('targetRole') !== -1 && newRow[index][key]) {
+        newRow[index][key] = undefined;
+      }
+    }
+    // if (targetRole !== 'targetRole' + columnIndex) {
+    newRow[index]['targetRole' + columnIndex] = columnIndex;
+    // }
+
+    let roleRes: any = null;
+    console.log(newRow);
+    if (!newRow[index].checkIndex) {
+      roleRes = await api.group.addGroupMember(newRow[index].groupKey, [
+        {
+          userKey: newCompanyObj.staffKey,
+          nickName: newCompanyObj.name,
+          avatar: newCompanyObj.icon.replace('?roundPic/radius/!50p'),
+          gender: 0,
+          role: columnIndex,
+        },
+      ]);
+    } else {
+      roleRes = await api.auth.setRole(
+        newRow[index].groupKey,
+        companyObj.staffKey,
+        columnIndex
+      );
+    }
+    if (roleRes.msg === 'OK') {
+      dispatch(setMessage(true, '修改项目成员权限成功', 'success'));
+      setRows(newRow);
+    } else {
+      dispatch(setMessage(true, roleRes.msg, 'error'));
+    }
+  };
   const changeRole = async (e: any, index: number, columnIndex: number) => {
     let newRow = _.cloneDeep(rows);
     let targetRole = '';
@@ -253,7 +406,7 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
       }
     }
     // if (targetRole !== 'targetRole' + (columnIndex + 1)) {
-    newRow[index]['targetRole' + (columnIndex)] = columnIndex;
+    newRow[index]['targetRole' + columnIndex] = columnIndex;
     // }
     let roleRes: any = await api.auth.setRole(
       newRow[index].groupId,
@@ -261,12 +414,11 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
       columnIndex
     );
     if (roleRes.msg === 'OK') {
+      dispatch(setMessage(true, '修改项目成员权限成功', 'success'));
       setRows(newRow);
     } else {
       dispatch(setMessage(true, roleRes.msg, 'error'));
     }
-
-
   };
   const deleteGroup = async () => {
     setDeleteDialogShow(false);
@@ -334,7 +486,6 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
     }
   };
   const addMember = async (node: any) => {
-    console.log('node', node);
     const newCompanyObj = _.cloneDeep(companyObj);
     const newRow = _.cloneDeep(rows);
     let addMemberRes: any = await api.group.addGroupMember(newCompanyObj._key, [
@@ -361,15 +512,20 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
   };
   const deleteGroupMember = async () => {
     const newRow = _.cloneDeep(rows);
-    let memberRes: any = await api.group.deleteGroupMember(groupKey, [userId]);
+    let memberRes: any = await api.group.deleteGroupMember(
+      companyObj.groupKey,
+      [userId]
+    );
     if (memberRes.msg === 'OK') {
-      dispatch(setMessage(true, '删除群成员成功', 'success'));
-      let userIndex = _.findIndex(newRow, { userId: userId });
-      if (userIndex !== -1) {
-        newRow.splice(userIndex, 1);
-      }
       setDeleteVisible(false);
-      setRows(newRow);
+      dispatch(setMessage(true, '已将移除该成员', 'success'));
+      chooseNode(companyObj);
+      // let userIndex = _.findIndex(newRow, { userId: userId });
+      // if (userIndex !== -1) {
+      //   newRow.splice(userIndex, 1);
+      // }
+      // setDeleteVisible(false);
+      // setRows(newRow);
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }
@@ -380,23 +536,23 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
   const saveGroupSet = (obj: any) => {
     setGroupObj(obj);
   };
-  const setGroup = async () => {
-    if (groupObj) {
-      let groupRes: any = await api.group.changeGroupInfo(
-        targetGroupKey,
-        groupObj
-      );
-      if (groupRes.msg === 'OK') {
-        getGroupTree(groupInfo.taskTreeRootCardKey);
-        setTargetGroupInfo(null);
-        setSetDialogShow(false);
-        dispatch(setMessage(true, '编辑子群成功', 'success'));
-      } else {
-        dispatch(setMessage(true, groupRes.msg, 'error'));
-      }
-      // dispatch(changeGroupInfo(groupKey, groupObj));
-    }
-  };
+  // const setGroup = async () => {
+  //   if (groupObj) {
+  //     let groupRes: any = await api.group.changeGroupInfo(
+  //       targetGroupKey,
+  //       groupObj
+  //     );
+  //     if (groupRes.msg === 'OK') {
+  //       getGroupTree(groupInfo.taskTreeRootCardKey);
+  //       setTargetGroupInfo(null);
+  //       setSetDialogShow(false);
+  //       dispatch(setMessage(true, '编辑子群成功', 'success'));
+  //     } else {
+  //       dispatch(setMessage(true, groupRes.msg, 'error'));
+  //     }
+  //     // dispatch(changeGroupInfo(groupKey, groupObj));
+  //   }
+  // };
   const getTargetGroup = async (groupKey: string) => {
     let groupRes: any = await api.group.getGroupInfo(groupKey);
     if (groupRes.msg === 'OK') {
@@ -415,11 +571,40 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
     newCompanyData[node._key].contract = !node.contract;
     setCompanyData(newCompanyData);
   };
+  const deleteMember = async () => {
+    let memberRes: any = await api.group.deleteGroupMember(targetGroupKey, [
+      userId,
+    ]);
+    if (memberRes.msg === 'OK') {
+      setDeleteVisible(false);
+      dispatch(setMessage(true, '已移除该项目', 'success'));
+      chooseNode(companyObj);
+    } else {
+      dispatch(setMessage(true, memberRes.msg, 'error'));
+    }
+  };
   return (
     <div className="company-info">
       <div className="company-header">
-        <div className="company-header-title">项目群统一管理</div>
-        <div className="company-header-right">
+        <div className="company-header-title">
+          {departmentType === 2 ? '人员授权' : '项目授权'}
+          {companyObj &&
+          ((departmentType === 2 && companyObj.orgType === 2) ||
+            (departmentType === 3 && companyObj.orgType === 3)) ? (
+            <Chip
+              variant="outlined"
+              color="primary"
+              label={
+                (departmentType === 2 ? '当前人员 : ' : '当前项目 : ') +
+                companyObj.name
+              }
+              style={{ fontSize: '14px', marginLeft: '10px' }}
+              size="small"
+            />
+          ) : null}
+          <span style={{ fontSize: '14px', marginLeft: '10px' }}></span>
+        </div>
+        {/* <div className="company-header-right">
           <div
             className="company-button"
             onClick={() => {
@@ -437,13 +622,13 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
           >
             添加组织成员
           </div>
-        </div>
+        </div> */}
       </div>
       <div
         className="company-info-container companyDepartment"
         ref={departmentRef}
       >
-        <div className="companyDepartment-left">
+        <div className="companyDepartment-left companyGroup-left">
           {companyData && startId ? (
             <MenuTree
               ref={targetTreeRef}
@@ -455,30 +640,33 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
               backgroundColor="#f5f5f5"
               color="#333"
               hoverColor="#595959"
+              disabled
               handleClickNode={(node: any) => {
-                chooseNode(node);
+                if (node.orgType !== 1) {
+                  chooseNode(node);
+                }
               }}
-              handleClickMoreButton={(node: any) => {
-                setMoreTop(node.y);
-                setInfoDialogShow(true);
-              }}
-              handleAddChild={(selectedNode: any) => {
-                addChildrenGroup(selectedNode, 'child');
-              }}
-              handleAddNext={(selectedNode: any) => {
-                addChildrenGroup(selectedNode, 'next');
-              }}
-              handleDeleteNode={(node: any) => {
-                setDeleteDialogShow(true);
-              }}
-              handleChangeNodeText={(nodeId: string, text: string) => {
-                editGroupName(nodeId, text);
-              }}
-              handleClickExpand={editContract}
+              // handleClickMoreButton={(node: any) => {
+              //   setMoreTop(node.y);
+              //   setInfoDialogShow(true);
+              // }}
+              // handleAddChild={(selectedNode: any) => {
+              //   addChildrenGroup(selectedNode, 'child');
+              // }}
+              // handleAddNext={(selectedNode: any) => {
+              //   addChildrenGroup(selectedNode, 'next');
+              // }}
+              // handleDeleteNode={(node: any) => {
+              //   setDeleteDialogShow(true);
+              // }}
+              // handleChangeNodeText={(nodeId: string, text: string) => {
+              //   editGroupName(nodeId, text);
+              // }}
+              // handleClickExpand={editContract}
             />
           ) : null}
         </div>
-        <div className="companyDepartment-right">
+        <div className="companyDepartment-right companyGroup-right">
           <TableContainer
             style={{
               height: 'calc(100% - 60px)',
@@ -487,97 +675,174 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
             <Table stickyHeader aria-label="sticky table">
               <TableHead>
                 <TableRow>
-                  {columns.map((column: any) => (
-                    <TableCell
-                      key={column.id}
-                      align="center"
-                      style={{ minWidth: column.minWidth }}
-                    >
-                      {column.label}
-                    </TableCell>
-                  ))}
+                  {departmentType === 2
+                    ? columns1.map((column: any) => (
+                        <TableCell
+                          key={column.id}
+                          align="center"
+                          style={{ minWidth: column.minWidth }}
+                        >
+                          {column.label}
+                        </TableCell>
+                      ))
+                    : columns2.map((column: any) => (
+                        <TableCell
+                          key={column.id}
+                          align="center"
+                          style={{ minWidth: column.minWidth }}
+                        >
+                          {column.label}
+                        </TableCell>
+                      ))}
                 </TableRow>
               </TableHead>
               <TableBody>
-                {rows
-                  .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  .map((row: any, index: number) => {
-                    return (
-                      <TableRow
-                        hover
-                        role="checkbox"
-                        tabIndex={-1}
-                        key={'row' + index}
-                      >
-                        {columns.map((column: any, columnIndex: number) => {
-                          const value = row[column.id];
-                          return (
-                            <React.Fragment key={column.id}>
-                              {column.id === 'name' ? (
-                                <TableCell align="center">
-                                  {column.format && typeof value === 'number'
-                                    ? column.format(value)
-                                    : value}
-                                </TableCell>
-                              ) : column.id === 'operation' &&
-                                rows[index].userId !== user._key ? (
-                                    <TableCell align="center">
-                                      <IconButton
-                                        color="primary"
-                                        component="span"
-                                        onClick={() => {
-                                          setDeleteVisible(true);
-                                          setUserId(rows[index].userId);
-                                        }}
-                                      >
+                {rows.map((row: any, index: number) => {
+                  return (
+                    <TableRow
+                      hover
+                      role="checkbox"
+                      tabIndex={-1}
+                      key={'row' + index}
+                    >
+                      {departmentType === 2
+                        ? columns1.map((column: any, columnIndex: number) => {
+                            const value = row[column.id];
+                            return (
+                              <React.Fragment key={column.id}>
+                                {column.id === 'groupName' ? (
+                                  <TableCell key={column.id} align="center">
+                                    {column.format && typeof value === 'number'
+                                      ? column.format(value)
+                                      : value}
+                                  </TableCell>
+                                ) : column.id === 'operation' ? (
+                                  <TableCell align="center">
+                                    <IconButton
+                                      color="primary"
+                                      component="span"
+                                      onClick={() => {
+                                        setDeleteVisible(true);
+                                        setUserId(companyObj.staffKey);
+                                        setTargetGroupKey(rows[index].groupKey);
+                                      }}
+                                    >
+                                      <CloseOutlined />
+                                    </IconButton>
+                                  </TableCell>
+                                ) : column.id === 'groupLogo' ? (
+                                  <TableCell key={column.id} align="center">
+                                    <div className="company-avatar-container ">
+                                      <div className="company-avatar">
                                         <img
-                                          src={deletePng}
-                                          alt=""
-                                          style={{ height: '15px', width: '16px' }}
-                                        />
-                                      </IconButton>
-                                    </TableCell>
-                                  ) : column.id === 'avatar' ? (
-                                    <TableCell key={column.id} align="center">
-                                      <div className="company-avatar-container ">
-                                        <div className="company-avatar">
-                                          <img
-                                            src={
-                                              row.avatar
-                                                ? row.avatar +
+                                          src={
+                                            row.groupLogo
+                                              ? row.groupLogo +
                                                 '?imageMogr2/auto-orient/thumbnail/80x'
-                                                : defaultPersonPng
-                                            }
-                                            alt=""
-                                          />
-                                        </div>
+                                              : defaultGroupPng
+                                          }
+                                          alt=""
+                                        />
                                       </div>
-                                    </TableCell>
-                                  ) : rows[index].userId !== user._key ? (
-                                    <TableCell align="center">
+                                    </div>
+                                  </TableCell>
+                                ) : (
+                                  <TableCell key={column.id} align="center">
+                                    <React.Fragment>
                                       <Checkbox
                                         checked={value ? true : false}
                                         disabled={
-                                          rows[index].role > rows[index].checkIndex
+                                          rows[index].role >
+                                          rows[index].checkIndex
                                             ? true
                                             : false
                                         }
                                         onChange={(e: any) => {
-                                          changeRole(e, index, columnIndex);
+                                          changeMemberRole(
+                                            e,
+                                            index,
+                                            columnIndex
+                                          );
                                           // setMessageCheck(e.target.checked);
                                         }}
                                         color="primary"
                                       />
-                                    </TableCell>
-                                  ) : (
-                                        <TableCell align="center"></TableCell>
-                                      )}
-                            </React.Fragment>
-                          );
-                        })}
-                      </TableRow>
-                    );
-                  })}
+                                    </React.Fragment>
+                                  </TableCell>
+                                )}
+                              </React.Fragment>
+                            );
+                          })
+                        : columns2.map((column: any, columnIndex: number) => {
+                            const value = row[column.id];
+                            return (
+                              <React.Fragment key={column.id}>
+                                {column.id === 'name' ? (
+                                  <TableCell align="center">
+                                    {column.format && typeof value === 'number'
+                                      ? column.format(value)
+                                      : value}
+                                  </TableCell>
+                                ) : column.id === 'operation' &&
+                                  rows[index].userId !== user._key ? (
+                                  <TableCell align="center">
+                                    <IconButton
+                                      color="primary"
+                                      component="span"
+                                      onClick={() => {
+                                        setDeleteVisible(true);
+                                        setUserId(rows[index].userId);
+                                      }}
+                                    >
+                                      <CloseOutlined />
+                                    </IconButton>
+                                  </TableCell>
+                                ) : column.id === 'avatar' ? (
+                                  <TableCell key={column.id} align="center">
+                                    <div className="company-avatar-container ">
+                                      <div className="company-avatar">
+                                        <img
+                                          src={
+                                            row.avatar
+                                              ? row.avatar +
+                                                '?imageMogr2/auto-orient/thumbnail/80x'
+                                              : defaultPersonPng
+                                          }
+                                          alt=""
+                                          onError={(e: any) => {
+                                            e.target.onerror = null;
+                                            e.target.src = defaultPersonPng;
+                                          }}
+                                        />
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                ) : rows[index].userId !== user._key ? (
+                                  <TableCell align="center">
+                                    <Checkbox
+                                      checked={value ? true : false}
+                                      disabled={
+                                        rows[index].role >
+                                        rows[index].checkIndex
+                                          ? true
+                                          : false
+                                      }
+                                      onChange={(e: any) => {
+                                        changeRole(e, index, columnIndex);
+                                        // setMessageCheck(e.target.checked);
+                                      }}
+                                      color="primary"
+                                    />
+                                  </TableCell>
+                                ) : (
+                                  <TableCell align="center"></TableCell>
+                                )}
+                              </React.Fragment>
+                            );
+                          })}
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </TableContainer>
@@ -650,12 +915,15 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
           setDeleteVisible(false);
         }}
         onOK={() => {
-          deleteGroupMember();
+          departmentType === 2 ? deleteMember() : deleteGroupMember();
         }}
         title={'删除群成员'}
         dialogStyle={{ width: '400px', height: '200px' }}
       >
-        <div className="dialog-onlyTitle">是否删除该群成员</div>
+        <div className="dialog-onlyTitle">
+          {' '}
+          {departmentType === 2 ? '是否移除该项目' : '是否移除该项目成员'}
+        </div>
       </Dialog>
       <Dialog
         visible={searchDialogShow}
@@ -699,13 +967,13 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
         footer={false}
         showMask={false}
       >
-        <CompanySearchList
+        {/* <CompanySearchList
           addMember={addMember}
           targetGroupKey={companyObj && companyObj._key}
           searchType="群"
-        />
+        /> */}
       </Dialog>
-      <Dialog
+      {/* <Dialog
         visible={setDialogShow}
         onClose={() => {
           setSetDialogShow(false);
@@ -725,7 +993,7 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
           type={'企业'}
           groupInfo={targetGroupInfo}
         />
-      </Dialog>
+      </Dialog> */}
     </div>
   );
 };

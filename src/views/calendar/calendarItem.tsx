@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme: Theme) =>
       width: '150px',
     },
     input: {
-      width: '100%',
+      width: '280px',
       color: '#fff',
       '& .MuiInput-formControl': {
         marginTop: '0px',

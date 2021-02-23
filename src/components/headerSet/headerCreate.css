@@ -81,7 +81,9 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
+.headerCreate-title-left-right {
+  max-width: 50%;
+}
 .headerCreate-title-left-title:last-child {
   margin-bottom: 0px;
 }
@@ -96,7 +98,7 @@
   width: 30px;
   height: 30px;
   overflow: hidden;
-  border-radius: 50%;
+  /* border-radius: 50%; */
   margin-right: 5px;
 }
 
@@ -107,6 +109,7 @@
 }
 
 .headerCreate-title-left-left {
+  max-width: 40%;
   margin-right: 5px;
 }
 .headerCreate-url {

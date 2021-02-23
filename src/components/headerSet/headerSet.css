@@ -138,6 +138,13 @@
   border-radius: 50%;
   background-color: #fff;
 }
+.bg-button {
+  width: 100%;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  cursor: pointer;
+}
 .contentHeader-set-item-bg {
   width: 100%;
   height: 100%;
@@ -245,9 +252,13 @@
   height: 100%;
 }
 .contentHeader-set-item-radio {
+  width: 130px;
   height: 100%;
   display: flex;
   align-items: center;
+}
+.contentHeader-set-item-radio input {
+  margin: 0px 2.5px;
 }
 /* .contentHeader-set-item-radio input + i:after {
 }

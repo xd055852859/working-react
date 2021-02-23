@@ -3,6 +3,7 @@ import './companySearch.css';
 import { Button } from '@material-ui/core';
 import { MenuTree } from 'tree-graph-react';
 import { useDispatch } from 'react-redux';
+import SearchIcon from '@material-ui/icons/Search';
 import api from '../../services/api';
 import _ from 'lodash';
 import { setMessage } from '../../redux/actions/commonActions';
@@ -28,7 +29,6 @@ const CompanySearch: React.FC<CompanySearchProps> = (props) => {
     );
     if (searchPersonRes.msg === 'OK') {
       let data = searchPersonRes.result;
-      console.log(data);
       for (let key in data) {
         newSearchData[key] = {
           _key: data[key]._key,
@@ -52,7 +52,6 @@ const CompanySearch: React.FC<CompanySearchProps> = (props) => {
           setStartId(data[key]._key);
         }
       }
-      console.log("?????",newSearchData)
       setSearchData(newSearchData);
       // setRows(newRow);
     } else {
@@ -82,7 +81,13 @@ const CompanySearch: React.FC<CompanySearchProps> = (props) => {
             }
           }}
         />
-        <Button
+        <SearchIcon
+          className="companySearch-button"
+          onClick={() => {
+            searchPerson();
+          }}
+        />
+        {/* <Button
           variant="contained"
           color="primary"
           onClick={() => {
@@ -91,7 +96,7 @@ const CompanySearch: React.FC<CompanySearchProps> = (props) => {
           className="companySearch-button"
         >
           搜索
-        </Button>
+        </Button> */}
       </div>
       <div className="companySearch-tree">
         {searchData && startId ? (

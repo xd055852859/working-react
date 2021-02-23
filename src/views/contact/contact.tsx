@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './contact.css';
-import { Button } from '@material-ui/core';
+
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux';
 import { useTypedSelector } from '../../redux/reducer/RootState';
@@ -15,6 +15,7 @@ import {
   setCommonHeaderIndex,
   setMoveState,
   setChatState,
+  setShowChatState,
 } from '../../redux/actions/commonActions';
 import {
   // setTargetUserKey,
@@ -23,6 +24,7 @@ import {
 } from '../../redux/actions/authActions';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
 import Dialog from '../../components/common/dialog';
+import Avatar from '../../components/common/avatar';
 import TimeIcon from '../../components/common/timeIcon';
 import Loading from '../../components/common/loading';
 import checkPersonPng from '../../assets/img/checkPerson.png';
@@ -31,6 +33,7 @@ import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import carePng from '../../assets/img/care.png';
 import chatSvg from '../../assets/svg/chat.svg';
 import uncarePng from '../../assets/img/uncare.png';
+import unUseSvg from '../../assets/svg/unUse.svg';
 import contactTree from '../../assets/svg/contactTree.svg';
 import contactBook from '../../assets/svg/contactBook.svg';
 import computer from '../../assets/svg/computer.svg';
@@ -64,7 +67,11 @@ const Contact: React.FC<ContactProps> = (props) => {
   const memberArray = useTypedSelector((state) => state.member.memberArray);
   const groupArray = useTypedSelector((state) => state.group.groupArray);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
-  const [contactArray, setContactArray] = useState([]);
+  const chatState = useTypedSelector((state) => state.common.chatState);
+  const showChatState = useTypedSelector((state) => state.common.showChatState);
+  const [contactArray, setContactArray] = useState<any>([]);
+  const [FoldArray, setFoldArray] = useState<any>([]);
+  const [contactKey, setContactKey] = useState<any>(null);
   const [contactSearchInput, setContactSearchInput] = useState('');
   const [cloneGroupKey, setCloneGroupKey] = useState('');
   const [cloneGroupName, setCloneGroupName] = useState('');
@@ -72,29 +79,40 @@ const Contact: React.FC<ContactProps> = (props) => {
   const [cloneGroupIndex, setCloneGroupIndex] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const theme = useTypedSelector((state) => state.auth.theme);
-
-  // const theme = useTypedSelector((state) => state.auth.theme);
+  let chatRef = useRef<any>(null);
+  // const theme = useTypedSelector((state) => state.auth.theme)
   useEffect(() => {
-    if (user && user._key && !groupArray) {
-      // dispatch(getGroup(3, 1));
-      // setTimeout(() => {
-      setLoading(true);
-      dispatch(getGroup(3));
-      // }, 1000);
-      // dispatch(getMember(mainGroupKey, 1, 1));
-      // setTimeout(() => {
-      dispatch(getMember(mainGroupKey));
-      // }, 1000);
+    return () => {
+      if (chatRef.current) {
+        clearInterval(chatRef.current);
+      }
+    };
+  }, []);
+  useEffect(() => {
+    if (user) {
+      if (contactIndex === 0) {
+        // if (groupArray) {
+        //   setLoading(false);
+        //   setContactArray(groupArray);
+        // } else {
+        setLoading(true);
+        dispatch(getGroup(3));
+        if (!groupArray) {
+          dispatch(getMember(mainGroupKey));
+        }
+        // }
+      } else if (contactIndex === 1) {
+        setLoading(true);
+        dispatch(getMember(mainGroupKey));
+      }
     }
-  }, [groupArray, user]);
-
+  }, [user, contactIndex]);
   useEffect(() => {
     if (groupArray && contactIndex === 0) {
       setLoading(false);
       setContactArray(groupArray);
     }
   }, [groupArray, contactIndex]);
-
   useEffect(() => {
     if (memberArray && contactIndex === 1) {
       setLoading(false);
@@ -111,6 +129,21 @@ const Contact: React.FC<ContactProps> = (props) => {
       }
     }
   }, [contactSearchInput]);
+
+  useEffect(() => {
+    if (chatState && contactKey) {
+      chatRef.current = setTimeout(goChat, 2000);
+    }
+    // dispatch(setChatState(false));
+  }, [showChatState]);
+
+  useEffect(() => {
+    if (contactKey) {
+      goChat();
+    }
+    // dispatch(setChatState(false));
+  }, [contactKey]);
+
   const toTargetGroup = async (groupKey: string, index: number) => {
     dispatch(setGroupKey(groupKey));
     // dispatch(getGroupInfo(groupKey));
@@ -148,6 +181,13 @@ const Contact: React.FC<ContactProps> = (props) => {
     newContactArray[index].isCare = status === 1 ? true : false;
     setContactArray(newContactArray);
   };
+  const changeUse = (e: any, key: string, status: number, index: number) => {
+    e.stopPropagation();
+    let newContactArray: any = _.cloneDeep(contactArray);
+    api.auth.dealGroupFold(key, status);
+    newContactArray[index].isFold = true;
+    setContactArray(newContactArray);
+  };
   const searchGroup = (input?: string) => {
     let newContactArray = _.cloneDeep(groupArray);
     let searchInput = input ? input : contactSearchInput;
@@ -178,12 +218,12 @@ const Contact: React.FC<ContactProps> = (props) => {
       dispatch(setMessage(true, cloneRes.msg, 'error'));
     }
   };
-  const goChat = async (key: string) => {
+  const goChat = async () => {
     const dom: any = document.querySelector('#chat');
     if (dom) {
       if (contactIndex) {
         const privatePerson =
-          memberArray[_.findIndex(memberArray, { userId: key })];
+          memberArray[_.findIndex(memberArray, { userId: contactKey })];
         if (privatePerson) {
           const privateChatRId = privatePerson.privateChatRId;
           if (privateChatRId) {
@@ -197,7 +237,7 @@ const Contact: React.FC<ContactProps> = (props) => {
           } else {
             let chatRes: any = await api.member.getPrivateChatRId(
               mainGroupKey,
-              key
+              contactKey
             );
 
             if (chatRes.msg === 'OK') {
@@ -217,12 +257,11 @@ const Contact: React.FC<ContactProps> = (props) => {
         dom.contentWindow.postMessage(
           {
             externalCommand: 'go',
-            path: '/group/' + key,
+            path: '/group/' + contactKey,
           },
           '*'
         );
       }
-      dispatch(setChatState(true));
     }
   };
   return (
@@ -267,7 +306,7 @@ const Contact: React.FC<ContactProps> = (props) => {
             let avatar = contactIndex
               ? item.avatar
                 ? item.avatar + '?imageMogr2/auto-orient/thumbnail/80x'
-                : defaultPersonPng
+                : ''
               : item.groupLogo
               ? item.groupLogo + '?imageMogr2/auto-orient/thumbnail/80x'
               : defaultGroupPng;
@@ -308,7 +347,14 @@ const Contact: React.FC<ContactProps> = (props) => {
                     className="contact-avatar"
                     style={{ borderRadius: contactIndex ? '50%' : '5px' }}
                   >
-                    <img alt={name} src={avatar} />
+                    <img
+                      alt={name}
+                      src={avatar ? avatar : defaultPersonPng}
+                      onError={(e: any) => {
+                        e.target.onerror = null;
+                        e.target.src = defaultPersonPng;
+                      }}
+                    />
                   </div>
                   {contactIndex ? (
                     <div
@@ -364,10 +410,24 @@ const Contact: React.FC<ContactProps> = (props) => {
                       className="contact-uncare-img"
                       onClick={(e: any) => {
                         e.stopPropagation();
-                        goChat(contactIndex ? key : item.groupUUID);
+                        // dispatch(setChatState(true))
+                        // dispatch(setShowChatState(true));
+                        dispatch(setShowChatState(true));
+                        dispatch(setChatState(true));
+                        setContactKey(contactIndex ? key : item.groupUUID);
                       }}
                     />
                   ) : null}
+                  {/* {!contactType && !contactIndex ? (
+                    <img
+                      src={unUseSvg}
+                      alt=""
+                      className="contact-uncare-img"
+                      onClick={(e: any) => {
+                        changeUse(e, key, 1, index);
+                      }}
+                    />
+                  ) : null} */}
                 </div>
                 <div className="contact-icon-right">
                   {contactType === 'create' && cloneGroupIndex === index ? (
@@ -398,13 +458,13 @@ const Contact: React.FC<ContactProps> = (props) => {
                     <img
                       src={contactTree}
                       alt=""
+                      className="contact-uncare-img"
                       style={{
                         width: '18px',
                         height: '17px',
                         marginRight: '5px',
                       }}
                       onClick={() => {
-                        console.log('>>>');
                         dispatch(setHeaderIndex(11));
                       }}
                     ></img>

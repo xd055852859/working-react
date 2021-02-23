@@ -13,11 +13,11 @@ interface TaskMemberProps {
   targetGroupKey?: string;
   onClose?: any;
   chooseFollow?: any;
-  showMemberVisible?:boolean
+  showMemberVisible?: boolean;
 }
 
 const TaskMember: React.FC<TaskMemberProps> = (props) => {
-  const { targetGroupKey,onClose,chooseFollow,showMemberVisible} = props;
+  const { targetGroupKey, onClose, chooseFollow, showMemberVisible } = props;
   const dispatch = useDispatch();
   const taskInfo = useTypedSelector((state) => state.task.taskInfo);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
@@ -33,11 +33,9 @@ const TaskMember: React.FC<TaskMemberProps> = (props) => {
   let unDistory = true;
   useEffect(() => {
     // 用户已登录
-    console.log('targetGroupKey', taskInfo);
     if (targetGroupKey) {
       getTaskMemberArray(targetGroupKey);
-    } else if (taskInfo && (taskMemberVisible||showMemberVisible)) {
-      console.log('taskInfo',taskInfo)
+    } else if (taskInfo && (taskMemberVisible || showMemberVisible)) {
       getTaskMemberArray(taskInfo.groupKey);
     }
     return () => {
@@ -185,6 +183,11 @@ const TaskMember: React.FC<TaskMemberProps> = (props) => {
                         '?imageMogr2/auto-orient/thumbnail/80x'
                       : defaultPersonPng
                   }
+                  alt=""
+                  onError={(e: any) => {
+                    e.target.onerror = null;
+                    e.target.src = defaultPersonPng;
+                  }}
                 />
               </div>
               <div>{taskMemberItem.nickName}</div>

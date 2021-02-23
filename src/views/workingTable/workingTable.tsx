@@ -3,7 +3,7 @@ import './workingTable.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import api from '../../services/api';
-
+import _ from 'lodash';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
 import {
   getWorkingTableTask,
@@ -21,6 +21,7 @@ import Vitality from '../../components/vitality/vitality';
 import Calendar from '../../views/calendar/calendar';
 
 import taskAddPng from '../../assets/img/taskAdd.png';
+import usePrevious from '../../hook/usePrevious';
 interface WorkingTableProps {}
 
 const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
@@ -44,13 +45,30 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [addLabelInputState, setAddLabelInputState] = useState<any>(null);
-  const [oldPage, setOldPage] = useState(0);
-  const [scrollState, setScrollState] = useState(false);
   const addLabelRef: React.RefObject<any> = useRef();
-  const contentRef: React.RefObject<any> = useRef();
   const handleInputChange = (e: any) => {
     setInputValue(e.target.value);
   };
+  useEffect(() => {
+    if (user && user._key) {
+      if (headerIndex === 1) {
+        setLoading(true);
+        dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10]));
+      } else if (targetUserInfo && targetUserInfo._key && headerIndex === 2) {
+        setLoading(true);
+        dispatch(
+          getWorkingTableTask(
+            user._key === targetUserInfo._key ? 4 : 2,
+            targetUserInfo._key,
+            1,
+            [0, 1, 2, 10]
+          )
+        );
+      }
+    }
+  }, [user, targetUserInfo, headerIndex]);
+
+  const prevFilterObject = usePrevious(_.cloneDeep(filterObject));
   useEffect(() => {
     if (user && user._key && headerIndex === 1) {
       setLoading(true);
@@ -63,8 +81,7 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
           theme.fileDay ? theme.fileDay : 7
         )
       );
-    }
-    if (targetUserInfo && targetUserInfo._key && headerIndex === 2) {
+    } else if (targetUserInfo && targetUserInfo._key && headerIndex === 2) {
       setLoading(true);
       dispatch(
         getWorkingTableTask(
@@ -75,35 +92,6 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
           theme.fileDay ? theme.fileDay : 7
         )
       );
-    }
-  }, [user, targetUserInfo, headerIndex]);
-
-  useEffect(() => {
-    if (workingTaskArray) {
-      if (user && user._key && headerIndex === 1) {
-        setLoading(true);
-        dispatch(
-          getWorkingTableTask(
-            1,
-            user._key,
-            1,
-            [0, 1, 2, 10],
-            theme.fileDay ? theme.fileDay : 7
-          )
-        );
-      }
-      if (targetUserInfo && targetUserInfo._key && headerIndex === 2) {
-        setLoading(true);
-        dispatch(
-          getWorkingTableTask(
-            user._key === targetUserInfo._key ? 4 : 2,
-            targetUserInfo._key,
-            1,
-            [0, 1, 2, 10],
-            theme.fileDay ? theme.fileDay : 7
-          )
-        );
-      }
     }
   }, [filterObject]);
 

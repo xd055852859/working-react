@@ -35,7 +35,7 @@ const GroupTableTreeType: React.FC<GroupTableTreeTypeProps> = (props) => {
         }}
       >
         <Folder />
-        <div className="groupTableTreeItem-title">新建目录</div>
+        <div className="groupTableTreeItem-title">新建节点</div>
       </div>
       <div
         className="groupTableTreeItem-item"

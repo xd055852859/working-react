@@ -53,7 +53,7 @@ function* getTheme(action: any) {
   try {
     const res = yield call(api.auth.getWorkingConfigInfo);
     if (res.msg === 'OK') {
-      yield put(getThemeSuccess(res.result));
+      yield put(getThemeSuccess(res));
     } else {
       yield put(Failed(res));
     }

@@ -61,60 +61,50 @@ const Editor: React.FC<EditorProps> = (prop) => {
     changeIsEdit,
   } = prop;
   const uptoken = useTypedSelector((state) => state.auth.uploadToken);
-  const [loading, setLoading] = useState(false);
   let selectedFile: any;
-  useEffect(() => {
-    Froalaeditor.DefineIcon('clearFormatting', {
-      NAME: 'clearFormatting',
-      SVG_KEY: 'clearFormatting',
-    });
-    Froalaeditor.RegisterCommand('clearFormatting', {
-      title: '清除格式',
-      focus: false,
-      undo: false,
-      refreshAfterCallback: false,
-      callback: function () {
-        let html = this.html.get();
-        // let clear = this.html.getSelected();
-        // clear = clear.replace(/<\/?.+?>/g, '');
-        // clear = clear.replace(/&nbsp;/g, '');
-        // this.html.set(html.replace(this.html.getSelected(), clear));
-
-        // let sections = html.split('</p>');
-        let sections = html.split(
-          /<\/p>|<\/div>|<\/h1>|<\/h2>|<\/h3>|<\/h4>|<\/h5>|<\/h6>|<\/ol>|<\/li>/
-        );
-        for (let i = 0; i < sections.length; i++) {
-          let sectionStr = sections[i];
-          const isImg = sectionStr.indexOf('<img') !== -1 ? true : false;
-          if (!isImg) {
-            // 去除标签
-            sectionStr = sectionStr.replace(/<\/?.+?>/g, '');
-            sectionStr = sectionStr.replace(/&nbsp;/g, '');
-            if (sectionStr) {
-              sections[i] = `<p>${sectionStr}</p>`;
-            }
-          } else {
-            let imageUrl = sectionStr.match(/src=['"]?([^'"]*)['"]?/i)[1];
-            sections[
-              i
-            ] = `<img src="${imageUrl}" style="width: 100%;" class="fr-fic fr-dib fr-draggable"></img>`;
-          }
-        }
-        this.html.set(sections.join(''));
-      },
-    });
-  }, []);
-
   // useEffect(() => {
-  //   let srcReg = /src=[\'\"]?([^\'\"]*)[\'\"]?/i;
-  //   let arr:any = data.match(srcReg);
-  //   if (arr.indexOf('blob') !== -1) {
-  //     setLoading(true);
-  //   } else {
-  //     setLoading(false);
-  //   }
-  // }, [data]);
+  //   Froalaeditor.DefineIcon('clearFormatting', {
+  //     NAME: 'clearFormatting',
+  //     SVG_KEY: 'clearFormatting',
+  //   });
+  //   Froalaeditor.RegisterCommand('clearFormatting', {
+  //     title: '清除格式',
+  //     focus: false,
+  //     undo: false,
+  //     refreshAfterCallback: false,
+  //     callback: function () {
+  //       let html = this.html.get();
+  //       // let clear = this.html.getSelected();
+  //       // clear = clear.replace(/<\/?.+?>/g, '');
+  //       // clear = clear.replace(/&nbsp;/g, '');
+  //       // this.html.set(html.replace(this.html.getSelected(), clear));
+
+  //       // let sections = html.split('</p>');
+  //       let sections = html.split(
+  //         /<\/p>|<\/div>|<\/h1>|<\/h2>|<\/h3>|<\/h4>|<\/h5>|<\/h6>|<\/ol>|<\/li>/
+  //       );
+  //       for (let i = 0; i < sections.length; i++) {
+  //         let sectionStr = sections[i];
+  //         const isImg = sectionStr.indexOf('<img') !== -1 ? true : false;
+  //         if (!isImg) {
+  //           // 去除标签
+  //           sectionStr = sectionStr.replace(/<\/?.+?>/g, '');
+  //           sectionStr = sectionStr.replace(/&nbsp;/g, '');
+  //           if (sectionStr) {
+  //             sections[i] = `<p>${sectionStr}</p>`;
+  //           }
+  //         } else {
+  //           let imageUrl = sectionStr.match(/src=['"]?([^'"]*)['"]?/i)[1];
+  //           sections[
+  //             i
+  //           ] = `<img src="${imageUrl}" style="width: 100%;" class="fr-fic fr-dib fr-draggable"></img>`;
+  //         }
+  //       }
+  //       this.html.set(sections.join(''));
+  //     },
+  //   });
+  // }, []);
+
 
   const events = {
     initialized: function () {
@@ -122,11 +112,9 @@ const Editor: React.FC<EditorProps> = (prop) => {
       // this is the editor instance.
       if (editorState) {
         setInit();
-        console.log(changeIsEdit);
       }
     },
     focus: function () {
-      console.log(changeIsEdit);
       if (changeIsEdit) {
         changeIsEdit(true);
       }

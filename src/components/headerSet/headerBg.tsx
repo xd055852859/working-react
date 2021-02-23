@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { setTheme, getThemeBg } from '../../redux/actions/authActions';
 import leftArrowPng from '../../assets/img/leftArrow.png';
 import set2Png from '../../assets/img/set2.png';
+import Loading from '../common/loading';
 import Switch from '@material-ui/core/Switch';
 import _ from 'lodash';
 import api from '../../services/api';
@@ -22,7 +23,7 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
   const themeBg = useTypedSelector((state) => state.auth.themeBg);
   const themeBgTotal = useTypedSelector((state) => state.auth.themeBgTotal);
   const [bgPage, setBgPage] = useState(1);
-  const [] = useState<number[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const canvasRef: React.RefObject<any> = useRef();
   const color1 = [
     '#3C3C3C',
@@ -49,7 +50,14 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
     if (!theme.randomVisible) {
       dispatch(getThemeBg(1));
     }
-  }, [theme]);
+  }, []);
+  useEffect(() => {
+    console.log('themeBg', themeBg);
+    if (themeBg.length > 0) {
+      setLoading(false);
+    }
+  }, [themeBg]);
+
   const changeBoard = (type: string) => {
     let newTheme = _.cloneDeep(theme);
     newTheme[type] = newTheme[type] ? false : true;
@@ -62,6 +70,7 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
   };
   const changeBg = (type: string, value: any) => {
     let newTheme = _.cloneDeep(theme);
+    console.log(type);
     if (type === 'backgroundImg') {
       let img = new Image();
       img.src = value.url;
@@ -103,10 +112,7 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
   return (
     <React.Fragment>
       {theme.randomVisible ? (
-        <div
-          className="contentHeader-set-item"
-          style={{ marginTop: headerType === 'show' ? '0px' : '30px' }}
-        >
+        <div className="contentHeader-set-item" style={{ marginTop: '0px' }}>
           <div className="contentHeader-set-item-title">
             <img
               src={set2Png}
@@ -155,7 +161,7 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
       ) : null}
       <div
         className="bg-title"
-        style={{ marginTop: theme.randomVisible ? '10px' : '40px' }}
+        style={{ marginTop: theme.randomVisible ? '0px' : '20px' }}
       >
         颜色
       </div>
@@ -186,9 +192,15 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
       <div className="bg-title">壁纸</div>
       <div
         className="bg-container"
-        style={{ height: 'calc(100% - 225px)', overflow: 'auto' }}
-        onScroll={scrollBgLoading}
+        style={{
+          height: theme.randomVisible
+            ? 'calc(100% - 300px)'
+            : 'calc(100% - 275px)',
+          overflow: 'auto',
+        }}
+        // onScroll={scrollBgLoading}
       >
+        {loading ? <Loading loadingWidth="60px" loadingHeight="60px" /> : null}
         {themeBg.map((imgBigArr2Item: any, imgBigArr2Index: number) => {
           return (
             <React.Fragment key={'imgBigArr2' + imgBigArr2Index}>
@@ -219,6 +231,20 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
           );
         })}
       </div>
+      {themeBg.length < themeBgTotal ? (
+        <div
+          className="bg-button"
+          onClick={() => {
+            let newPage = bgPage;
+            newPage = newPage + 1;
+            setLoading(true);
+            dispatch(getThemeBg(newPage));
+            setBgPage(newPage);
+          }}
+        >
+          加载更多
+        </div>
+      ) : null}
     </React.Fragment>
   );
 };

@@ -14,6 +14,7 @@ interface dialogProp {
   footer?: boolean;
   showMask?: boolean;
   closePngState?: boolean;
+  unOut?: boolean;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -36,11 +37,16 @@ const Dialog: React.FC<dialogProp> = (prop) => {
     footer,
     showMask,
     closePngState,
+    unOut,
   } = prop;
   const classes = useStyles();
   const dialog = () => {
     return (
-      <div className="dialog" style={dialogStyle}>
+      <div
+        className="dialog animate__animated animate__slideInRight"
+        style={dialogStyle}
+        id="dialog"
+      >
         {title ? (
           <div className="dialog-title">
             {title}
@@ -100,7 +106,17 @@ const Dialog: React.FC<dialogProp> = (prop) => {
         showMask ? (
           <div className="mask">{dialog()}</div>
         ) : (
-          <ClickAwayListener onClickAway={onClose}>
+          <ClickAwayListener
+            onClickAway={() => {
+              if (unOut) {
+                // const element: any = document.querySelector('#dialog');
+                // console.log(element);
+                // element.classList.remove('animate__slideInRight');
+                // element.classList.add('animate__slideInLeft');
+                onClose();
+              }
+            }}
+          >
             {dialog()}
           </ClickAwayListener>
         )
@@ -117,5 +133,6 @@ Dialog.defaultProps = {
   title: '',
   footer: true,
   showMask: true,
+  unOut: true,
 };
 export default Dialog;

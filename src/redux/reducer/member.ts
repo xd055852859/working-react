@@ -41,7 +41,7 @@ export const member = (state = defaultState, action: any) => {
           item.avatar = item.avatar.replace('http', 'https');
         }
       });
-      if (!groupMemberItem.config) {
+      if (groupMemberItem && !groupMemberItem.config) {
         groupMemberItem.config = {
           groupKey: null,
           groupName: '',

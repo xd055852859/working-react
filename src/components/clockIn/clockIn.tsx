@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
-import { Button,Tooltip } from '@material-ui/core';
+import { Button, Tooltip } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import moment from 'moment';
@@ -40,12 +40,13 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
   const selfTaskArray = useTypedSelector((state) => state.task.selfTaskArray);
-  const nowTime = useTypedSelector((state) => state.auth.nowTime);
+  // const nowTime = useTypedSelector((state) => state.auth.nowTime);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const [note, setNote] = useState('');
   const [positive, setPositive] = useState('');
   const [negative, setNegative] = useState('');
   const [expanded, setExpanded] = React.useState<string | false>('panel1');
+  const [nowTime, setNowTime] = useState(0);
   const [groupVisible, setGroupVisible] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [groupList, setGroupList] = useState<any>([]);
@@ -61,6 +62,9 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
       unDistory = false;
     };
   }, [user, visible]);
+  useEffect(() => {
+    setNowTime(moment().hour() < 12 ? 0 : 1);
+  }, []);
   useEffect(() => {
     if (selfTaskArray) {
       let newGroupList: any = [];
@@ -213,7 +217,7 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
             saveNote();
           }}
         >
-          <div className="clockIn">
+          <div className="clockIn  animate__animated animate__slideInRight">
             <div className="clockIn-mainTitle">打卡中心</div>
             {groupList.length > 0 ? (
               <div
@@ -270,7 +274,9 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
                             />
                           </div>
                           <Tooltip title={groupItem.groupName}>
-                          <div className="clockInGroup-item-name">{groupItem.groupName}</div>
+                            <div className="clockInGroup-item-name">
+                              {groupItem.groupName}
+                            </div>
                           </Tooltip>
                         </div>
                       );

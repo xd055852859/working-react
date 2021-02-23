@@ -125,7 +125,11 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
       localStorage.setItem('url', theme.backgroundImg);
       setBg(theme.backgroundImg);
     } else {
+      setBg('');
       localStorage.removeItem('url');
+    }
+    if (!theme.taskShow) {
+      setMenuShow(1);
     }
   }, [theme]);
   const getToken = async () => {
@@ -467,27 +471,29 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
           <div
             className="showPage-bigLogo"
             onClick={(e: any) => {
-              window.open(
-                'https://mindcute.com/login?token=' + timeOsToken
-              );
+              window.open('https://mindcute.com/login?token=' + timeOsToken);
             }}
           >
             <img src={mindcuteLogoSvg} alt="" />
           </div>
         </div>
         <div className="showPage-task-menu">
-          <div
-            className="showPage-task-menu-item"
-            style={{
-              borderBottom:
-                menuShow === 0 ? '2px solid #17B881' : '2px solid transparent',
-            }}
-            onClick={() => {
-              setMenuShow(0);
-            }}
-          >
-            今日事务
-          </div>
+          {theme.taskShow ? (
+            <div
+              className="showPage-task-menu-item"
+              style={{
+                borderBottom:
+                  menuShow === 0
+                    ? '2px solid #17B881'
+                    : '2px solid transparent',
+              }}
+              onClick={() => {
+                setMenuShow(0);
+              }}
+            >
+              今日事务
+            </div>
+          ) : null}
           <div
             className="showPage-task-menu-item"
             style={{
@@ -515,7 +521,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
                 src={
                   'https://mindcute.com/login?token=' +
                   timeOsToken +
-                  '&redirect-router=/office/home/recent&chatToken=5PgR5CuV1awS7deh_NCgqzldKJsv9LgGGK3iHSH5K3z'
+                  '&redirect-router=/home/recent&chatToken=5PgR5CuV1awS7deh_NCgqzldKJsv9LgGGK3iHSH5K3z'
                 }
                 style={{
                   width: '100%',
@@ -649,6 +655,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
                 checked={theme.taskShow !== false ? true : false}
                 onChange={() => {
                   changeBoard('taskShow');
+                  setMenuShow(1);
                 }}
                 name="checkedC"
                 inputProps={{ 'aria-label': 'primary checkbox' }}
@@ -662,7 +669,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
                   changeBoard('timeShow');
                 }}
                 name="checkedB"
-                inputProps={{ 'aria-label': 'secondary checkbox' }}
+                inputProps={{ 'aria-label': 'primary checkbox' }}
               /> */}
               <div
                 onClick={() => {
@@ -699,7 +706,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
                   changeBoard('searchShow');
                 }}
                 name="checkedB"
-                inputProps={{ 'aria-label': 'secondary checkbox' }}
+                inputProps={{ 'aria-label': 'primary checkbox' }}
               />
             </div>
             {parseInt(user.profile.lo) !== user.profile.lo &&
@@ -714,25 +721,36 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
                     changeBoard('weatherShow');
                   }}
                   name="checkedB"
-                  inputProps={{ 'aria-label': 'secondary checkbox' }}
+                  inputProps={{ 'aria-label': 'primary checkbox' }}
                 />
               </div>
             ) : null}
           </div>
 
           <div className="bg">
-            <img
-              src={leftArrowPng}
-              alt=""
-              style={{
-                width: '10px',
-                height: '13px',
-                marginRight: '10px',
-              }}
-              onClick={() => {
-                setMoveState('left');
-              }}
-            />
+            <div>
+              <img
+                src={leftArrowPng}
+                alt=""
+                style={{
+                  width: '10px',
+                  height: '13px',
+                  marginRight: '10px',
+                }}
+                onClick={() => {
+                  setMoveState('left');
+                }}
+              />
+              壁纸设置
+              <Switch
+                checked={theme.randomVisible ? true : false}
+                onChange={() => {
+                  changeBoard('randomVisible');
+                }}
+                name="checkedD"
+                inputProps={{ 'aria-label': 'primary checkbox' }}
+              />
+            </div>
             <HeaderBg
               setMoveState={setMoveState}
               setChooseWallKey={setChooseWallKey}

@@ -405,7 +405,11 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
                               </div>
                               <div
                                 className="createMoreTask-avatar"
-                                style={{ width: '25px', height: '25px' }}
+                                style={{
+                                  width: '25px',
+                                  height: '25px',
+                                  borderRadius: '50%',
+                                }}
                               >
                                 <img
                                   src={
@@ -415,6 +419,10 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
                                       : defaultPersonPng
                                   }
                                   alt=""
+                                  onError={(e: any) => {
+                                    e.target.onerror = null;
+                                    e.target.src = defaultPersonPng;
+                                  }}
                                 />
                               </div>
                             </div>

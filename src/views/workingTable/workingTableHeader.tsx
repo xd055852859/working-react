@@ -6,24 +6,21 @@ import { useDispatch } from 'react-redux';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import api from '../../services/api';
 import _ from 'lodash';
-
+import Dialog from '../../components/common/dialog';
 import DropMenu from '../../components/common/dropMenu';
 import HeaderFilter from '../../components/headerFilter/headerFilter';
 import Contact from '../../views/contact/contact';
 import Tooltip from '../../components/common/tooltip';
-import {
-  getWorkingTableTask,
-  setFilterObject,
-} from '../../redux/actions/taskActions';
-import { setHeaderIndex } from '../../redux/actions/memberActions';
+import { setFilterObject } from '../../redux/actions/taskActions';
+import { setHeaderIndex, getMember } from '../../redux/actions/memberActions';
 import { setTheme } from '../../redux/actions/authActions';
 import {
   setCommonHeaderIndex,
   setMoveState,
-  setChatState,
   setMessage,
 } from '../../redux/actions/commonActions';
-
+import infoPng from '../../assets/img/info.png';
+import groupSet1Png from '../../assets/img/groupSet1.png';
 import tablePng from '../../assets/img/table.png';
 import labelPng from '../../assets/img/label.png';
 import labelTabPng from '../../assets/img/labelTab.png';
@@ -61,6 +58,18 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: 'rgba(255,255,255,0.24)',
       color: '#fff',
       marginRight: '10px',
+      padding: ' 0px 5px',
+      height:'26px !important'
+    },
+    small1: {
+      width: '16px !important',
+      height: '16px !important',
+      marginRight:'0px !important'
+    },
+    small2: {
+      width: '20px !important',
+      height: '16px !important',
+      marginRight:'0px !important'
     },
   })
 );
@@ -71,6 +80,7 @@ const WorkingTableHeader: React.FC = (prop) => {
   );
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
+  const moveState = useTypedSelector((state) => state.common.moveState);
   const memberArray = useTypedSelector((state) => state.member.memberArray);
   const user = useTypedSelector((state) => state.auth.user);
   const userKey = useTypedSelector((state) => state.auth.userKey);
@@ -79,7 +89,7 @@ const WorkingTableHeader: React.FC = (prop) => {
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const theme = useTypedSelector((state) => state.auth.theme);
   const dispatch = useDispatch();
-  const tabArray: string[] = ['任务', '日报', '活力','日程'];
+  const tabArray: string[] = ['任务', '日报', '活力', '日程'];
   const viewImg: string[] = [
     labelPng,
     groupPng,
@@ -100,6 +110,7 @@ const WorkingTableHeader: React.FC = (prop) => {
   ];
   const tabImg: string[] = [tab0Svg, tab1Svg, tab4Svg, tab6Svg];
   const tabbImg: string[] = [tabb0Svg, tabb1Svg, tabb4Svg, tabb6Svg];
+  const [infoVisible, setInfoVisible] = useState(false);
   const checkedTitle = [
     '过期',
     '今天',
@@ -109,6 +120,8 @@ const WorkingTableHeader: React.FC = (prop) => {
     '一般卡片',
     '已归档',
   ];
+
+  const [deleteMemberVisible, setDeleteMemberVisible] = useState(false);
   const [viewVisible, setViewVisible] = useState(false);
   const [tabVisible, setTabVisible] = useState(false);
   const [tabIndex, setTabIndex] = useState(0);
@@ -180,7 +193,6 @@ const WorkingTableHeader: React.FC = (prop) => {
         return theme.filterObject.filterType.indexOf(item) !== -1;
       });
     }
-    console.log(filterCheckedArray);
     setFileInput(theme.fileDay);
     setFilterCheckedArray(filterCheckedArray);
   }, [theme]);
@@ -243,13 +255,29 @@ const WorkingTableHeader: React.FC = (prop) => {
     dispatch(setTheme(newTheme));
     setFileState(true);
   };
+  const deleteMember = async () => {
+    let memberRes: any = await api.group.deleteGroupMember(mainGroupKey, [
+      targetUserInfo._key,
+    ]);
+    if (memberRes.msg === 'OK') {
+      dispatch(setMessage(true, '删除好友成功', 'success'));
+      dispatch(getMember(mainGroupKey));
+      dispatch(setCommonHeaderIndex(1));
+      setDeleteMemberVisible(false);
+      if (!theme.moveState) {
+        dispatch(setMoveState('out'));
+      }
+    } else {
+      dispatch(setMessage(true, memberRes.msg, 'error'));
+    }
+  };
   return (
     <div className="workingTableHeader">
       <div
         className="workingTableHeader-logo"
         onClick={() => {
           if (!theme.moveState) {
-            dispatch(setMoveState(''));
+            dispatch(setMoveState(moveState === 'in' ? 'out' : 'in'));
           }
           dispatch(setCommonHeaderIndex(1));
         }}
@@ -259,55 +287,107 @@ const WorkingTableHeader: React.FC = (prop) => {
       </div>
       <div className="workingTableHeader-line">|</div>
       {headerIndex === 2 ? (
-        <div className="groupTableHeader-name">
-          <div className="groupTableHeader-logo">
-            <img
-              src={
-                targetUserInfo && targetUserInfo.profile.avatar
-                  ? targetUserInfo.profile.avatar +
-                    '?imageMogr2/auto-orient/thumbnail/80x'
-                  : defaultPersonPng
-              }
-              alt=""
-            />
+        <React.Fragment>
+          <div className="workingTableHeader-name">
+            <div
+              className="workingTableHeader-logo"
+              style={{ borderRadius: '50%' }}
+            >
+              <img
+                src={
+                  targetUserInfo && targetUserInfo.profile.avatar
+                    ? targetUserInfo.profile.avatar +
+                      '?imageMogr2/auto-orient/thumbnail/80x'
+                    : defaultPersonPng
+                }
+                alt=""
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                onError={(e: any) => {
+                  e.target.onerror = null;
+                  e.target.src = defaultPersonPng;
+                }}
+              />
+            </div>
+
+            <div
+              className="groupTableHeader-name-title"
+              onClick={() => {
+                setMemberVisible(true);
+              }}
+            >
+              {targetUserInfo && targetUserInfo.profile.nickName}
+              <img
+                src={downArrowPng}
+                alt=""
+                className="groupTableHeader-name-title-logo"
+              />
+              <DropMenu
+                visible={memberVisible}
+                dropStyle={{
+                  width: '250px',
+                  height: '500px',
+                  top: '40px',
+                  left: '-40px',
+                  color: '#333',
+                  overflow: 'visible',
+                }}
+                onClose={() => {
+                  setMemberVisible(false);
+                }}
+                title={'联系人列表'}
+              >
+                <Contact contactIndex={1} contactType={'header'} />
+              </DropMenu>
+            </div>
           </div>
 
-          <div
-            className="groupTableHeader-name-title"
-            onClick={() => {
-              setMemberVisible(true);
-            }}
-          >
-            {targetUserInfo && targetUserInfo.profile.nickName}
-            <img
-              src={downArrowPng}
-              alt=""
-              className="groupTableHeader-name-title-logo"
-            />
-            <DropMenu
-              visible={memberVisible}
-              dropStyle={{
-                width: '250px',
-                height: '500px',
-                top: '40px',
-                left: '-40px',
-                color: '#333',
-                overflow: 'visible',
-              }}
-              onClose={() => {
-                setMemberVisible(false);
-              }}
-              title={'联系人列表'}
-            >
-              <Contact contactIndex={1} contactType={'header'} />
-            </DropMenu>
-          </div>
-        </div>
+          <Tooltip title="好友设置">
+            <div className="workingTableHeader-info">
+              <img
+                src={infoPng}
+                alt=""
+                style={{ width: '18px', height: '18px' }}
+                onClick={() => {
+                  setInfoVisible(true);
+                }}
+              />
+              <DropMenu
+                visible={infoVisible}
+                dropStyle={{
+                  width: '264px',
+                  top: '40px',
+                  left: '-15px',
+                  color: '#333',
+                  overflow: 'visible',
+                }}
+                onClose={() => {
+                  setInfoVisible(false);
+                }}
+              >
+                <div className="workingTableHeader-info-container">
+                  <div
+                    className="workingTableHeader-info-item"
+                    onClick={() => {
+                      setDeleteMemberVisible(true);
+                    }}
+                  >
+                    <img
+                      src={groupSet1Png}
+                      alt=""
+                      style={{ width: '18px', height: '18px' }}
+                    />
+                    删除好友
+                  </div>
+                </div>
+              </DropMenu>
+            </div>
+          </Tooltip>
+        </React.Fragment>
       ) : null}
       <div className="view-container">
         <div
-          className="workingTableHeader-logo"
-          style={{ width: '90px' }}
+          // className="workingTableHeader-logo"
+          // style={{ width: '90px' }}
           onMouseEnter={() => {
             setTabVisible(true);
             setViewVisible(false);
@@ -319,11 +399,19 @@ const WorkingTableHeader: React.FC = (prop) => {
             setFilterVisible(false);
           }}
         >
-          <img src={tabImg[tabIndex]} alt=""></img>
+          {/* <img src={tabImg[tabIndex]} alt=""></img> */}
           <Chip
             size="small"
             label={tabArray[tabIndex]}
             className={classes.chip}
+            avatar={
+              <Avatar
+                alt="Natacha"
+                variant="square"
+                src={tabImg[tabIndex]}
+                className={classes.small1}
+              />
+            }
           />
           <DropMenu
             visible={tabVisible}
@@ -372,8 +460,8 @@ const WorkingTableHeader: React.FC = (prop) => {
         </div>
         {memberHeaderIndex < 7 ? (
           <div
-            className="workingTableHeader-logo"
-            style={{ width: '108px' }}
+            // className="workingTableHeader-logo"
+            // style={{ width: '108px' }}
             onMouseEnter={() => {
               setViewVisible(true);
               setTabVisible(false);
@@ -385,11 +473,19 @@ const WorkingTableHeader: React.FC = (prop) => {
               setFilterVisible(false);
             }}
           >
-            <img src={viewImg[memberHeaderIndex]} alt=""></img>
+            {/* <img src={viewImg[memberHeaderIndex]} alt=""></img> */}
             <Chip
               size="small"
               label={viewArray[memberHeaderIndex]}
               className={classes.chip}
+              avatar={
+                <Avatar
+                  alt="Natacha"
+                  variant="square"
+                  src={viewImg[memberHeaderIndex]}
+                  className={classes.small2}
+                />
+              }
             />
             <DropMenu
               visible={viewVisible}
@@ -428,19 +524,42 @@ const WorkingTableHeader: React.FC = (prop) => {
 
         {memberHeaderIndex < 2 ? (
           <React.Fragment>
-            <div
+            {/* <div
               className="workingTableHeader-logo"
-              onClick={() => {
-                setFilterVisible(true);
-                setTabVisible(false);
-                setViewVisible(false);
-              }}
+             
               style={{ width: '40px' }}
             >
               <img src={filterPng} alt="" />
-            </div>
-
-            {filterObject.groupKey ? (
+            </div> */}
+            {filterObject?.filterType.length > 0 ? (
+              <Chip
+                size="small"
+                label={filterObject.filterType.join(' / ')}
+                className={classes.chip}
+                onClick={() => {
+                  setFilterVisible(true);
+                }}
+                avatar={
+                  <Avatar
+                    alt="Natacha"
+                    variant="square"
+                    src={filterPng}
+                    className={classes.small1}
+                    onClick={() => {
+                      setFilterVisible(true);
+                      setTabVisible(false);
+                      setViewVisible(false);
+                    }}
+                    onMouseEnter={() => {
+                      setFilterVisible(true);
+                      setTabVisible(false);
+                      setViewVisible(false);
+                    }}
+                  />
+                }
+              />
+            ) : null}
+            {filterObject?.groupKey ? (
               <Chip
                 size="small"
                 avatar={
@@ -452,6 +571,7 @@ const WorkingTableHeader: React.FC = (prop) => {
                           '?imageMogr2/auto-orient/thumbnail/80x'
                         : defaultGroupPng
                     }
+                    style={{ borderRadius: '5px' }}
                   />
                 }
                 onClick={() => {
@@ -462,7 +582,7 @@ const WorkingTableHeader: React.FC = (prop) => {
                 className={classes.chip}
               />
             ) : null}
-            {filterObject.creatorKey ? (
+            {filterObject?.creatorKey ? (
               <Chip
                 size="small"
                 avatar={
@@ -484,7 +604,7 @@ const WorkingTableHeader: React.FC = (prop) => {
                 className={classes.chip}
               />
             ) : null}
-            {filterObject.executorKey ? (
+            {filterObject?.executorKey ? (
               <Chip
                 size="small"
                 avatar={
@@ -504,16 +624,6 @@ const WorkingTableHeader: React.FC = (prop) => {
                 label={'执行人: ' + filterObject.executorName}
                 onDelete={() => deleteFilter('executorKey')}
                 className={classes.chip}
-              />
-            ) : null}
-            {filterObject.filterType.length > 0 ? (
-              <Chip
-                size="small"
-                label={filterObject.filterType.join(' / ')}
-                className={classes.chip}
-                onClick={() => {
-                  setFilterVisible(true);
-                }}
               />
             ) : null}
             <DropMenu
@@ -600,6 +710,19 @@ const WorkingTableHeader: React.FC = (prop) => {
           />
         </Tooltip>
       ) : null} */}
+      <Dialog
+        visible={deleteMemberVisible}
+        onClose={() => {
+          setDeleteMemberVisible(false);
+        }}
+        onOK={() => {
+          deleteMember();
+        }}
+        title={'删除好友'}
+        dialogStyle={{ width: '400px', height: '200px' }}
+      >
+        <div className="dialog-onlyTitle">是否删除该好友</div>
+      </Dialog>
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './headerSet.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-import { useLocation, useHistory } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import {
   TextField,
   Button,
@@ -30,6 +30,7 @@ import {
   setUnMessageNum,
   setChatState,
   setSocketObj,
+  setShowChatState,
 } from '../../redux/actions/commonActions';
 
 import clockInPng from '../../assets/img/clockIn.png';
@@ -81,6 +82,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const unChatNum = useTypedSelector((state) => state.common.unChatNum);
   const unMessageNum = useTypedSelector((state) => state.common.unMessageNum);
   const socket = useTypedSelector((state) => state.auth.socket);
+  const showChatState = useTypedSelector((state) => state.common.showChatState);
   const user = useTypedSelector((state) => state.auth.user);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const chatState = useTypedSelector((state) => state.common.chatState);
@@ -94,6 +96,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const [searchInput, setSearchInput] = useState('');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [chatType, setChatType] = useState<any>(null);
 
   const [searchTaskList, setSearchTaskList] = useState<any>([]);
 
@@ -102,12 +105,17 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const [searchCheck, setSearchCheck] = useState(false);
   const [groupCheck, setGroupCheck] = useState(false);
   const [meCheck, setMeCheck] = useState(false);
-
+  const [clientWidth, setClientWidth] = useState(0);
   let timer1Ref = useRef<any>(null);
   let timer2Ref = useRef<any>(null);
 
   const limit = 10;
   useEffect(() => {
+    let width: any =
+      window.innerWidth ||
+      document.documentElement.clientWidth ||
+      document.body.clientWidth;
+    setClientWidth(width);
     return () => {
       if (timer1Ref.current) {
         clearTimeout(timer1Ref.current);
@@ -192,8 +200,8 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       newSearchTaskList = _.cloneDeep(searchTaskList);
     }
     let obj: any = {
-      curPage: page,
-      perPage: limit,
+      curPage: 1,
+      perPage: limit * page,
       searchCondition: searchInput,
       searchType: 1,
     };
@@ -209,7 +217,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     }
     let res: any = await api.task.getCardSearch(obj);
     if (res.msg === 'OK') {
-      newSearchTaskList.push(...res.result);
+      newSearchTaskList = _.cloneDeep(res.result);
       setSearchTaskList(newSearchTaskList);
       setTotal(res.totalNumber);
     } else {
@@ -234,93 +242,73 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       getTaskSearch(newPage, searchCheck, groupCheck, meCheck);
     }
   };
-
+  window.onresize = _.debounce(function () {
+    let width: any =
+      window.innerWidth ||
+      document.documentElement.clientWidth ||
+      document.body.clientWidth;
+    setClientWidth(width);
+  }, 500);
   return (
     <React.Fragment>
       <div className="contentHeader-set">
-        <React.Fragment>
-          <Tooltip title="新建任务">
-            <img
-              src={addPng}
-              alt=""
-              style={{
-                width: '40px',
-                height: '40px',
-                marginRight: '5px',
-                cursor: 'pointer',
-                position: 'relative',
-              }}
-              onClick={() => {
-                setAddVisible(true);
-              }}
-            />
-          </Tooltip>
-          <Tooltip title="搜索中心">
-            <img
-              src={searchPng}
-              alt=""
-              style={{
-                width: '40px',
-                height: '40px',
-                marginRight: '8px',
-                cursor: 'pointer',
-              }}
-              onClick={() => {
-                setSearchVisible(true);
-              }}
-            />
-          </Tooltip>
-          <Tooltip title="打卡中心">
-            <img
-              src={clockInPng}
-              alt=""
-              style={{
-                width: '40px',
-                height: '40px',
-                marginRight: '8px',
-                cursor: 'pointer',
-              }}
-              onClick={() => {
-                setClockInVisible(true);
-              }}
-            />
-          </Tooltip>
-          {headerIndex !== 0 ? (
-            <Tooltip title="消息中心">
-              <Badge badgeContent={unMessageNum} color="error" overlap="circle">
-                <img
-                  src={messagePng}
-                  alt=""
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    marginRight: '8px',
-                    cursor: 'pointer',
-                  }}
-                  onClick={() => {
-                    setMessageVisible(true);
-                    dispatch(setUnMessageNum(0));
-                    // dispatch(setSocketObj(null));
-                  }}
-                />
-              </Badge>
+        {clientWidth > 1190 ? (
+          <React.Fragment>
+            <Tooltip title="新建任务">
+              <img
+                src={addPng}
+                alt=""
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  marginRight: '5px',
+                  cursor: 'pointer',
+                  position: 'relative',
+                }}
+                onClick={() => {
+                  setAddVisible(true);
+                }}
+              />
             </Tooltip>
-          ) : null}
-          <ClickAwayListener
-            onClickAway={() => {
-              dispatch(setChatState(false));
-            }}
-          >
-            <React.Fragment>
-              <Tooltip title="聊天中心">
+            <Tooltip title="搜索中心">
+              <img
+                src={searchPng}
+                alt=""
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  marginRight: '8px',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  setSearchVisible(true);
+                }}
+              />
+            </Tooltip>
+            <Tooltip title="打卡中心">
+              <img
+                src={clockInPng}
+                alt=""
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  marginRight: '8px',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  setClockInVisible(true);
+                }}
+              />
+            </Tooltip>
+            {headerIndex !== 0 ? (
+              <Tooltip title="消息中心">
                 <Badge
-                  badgeContent={unChatNum ? unChatNum : 0}
+                  badgeContent={unMessageNum}
                   color="error"
                   overlap="circle"
-                  // style={{ marginLeft: '-3px', marginRight: '16px' }}
                 >
                   <img
-                    src={chatPng}
+                    src={messagePng}
                     alt=""
                     style={{
                       width: '40px',
@@ -329,16 +317,49 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
                       cursor: 'pointer',
                     }}
                     onClick={() => {
-                      dispatch(setChatState(!chatState));
+                      setMessageVisible(true);
+                      dispatch(setUnMessageNum(0));
+                      // dispatch(setSocketObj(null));
                     }}
                   />
                 </Badge>
               </Tooltip>
-              <Chat />
-            </React.Fragment>
-          </ClickAwayListener>
-        </React.Fragment>
-
+            ) : null}
+            <ClickAwayListener
+              onClickAway={() => {
+                dispatch(setChatState(false));
+              }}
+            >
+              <React.Fragment>
+                <Tooltip title="聊天中心">
+                  <Badge
+                    badgeContent={unChatNum ? unChatNum : 0}
+                    color="error"
+                    overlap="circle"
+                    // style={{ marginLeft: '-3px', marginRight: '16px' }}
+                  >
+                    <img
+                      src={chatPng}
+                      alt=""
+                      style={{
+                        width: '40px',
+                        height: '40px',
+                        marginRight: '8px',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => {
+                        dispatch(setShowChatState(true));
+                        dispatch(setChatState(!chatState));
+                        setChatType('header');
+                      }}
+                    />
+                  </Badge>
+                </Tooltip>
+                {showChatState ? <Chat chatType={chatType} /> : null}
+              </React.Fragment>
+            </ClickAwayListener>
+          </React.Fragment>
+        ) : null}
         <Tooltip title="用户中心">
           <div
             className="contentHeader-avatar-info"

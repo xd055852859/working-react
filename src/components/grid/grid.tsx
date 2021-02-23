@@ -536,6 +536,10 @@ const Grid: React.FC<GridProps> = (prop) => {
                             : defaultPersonPng
                         }
                         alt=""
+                        onError={(e: any) => {
+                          e.target.onerror = null;
+                          e.target.src = defaultPersonPng;
+                        }}
                       />
                     </div>
                   </Tooltip>

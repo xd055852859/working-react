@@ -151,7 +151,6 @@ const WorkingTableGroup: React.FC = (prop) => {
   //         return item;
   //       }
   //     });
-  //     console.log(groupArray);
   //   }
   //   setMainGroupArray(groupArray);
   // }, [positionGroupArray]);
@@ -346,7 +345,7 @@ const WorkingTableGroup: React.FC = (prop) => {
               >
                 <div className="workingTableLabel-info-groupName">
                   {/* onClick={toGroup(item.groupObj)} */}
-                  <div className="workingTableLabel-info-groupLogo">
+                  <div className="workingTableLabel-info-groupLogo"  style={{borderRadius:'5px'}}>
                     <img
                       src={
                         item.groupObj.groupLogo

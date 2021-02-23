@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import './basic.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useHistory } from 'react-router-dom';
@@ -12,7 +12,6 @@ import {
 import { setNewTaskArray } from '../../redux/actions/taskActions';
 import HeaderSet from '../../components/headerSet/headerSet';
 import Home from '../home/home';
-import { getSearchParamValue } from '../../services/util';
 import { Route, Switch } from 'react-router-dom';
 import Loadable from 'react-loadable';
 import _ from 'lodash';
@@ -33,12 +32,13 @@ const Calendar = Loadable({
   loader: () => import('../calendar/calendar'),
   loading: () => null,
 });
+
+
 const Basic: React.FC<BasicProps> = (props) => {
   const {} = props;
   const dispatch = useDispatch();
   const history = useHistory();
   const socket = useTypedSelector((state) => state.auth.socket);
-  const user = useTypedSelector((state) => state.auth.user);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
 
@@ -73,7 +73,7 @@ const Basic: React.FC<BasicProps> = (props) => {
       dispatch(setUnMessageNum(newUnMessageNum + 1));
       if (headerIndex === 0 && newSelfTaskArray) {
         newSelfTaskArray = newSelfTaskArray.map(
-          (taskItem: any, taskIndex: number) => {
+          (taskItem: any) => {
             if (taskItem._key === socketObj.data.cardKey) {
               for (let key in taskItem) {
                 if (

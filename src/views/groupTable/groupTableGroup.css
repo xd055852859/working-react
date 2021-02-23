@@ -4,8 +4,10 @@
   margin-right: 10px;
   position: relative;
 }
+.task-container-taskName-container {
+  display: flex;
+}
 .task-container-taskName {
-  width: 100%;
   /* height: 60px; */
   display: flex;
   /* padding: 0px 0.5%; */
@@ -23,6 +25,9 @@
   width: 100%;
   height: calc(100% - 5px);
   padding: 0px 0.5%;
+}
+.task-container-calendar,
+.task-container-lineChart {
   overflow: auto;
 }
 .task-container-task {

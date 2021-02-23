@@ -2,10 +2,12 @@ import { actionTypes } from '../actions/authActions';
 import moment from 'moment';
 import io from 'socket.io-client';
 import api from '../../services/api';
+import _ from 'lodash';
 export interface AuthType {
   user: any;
   userKey: string;
   mainGroupKey: string;
+  mainEnterpriseGroup: any;
   targetUserKey: string;
   targetUserInfo: any;
   token: string | null;
@@ -28,6 +30,7 @@ const defaultState: AuthType = {
   user: null,
   userKey: '',
   mainGroupKey: '',
+  mainEnterpriseGroup: {},
   targetUserKey: '',
   targetUserInfo: null,
   token: null,
@@ -39,8 +42,8 @@ const defaultState: AuthType = {
     messageVisible: false,
     memberVisible: false,
     randomVisible: false,
-    hourVisible: true,
-    randomType: '0',
+    hourVisible: false,
+    randomType: '1',
     calendarVisible: true,
     groupSortType: 1,
     personSortType: 1,
@@ -88,6 +91,7 @@ export const auth = (state = defaultState, action: any) => {
       const socket = io.connect(api.SOCKET_URL);
       // socket.on('online', () => {
       socket.emit('login', action.data._key);
+      console.log(moment().hour());
       return {
         ...state,
         user: action.data,
@@ -99,12 +103,11 @@ export const auth = (state = defaultState, action: any) => {
           ? localStorage.getItem('targetUserKey')
           : '',
       };
-    case actionTypes.GET_MAIN_GROUP_KEY_SUCCESS:
-      localStorage.setItem('mainGroupKey', action.data.mainGroupKey);
-      return {
-        ...state,
-        mainGroupKey: action.data.mainGroupKey,
-      };
+    // case actionTypes.GET_MAIN_GROUP_KEY_SUCCESS:
+    //   localStorage.setItem('mainGroupKey', action.data.mainGroupKey);
+    //   return {
+    //     ...state,
+    //   };
     case actionTypes.SET_TARGET_USER_KEY:
       localStorage.setItem('targetUserKey', action.targetUserInfo._key);
       return {
@@ -120,36 +123,45 @@ export const auth = (state = defaultState, action: any) => {
         targetUserKey: action.data._key,
       };
     case actionTypes.GET_THEME_SUCCESS:
-      if (!action.data.backgroundColor && !action.data.backgroundImg) {
-        action.data.backgroundColor = '#3C3C3C';
-        action.data.backgroundImg = '';
+      let theme: any = action.data.result;
+      let otherInfo: any = action.data.otherInfo;
+      if (!theme.backgroundColor && !theme.backgroundImg) {
+        theme.backgroundColor = '#3C3C3C';
+        theme.backgroundImg = '';
       }
       for (let key in state.theme) {
         if (
-          action.data[key] === undefined &&
+          theme[key] === undefined &&
           key !== 'backgroundColor' &&
           key !== 'backgroundImg'
         ) {
-          action.data[key] = state.theme[key];
+          theme[key] = state.theme[key];
         }
       }
+      localStorage.setItem('mainGroupKey', otherInfo.mainGroupKey);
       return {
         ...state,
-        theme: action.data,
+        theme: theme,
+        mainGroupKey: otherInfo.mainGroupKey,
+        mainEnterpriseGroup: {
+          mainEnterpriseGroupKey: otherInfo.mainEnterpriseGroupKey,
+          mainEnterpriseGroupLogo: otherInfo.mainEnterpriseGroupLogo,
+          mainEnterpriseGroupName: otherInfo.mainEnterpriseGroupName,
+        },
       };
     case actionTypes.GET_THEME_BG_SUCCESS:
-      let themeBg: any = [];
+      let themeBg: any = _.cloneDeep(state.themeBg);
       if (action.data.page == 1) {
-        state.themeBg = [];
+        themeBg = [];
       }
       action.data.res.data.forEach((item: any, index: number) => {
         item.url = encodeURI(item.url);
-        state.themeBg.push(item);
+        themeBg.push(item);
       });
 
       return {
         ...state,
-        themeBg: state.themeBg,
+        themeBg: themeBg,
         themeBgTotal: action.data.res.total,
       };
     case actionTypes.SET_THEME_SUCCESS:

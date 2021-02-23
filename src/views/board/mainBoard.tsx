@@ -68,6 +68,7 @@ const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
                   : defaultGroupPng
               }
               className={classes.avatar}
+              style={{borderRadius:'5px'}}
             />
           ) : null}
           {mainItem[0].groupName}

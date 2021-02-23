@@ -3,7 +3,7 @@ import './book.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import Loadable from 'react-loadable';
-import { IconButton, Tooltip, Button } from '@material-ui/core';
+import { IconButton, Tooltip } from '@material-ui/core';
 import { CallMadeOutlined, CallReceivedOutlined } from '@material-ui/icons';
 import api from '../../services/api';
 import { setMessage } from '../../redux/actions/commonActions';
@@ -19,12 +19,13 @@ const BookEditor = Loadable({
 interface BookProps {
   targetData: any;
   onChange: Function;
-  fullType: string;
+  fullType?: string;
 }
 
 const Book: React.FC<BookProps> = (props) => {
   const { targetData, onChange, fullType } = props;
   const dispatch = useDispatch();
+  const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const [gridList, setGridList] = useState<any>([]);
   const [nodeObj, setNodeObj] = useState<any>(null);
   const [editable, setEditable] = useState<any>(false);
@@ -40,7 +41,10 @@ const Book: React.FC<BookProps> = (props) => {
     };
   }, [targetData]);
   const getBookData = async (key: string) => {
-    let bookRes: any = await api.task.getTaskTreeList(key);
+    let bookRes: any = await api.task.getTaskTreeList(
+      groupInfo.taskTreeRootCardKey,
+      key
+    );
     if (unDistory) {
       if (bookRes.msg === 'OK') {
         let newNodeObj: any = _.cloneDeep(nodeObj);
@@ -104,8 +108,8 @@ const Book: React.FC<BookProps> = (props) => {
         className="book-button"
         style={
           fullType === 'small'
-            ? { top: '80px', right: '50px' }
-            : { top: '8px', right: '45px' }
+            ? { top: '70px', right: '55px' }
+            : { top: '2px', right: '55px' }
         }
       >
         <IconButton

@@ -274,7 +274,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
               return (
                 <div className="group-member-item" key={'group' + groupIndex}>
                   <div className="group-member-item-container">
-                    <div className="group-member-img">
+                    <div className="group-member-img" style={{borderRadius:'5px'}}>
                       <img
                         src={
                           groupItem.groupLogo
@@ -329,7 +329,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
               父群:
               {fatherInfo.fatherGroupKey ? (
                 <React.Fragment>
-                  <div className="group-member-fatherLogo">
+                  <div className="group-member-fatherLogo"  style={{borderRadius:'5px'}}>
                     <img
                       src={
                         fatherInfo.fatherGroupLogo
@@ -399,7 +399,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
                         >
                           <div
                             className="group-member-img"
-                            style={{ marginRight: '10px' }}
+                            style={{ marginRight: '10px',borderRadius:'5px' }}
                           >
                             <img
                               src={
@@ -435,7 +435,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
                   className="group-member-item-container"
                   style={{ width: '60%' }}
                 >
-                  <div className="group-member-img">
+                  <div className="group-member-img"  style={{borderRadius:'5px'}}>
                     <img
                       src={
                         groupItem.groupLogo

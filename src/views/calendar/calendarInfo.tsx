@@ -13,7 +13,9 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  Button,
 } from '@material-ui/core';
+import { DeleteOutlineOutlined } from '@material-ui/icons';
 import { setMessage } from '../../redux/actions/commonActions';
 import { getCalendarList, editTask } from '../../redux/actions/taskActions';
 import _ from 'lodash';
@@ -22,7 +24,9 @@ import 'moment/locale/zh-cn';
 import moment from 'moment';
 import plusPng from '../../assets/img/contact-plus.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
-import deleteIconSvg from '../../assets/svg/deleteIcon.svg';
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
+
+// import deleteIconSvg from '../../assets/svg/deleteIcon.svg';
 import Dialog from '../../components/common/dialog';
 import Tooltip from '../../components/common/tooltip';
 import TaskMember from '../../components/task/taskMember';
@@ -35,6 +39,8 @@ interface CalendarInfoProps {
   onClose?: any;
   targetGroupKey: string;
   setFollowList?: any;
+  changeEdit:Function;
+  changeFollowEdit:Function
 }
 moment.locale('zh-cn');
 const useStyles = makeStyles((theme: Theme) =>
@@ -63,10 +69,9 @@ const useStyles = makeStyles((theme: Theme) =>
       },
     },
     hourInput: {
-      width: '105px',
+      width: '150px',
       color: '#fff',
-      marginTop: '24px',
-      marginLeft: '10px',
+      marginTop: '10px',
       '& .MuiInput-formControl': {
         marginTop: '0px',
         borderColor: '#fff',
@@ -93,6 +98,8 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
     onClose,
     targetGroupKey,
     setFollowList,
+    changeEdit,
+    changeFollowEdit
   } = props;
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
@@ -134,7 +141,8 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
       let newCalendarGroup = _.cloneDeep(calendarGroup);
       if (!newTaskItem.circleData) {
         newTaskItem.circleData = [];
-      } else {
+      }
+      if (newTaskItem.repeatCircle) {
         setRepeatIndex(newTaskItem.repeatCircle);
       }
       if (!newTaskItem.groupKeyArray) {
@@ -143,7 +151,6 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
       if (!newTaskItem.calendarEditType) {
         newTaskItem.calendarEditType = 1;
       }
-      console.log(calendarType);
       if (calendarType !== '新建') {
         if (newTaskItem.repeatCircle === 3) {
           setDayInput(newTaskItem.circleData[0]);
@@ -152,7 +159,9 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
           setMonthInput(newTaskItem.circleData[0].month + 1);
           setDayInput(newTaskItem.circleData[0].date);
         }
+        // if (newTaskItem.type !== 8) {
         getFollowList(newTaskItem);
+        // }
       }
       if (
         calendarType !== '新建' &&
@@ -160,11 +169,16 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
       ) {
         newTaskItem.calendarEditType = 2;
       }
+      console.log(newTaskItem);
       setCalendarInfo(newTaskItem);
     }
   }, [taskItem]);
   const getFollowList = async (calendar: any) => {
-    let followRes: any = await api.task.getCalendarInfo(calendar._key);
+    let obj: any =
+      calendar.type === 8
+        ? { cardKey: calendar._key }
+        : { eventKey: calendar._key };
+    let followRes: any = await api.task.getCalendarInfo(obj);
     if (followRes.msg === 'OK') {
       setCalendarFollow(followRes.result.followUserArray);
     } else {
@@ -181,15 +195,16 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
     }
     setCalendarInfo(newCalendarInfo);
     setCalendar(newCalendarInfo);
+    changeEdit(true)
   };
   const changeTitle = (e: any) => {
     let newCalendarInfo = _.cloneDeep(calendarInfo);
     newCalendarInfo.title = e.target.value;
     setCalendarInfo(newCalendarInfo);
     setCalendar(newCalendarInfo);
+    changeEdit(true)
   };
   const changeDate = (date: any, type: string) => {
-    console.log(date);
     let newCalendarInfo = _.cloneDeep(calendarInfo);
     if (type === 'start') {
       newCalendarInfo.startDay = date.valueOf();
@@ -197,10 +212,10 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
       newCalendarInfo.endDay = date.valueOf();
     } else if (type === 'remind') {
       newCalendarInfo.remindTime = date;
-      console.log(newCalendarInfo.remindTime);
     }
     setCalendarInfo(newCalendarInfo);
     setCalendar(newCalendarInfo);
+    changeEdit(true)
   };
   const chooseCalendarGroup = (item: any) => {
     let newCalendarInfo = _.cloneDeep(calendarInfo);
@@ -216,6 +231,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
     setCalendarGroup(newCalendarGroup);
     setCalendarInfo(newCalendarInfo);
     setCalendar(newCalendarInfo);
+    changeEdit(true)
   };
   const chooseCalendarFollow = (item: any) => {
     let newCalendarFollow = _.cloneDeep(calendarFollow);
@@ -231,13 +247,16 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
       return item.userId ? item.userId : item._key;
     });
     setFollowList(newFollowList);
+    changeFollowEdit(true);
   };
   const deleteTask = async (calendar: any) => {
     setDeleteDialogShow(false);
-    let deleteRes: any = await api.task.deleteTask(
-      calendar._key,
-      calendar.groupKey
-    );
+    let deleteRes: any = null;
+    if (calendar.type === 8) {
+      deleteRes = await api.task.deleteTask(calendar._key, calendar.groupKey);
+    } else {
+      deleteRes = await api.task.deleteEvent(calendar._key);
+    }
     if (deleteRes.msg === 'OK') {
       dispatch(setMessage(true, '删除成功', 'success'));
       getData(
@@ -253,9 +272,9 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
     let newCalendarInfo = _.cloneDeep(calendarInfo);
     setCalendarEditType(e.target.value);
     //现在和未来
-    console.log('e.target.value', e.target.value);
     newCalendarInfo.calendarEditType = parseInt(e.target.value);
     setCalendar(newCalendarInfo);
+    changeEdit(true)
   };
   return (
     <div className="calendarInfo">
@@ -292,27 +311,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
           />
         </MuiPickersUtilsProvider>
       </div>
-      <div className="calendarInfo-item">
-        <div className="calendarInfo-item-title">结束时间</div>
-        <MuiPickersUtilsProvider utils={DateFnsUtils}>
-          <KeyboardDatePicker
-            disableToolbar
-            variant="inline"
-            format="yyyy-MM-DD"
-            margin="normal"
-            id="date-picker-inline"
-            // label="截止日期"
-            value={moment(calendarInfo.endDay)}
-            onChange={(date) => {
-              changeDate(date, 'end');
-            }}
-            KeyboardButtonProps={{
-              'aria-label': 'change date',
-            }}
-            className={classes.dateRoot}
-          />
-        </MuiPickersUtilsProvider>
-      </div>
+
       <div className="calendarInfo-repeat-item">
         <div className="calendarInfo-item-title">重复</div>
         <div className="calendarInfo-repeat">
@@ -420,11 +419,31 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
         </div>
       </div>
       <div className="calendarInfo-item">
+        <div className="calendarInfo-item-title">结束时间</div>
+        <MuiPickersUtilsProvider utils={DateFnsUtils}>
+          <KeyboardDatePicker
+            disableToolbar
+            variant="inline"
+            format="yyyy-MM-DD"
+            margin="normal"
+            id="date-picker-inline"
+            // label="截止日期"
+            value={moment(calendarInfo.endDay)}
+            onChange={(date) => {
+              changeDate(date, 'end');
+            }}
+            KeyboardButtonProps={{
+              'aria-label': 'change date',
+            }}
+            className={classes.dateRoot}
+          />
+        </MuiPickersUtilsProvider>
+      </div>
+      <div className="calendarInfo-item">
         <div className="calendarInfo-item-title">提醒</div>
         <div className="calendarInfo-item-notice">
           <TextField
             id="time"
-            label="时间"
             type="time"
             value={calendarInfo.remindTime}
             className={classes.hourInput}
@@ -470,7 +489,8 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
         </div>
       </div>
       {calendarType === '编辑' &&
-      calendarInfo.startDay === moment().startOf('day').valueOf() ? (
+      calendarInfo.startDay === moment().startOf('day').valueOf() &&
+      calendarInfo.origionalKey ? (
         // <div className="taskItem-check-icon">
         <div className="calendarInfo-item" style={{ marginTop: '20px' }}>
           <div className="calendarInfo-item-title">设置</div>
@@ -501,14 +521,23 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
       null}
       {calendarType === '编辑' ? (
         // <div className="taskItem-check-icon">
-        <img
-          src={deleteIconSvg}
-          alt="删除"
+        // <img
+        //   src={deleteIconSvg}
+        //   alt="删除"
+        //   onClick={() => {
+        //     setDeleteDialogShow(true);
+        //   }}
+
+        // />
+        <Button
+          color="primary"
           onClick={() => {
             setDeleteDialogShow(true);
           }}
           className="calendarInfo-delete-icon"
-        />
+        >
+          删除日程
+        </Button>
       ) : // </div>
       null}
       {calendarType === '编辑' ? (
@@ -524,9 +553,13 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
                         iconItem.avatar
                           ? iconItem.avatar +
                             '?imageMogr2/auto-orient/thumbnail/80x'
-                          : defaultGroupPng
+                          : defaultPersonPng
                       }
                       alt=""
+                      onError={(e: any) => {
+                        e.target.onerror = null;
+                        e.target.src = defaultPersonPng;
+                      }}
                     />
                   </div>
                   <Tooltip title={iconItem.nickName}>
@@ -560,7 +593,10 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
             {calendarGroup.map((iconItem: any, iconIndex: number) => {
               return (
                 <div className="calendarInfo-group" key={'icon' + iconIndex}>
-                  <div className="calendarInfo-group-item">
+                  <div
+                    className="calendarInfo-group-item"
+                    style={{ borderRadius: '5px' }}
+                  >
                     <img
                       src={
                         iconItem.groupLogo
@@ -627,7 +663,10 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
                         : {}
                     }
                   >
-                    <div className="calendarInfo-group-box-item">
+                    <div
+                      className="calendarInfo-group-box-item"
+                      style={{ borderRadius: '5px' }}
+                    >
                       <img
                         src={
                           groupItem.groupLogo

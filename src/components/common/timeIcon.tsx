@@ -22,7 +22,10 @@ const TimeIcon: React.FC<TimeIconProps> = (props) => {
         style={
           theme.hourVisible
             ? { left: timeDay < 10 || timeDay > 5000 ? '5px' : '0px' }
-            : { left: timeDay < 10 ? '6px' : '2px', bottom: '4.5px' }
+            : {
+                left: timeDay < 10 ? '6px' : timeDay > 5000 ? '4px' : '3px',
+                bottom: '5.5px',
+              }
         }
       >
         {timeDay > 5000 ? '∞' : timeDay > 99 ? '99+' : timeDay}

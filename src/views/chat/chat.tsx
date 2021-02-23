@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 
@@ -12,9 +12,12 @@ import _ from 'lodash';
 import api from '../../services/api';
 import closePng from '../../assets/img/close.png';
 import moment from 'moment';
-interface ChatProps { }
+interface ChatProps {
+  chatType?: any;
+}
 
 const Chat: React.FC<ChatProps> = (prop) => {
+  const { chatType } = prop;
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
@@ -24,9 +27,11 @@ const Chat: React.FC<ChatProps> = (prop) => {
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const memberArray = useTypedSelector((state) => state.member.memberArray);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
+  const showChatState = useTypedSelector((state) => state.common.showChatState);
   // const unChatNum = useTypedSelector((state) => state.common.unChatNum);
   const [url, setUrl] = useState('');
   const [clickType, setClickType] = useState(true);
+  let chatRef = useRef<any>(null);
   let unDistory = true;
   useEffect(() => {
     if (user) {
@@ -37,19 +42,19 @@ const Chat: React.FC<ChatProps> = (prop) => {
         // moment().valueOf()
       );
       window.addEventListener('message', handlerIframeEvent);
-      if (
-        (headerIndex === 2 && memberArray) ||
-        (headerIndex === 3 && groupInfo)
-      ) {
-        goChat();
-      }
     }
-  }, [user]);
+    return () => {
+      if (chatRef.current) {
+        clearInterval(chatRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (
-      (headerIndex === 2 && memberArray) ||
-      (headerIndex === 3 && groupInfo)
+      ((headerIndex === 2 && memberArray) ||
+        (headerIndex === 3 && groupInfo)) &&
+      chatType
     ) {
       goChat();
     }
@@ -57,7 +62,13 @@ const Chat: React.FC<ChatProps> = (prop) => {
       unDistory = false;
     };
     // dispatch(setChatState(false));
-  }, [headerIndex, groupKey, targetUserKey, groupInfo, memberArray]);
+  }, [headerIndex, groupKey, targetUserKey, groupInfo, memberArray, url]);
+  useEffect(() => {
+    if (chatState) {
+      chatRef.current = setTimeout(goChat, 2000);
+    }
+    // dispatch(setChatState(false));
+  }, [showChatState]);
   useEffect(() => {
     if (headerIndex === 2 || headerIndex === 3) {
       setClickType(false);
@@ -127,8 +138,7 @@ const Chat: React.FC<ChatProps> = (prop) => {
   return (
     <React.Fragment>
       <div
-
-        className="chat-iframe"
+        className="chat-iframe  animate__animated animate__slideInRight"
         style={
           // headerIndex === 4
           //   ? {
@@ -140,11 +150,11 @@ const Chat: React.FC<ChatProps> = (prop) => {
           chatState
             ? !clickType
               ? {
-                width: '420px',
-              }
+                  width: '420px',
+                }
               : {
-                width: '600px',
-              }
+                  width: '600px',
+                }
             : { opacity: 0, width: '0px', height: '0px' }
         }
       >
@@ -155,11 +165,11 @@ const Chat: React.FC<ChatProps> = (prop) => {
           style={
             !clickType
               ? {
-                left: '-180px',
-              }
+                  left: '-180px',
+                }
               : {
-                left: '0px',
-              }
+                  left: '0px',
+                }
           }
         ></iframe>
         <div
@@ -170,11 +180,11 @@ const Chat: React.FC<ChatProps> = (prop) => {
           style={
             !clickType
               ? {
-                left: '10px',
-              }
+                  left: '10px',
+                }
               : {
-                left: '192px',
-              }
+                  left: '192px',
+                }
           }
         ></div>
         {chatState ? (

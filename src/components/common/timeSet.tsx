@@ -42,6 +42,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
   const dispatch = useDispatch();
   const taskInfo = useTypedSelector((state) => state.task.taskInfo);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const theme = useTypedSelector((state) => state.auth.theme);
   const [timeDate, setTimeDate] = useState<any>([]);
   const [timeWeek, setTimeWeek] = useState<any>([]);
   const [timeMonth, setTimeMonth] = useState<any>([]);
@@ -189,7 +190,6 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
       newTaskItem.taskEndDate = 99999999999999;
       newTaskInfo.taskEndDate = _.cloneDeep(newTaskItem.taskEndDate);
     }
-    console.log(newTaskInfo);
     dispatch(
       editTask(
         {
@@ -203,7 +203,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
   };
   return (
     <React.Fragment>
-      {!viewStyle ? (
+      {!viewStyle && theme.hourVisible ? (
         <div className="timeSet-title">
           预计工时 <span>{newTimeNumber + '小时'}</span>
         </div>
@@ -211,24 +211,32 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
       <div
         className="timeSet"
         style={
-          viewStyle !== 'horizontal'
-            ? {
-                width: '100%',
-                height: '55px',
-                padding: '5px 10px',
-              }
-            : { height: '42px' }
+          theme.hourVisible
+            ? viewStyle !== 'horizontal'
+              ? {
+                  width: '100%',
+                  height: '55px',
+                  padding: '5px 10px',
+                }
+              : { height: '42px' }
+            : { height: '25px', marginTop: '15px' }
         }
       >
         {!timestate ? (
           <div
             className="timeSet-time-logo"
             style={
-              viewStyle !== 'horizontal'
-                ? { width: '45px', height: '40px' }
+              theme.hourVisible
+                ? viewStyle !== 'horizontal'
+                  ? { width: '45px', height: '40px' }
+                  : {
+                      width: '45px',
+                      height: '42px',
+                    }
                 : {
-                    width: '45px',
-                    height: '42px',
+                    width: '100px',
+                    height: '25px',
+                    marginLeft: '17px',
                   }
             }
           >
@@ -239,7 +247,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                   viewStyle !== 'horizontal' ||
                   (viewStyle === 'horizontal' &&
                     targetNode &&
-                    (targetNode.type === 1||targetNode.type === 6))
+                    (targetNode.type === 1 || targetNode.type === 6))
                 ) {
                   if (type) {
                     changeTime('finishPercent', 10);
@@ -258,7 +266,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                   viewStyle !== 'horizontal' ||
                   (viewStyle === 'horizontal' &&
                     targetNode &&
-                    (targetNode.type === 1||targetNode.type === 6))
+                    (targetNode.type === 1 || targetNode.type === 6))
                 ) {
                   if (type) {
                     changeTime('finishPercent', 0);
@@ -276,7 +284,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                   viewStyle !== 'horizontal' ||
                   (viewStyle === 'horizontal' &&
                     targetNode &&
-                    (targetNode.type === 1||targetNode.type === 6))
+                    (targetNode.type === 1 || targetNode.type === 6))
                 ) {
                   if (type) {
                     changeTime('finishPercent', 1);
@@ -294,7 +302,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                   viewStyle !== 'horizontal' ||
                   (viewStyle === 'horizontal' &&
                     targetNode &&
-                    (targetNode.type === 1||targetNode.type === 6))
+                    (targetNode.type === 1 || targetNode.type === 6))
                 ) {
                   if (type) {
                     changeTime('finishPercent', 2);
@@ -311,130 +319,130 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
             />
           </div>
         ) : null}
-        <div
-          className="timeSet-time-info"
-          style={
-            // !viewStyle
-            // ?
-            { width: '200px', height: '41px' }
-            // : { width: '230px', height: '40px' }
-          }
-        >
-          <img
-            src={clockSvg}
-            style={{
-              width: '20px',
-              height: '20px',
-              marginRight: '2px',
-              // marginBottom: '5px',
-              cursor: 'pointer',
-            }}
-            onClick={() => {
-              if (
-                viewStyle !== 'horizontal' ||
-                (viewStyle === 'horizontal' &&
-                  targetNode &&
-                  (targetNode.type === 1||targetNode.type === 6))
-              ) {
-                setFreeTimeVisible(true);
-              }
-              // changeTimeDateType(1);
-            }}
-          />
-          <DropMenu
-            visible={freeTimeVisible}
-            dropStyle={{
-              width: '192px',
-              height: '57px',
-              top: '20px',
-              left: '0px',
-              color: '#333',
-              padding: '10px 6px',
-              boxSizing: 'border-box',
-              zIndex: '30',
-            }}
-            onClose={() => {
-              setFreeTimeVisible(false);
-            }}
+        {theme.hourVisible ? (
+          <div
+            className="timeSet-time-info"
+            style={
+              // !viewStyle
+              // ?
+              { width: '200px', height: '41px' }
+              // : { width: '230px', height: '40px' }
+            }
           >
-            <input
-              type="text"
-              value={freeTimeInput}
-              placeholder="请输入自定义时间"
-              onChange={(e) => {
-                setFreeTimeInput(e.target.value);
+            <img
+              src={clockSvg}
+              style={{
+                width: '20px',
+                height: '20px',
+                marginRight: '2px',
+                // marginBottom: '5px',
+                cursor: 'pointer',
               }}
-              className="timeSet-freeTime"
-            />
-            <Button
-              variant="contained"
-              color="primary"
               onClick={() => {
-                console.log(freeTimeInput);
-                console.log(isNaN(parseFloat(freeTimeInput)));
-                if (isNaN(parseFloat(freeTimeInput))) {
-                  dispatch(setMessage(true, '请输入数字', 'error'));
-                  return;
+                if (
+                  viewStyle !== 'horizontal' ||
+                  (viewStyle === 'horizontal' &&
+                    targetNode &&
+                    (targetNode.type === 1 || targetNode.type === 6))
+                ) {
+                  setFreeTimeVisible(true);
                 }
-                if (type) {
-                  changeTime('hour', parseFloat(freeTimeInput));
-                } else {
-                  timeSetClick('hour', parseFloat(freeTimeInput));
-                  setFreeTimeVisible(false);
-                }
+                // changeTimeDateType(1);
               }}
-              style={{ color: '#fff', height: '35px' }}
-              // className={classes.clockInButton}
+            />
+            <DropMenu
+              visible={freeTimeVisible}
+              dropStyle={{
+                width: '192px',
+                height: '57px',
+                top: '20px',
+                left: '0px',
+                color: '#333',
+                padding: '10px 6px',
+                boxSizing: 'border-box',
+                zIndex: '30',
+              }}
+              onClose={() => {
+                setFreeTimeVisible(false);
+              }}
             >
-              确定
-            </Button>
-          </DropMenu>
-          {timeArray.map((timeItem: any, timeIndex: number) => {
-            return (
-              <div
-                key={'time' + timeIndex}
-                // className="timeSet-item"
+              <input
+                type="text"
+                value={freeTimeInput}
+                placeholder="请输入自定义时间"
+                onChange={(e) => {
+                  setFreeTimeInput(e.target.value);
+                }}
+                className="timeSet-freeTime"
+              />
+              <Button
+                variant="contained"
+                color="primary"
                 onClick={() => {
-                  if (
-                    viewStyle !== 'horizontal' ||
-                    (viewStyle === 'horizontal' &&
-                      targetNode &&
-                      (targetNode.type === 1||targetNode.type === 6))
-                  ) {
-                    if (type) {
-                      changeTime('hour', timeItem);
-                    } else {
-                      timeSetClick('hour', timeItem);
-                      setFreeTimeVisible(false);
-                    }
+                  if (isNaN(parseFloat(freeTimeInput))) {
+                    dispatch(setMessage(true, '请输入数字', 'error'));
+                    return;
+                  }
+                  if (type) {
+                    changeTime('hour', parseFloat(freeTimeInput));
+                  } else {
+                    timeSetClick('hour', parseFloat(freeTimeInput));
+                    setFreeTimeVisible(false);
                   }
                 }}
-                className="timeSet-time-item"
-                style={{
-                  // marginBottom:
-                  //  !viewStyle ?
-                  // '5px',
-                  //  : '0px',
-                  marginRight:
-                    // !viewStyle ?
-                    '2px',
-                  // : '1px',
-                }}
+                style={{ color: '#fff', height: '35px' }}
+                // className={classes.clockInButton}
               >
-                {timeItem}
+                确定
+              </Button>
+            </DropMenu>
+            {timeArray.map((timeItem: any, timeIndex: number) => {
+              return (
                 <div
-                  className="timeSet-time-choose"
-                  style={{
-                    borderColor:
-                      newTimeNumber === timeItem
-                        ? '#F28806  transparent transparent transparent'
-                        : '#35a6f8 transparent transparent transparent',
+                  key={'time' + timeIndex}
+                  // className="timeSet-item"
+                  onClick={() => {
+                    if (
+                      viewStyle !== 'horizontal' ||
+                      (viewStyle === 'horizontal' &&
+                        targetNode &&
+                        (targetNode.type === 1 || targetNode.type === 6))
+                    ) {
+                      if (type) {
+                        changeTime('hour', timeItem);
+                      } else {
+                        timeSetClick('hour', timeItem);
+                        setFreeTimeVisible(false);
+                      }
+                    }
                   }}
-                ></div>
-              </div>
-            );
-          })}
-        </div>
+                  className="timeSet-time-item"
+                  style={{
+                    // marginBottom:
+                    //  !viewStyle ?
+                    // '5px',
+                    //  : '0px',
+                    marginRight:
+                      // !viewStyle ?
+                      '2px',
+                    // : '1px',
+                  }}
+                >
+                  {timeItem}
+                  <div
+                    className="timeSet-time-choose"
+                    style={{
+                      borderColor:
+                        newTimeNumber === timeItem
+                          ? '#F28806  transparent transparent transparent'
+                          : '#35a6f8 transparent transparent transparent',
+                    }}
+                  ></div>
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
       </div>
       {/* v-if="dateType" */}
       {!timestate ? (
@@ -476,7 +484,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                     viewStyle !== 'horizontal' ||
                     (viewStyle === 'horizontal' &&
                       targetNode &&
-                      (targetNode.type === 1||targetNode.type === 6))
+                      (targetNode.type === 1 || targetNode.type === 6))
                   ) {
                     if (type) {
                       changeTime('infinite');
@@ -510,7 +518,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                         viewStyle !== 'horizontal' ||
                         (viewStyle === 'horizontal' &&
                           targetNode &&
-                          (targetNode.type === 1||targetNode.type === 6))
+                          (targetNode.type === 1 || targetNode.type === 6))
                       ) {
                         if (type) {
                           changeTime('day', dateTimeIndex + 1);

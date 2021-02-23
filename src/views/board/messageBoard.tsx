@@ -355,7 +355,6 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                               width: '20px',
                               height: '20px',
                               overflow: 'hidden',
-                              borderRadius: '50%',
                               marginRight: '5px',
                             }}
                           >
@@ -512,7 +511,11 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                       </div>
                       {messageItem.data.type !== 21 ? (
                         <div className="messageBoard-item-task">
-                          <div>{messageItem.data.title}</div>
+                          <div>
+                            {messageItem.data.type === 8
+                              ? messageItem.data.content
+                              : messageItem.data.title}
+                          </div>
 
                           {/* <div
                           className="taskItem-day"
@@ -597,7 +600,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                         ) : null}
                         {messageItem.data.type == 11 ? (
                           <div className="messageBoard-item-button">
-                            {messageItem.data.applyStatus ? (
+                            {messageItem.data.applyStatus === 0 ? (
                               <React.Fragment>
                                 <Button
                                   variant="contained"
@@ -633,7 +636,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                                 disabled
                                 // style={{ color: '#fff' }}
                               >
-                                {messageItem.data.applyStatus == 1
+                                {messageItem.data.applyStatus == 2
                                   ? '已拒绝'
                                   : '已同意'}
                               </Button>

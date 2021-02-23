@@ -133,7 +133,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     if (taskInfo && personObj) {
       let newPersonObj = _.cloneDeep(personObj);
       if (
-        newPersonObj[moment(taskInfo.createTime).endOf('day').valueOf()] &&
+        newPersonObj[moment(taskInfo.taskEndDate).endOf('day').valueOf()] &&
         newPersonObj[moment(taskInfo.taskEndDate).endOf('day').valueOf()][
           taskInfo.executorKey
         ]
@@ -325,7 +325,6 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       });
 
     newPersonArray.unshift({ key: '全部', avatar: '', name: '全部' });
-    console.log(targetPersonObj);
     setPersonObj(targetPersonObj);
     if (personKey === '全部') {
       setPersonArray(newPersonArray);
@@ -582,7 +581,6 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     if (addTaskRes.msg === 'OK') {
       dispatch(setMessage(true, '新增任务成功', 'success'));
       dispatch(changeCreateMusic(true));
-      console.log(newPersonObj[diaryIndex][diaryKey]);
       newPersonObj[diaryIndex][diaryKey].executorArray.unshift(
         addTaskRes.result
       );
