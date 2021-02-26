@@ -42,6 +42,8 @@ const Grid: React.FC<GridProps> = (prop) => {
   const [moveIndex, setMoveIndex] = useState<any>(null);
   const [taskWidth, setTaskWidth] = useState(0);
   const [avatarHeight, setAvatarHeight] = useState(0);
+  const [avatarWidth, setAvatarWidth] = useState('25px');
+
   const [loading, setLoading] = useState(false);
   const labelRef: React.RefObject<any> = useRef();
   const avatarRef: React.RefObject<any> = useRef();
@@ -81,6 +83,19 @@ const Grid: React.FC<GridProps> = (prop) => {
       setAvatarHeight(clientWidth);
     }
   }, [labelRef.current]);
+  useEffect(() => {
+    if (avatarRef.current) {
+      let clientWidth = !gridState
+        ? avatarRef.current
+          ? avatarRef.current.offsetWidth > 25
+            ? '25px'
+            : avatarRef.current.offsetWidth + 'px'
+          : '0px'
+        : '25px';
+      // console.log(avatarRef.current);
+      setAvatarWidth(clientWidth);
+    }
+  }, [avatarRef.current,gridState]);
 
   useEffect(() => {
     if (allGridTaskArray) {
@@ -443,6 +458,7 @@ const Grid: React.FC<GridProps> = (prop) => {
     }
     return dom;
   };
+
   return (
     <div className="grid">
       {loading ? <Loading /> : null}
@@ -451,13 +467,6 @@ const Grid: React.FC<GridProps> = (prop) => {
         <div className="grid-date-label">
           {taskNavDay
             ? taskNavDate.map((dateItem: any, dateIndex: number) => {
-                let avatarWidth = !gridState
-                  ? avatarRef.current
-                    ? avatarRef.current.offsetWidth > 25
-                      ? '25px'
-                      : avatarRef.current.offsetWidth + 'px'
-                    : '0px'
-                  : '25px';
                 return (
                   <div
                     style={{ border: '0px' }}

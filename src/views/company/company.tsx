@@ -17,6 +17,9 @@ import companyIcon2 from '../../assets/svg/companyIcon2.svg';
 import companyIcon3 from '../../assets/svg/companyIcon3.svg';
 import companyIcon4 from '../../assets/svg/companyIcon4.svg';
 import companyIcon5 from '../../assets/svg/companyIcon5.svg';
+import companyRole1 from '../../assets/svg/companyRole1.svg';
+import companyRole2 from '../../assets/svg/companyRole2.svg';
+
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 const CompanyPerson = Loadable({
   loader: () => import('./companyPerson'),
@@ -199,6 +202,11 @@ const Company: React.FC<CompanyProps> = (props) => {
             }}
             style={linkIndex === 4 ? { color: '#17B881' } : {}}
           >
+            <img
+              src={companyRole1}
+              alt=""
+              style={{ width: '16px', height: '16px', marginRight: '9px' }}
+            />
             人员授权
           </ListItem>
           <ListItem
@@ -209,6 +217,11 @@ const Company: React.FC<CompanyProps> = (props) => {
             }}
             style={linkIndex === 5 ? { color: '#17B881' } : {}}
           >
+            <img
+              src={companyRole2}
+              alt=""
+              style={{ width: '16px', height: '16px', marginRight: '9px' }}
+            />
             项目授权
           </ListItem>
         </Collapse>

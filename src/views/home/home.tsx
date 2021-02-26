@@ -41,15 +41,15 @@ const Home: React.FC<HomeProps> = (props) => {
           ? {
               animation: 'moveIn 500ms',
               // animationFillMode: 'forwards',
-              width: '0px',
+              left: '-320px',
             }
           : moveState === 'out'
           ? {
               animation: 'moveOut 500ms',
               // animationFillMode: 'forwards',
-              width: '320px',
+              left: '0px',
             }
-          : { width: '320px' }
+          : { left: '0px' }
       }
     >
       <div

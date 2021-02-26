@@ -69,13 +69,13 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
   return (
     <div
       className="groupTable"
-      style={
-        moveState === 'in'
-          ? { animation: 'contentmoveIn 50ms', width: '100%' }
-          : moveState === 'out'
-          ? { animation: 'contentmoveOut 50ms', width: 'calc(100% - 320px)' }
-          : {}
-      }
+      // style={
+      //   moveState === 'in'
+      //     ? { animation: 'contentmoveIn 50ms', width: '100%' }
+      //     : moveState === 'out'
+      //     ? { animation: 'contentmoveOut 50ms', width: 'calc(100% - 320px)' }
+      //     : {}
+      // }
     >
       <GroupTableHeader />
       <div

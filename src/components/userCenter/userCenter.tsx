@@ -10,7 +10,13 @@ import {
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { getUserInfo } from '../../redux/actions/authActions';
 import { setMessage } from '../../redux/actions/commonActions';
-import { TextField, Button } from '@material-ui/core';
+import {
+  TextField,
+  Button,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+} from '@material-ui/core';
 import moment from 'moment';
 import uploadFile from '../../components/common/upload';
 import Dialog from '../common/dialog';
@@ -62,7 +68,7 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
   const [slogan, setSlogan] = useState('');
   const [trueName, setTrueName] = useState('');
   const [nickName, setNickName] = useState('');
-  const [gender, setGender] = useState(0);
+  const [gender, setGender] = useState('0');
   const [birthday, setBirthday] = useState<any>(moment());
   const [email, setEmail] = useState('');
   const [mobile, setMobile] = useState('');
@@ -81,7 +87,7 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
     setSlogan(profile.slogan);
     setTrueName(profile.trueName);
     setNickName(profile.nickName);
-    setGender(profile.gender);
+    setGender(profile.gender + '');
     setBirthday(moment(profile.birthday).format('YYYY-MM-DD'));
     setEmail(profile.email);
     setMobile(user.mobile);
@@ -95,6 +101,7 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
         nickName: nickName,
         birthday: moment(birthday).valueOf(),
         email: email,
+        gender: parseInt(gender),
       },
     });
     if (res.msg === 'OK') {
@@ -120,12 +127,15 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
     let dataURL = croppedCanvas.toDataURL('image/png');
     let imgFile = dataURLtoFile(dataURL);
 
-    uploadFile.uploadImg(imgFile, uploadToken, mimeType, function (
-      url: string
-    ) {
-      dispatch(setMessage(true, '图片上传成功', 'success'));
-      setAvatar(url);
-    });
+    uploadFile.uploadImg(
+      imgFile,
+      uploadToken,
+      mimeType,
+      function (url: string) {
+        dispatch(setMessage(true, '图片上传成功', 'success'));
+        setAvatar(url);
+      }
+    );
   };
   const handleDateChange = (date: any) => {
     setBirthday(date);
@@ -198,6 +208,32 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
             setEmail(e.target.value);
           }}
         />
+      </div>
+      <div className="user-input">
+        <RadioGroup
+          aria-label="gender"
+          value={gender}
+          onChange={(e: any) => {
+            console.log(e.target.value);
+            setGender(e.target.value);
+          }}
+          row
+        >
+          <FormControlLabel
+            value={'0'}
+            control={<Radio />}
+            label={'男'}
+            key={'radio1'}
+            style={{ height: '40px' }}
+          />
+          <FormControlLabel
+            value={'1'}
+            control={<Radio />}
+            label={'女'}
+            key={'radio2'}
+            style={{ height: '40px' }}
+          />
+        </RadioGroup>
       </div>
       <div className="user-input">
         <TextField

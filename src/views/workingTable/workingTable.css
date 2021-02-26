@@ -1,6 +1,6 @@
 .workingTable {
   height: 100%;
-  width: calc(100% - 320px);
+  width: 100%;
   position: relative;
   z-index: 3;
 }

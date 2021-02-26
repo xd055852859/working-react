@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
+import './welcome.css';
 import { useHistory } from 'react-router-dom';
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-import { changeStartMusic } from '../../redux/actions/authActions';
 import Button from '@material-ui/core/Button';
-import { useDispatch } from 'react-redux';
 import bgWSvg from '../../assets/svg/bg-white.svg';
 import cloudSvg from '../../assets/svg/clouds.svg';
 import welcomeSvg from '../../assets/svg/welcome.svg';
 import welcomeSmallSvg from '../../assets/svg/welcomeSmall.svg';
+import DropMenu from '../../components/common/dropMenu';
 // import { loginByToken } from "../../redux/actions/authActions";
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -60,6 +60,7 @@ export default function Welcome() {
   const user = useTypedSelector((state) => state.auth.user);
   const [clientHeight, setClientHeight] = useState(0);
   const [clientWidth, setClientWidth] = useState(0);
+  const [linkVisible, setLinkVisible] = useState(false);
   const bootpageRef: React.RefObject<any> = useRef();
   useEffect(() => {
     let url = window.location.href;
@@ -93,8 +94,8 @@ export default function Welcome() {
       setClientHeight(clientHeight);
     }
   }, [bootpageRef]);
-  const toUrl = () => {
-    window.open('http://beian.miit.gov.cn/');
+  const toUrl = (url: string) => {
+    window.open(url);
   };
   const toLogin = () => {
     if (localStorage.getItem('token') && localStorage.getItem('viewWelcome')) {
@@ -125,6 +126,75 @@ export default function Welcome() {
       ref={bootpageRef}
       style={{ backgroundSize: clientWidth > 500 ? 'contain' : '400px 300px' }}
     >
+      <div className="welcome-link">
+        <div
+          className="welcome-link-help"
+          onMouseLeave={() => {
+            setLinkVisible(false);
+          }}
+        >
+          <span
+            onClick={() => {
+              setLinkVisible(true);
+            }}
+          >
+            帮助
+          </span>
+          <DropMenu
+            visible={linkVisible}
+            dropStyle={{
+              width: '240px',
+              height: '90px',
+              top: '20px',
+              left: '0px',
+              color: '#333',
+              padding: '5px',
+            }}
+            onClose={() => {
+              setLinkVisible(false);
+            }}
+            // title={'帮助'}
+          >
+            <div
+              className="welcome-link-item"
+              onClick={() => {
+                toUrl('https://shimo.im/docs/WVxxgyjdX8PkpGWc/');
+              }}
+            >
+              蓝灯使用指南
+            </div>
+            <div
+              className="welcome-link-item"
+              onClick={() => {
+                toUrl('https://shimo.im/docs/K3tCtQrKqwwYjHPR/');
+              }}
+            >
+              chrome下载安装workfly插件指南
+            </div>
+          </DropMenu>
+        </div>
+        <div
+          onClick={() => {
+            toUrl('https://cheerchat.qingtime.cn');
+          }}
+        >
+          桌面版
+        </div>
+        <div
+          onClick={() => {
+            toUrl('https://workingdownload.qingtime.cn');
+          }}
+        >
+          手机版App
+        </div>
+        <div
+          onClick={() => {
+            toUrl('http://extension.workfly.cn');
+          }}
+        >
+          Chrome插件
+        </div>
+      </div>
       <Button
         variant="contained"
         size="large"
@@ -158,7 +228,7 @@ export default function Welcome() {
       <span
         className={classes.ICPLicensing}
         onClick={() => {
-          toUrl();
+          toUrl('http://beian.miit.gov.cn/');
         }}
         style={{ cursor: 'pointer' }}
       >

@@ -1,8 +1,9 @@
 .home {
   height: 100%;
+  width:320px;
   /* background: rgba(0, 0, 0, 0.24); */
   color: #fff;
-  position: relative;
+  position: fixed;
   z-index: 5;
   flex-shrink: 0;
   overflow: hidden;

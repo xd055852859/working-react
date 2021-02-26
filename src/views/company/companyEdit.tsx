@@ -10,7 +10,12 @@ import {
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { getUserInfo, setTargetUserKey } from '../../redux/actions/authActions';
 import { setMessage } from '../../redux/actions/commonActions';
-import { TextField, Button } from '@material-ui/core';
+import {
+  TextField,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+} from '@material-ui/core';
 import moment from 'moment';
 import _ from 'lodash';
 import uploadFile from '../../components/common/upload';
@@ -61,7 +66,7 @@ const CompanyEdit: React.FC<CompanyEditProps> = (props) => {
   const [photoVisible, setPhotoVisible] = useState<any>(false);
   const [trueName, setTrueName] = useState('');
   const [nickName, setNickName] = useState('');
-  const [gender, setGender] = useState(0);
+  const [gender, setGender] = useState('0');
   const [birthday, setBirthday] = useState<any>(moment());
   const [mobile, setMobile] = useState('');
   const [email, setEmail] = useState('');
@@ -85,7 +90,7 @@ const CompanyEdit: React.FC<CompanyEditProps> = (props) => {
       setAvatar(targetUser.avatar ? targetUser.avatar : defaultPersonPng);
       setTrueName(targetUser.trueName ? targetUser.trueName : '');
       setNickName(targetUser.nickName ? targetUser.nickName : '');
-      setGender(targetUser.gender ? targetUser.gender : 0);
+      setGender(targetUser.gender ? targetUser.gender + '' : '0');
       setBirthday(moment(targetUser.birthday).format('YYYY-MM-DD'));
       setEmail(targetUser.email ? targetUser.email : '');
       setAddress(targetUser.address ? targetUser.address : '');
@@ -115,7 +120,7 @@ const CompanyEdit: React.FC<CompanyEditProps> = (props) => {
         emergencyContact: '',
         emergencyContactTel: '',
         address: '',
-        gender: 0,
+        gender: '0',
         birthday: moment().valueOf(),
         avatar: defaultPersonPng,
       });
@@ -316,6 +321,33 @@ const CompanyEdit: React.FC<CompanyEditProps> = (props) => {
           </div>
         </React.Fragment>
       ) : null}
+      <div className="user-input">
+        <RadioGroup
+          aria-label="gender"
+          value={gender}
+          onChange={(e: any) => {
+            console.log(e.target.value);
+            setGender(e.target.value);
+            changeTargetUser(parseInt(e.target.value), 'gender');
+          }}
+          row
+        >
+          <FormControlLabel
+            value={'0'}
+            control={<Radio />}
+            label={'男'}
+            key={'radio1'}
+            style={{ height: '40px' }}
+          />
+          <FormControlLabel
+            value={'1'}
+            control={<Radio />}
+            label={'女'}
+            key={'radio2'}
+            style={{ height: '40px' }}
+          />
+        </RadioGroup>
+      </div>
       <div className="companyEdit-input">
         <TextField
           // required

@@ -209,7 +209,7 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
             // setSelectedPath(newCompanyData[nodeId].path);
           }
         }
-        console.log('path', newCompanyData[nodeId].path);
+        console.log( newCompanyData);
         // setSelectedId(nodeId);
         setCompanyData(newCompanyData);
       } else {
@@ -248,7 +248,17 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
       }
     } else {
       getTargetGroup(node.groupKey);
-      let chooseCompanyRes: any = await api.member.getMember(node.groupKey);
+      let chooseCompanyRes: any = await api.company.getCompanyList(
+        3,
+        groupKey,
+        1,
+        500,
+        '',
+        '',
+        '',
+        1,
+        node.groupKey
+      );
       if (chooseCompanyRes.msg === 'OK') {
         chooseCompanyRes.result.map((item: any, index: number) => {
           newRow.push({
@@ -405,14 +415,30 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
         newRow[index][key] = undefined;
       }
     }
+    console.log(newRow[index]);
     // if (targetRole !== 'targetRole' + (columnIndex + 1)) {
     newRow[index]['targetRole' + columnIndex] = columnIndex;
     // }
-    let roleRes: any = await api.auth.setRole(
-      newRow[index].groupId,
-      newRow[index].userId,
-      columnIndex
-    );
+    let roleRes: any = null;
+    if (!newRow[index].checkIndex) {
+      roleRes = await api.group.addGroupMember(newRow[index].groupId, [
+        {
+          userKey: newRow[index].userId,
+          nickName: newRow[index].name,
+          avatar: newRow[index].avatar
+            ? newRow[index].avatar.replace('?roundPic/radius/!50p')
+            : '',
+          gender: 0,
+          role: columnIndex,
+        },
+      ]);
+    } else {
+      roleRes = await api.auth.setRole(
+        newRow[index].groupId,
+        newRow[index].userId,
+        columnIndex
+      );
+    }
     if (roleRes.msg === 'OK') {
       dispatch(setMessage(true, '修改项目成员权限成功', 'success'));
       setRows(newRow);
@@ -672,7 +698,7 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
               height: 'calc(100% - 60px)',
             }}
           >
-            <Table stickyHeader aria-label="sticky table">
+            <Table stickyHeader aria-label="sticky table" size="small">
               <TableHead>
                 <TableRow>
                   {departmentType === 2
@@ -783,8 +809,7 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
                                       ? column.format(value)
                                       : value}
                                   </TableCell>
-                                ) : column.id === 'operation' &&
-                                  rows[index].userId !== user._key ? (
+                                ) : column.id === 'operation' ? (
                                   <TableCell align="center">
                                     <IconButton
                                       color="primary"
@@ -793,6 +818,9 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
                                         setDeleteVisible(true);
                                         setUserId(rows[index].userId);
                                       }}
+                                      disabled={
+                                        rows[index].userId === user._key
+                                      }
                                     >
                                       <CloseOutlined />
                                     </IconButton>
@@ -817,13 +845,14 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
                                       </div>
                                     </div>
                                   </TableCell>
-                                ) : rows[index].userId !== user._key ? (
+                                ) : (
                                   <TableCell align="center">
                                     <Checkbox
                                       checked={value ? true : false}
                                       disabled={
                                         rows[index].role >
-                                        rows[index].checkIndex
+                                          rows[index].checkIndex ||
+                                        rows[index].userId === user._key
                                           ? true
                                           : false
                                       }
@@ -834,8 +863,6 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
                                       color="primary"
                                     />
                                   </TableCell>
-                                ) : (
-                                  <TableCell align="center"></TableCell>
                                 )}
                               </React.Fragment>
                             );

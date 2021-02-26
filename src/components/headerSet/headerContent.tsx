@@ -539,6 +539,7 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                     overflow: 'visible',
                   }}
                   showMask={false}
+                  noAnimate={true}
                 >
                   <UserCenter
                     onClose={() => {

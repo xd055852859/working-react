@@ -1,8 +1,8 @@
 .content {
   height: 100%;
-  width: calc(100% - 320px);
+  width: 100%;
   position: relative;
-  z-index:3
+  z-index: 3;
 }
 .content-container {
   width: 100%;

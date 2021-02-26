@@ -101,6 +101,18 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
       unDistory = false;
     };
   }, [user, visible]);
+  useEffect(() => {
+    if (
+      taskInfo &&
+      _.findIndex(createTaskList, { _key: taskInfo._key }) != -1
+    ) {
+      let newCreateTaskList = _.cloneDeep(createTaskList);
+      newCreateTaskList[
+        _.findIndex(createTaskList, { _key: taskInfo._key })
+      ] = _.cloneDeep(taskInfo);
+      setCreateTaskList(newCreateTaskList);
+    }
+  }, [taskInfo]);
 
   const getGroupArray = async () => {
     let newGroupAllArray: any = [];

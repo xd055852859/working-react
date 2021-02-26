@@ -33,7 +33,6 @@ const Calendar = Loadable({
   loading: () => null,
 });
 
-
 const Basic: React.FC<BasicProps> = (props) => {
   const {} = props;
   const dispatch = useDispatch();
@@ -41,7 +40,7 @@ const Basic: React.FC<BasicProps> = (props) => {
   const socket = useTypedSelector((state) => state.auth.socket);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
-
+  const moveState = useTypedSelector((state) => state.common.moveState);
   const socketObj = useTypedSelector((state) => state.common.socketObj);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const unMessageNum = useTypedSelector((state) => state.common.unMessageNum);
@@ -72,28 +71,22 @@ const Basic: React.FC<BasicProps> = (props) => {
       let newTaskArray = _.cloneDeep(taskArray);
       dispatch(setUnMessageNum(newUnMessageNum + 1));
       if (headerIndex === 0 && newSelfTaskArray) {
-        newSelfTaskArray = newSelfTaskArray.map(
-          (taskItem: any) => {
-            if (taskItem._key === socketObj.data.cardKey) {
-              for (let key in taskItem) {
-                if (
-                  socketObj.data[key] &&
-                  key !== 'content' &&
-                  key !== 'type'
-                ) {
-                  if (typeof taskItem[key] === 'number') {
-                    taskItem[key] = parseInt(socketObj.data[key]);
-                  } else if (typeof taskItem[key] === 'boolean') {
-                    taskItem[key] = socketObj.data[key] ? true : false;
-                  } else {
-                    taskItem[key] = socketObj.data[key];
-                  }
+        newSelfTaskArray = newSelfTaskArray.map((taskItem: any) => {
+          if (taskItem._key === socketObj.data.cardKey) {
+            for (let key in taskItem) {
+              if (socketObj.data[key] && key !== 'content' && key !== 'type') {
+                if (typeof taskItem[key] === 'number') {
+                  taskItem[key] = parseInt(socketObj.data[key]);
+                } else if (typeof taskItem[key] === 'boolean') {
+                  taskItem[key] = socketObj.data[key] ? true : false;
+                } else {
+                  taskItem[key] = socketObj.data[key];
                 }
               }
             }
-            return taskItem;
           }
-        );
+          return taskItem;
+        });
         dispatch(setNewTaskArray('selfTaskArray', newSelfTaskArray));
       } else if (
         (headerIndex === 1 || headerIndex === 2) &&
@@ -176,7 +169,19 @@ const Basic: React.FC<BasicProps> = (props) => {
   //清理redux数据
 
   return (
-    <div ref={pageRef} className="basic">
+    <div
+      ref={pageRef}
+      className="basic"
+      style={
+        moveState === 'in'
+          ? {
+              paddingLeft: '0px',
+            }
+          : {
+              paddingLeft: '320px',
+            }
+      }
+    >
       <Home />
       {/* {headerIndex === 0 ? <Content /> : null}
       {headerIndex === 1 ? <WorkingTable /> : null}

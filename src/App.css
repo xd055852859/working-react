@@ -264,24 +264,24 @@ textarea:focus {
 
 @keyframes moveIn {
   from {
-    width: 320px;
+    left: 0px;
     opacity: 1;
   }
 
   to {
-    width: 0px;
+    left: -320px;
     opacity: 0;
   }
 }
 
 @keyframes moveOut {
   from {
-    width: 0px;
+    width: -320px;
     opacity: 0;
   }
 
   to {
-    width: 320px;
+    width: 0px;
     opacity: 1;
   }
 }
@@ -360,7 +360,7 @@ textarea:focus {
   }
 }
 
-@keyframes contentmoveIn {
+/* @keyframes contentmoveIn {
   from {
     width: calc(100% - 320px);
   }
@@ -378,7 +378,7 @@ textarea:focus {
   to {
     width: calc(100% - 320px);
   }
-}
+} */
 
 @keyframes navOut {
   from {

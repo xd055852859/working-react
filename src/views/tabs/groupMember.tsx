@@ -180,7 +180,6 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
     }
   };
   const searchPerson = (input?: string) => {
-
     let newMainMemberList = _.cloneDeep(mainMemberList);
     let personInput = input ? input : searchInput;
     let searchPersonList: any = [];
@@ -277,9 +276,13 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
     setMemberList(newMemberList);
     setMember(newMemberList);
     if (_.findIndex(groupMemberArray, { userId: userId }) !== -1) {
-      let memberRes: any = await api.group.deleteGroupMember(groupKey, [
-        userId,
-      ]);
+      let memberRes: any = null;
+      if (groupInfo.enterprise === 2) {
+        memberRes = await api.company.deletePerson(userId + '', groupKey);
+      } else {
+        memberRes = await api.group.deleteGroupMember(groupKey, [userId]);
+      }
+
       if (memberRes.msg === 'OK') {
         // dispatch(setMessage(true, '删除群成员成功', 'success'));
       } else {
@@ -667,9 +670,11 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                   >
                     {roleTypeArr[newItem.role - 1]}
                   </div>
-
                   <div className="group-time-close">
-                    {groupRole > 0 && groupRole < 3 ? (
+                    {groupRole > 0 &&
+                    groupRole < 3 &&
+                    groupRole < newItem.role &&
+                    newItem.userId !== user._key ? (
                       <img
                         src={closePng}
                         alt=""
@@ -689,8 +694,8 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
         visible={roleVisible}
         dropStyle={{
           position: 'fixed',
-          top: pos[1] + 10 + 'px',
-          left: pos[0] - 20 + 'px',
+          top: pos[1] + 15 + 'px',
+          left: pos[0] - 30 + 'px',
           width: '80px',
           zIndex: '5',
           color: '#333',

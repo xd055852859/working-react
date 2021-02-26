@@ -1,5 +1,5 @@
 .chat-iframe {
-  width: calc(100% - 320px);
+  width: 100%;
   position: fixed;
   height: calc(100% - 70px);
   opacity: 1;

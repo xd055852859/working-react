@@ -598,6 +598,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
         emergencyContact: newTargetUser.emergencyContact,
         emergencyContactTel: newTargetUser.emergencyContactTel,
         address: newTargetUser.address,
+        gender: newTargetUser.gender,
       });
       if (updatePersonRes.msg === 'OK') {
         dispatch(setMessage(true, '编辑人员成功', 'success'));
@@ -624,6 +625,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
       if (newTargetUser.nickName) {
         newTargetUser.name = newTargetUser.nickName;
       }
+      newTargetUser.gender = parseInt(newTargetUser.gender);
       let res: any = await api.company.addCompanyUser(groupKey, [
         {
           ...newTargetUser,
@@ -975,9 +977,11 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
                 color="primary"
                 onDelete={() => {
                   setIsQuit(false);
+                  getCompanyRow(0, rowsPerPage, searchInput);
                 }}
                 onClick={() => {
                   setIsQuit(false);
+                  getCompanyRow(0, rowsPerPage, searchInput);
                 }}
                 variant="outlined"
                 size="small"
@@ -1063,8 +1067,10 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
                                   <img
                                     src={
                                       row.avatar
-                                        ? row.avatar +
-                                          '?imageMogr2/auto-orient/thumbnail/80x'
+                                        ? row.avatar.indexOf('data:') === -1
+                                          ? row.avatar +
+                                            '?imageMogr2/auto-orient/thumbnail/80x'
+                                          : row.avatar
                                         : defaultPersonPng
                                     }
                                     alt=""

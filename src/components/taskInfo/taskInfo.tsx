@@ -502,7 +502,13 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       if (!newTaskItem.extraData) {
         newTaskItem.extraData = {};
       }
-      newTaskItem.extraData.url = urlInput;
+      if (urlInput) {
+        if (urlInput.includes('http://') || urlInput.includes('https://')) {
+          newTaskItem.extraData.url = urlInput;
+        } else {
+          newTaskItem.extraData.url = `https://${urlInput}`;
+        }
+      }
       dispatch(setTaskInfo(newTaskItem));
       if (onClose) {
         onClose();

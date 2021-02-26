@@ -39,8 +39,8 @@ interface CalendarInfoProps {
   onClose?: any;
   targetGroupKey: string;
   setFollowList?: any;
-  changeEdit:Function;
-  changeFollowEdit:Function
+  changeEdit: Function;
+  changeFollowEdit: Function;
 }
 moment.locale('zh-cn');
 const useStyles = makeStyles((theme: Theme) =>
@@ -99,7 +99,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
     targetGroupKey,
     setFollowList,
     changeEdit,
-    changeFollowEdit
+    changeFollowEdit,
   } = props;
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
@@ -159,9 +159,9 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
           setMonthInput(newTaskItem.circleData[0].month + 1);
           setDayInput(newTaskItem.circleData[0].date);
         }
-        // if (newTaskItem.type !== 8) {
-        getFollowList(newTaskItem);
-        // }
+        if (calendarFollow.length > 0) {
+          getFollowList(newTaskItem);
+        }
       }
       if (
         calendarType !== '新建' &&
@@ -195,14 +195,14 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
     }
     setCalendarInfo(newCalendarInfo);
     setCalendar(newCalendarInfo);
-    changeEdit(true)
+    changeEdit(true);
   };
   const changeTitle = (e: any) => {
     let newCalendarInfo = _.cloneDeep(calendarInfo);
     newCalendarInfo.title = e.target.value;
     setCalendarInfo(newCalendarInfo);
     setCalendar(newCalendarInfo);
-    changeEdit(true)
+    changeEdit(true);
   };
   const changeDate = (date: any, type: string) => {
     let newCalendarInfo = _.cloneDeep(calendarInfo);
@@ -215,7 +215,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
     }
     setCalendarInfo(newCalendarInfo);
     setCalendar(newCalendarInfo);
-    changeEdit(true)
+    changeEdit(true);
   };
   const chooseCalendarGroup = (item: any) => {
     let newCalendarInfo = _.cloneDeep(calendarInfo);
@@ -231,7 +231,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
     setCalendarGroup(newCalendarGroup);
     setCalendarInfo(newCalendarInfo);
     setCalendar(newCalendarInfo);
-    changeEdit(true)
+    changeEdit(true);
   };
   const chooseCalendarFollow = (item: any) => {
     let newCalendarFollow = _.cloneDeep(calendarFollow);
@@ -274,7 +274,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
     //现在和未来
     newCalendarInfo.calendarEditType = parseInt(e.target.value);
     setCalendar(newCalendarInfo);
-    changeEdit(true)
+    changeEdit(true);
   };
   return (
     <div className="calendarInfo">

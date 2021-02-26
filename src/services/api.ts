@@ -1014,7 +1014,8 @@ const company = {
     searchCondition?: string,
     batchNumber?: string,
     currOrgKey?: any,
-    isQuit?: number
+    isQuit?: number,
+    sonGroupKey?:string
   ) {
     return request.post(
       HOME_URL + '/organization/getEnterpriseGroupOrOrganizationMemberList',
@@ -1028,6 +1029,7 @@ const company = {
         batchNumber: batchNumber,
         currOrgKey: currOrgKey,
         isQuit: isQuit,
+        sonGroupKey:sonGroupKey
       }
     );
   },

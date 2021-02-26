@@ -561,13 +561,8 @@ const Calendar: React.FC<CalendarProps> = (props) => {
     }
   };
   return (
-    <div
-      className="calendar"
-      style={{
-        width:
-          targetGroupKey || moveState === 'in' ? '100%' : 'calc(100% - 320px)',
-      }}
-    >
+    <div className="calendar">
+      {/* targetGroupKey || moveState === 'in' ? '100%' : 'calc(100% - 320px)', */}
       {loading ? <Loading /> : null}
       {!targetGroupKey ? (
         <React.Fragment>
@@ -813,7 +808,6 @@ const Calendar: React.FC<CalendarProps> = (props) => {
           })}
         </div>
       </div>
-
       <CalendarItem
         visible={itemVisible}
         onClose={() => {

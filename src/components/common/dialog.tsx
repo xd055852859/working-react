@@ -15,6 +15,7 @@ interface dialogProp {
   showMask?: boolean;
   closePngState?: boolean;
   unOut?: boolean;
+  noAnimate?: boolean;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -38,12 +39,17 @@ const Dialog: React.FC<dialogProp> = (prop) => {
     showMask,
     closePngState,
     unOut,
+    noAnimate,
   } = prop;
   const classes = useStyles();
   const dialog = () => {
     return (
       <div
-        className="dialog animate__animated animate__slideInRight"
+        className={
+          showMask || noAnimate
+            ? 'dialog'
+            : 'dialog animate__animated animate__slideInRight'
+        }
         style={dialogStyle}
         id="dialog"
       >

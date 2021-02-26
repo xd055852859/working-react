@@ -165,8 +165,8 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
           if (data[key].orgType === 3) {
             //?imageMogr2/auto-orient/thumbnail/80x
             newCompanyData[key].icon = data[key].groupLogo
-              ? data[key].groupLogo + '?roundPic/radius/!50p'
-              : defaultPersonPng;
+              ? data[key].groupLogo  + '?imageMogr2/auto-orient/thumbnail/80x'
+              : defaultGroupPng;
           }
           if (!nodeId && !data[key].parentOrgKey) {
             nodeId = data[key]._key;
@@ -269,7 +269,7 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
         enterpriseGroupKey: addCompanyRes.result.enterpriseGroupKey,
         groupMemberKey: addCompanyRes.result.groupMemberKey,
         orgType: 1,
-        icon: defaultDepartMentSvg,
+        // icon: defaultDepartMentSvg,
       };
       if (type === 'child') {
         newCompanyData[selectedNode].sortList.push(addCompanyRes.result._key);

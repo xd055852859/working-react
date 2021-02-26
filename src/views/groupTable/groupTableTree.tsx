@@ -92,7 +92,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
   const [dayNumber, setDayNumber] = useState<any>(null);
   const [endtime, setEndtime] = useState(0);
   const [timeNumber, setTimeNumber] = useState<any>(null);
-  const [moveState, setMoveState] = useState<any>('bottom');
+  const [moveState, setMoveState] = useState<any>('');
   const [editInfoType, setEditInfoType] = useState<any>('');
   const [content, setContent] = useState<any>('');
   const treeRef: React.RefObject<any> = useRef();
@@ -234,14 +234,6 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
             disabled:
               taskItem._key === groupInfo.taskTreeRootCardKey || !editRole,
             strikethrough: taskItem.finishPercent === 2,
-            contract:
-              taskItem.contract ||
-              (taskItem.finishPercent === 2 &&
-                taskItem.hasChildren &&
-                taskItem.children.length === 0) ||
-              (taskItem.type === 15 && key === groupInfo.taskTreeRootCardKey)
-                ? true
-                : false,
             checked: taskItem.finishPercent > 0,
             showCheckbox: taskItem.type === 6,
             showStatus:
@@ -267,7 +259,6 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
               taskItem.parentCardKey || key !== groupInfo.taskTreeRootCardKey
                 ? taskItem.parentCardKey
                 : '',
-            sortList: taskItem.children ? taskItem.children : [],
             color:
               gridTime < 0
                 ? gridTime < 5
@@ -288,6 +279,19 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
             newNodeObj[taskItem._key].icon = taskItem.extraData?.icon
               ? taskItem.extraData.icon
               : iconArray[taskItem.type - 10];
+          }
+          if (taskItem.children) {
+            newNodeObj[taskItem._key].sortList =
+              taskItem.finishPercent !== 2 ? taskItem.children : [];
+            newNodeObj[taskItem._key].contract =
+              (taskItem.contract &&
+                newNodeObj[taskItem._key].sortList.length > 0) ||
+              (taskItem.type === 15 && key === groupInfo.taskTreeRootCardKey)
+                ? true
+                : false;
+          } else {
+            newNodeObj[taskItem._key].sortList = [];
+            newNodeObj[taskItem._key].contract = false;
           }
         });
         console.log(newNodeObj);
@@ -611,9 +615,10 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
           ? 'rgba(229, 231, 234, 0.9)'
           : 'rgb(255,255,255)';
       newNodeObj[taskItem._key].strikethrough = taskItem.finishPercent === 2;
+      console.log(gridList[nodeIndex].finishPercent, taskItem.finishPercent);
       if (
-        nodeObj[taskItem._key].strikethrough &&
-        nodeObj[taskItem._key].hasChildren
+        gridList[nodeIndex].finishPercent === 2 &&
+        taskItem.finishPercent !== 2
       ) {
         getData(taskItem._key, newNodeObj, newGridList);
       } else {
@@ -714,14 +719,17 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
     // setNodeObj(newNodeObj);
     // setGridList(newGridList);
   };
-  const editSortList = async(id: string, sortList: any, type: string) => {
+  const editSortList = async (id: string, sortList: any, type: string) => {
     let newNodeObj = _.cloneDeep(nodeObj);
     let newGridList = _.cloneDeep(gridList);
     newNodeObj[newNodeObj[id].father].sortList = sortList;
     let nodeIndex = _.findIndex(newGridList, { _key: newNodeObj[id].father });
     newGridList[nodeIndex].children = sortList;
     console.log(sortList);
-    let treeRelationRes: any = await api.task.editCardSimple(newNodeObj[id].father,{children: sortList});
+    let treeRelationRes: any = await api.task.editCardSimple(
+      newNodeObj[id].father,
+      { children: sortList }
+    );
     if (treeRelationRes.msg === 'OK') {
       setNodeObj(newNodeObj);
       setGridList(newGridList);
@@ -874,11 +882,11 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
     } else {
       if (finishPercent === 2 && newTaskItem.finishPercent === 2) {
         newTaskItem.finishPercent = 1;
-        newTaskItem.contract = newTaskItem.hasChildren ? true : false;
+        // newTaskItem.contract = newTaskItem.hasChildren ? true : false;
       } else {
         if (finishPercent !== 2 && newTaskItem.finishPercent === 2) {
           console.log('newTaskItem.hasChildren', newTaskItem.hasChildren);
-          newTaskItem.contract = newTaskItem.hasChildren ? true : false;
+          // newTaskItem.contract = newTaskItem.hasChildren ? true : false;
         }
         newTaskItem.finishPercent = finishPercent;
       }
@@ -898,7 +906,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
           type: newTaskItem.type,
           finishPercent: newTaskItem.finishPercent,
           taskEndDate: newTaskItem.taskEndDate,
-          contract: newTaskItem.contract,
+          // contract: newTaskItem.contract,
         },
         3
       )
@@ -1134,7 +1142,8 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                         }}
                         className="tree-path-item"
                       >
-                        {pathItem.title === '项目任务树根节点'||( pathItem.title === '任务树' && pathIndex === 0)
+                        {pathItem.title === '项目任务树根节点' ||
+                        (pathItem.title === '任务树' && pathIndex === 0)
                           ? groupInfo.groupName
                           : pathItem.title}
                         <div className="tree-path-icon">

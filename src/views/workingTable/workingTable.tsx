@@ -70,28 +70,30 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
 
   const prevFilterObject = usePrevious(_.cloneDeep(filterObject));
   useEffect(() => {
-    if (user && user._key && headerIndex === 1) {
-      setLoading(true);
-      dispatch(
-        getWorkingTableTask(
-          1,
-          user._key,
-          1,
-          [0, 1, 2, 10],
-          theme.fileDay ? theme.fileDay : 7
-        )
-      );
-    } else if (targetUserInfo && targetUserInfo._key && headerIndex === 2) {
-      setLoading(true);
-      dispatch(
-        getWorkingTableTask(
-          user._key === targetUserInfo._key ? 4 : 2,
-          targetUserInfo._key,
-          1,
-          [0, 1, 2, 10],
-          theme.fileDay ? theme.fileDay : 7
-        )
-      );
+    if (workingTaskArray) {
+      if (user && user._key && headerIndex === 1) {
+        setLoading(true);
+        dispatch(
+          getWorkingTableTask(
+            1,
+            user._key,
+            1,
+            [0, 1, 2, 10],
+            theme.fileDay ? theme.fileDay : 7
+          )
+        );
+      } else if (targetUserInfo && targetUserInfo._key && headerIndex === 2) {
+        setLoading(true);
+        dispatch(
+          getWorkingTableTask(
+            user._key === targetUserInfo._key ? 4 : 2,
+            targetUserInfo._key,
+            1,
+            [0, 1, 2, 10],
+            theme.fileDay ? theme.fileDay : 7
+          )
+        );
+      }
     }
   }, [filterObject]);
 
@@ -129,13 +131,13 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
   return (
     <div
       className="workingTable"
-      style={
-        moveState === 'in'
-          ? { animation: 'contentmoveIn 50ms', width: '100%' }
-          : moveState === 'out'
-          ? { animation: 'contentmoveOut 50ms', width: 'calc(100% - 320px)' }
-          : {}
-      }
+      // style={
+      //   moveState === 'in'
+      //     ? { animation: 'contentmoveIn 50ms', width: '100%' }
+      //     : moveState === 'out'
+      //     ? { animation: 'contentmoveOut 50ms', width: 'calc(100% - 320px)' }
+      //     : {}
+      // }
     >
       {loading ? <Loading /> : null}
       <WorkingTableHeader />
