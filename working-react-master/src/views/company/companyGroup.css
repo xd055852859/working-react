@@ -1,0 +1,6 @@
+.companyGroup-left {
+  width: 300px;
+}
+.companyGroup-right {
+  width: calc(100% - 300px);
+}
