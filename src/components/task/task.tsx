@@ -1,239 +1,975 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, MouseEvent } from 'react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
+import { Button, Tooltip } from '@material-ui/core';
+import TextareaAutosize from '@material-ui/core/TextareaAutosize';
 import { useDispatch } from 'react-redux';
+import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
+import {
+  changeMusic,
+  changeunMusic,
+  changeMove,
+  changeCreateMusic,
+} from '../../redux/actions/authActions';
+import {
+  setTaskKey,
+  editTask,
+  getWorkingTableTask,
+  getGroupTask,
+  setChooseKey,
+  setTaskInfo,
+  getSelfTask,
+  changeTaskInfoVisible,
+} from '../../redux/actions/taskActions';
+import { setHeaderIndex } from '../../redux/actions/memberActions';
+import {
+  setMessage,
+  changeTimeSetVisible,
+  changeTaskMemberVisible,
+} from '../../redux/actions/commonActions';
+import { changeStartId } from '../../redux/actions/groupActions';
 import moment from 'moment';
-import _ from 'lodash'
+import _ from 'lodash';
 import './task.css';
-
-
+import api from '../../services/api';
+import DropMenu from '../common/dropMenu';
+import TimeIcon from '../common/timeIcon';
+// import doneAudio from '../../assets/audio/doneAudio.mp3';
 import unfinishPng from '../../assets/img/unfinish.png';
 import finishPng from '../../assets/img/finish.png';
+import unfinishbPng from '../../assets/svg/unfinishb.svg';
+import finishbPng from '../../assets/svg/finishb.svg';
 import defaultPerson from '../../assets/img/defaultPerson.png';
-import important from '../../assets/img/important.png';
-import unimportant from '../../assets/img/unimportant.png';
-import { setTaskKey, editTask } from '../../redux/actions/taskActions';
+import importantPng from '../../assets/img/important.png';
+import unimportantPng from '../../assets/img/unimportant.png';
+import ellipsisbPng from '../../assets/img/ellipsisb.png';
+import taskAddPng from '../../assets/img/contact-plus.png';
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
+import contactTree from '../../assets/svg/contactTreeb.svg';
+import messageHandSvg from '../../assets/svg/messageHand.svg';
+import messageunHandSvg from '../../assets/svg/messageunHand.svg';
+import urlSvg from '../../assets/svg/url.svg';
 
 interface TaskProps {
   taskItem: any;
   executorKey?: number | string;
+  changeTask?: any;
+  taskIndex?: number;
+  taskInfoIndex?: number;
+  showGroupName?: boolean;
+  bottomtype?: string;
+  timeSetStatus?: boolean;
+  myState?: boolean;
+  createTime?: string;
+  reportState?: boolean;
+  outSide?: boolean;
 }
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    button: {
+      // padding: '6px 16px',
+    },
+  })
+);
 const Task: React.FC<TaskProps> = (props) => {
-  const { taskItem } = props;
-  const bottomtype = '';
+  const {
+    taskItem,
+    changeTask,
+    taskIndex,
+    taskInfoIndex,
+    showGroupName,
+    bottomtype,
+    timeSetStatus,
+    myState,
+    createTime,
+    reportState,
+    outSide,
+  } = props;
   const taskKey = useTypedSelector((state) => state.task.taskKey);
+  // const addKey = useTypedSelector((state) => state.task.addKey);
   const user = useTypedSelector((state) => state.auth.user);
+  const theme = useTypedSelector((state) => state.auth.theme);
+  const timeSetVisible = useTypedSelector(
+    (state) => state.common.timeSetVisible
+  );
+  const taskInfo = useTypedSelector((state) => state.task.taskInfo);
+  const groupKey = useTypedSelector((state) => state.group.groupKey);
+  const targetUserKey = useTypedSelector((state) => state.auth.targetUserKey);
+  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const memberHeaderIndex = useTypedSelector(
+    (state) => state.member.memberHeaderIndex
+  );
   const dispatch = useDispatch();
+  const classes = useStyles();
   const [endtime, setEndtime] = useState(0);
   const [taskDayColor, setTaskDayColor] = useState<any>();
   const [editRole, setEditRole] = useState(false);
-  const [editState, setEditState] = useState(false);
+  const [suggestVisible, setSuggestVisible] = useState(false);
+  const [taskTypeIndex, setTaskTypeIndex] = useState(0);
   const [taskDetail, setTaskDetail] = useState<any>(null);
+  const [taskTitle, setTaskTitle] = useState('');
+  // const [deleteDialogShow, setDeleteDialogShow] = useState(false);
+  const [taskInfoDialogShow, setTaskInfoDialogShow] = useState(false);
+  const [addTaskVisible, setAddTaskVisible] = useState(false);
+  const [addInput, setAddInput] = useState('');
+  const [avatarShow, setAvatarShow] = useState<any>(null);
 
+  const [avatarKey, setAvatarKey] = useState<any>(null);
+
+  const titleRef: React.RefObject<any> = useRef();
+  const color = [
+    '#6FD29A',
+    '#21ABE4',
+    '#F5A623',
+    '#FB8444',
+    '#FF5D5B',
+    '#9F33FE',
+  ];
+  const backgroundColor = [
+    '#DAF6E6',
+    '#D8ECFF',
+    '#FBE6C4',
+    '#FFDDCC',
+    '#FFE3DE',
+    '#F3E5FF',
+  ];
+  const taskTypeArr = [
+    { name: '建议', id: 1 },
+    { name: '强烈建议', id: 2 },
+    { name: '错误', id: 3 },
+    { name: '严重错误', id: 4 },
+    { name: '致命错误', id: 5 },
+    { name: '顶级优先', id: 10 },
+  ];
+
+  // useEffect(() => {
+  //   setTaskDetail(null);
+  // }, [headerIndex, targetUserKey, groupKey]);
   useEffect(() => {
     // 用户已登录
     if (taskItem) {
-      let time = 0;
-      let endTime = 0;
-      let taskDayColor = null;
-      let endState = false;
-      let editRole = false;
-      let taskDetail = {}
-      if (taskItem.taskEndDate) {
-        time = Math.floor(
-          (moment(taskItem.taskEndDate).endOf('day').valueOf() -
-            moment().endOf('day').valueOf()) /
-          86400000
-        );
-        // this.endTimeText = this.$moment(taskEndDate).format('YYYY年MM月DD日');
-      }
-      endTime = time < 0 ? Math.abs(time) : Math.abs(time) + 1;
-      endState = time < 0 ? false : true
-      taskDayColor = !endState
-        ? taskItem.finishPercent == 0
-          ? { backgroundColor: 'red' }
-          : { backgroundColor: '#417505' }
-        : null;
-      editRole = (taskItem.groupRole && taskItem.groupRole > 0 && taskItem.groupRole < 4) || taskItem.creatorKey == user._key ||
-        taskItem.executorKey == user._key
-      console.log(editRole);
-      setEndtime(endTime);
-      setTaskDayColor(taskDayColor);
-      setEditRole(editRole);
-      taskDetail = _.cloneDeep(taskItem)
-      setTaskDetail(taskDetail)
+      editTargetTask(taskItem);
     }
   }, [taskItem]);
+  useEffect(() => {
+    // 用户已登录
+    if (taskInfo && taskDetail && taskInfo._key === taskDetail._key) {
+      editTargetTask(taskInfo);
+    }
+  }, [taskInfo]);
+
+  // useEffect(() => {
+  //   if (titleRef.current && taskKey === taskDetail._key && editRole) {
+  // if (titleRef.current.setSelectionRange) {
+  //   titleRef.current.setSelectionRange(
+  //     titleRef.current.value.length,
+  //     titleRef.current.value.length
+  //   );
+  // } else {
+  //   let range = titleRef.current.createTextRange();
+  //   range.moveStart('character', titleRef.current.value.length);
+  //   range.moveEnd('character', titleRef.current.value.length);
+  //   range.select();
+  // }
+  // let range = document.createRange();
+  // range.selectNodeContents(titleRef.current);
+  // range.collapse(false);
+  // let sel: any = window.getSelection();
+  // sel.removeAllRanges();
+  // sel.addRange(range);
+  // }
+  // dispatch(setChooseKey('0'));
+  // }, [taskKey]);
+
   const chooseTask = (e: React.MouseEvent) => {
     dispatch(setTaskKey(taskItem._key));
+    dispatch(setTaskInfo(taskDetail));
   };
-  const cancelTask = (e: React.MouseEvent) => {
-
-    if (taskKey != 0) {
-      console.log(taskKey);
-      console.log(taskItem, taskDetail)
-      console.log(editState)
-      if (editState) {
-        dispatch(editTask({ key: taskKey, ...taskDetail }));
-        setEditState(false)
+  const changeFinishPercent = (finishPercent: number, e?: any) => {
+    let newTaskDetail = _.cloneDeep(taskDetail);
+    // taskDetail.finishPercent = finishPercent !== 0 ? 0 : 1;
+    newTaskDetail.finishPercent = finishPercent;
+    if (newTaskDetail.finishPercent === 1) {
+      // newTaskDetail.todayTaskTime = moment().valueOf();
+      newTaskDetail.taskEndDate = moment().valueOf();
+      dispatch(changeMusic(true));
+      if (e) {
+        dispatch(changeMove([e.pageX, e.pageY]));
       }
-      dispatch(setTaskKey(0));
+    } else if (newTaskDetail.finishPercent === 0) {
+      dispatch(changeunMusic(true));
+    }
+    setNewDetail(newTaskDetail, {
+      finishPercent: finishPercent,
+      taskEndDate: newTaskDetail.taskEndDate,
+    });
+  };
+  const changeTitle = (title: string) => {
+    let newTaskDetail = _.cloneDeep(taskDetail);
+    newTaskDetail.title = title;
+    setTaskDetail(newTaskDetail);
+  };
+
+  const changeImportant = (importantStatus: number) => {
+    let newTaskDetail = _.cloneDeep(taskDetail);
+    newTaskDetail.importantStatus = importantStatus;
+    setNewDetail(newTaskDetail, { importantStatus: importantStatus });
+  };
+  const changeTaskType = (taskType: number) => {
+    let newTaskDetail = _.cloneDeep(taskDetail);
+    newTaskDetail.taskType = taskType;
+    setNewDetail(newTaskDetail, { taskType: taskType });
+  };
+  const chooseExecutor = (e: React.MouseEvent) => {
+    if (editRole) {
+      dispatch(changeTaskMemberVisible(true, e.clientX, e.clientY));
     }
   };
-  const changeFinishPercent = (finishPercent: number) => {
-    taskDetail.finishPercent = finishPercent != 0 ? 0 : 1
-    if (taskDetail.finishPercent == 1) {
-      taskDetail.todayTaskTime = moment().valueOf();
-    } else if (taskDetail.finishPercent == 0) {
-      taskDetail.todayTaskTime = 0;
-    }
-    setNewDetail(taskDetail)
-  }
-  const changeTitle = (e: any) => {
-    // console.log(e.type);
-    // console.log(e.target.value);
-    taskDetail.title = e.target.value
-    setNewDetail(taskDetail)
-  }
-  const setNewDetail = (taskDetail: any) => {
+
+  const changeTime = (e: any) => {
     if (editRole) {
-      let newTaskItem = {}
-      newTaskItem = _.cloneDeep(taskDetail)
-      setTaskDetail(newTaskItem)
-      setEditState(true)
+      dispatch(changeTimeSetVisible(true, e.clientX, e.clientY));
     }
-  }
+  };
+
+  const setNewDetail = (taskDetail: any, obj: any) => {
+    if (editRole) {
+      // setEditState(true);
+      obj._key = taskDetail._key;
+      for (let key in obj) {
+        taskDetail[key] = _.cloneDeep(obj[key]);
+      }
+      dispatch(
+        editTask(
+          {
+            key: taskDetail._key,
+            ...obj,
+          },
+          headerIndex
+        )
+      );
+      dispatch(setTaskInfo(_.cloneDeep(taskDetail)));
+      setTaskDetail(_.cloneDeep(taskDetail));
+    }
+  };
+  const plusTask = async () => {
+    let newTaskDetail = _.cloneDeep(taskDetail);
+    let addTaskRes: any = await api.task.addTask({
+      groupKey: newTaskDetail.groupKey,
+      groupRole: newTaskDetail.groupRole,
+      labelKey: newTaskDetail.labelKey,
+      executorKey: newTaskDetail.executorKey,
+      taskType: newTaskDetail.taskType,
+      title: '',
+      cardIndex: taskIndex ? taskIndex + 1 : 0,
+    });
+    if (addTaskRes.msg === 'OK') {
+      await api.task.editTask({
+        key: newTaskDetail._key,
+        ...newTaskDetail,
+      });
+      setTaskInfo(newTaskDetail);
+      setAddTaskVisible(false);
+      setAddInput('');
+      // setChooseKey(addTaskRes.result._key);
+      setTaskKey(addTaskRes.result._key);
+      dispatch(changeCreateMusic(true));
+      dispatch(setMessage(true, '新增成功', 'success'));
+
+      if (headerIndex == 3) {
+        dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
+      } else if (headerIndex == 0) {
+        dispatch(
+          getSelfTask(
+            1,
+            user._key,
+            '[0, 1]',
+            1,
+            moment().add(1, 'days').startOf('day').valueOf(),
+            1
+          )
+        );
+      } else {
+        dispatch(
+          getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10], theme.fileDay)
+        );
+      }
+    } else {
+      dispatch(setMessage(true, addTaskRes.msg, 'error'));
+    }
+  };
+  const editTargetTask = (newTaskItem: any, type?: number) => {
+    let [time, endTime, taskDayColor, endState, editRole]: any = [
+      0,
+      0,
+      {},
+      false,
+      false,
+    ];
+    if (newTaskItem.taskEndDate) {
+      time = moment(newTaskItem.taskEndDate)
+        .endOf('day')
+        .diff(moment().endOf('day'), 'days');
+      // this.endTimeText = this.$moment(taskEndDate).format('YYYY年MM月DD日');
+      endTime = time < 0 ? Math.abs(time) : Math.abs(time) + 1;
+      endState = time < 0 ? false : true;
+      taskDayColor = !endState
+        ? newTaskItem.finishPercent === 0
+          ? { backgroundColor: 'red' }
+          : { backgroundColor: '#B6B7B7' }
+        : time > 0
+        ? { backgroundColor: '#555555' }
+        : {};
+      taskDayColor.margin = '5px 5px 0px 0px';
+      setEndtime(endTime);
+      setTaskDayColor(taskDayColor);
+    }
+
+    editRole =
+      (newTaskItem.groupRole &&
+        newTaskItem.groupRole > 0 &&
+        newTaskItem.groupRole < 4) ||
+      // && taskItem.creatorGroupRole >= taskItem.groupRole
+      newTaskItem.creatorKey === user._key ||
+      newTaskItem.executorKey === user._key;
+    setEditRole(editRole);
+    // getTaskMemberArray(taskItem.grougKey)
+    taskTypeArr.filter((item: any, index: number) => {
+      if (item.id === newTaskItem.taskType) {
+        setTaskTypeIndex(index);
+      }
+    });
+
+    newTaskItem.followUKeyArray = newTaskItem.followUKeyArray
+      ? newTaskItem.followUKeyArray
+      : [];
+    // setTaskTitle(taskItem.title)
+    // if (!taskDetail || taskItem._key != taskDetail._key) {
+    setTaskTitle(newTaskItem.title);
+    setTaskDetail(newTaskItem);
+  };
   return (
-    <div className="taskItem" onClick={chooseTask} onMouseLeave={cancelTask}>
-      {taskDetail ?
+    <React.Fragment>
+      {taskDetail ? (
         <React.Fragment>
-          {taskDetail.finishPercent != 10 ?
-            <div className="taskItem-finishIcon" onClick={() => { changeFinishPercent(taskDetail.finishPercent) }} >
-              <img src={taskDetail.finishPercent == 0 ? unfinishPng : finishPng} />
-            </div>
-            : null}
-          <div className="taskItem-container">
-            <div className="taskItem-info">
-              <div className="taskItem-day" style={taskDayColor}>
-                <div
-                  className="taskItem-time-day"
-                  style={{ left: endtime < 10 ? '5px' : '0px' }}
-                >
-                  {endtime}
-                </div>
-                <div className="taskItem-time"></div>
-                <div
-                  className="taskItem-time-hour"
-                  style={{ right: taskItem.hour < 1 ? '5px' : '0px' }}
-                >
-                  {taskDetail.hour}
-                </div>
-              </div>
-              {/* <div
-                className="taskItem-img"
-                // v-if="bottomtype=='grid'"
-                style={{ width: '25px', height: '25px' }}
-              >
-                <img
-                  src={
-                    taskDetail.executorAvatar
-                      ? taskDetail.executorAvatar
-                      : defaultPerson
-                  }
-                  style={{ marginTop: '0px' }}
-                />
-              </div> */}
-              <div className="taskItem-title">
-                {taskKey == taskDetail._key && editRole ? (
-                  <input
-                    placeholder="请输入标题"
-                    value={taskDetail.title}
-                    style={
-                      taskDetail.finishPercent == 2
-                        ? {
-                          marginTop: '2px',
-                          textDecoration: 'line-through',
-                          minHeight: '22px',
-                        }
-                        : { marginTop: '2px', minHeight: '22px' }
-                    }
-                    onChange={changeTitle}
-                  />
-                ) : (
-                    <div
-                      // v-show="cardRole||cardKey!=taskItem._key"
-                      style={{
-                        width: '100%',
-                        minHeight: '28px',
-                        backgroundColor: bottomtype
-                          ? 'transparent'
-                          : taskDetail.finishPercent == 0 ||
-                            taskDetail.finishPercent == 10
-                            ? ''
-                            : '#E5E7EA',
-                        textDecoration:
-                          taskDetail.finishPercent == 2 ? 'line-through' : '',
-                      }}
-                    >
-                      {taskDetail.title}
+          <div
+            className="task-container"
+            onClick={(e: any) => {
+              e.stopPropagation();
+            }}
+          >
+            <div
+              className="taskItem"
+              onClick={chooseTask}
+              tabIndex={taskItem._key}
+              onBlur={() => {
+                let newTaskItem = _.cloneDeep(taskItem);
+                let newTaskDetail = _.cloneDeep(taskDetail);
+                newTaskDetail.title = taskTitle;
+                if (newTaskItem.title !== taskTitle) {
+                  dispatch(
+                    editTask(
+                      {
+                        key: newTaskDetail._key,
+                        title: taskTitle,
+                      },
+                      headerIndex
+                    )
+                  );
+                  setTaskInfo(newTaskDetail);
+                }
+              }}
+              // onKeyDown={taskKeyDown}
+              style={{
+                background: bottomtype
+                  ? 'transparent'
+                  : taskDetail.finishPercent === 0 ||
+                    taskDetail.finishPercent === 10
+                  ? taskDetail.taskEndDate > moment().endOf('day').valueOf()
+                    ? 'rgb(255,255,255,0.95)'
+                    : 'rgb(255,255,255)'
+                  : 'rgb(229,231,234,0.9)',
+                // opacity:
+                //   taskDetail.finishPercent === 0 ||
+                //   taskDetail.finishPercent === 10
+                //     ? 1
+                //     : 0.9,
+                boxShadow:
+                  !bottomtype && taskItem._key === taskKey
+                    ? '0 0 7px 0 rgba(0, 0, 0, 0.26)'
+                    : '',
+                border: createTime ? '1px solid #efefef' : '0px',
+              }}
+            >
+              <React.Fragment>
+                {createTime ? (
+                  <div className="taskItem-groupContainer">
+                    <div className="taskItem-group">
+                      <div
+                        className="taskItem-img"
+                        style={{ marginRight: '5px', borderRadius: '5px' }}
+                      >
+                        <img
+                          src={
+                            taskDetail.groupLogo
+                              ? taskDetail.groupLogo +
+                                '?imageMogr2/auto-orient/thumbnail/80x'
+                              : defaultGroupPng
+                          }
+                        />
+                      </div>
+                      <span>{taskDetail.groupName}</span>
+                      <span>{' / '}</span>
+                      <span>
+                        {taskDetail.labelName ? taskDetail.labelName : 'ToDo'}
+                      </span>
                     </div>
-                  )}
-              </div>
-            </div>
-            <div className="taskItem-footer">
-              <div className="taskItem-footer-left">
-                <div className="taskItem-name">
-                  <span>
-                    {taskDetail.serialNumber ? '#' + taskDetail.serialNumber : ''}
-                  </span>
-                  <span style={{ flexShrink: 0 }} >
-                    {taskDetail.creatorName.length > 3
-                      ? taskDetail.creatorName.substring(0, 3) + '...'
-                      : taskDetail.creatorName}
-                  </span>
-                  <span></span>
-                  <span style={{ flexShrink: 0 }} >
-                    {taskDetail.executorName && taskDetail.executorName.length > 3
-                      ? taskDetail.executorName.substring(0, 3) + '...'
-                      : taskDetail.executorName}
-                  </span>
+                    <div className="taskItem-createTime">{createTime}</div>
+                  </div>
+                ) : null}
+                {!bottomtype && !myState ? (
+                  <div
+                    className="taskItem-taskType"
+                    style={{
+                      borderTop: '9px solid ' + color[taskTypeIndex],
+                      borderRight: '9px solid ' + color[taskTypeIndex],
+                      borderLeft: '9px solid transparent',
+                      borderBottom: '9px solid transparent',
+                    }}
+                    onClick={(e: any) => {
+                      if (taskKey === taskDetail._key && editRole) {
+                        setSuggestVisible(true);
+                      }
+                    }}
+                  >
+                    {suggestVisible ? (
+                      <DropMenu
+                        visible={suggestVisible}
+                        dropStyle={{
+                          width: '100px',
+                          top: '-6px',
+                          left: '-109px',
+                          zIndex: '20',
+                        }}
+                        onClose={() => {
+                          setSuggestVisible(false);
+                        }}
+                      >
+                        {taskTypeArr.map((taskTypeItem, taskTypeIndex) => {
+                          return (
+                            <div
+                              key={'taskType' + taskTypeIndex}
+                              className="taskItem-suggest-item"
+                              style={{
+                                color: color[taskTypeIndex],
+                                backgroundColor: backgroundColor[taskTypeIndex],
+                              }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setTaskTypeIndex(taskTypeIndex);
+                                changeTaskType(taskTypeItem.id);
+                                setSuggestVisible(false);
+                              }}
+                            >
+                              {taskTypeItem.name}
+                            </div>
+                          );
+                        })}
+                      </DropMenu>
+                    ) : null}
+                  </div>
+                ) : null}
+                {taskDetail.finishPercent !== 10 ? (
+                  <div
+                    className="taskItem-finishIcon"
+                    onClick={(e: any) => {
+                      if (editRole) {
+                        e.stopPropagation();
+                        changeFinishPercent(
+                          taskDetail.finishPercent !== 0 ? 0 : 1,
+                          e
+                        );
+                      }
+                    }}
+                  >
+                    <Tooltip title="设置完成度">
+                      <img
+                        src={
+                          taskDetail.finishPercent === 0
+                            ? bottomtype
+                              ? unfinishPng
+                              : unfinishbPng
+                            : bottomtype
+                            ? finishPng
+                            : finishbPng
+                        }
+                      />
+                    </Tooltip>
+                  </div>
+                ) : null}
+                <div className="taskItem-container">
+                  <div className="taskItem-info">
+                    {!myState ? (
+                      <Tooltip title="设置工时">
+                        <React.Fragment>
+                          <TimeIcon
+                            timeHour={taskDetail.hour}
+                            timeColor={taskDayColor}
+                            timeClick={changeTime}
+                            timeDay={endtime}
+                          />
+                        </React.Fragment>
+                      </Tooltip>
+                    ) : null}
+                    {bottomtype === 'grid' ? (
+                      <Tooltip title="设置执行人">
+                        <div
+                          className="taskItem-img"
+                          onMouseEnter={() => {
+                            setAvatarShow(2);
+                          }}
+                          onMouseLeave={() => {
+                            setAvatarShow(1);
+                          }}
+                          style={
+                            avatarShow &&
+                            editRole &&
+                            taskKey === taskDetail._key
+                              ? avatarShow === 1
+                                ? {
+                                    animation: 'taskAvatarSmall 500ms',
+                                    // animationFillMode: 'forwards',
+                                    width: '18px',
+                                    height: '18px',
+                                  }
+                                : {
+                                    animation: 'taskAvatarBig 500ms',
+                                    // animationFillMode: 'forwards',
+                                    width: '25px',
+                                    height: '25px',
+                                  }
+                              : {
+                                  // animationFillMode: 'forwards',
+                                  width: '18px',
+                                  height: '18px',
+                                }
+                          }
+                        >
+                          <img
+                            src={
+                              taskDetail.executorAvatar
+                                ? taskDetail.executorAvatar +
+                                  '?imageMogr2/auto-orient/thumbnail/80x'
+                                : defaultPerson
+                            }
+                            style={{ marginTop: '0px' }}
+                          />
+                        </div>
+                      </Tooltip>
+                    ) : null}
+                    <div className="taskItem-title">
+                      <TextareaAutosize
+                        rowsMin={1}
+                        aria-label="maximum height"
+                        placeholder="请输入任务名"
+                        style={{
+                          width: '100%',
+                          minHeight: '28px',
+                          backgroundColor: bottomtype ? 'transparent' : '',
+                          color: bottomtype
+                            ? '#fff'
+                            : taskDetail.finishPercent === 0
+                            ? '#333'
+                            : '#8091a0',
+                          textDecoration:
+                            taskDetail.finishPercent === 2
+                              ? 'line-through #333 solid'
+                              : '',
+                        }}
+                        value={taskTitle}
+                        ref={titleRef}
+                        onBlur={(e) => {}}
+                        onChange={(e) => {
+                          if (e.target.value !== taskTitle) {
+                            changeTitle(e.target.value);
+                            setTaskTitle(e.target.value);
+                          }
+                        }}
+                        onKeyDown={(e: any) => {
+                          if (e.keyCode === 13) {
+                            plusTask(); // 发送文本
+                            e.preventDefault(); // 阻止浏览器默认换行操作
+                            return false;
+                          }
+                        }}
+                        disabled={!editRole || taskKey !== taskDetail._key}
+                      />
+                    </div>
+                  </div>
+                  {taskDetail.path1 &&
+                  headerIndex === 3 &&
+                  (taskDetail.type === 6 || taskDetail.type === 1) ? (
+                    <div
+                      className="taskItem-path-container"
+                      // style={{
+                      //   backgroundColor:
+                      //     taskDetail.finishPercent !== 0 || bottomtype
+                      //       ? 'transparent'
+                      //       : '#e0e0e0',
+                      // }}
+                    >
+                      <img
+                        src={contactTree}
+                        alt=""
+                        style={{
+                          width: '9px',
+                          height: '9px',
+                          marginRight: '5px',
+                        }}
+                      ></img>
+                      <div
+                        className="taskItem-path"
+                        style={{
+                          color: bottomtype ? '#fff' : '#A1ACB7',
+                        }}
+                      >
+                        {taskDetail.path1.map(
+                          (pathItem: any, pathIndex: number) => {
+                            return (
+                              <React.Fragment key={'path' + pathIndex}>
+                                {pathIndex !== taskDetail.path1.length - 1 ? (
+                                  <span
+                                    onClick={() => {
+                                      if (headerIndex === 3) {
+                                        dispatch(changeStartId(pathItem._key));
+                                        dispatch(setHeaderIndex(11));
+                                      }
+                                    }}
+                                  >
+                                    {pathIndex === 0
+                                      ? pathItem.title
+                                      : ' / ' + pathItem.title}
+                                  </span>
+                                ) : null}
+                              </React.Fragment>
+                            );
+                          }
+                        )}
+                      </div>
+                    </div>
+                  ) : null}
+                  {!bottomtype && !myState ? (
+                    <div className="taskItem-footer">
+                      <div className="taskItem-footer-left">
+                        {reportState && headerIndex === 1 ? (
+                          <div
+                            className="taskItem-img"
+                            style={{ borderRadius: '5px' }}
+                          >
+                            <img
+                              src={
+                                taskDetail.groupLogo
+                                  ? taskDetail.groupLogo +
+                                    '?imageMogr2/auto-orient/thumbnail/80x'
+                                  : defaultGroupPng
+                              }
+                            />
+                          </div>
+                        ) : null}
+                        <div className="taskItem-name">
+                          {reportState && headerIndex !== 3 ? (
+                            <span style={{ margin: '0px 8px' }}>
+                              {taskDetail.groupName.split('_')[0]} /{' '}
+                              {taskDetail.labelName
+                                ? taskDetail.labelName
+                                : taskDetail.labelKey
+                                ? ''
+                                : 'ToDo'}
+                            </span>
+                          ) : null}
+                          {!showGroupName || createTime ? (
+                            <span>
+                              {taskDetail.serialNumber
+                                ? '#' + taskDetail.serialNumber
+                                : ''}
+                            </span>
+                          ) : (
+                            <span style={{ flexShrink: 0 }}>
+                              {taskDetail.groupName.split('_')[0]}
+                            </span>
+                          )}
+                          <span style={{ flexShrink: 0 }}>
+                            {taskDetail.creatorName &&
+                            taskDetail.creatorName.length > 3
+                              ? taskDetail.creatorName.substring(0, 3) + '...'
+                              : taskDetail.creatorName}
+                          </span>
+                          <img
+                            src={
+                              taskDetail.finishConfirm
+                                ? messageHandSvg
+                                : messageunHandSvg
+                            }
+                            alt=""
+                            style={{
+                              width: '11px',
+                              height: '10px',
+                              marginLeft: '2px',
+                              marginRight: '2px',
+                              marginBottom: '3px',
+                            }}
+                          />
+                          <span>⇀</span>
+                          <span style={{ flexShrink: 0 }}>
+                            {taskDetail.executorName &&
+                            taskDetail.executorName.length > 3
+                              ? taskDetail.executorName.substring(0, 3) + '...'
+                              : taskDetail.executorName}
+                          </span>
+                          <img
+                            src={
+                              taskDetail.assignConfirm
+                                ? messageHandSvg
+                                : messageunHandSvg
+                            }
+                            alt=""
+                            style={{
+                              width: '11px',
+                              height: '10px',
+                              marginLeft: '2px',
+                              marginRight: '2px',
+                              marginBottom: '3px',
+                            }}
+                          />
+                        </div>
+                        <div
+                          className="taskItem-img-container"
+                          onMouseEnter={() => {
+                            setAvatarShow(2);
+                            setAvatarKey(taskDetail._key);
+                          }}
+                          onMouseLeave={() => {
+                            setAvatarShow(1);
+                            setAvatarKey(null);
+                          }}
+                        >
+                          <div
+                            className="taskItem-img"
+                            onClick={chooseExecutor}
+                            style={
+                              avatarShow && avatarKey === taskDetail._key
+                                ? avatarShow === 1
+                                  ? {
+                                      animation: 'taskAvatarSmall 500ms',
+                                      // animationFillMode: 'forwards',
+                                      width: '18px',
+                                      height: '18px',
+                                    }
+                                  : {
+                                      animation: 'taskAvatarBig 500ms',
+                                      // animationFillMode: 'forwards',
+                                      width: '30px',
+                                      height: '30px',
+                                    }
+                                : {
+                                    // animationFillMode: 'forwards',
+                                    width: '18px',
+                                    height: '18px',
+                                  }
+                            }
+                          >
+                            <img
+                              src={
+                                taskDetail.executorAvatar
+                                  ? taskDetail.executorAvatar +
+                                    '?imageMogr2/auto-orient/thumbnail/80x'
+                                  : defaultPersonPng
+                              }
+                              alt=""
+                              onError={(e: any) => {
+                                e.target.onerror = null;
+                                e.target.src = defaultPersonPng;
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="taskItem-icon-group">
+                        {editRole &&
+                        headerIndex === 3 &&
+                        memberHeaderIndex === 0 ? (
+                          <div
+                            className="taskItem-check-icon"
+                            onClick={() => {
+                              setAddTaskVisible(true);
+                            }}
+                          >
+                            <Tooltip title="添加任务">
+                              <img
+                                src={taskAddPng}
+                                alt=""
+                                style={{ height: '18px', width: '18px' }}
+                              />
+                            </Tooltip>
+                          </div>
+                        ) : null}
+                        {taskDetail.importantStatus ? (
+                          <div
+                            className="taskItem-check-icon"
+                            style={{ display: 'flex' }}
+                          >
+                            <Tooltip title="重要">
+                              <img
+                                src={importantPng}
+                                alt="重要"
+                                onClick={(e: any) => {
+                                  e.stopPropagation();
+                                  changeImportant(0);
+                                }}
+                                style={{ height: '18px', width: '19px' }}
+                              />
+                            </Tooltip>
+                          </div>
+                        ) : (
+                          <div className="taskItem-check-icon">
+                            <Tooltip title="重要">
+                              <img
+                                src={unimportantPng}
+                                alt="不重要"
+                                onClick={(e: any) => {
+                                  e.stopPropagation();
+                                  changeImportant(1);
+                                }}
+                                style={{ height: '18px', width: '19px' }}
+                              />
+                            </Tooltip>
+                          </div>
+                        )}
+                        {taskDetail.extraData && taskDetail.extraData.url ? (
+                          <div
+                            className="taskItem-check-icon"
+                            style={{ display: 'flex' }}
+                            onClick={() => {
+                              window.open(taskDetail.extraData.url);
+                            }}
+                          >
+                            <Tooltip title="跳转链接">
+                              <img
+                                src={urlSvg}
+                                alt=""
+                                style={{ height: '18px', width: '18px' }}
+                              />
+                            </Tooltip>
+                          </div>
+                        ) : null}
+                        {/* {editRole &&
+                          taskDetail.creatorGroupRole <= taskDetail.groupRole ? (
+                            <div className="taskItem-check-icon">
+                              <img
+                                src={deleteIconSvg}
+                                alt="删除"
+                                onClick={() => {
+                                  setDeleteDialogShow(true);
+                                }}
+                                style={{ height: '18px', width: '19px' }}
+                              />
+                            </div>
+                          ) : null} */}
+
+                        {editRole ? (
+                          <Tooltip title="任务详情">
+                            <div
+                              className="taskItem-detail"
+                              style={
+                                taskDetail.hasContent ? { opacity: '1' } : {}
+                              }
+                              onClick={() => {
+                                // if (outSide) {
+                                dispatch(changeTaskInfoVisible(true));
+                                // } else {
+                                //   setTaskInfoDialogShow(true);
+                                // }
+
+                                // dispatch(setTaskInfo(taskDetail));
+                                dispatch(setChooseKey(taskDetail._key));
+                              }}
+                            >
+                              <img
+                                src={ellipsisbPng}
+                                alt="详情"
+                                style={{ height: '2px', width: '12px' }}
+                              />
+                            </div>
+                          </Tooltip>
+                        ) : null}
+                      </div>
+                    </div>
+                  ) : null}
+                  <div className="taskItem-taskType"></div>
+                  {/*  style={cardKey===taskItem._key?{borderTop:'10px solid '+color[taskItem.taskType===10?5:taskItem.taskType-1],borderRight:'10px solid '+color[taskItem.taskType===10?5:taskItem.taskType-1],  borderLeft: '10px solid transparent',
+  borderBottom: '10px solid transparent'}:{borderTop:'7px solid '+color[taskItem.taskType===10?5:taskItem.taskType-1],borderRight:'7px solid '+color[taskItem.taskType===10?5:taskItem.taskType-1],  borderLeft: '7px solid transparent',
+  borderBottom: '7px solid transparent'}} */}
                 </div>
-                <div className="taskItem-img">
-                  <img
-                    src={
-                      taskDetail.executorAvatar
-                        ? taskDetail.executorAvatar
-                        : defaultPerson
-                    }
+              </React.Fragment>
+            </div>
+            {addTaskVisible ? (
+              <div className="taskItem-plus-title">
+                <div className="taskItem-plus-input">
+                  <input
+                    // required
+                    placeholder="任务标题"
+                    value={addInput}
+                    autoComplete="off"
+                    onChange={(e) => {
+                      setAddInput(e.target.value);
+                    }}
                   />
                 </div>
-              </div>
-              <div style={{ maxWidth: '64px', display: 'flex' }}>
-                <div className="taskItem-check-icon">
-                  {taskDetail.importantStatus ? (
-                    <img
-                      src={important}
-                      alt="重要"
-                    />
+                <div className="taskItem-plus-button">
+                  <Button
+                    onClick={() => {
+                      setAddTaskVisible(false);
+                      setAddInput('');
+                    }}
+                    className={classes.button}
+                  >
+                    取消
+                  </Button>
+                  {addInput ? (
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      onClick={() => {
+                        plusTask();
+                      }}
+                      style={{ marginLeft: '10px', color: '#fff' }}
+                    >
+                      确定
+                    </Button>
                   ) : (
-                      <img src={unimportant} alt="不重要" />
-                    )}
+                    <Button
+                      variant="contained"
+                      disabled
+                      style={{ marginLeft: '10px', color: '#fff' }}
+                    >
+                      确定
+                    </Button>
+                  )}
                 </div>
-                <div
-                  className="taskItem-check-icon"
-                  style={{ color: '#333' }}
-                ></div>
               </div>
-            </div>
-            <div className="taskItem-taskType"></div>
-            {/*  style={cardKey==taskItem._key?{borderTop:'10px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],borderRight:'10px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],  borderLeft: '10px solid transparent',
-  borderBottom: '10px solid transparent'}:{borderTop:'7px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],borderRight:'7px solid '+color[taskItem.taskType==10?5:taskItem.taskType-1],  borderLeft: '7px solid transparent',
-  borderBottom: '7px solid transparent'}} */}
-          </div></React.Fragment> : null}
-    </div >
+            ) : null}
+          </div>
+        </React.Fragment>
+      ) : null}
+    </React.Fragment>
   );
 };
 Task.defaultProps = {
   taskItem: null,
   executorKey: 0,
+  changeTask: null,
+  showGroupName: false,
+  taskIndex: 0,
 };
 export default Task;

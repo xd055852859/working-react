@@ -1,9 +1,11 @@
 .groupTable {
   height: 100%;
-  width:calc(100% - 320px);;
+  width: 100%;
+  /* position: relative;
+  z-index:3 */
 }
 .groupTableContent {
   width: 100%;
-  height: calc(100% - 88px);
-  overflow: auto;
+  height: calc(100% - 68px);
+  margin-top: 68px;
 }

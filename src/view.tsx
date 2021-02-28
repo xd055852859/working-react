@@ -6,43 +6,28 @@ import {
   Switch,
   Redirect,
 } from 'react-router-dom';
-import Test from './views/groupTable/test'
+import Message from './components/common/message';
 
 export default function Pages() {
   const App = Loadable({
     loader: () => import('./App'),
     loading: () => null,
-  });
-  const Home = Loadable({
-    loader: () => import('./views/home/home'),
-    loading: () => null,
-  });
-
-  const Content = Loadable({
-    loader: () => import('./views/content/content'),
-    loading: () => null,
-  });
-  const Bootpage = Loadable({
-    loader: () => import('./views/bootpage/bootpage'),
+  }); 
+  const Welcome = Loadable({
+    loader: () => import('./views/welcome/welcome'),
     loading: () => null,
   });
   return (
     <Router>
       <Switch>
-        <Route
-          exact
-          path="/"
-          component={App}
-          render={() => <Redirect to="/login" push />}
-        />
-        <Route path="/home" component={Home} />
-        <Route path="/content" component={Content} />
-        <Route path="/bootpage" component={Bootpage} />
-        <Route path="/test" component={Test} />
-
+        <Route exact path="/" render={() => <Redirect to="/welcome" />} />
+        <Route exact path="/welcome" component={Welcome} />
+        <Route path="/home" component={App} />
+        {/* <Route path="/home" component={Home} /> */}
         {/* <Route path="/404" component={NotFound} />
         <Redirect to="/404" /> */}
       </Switch>
+      <Message />
     </Router>
   );
 }
