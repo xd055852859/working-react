@@ -3,7 +3,13 @@ import { useTypedSelector } from '../../redux/reducer/RootState';
 import { Button, Tooltip } from '@material-ui/core';
 import TextareaAutosize from '@material-ui/core/TextareaAutosize';
 import { useDispatch } from 'react-redux';
-import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
+import {
+  createMuiTheme,
+  createStyles,
+  makeStyles,
+  Theme,
+  ThemeProvider,
+} from '@material-ui/core/styles';
 import {
   changeMusic,
   changeunMusic,
@@ -64,13 +70,13 @@ interface TaskProps {
   reportState?: boolean;
   outSide?: boolean;
 }
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    button: {
-      // padding: '6px 16px',
+const buttonTheme = createMuiTheme({
+  palette: {
+    primary: {
+      main: '#ff1744',
     },
-  })
-);
+  },
+});
 const Task: React.FC<TaskProps> = (props) => {
   const {
     taskItem,
@@ -100,7 +106,6 @@ const Task: React.FC<TaskProps> = (props) => {
     (state) => state.member.memberHeaderIndex
   );
   const dispatch = useDispatch();
-  const classes = useStyles();
   const [endtime, setEndtime] = useState(0);
   const [taskDayColor, setTaskDayColor] = useState<any>();
   const [editRole, setEditRole] = useState(false);
@@ -588,7 +593,6 @@ const Task: React.FC<TaskProps> = (props) => {
                         }}
                         value={taskTitle}
                         ref={titleRef}
-                        onBlur={(e) => {}}
                         onChange={(e) => {
                           if (e.target.value !== taskTitle) {
                             changeTitle(e.target.value);
@@ -597,7 +601,21 @@ const Task: React.FC<TaskProps> = (props) => {
                         }}
                         onKeyDown={(e: any) => {
                           if (e.keyCode === 13) {
-                            plusTask(); // 发送文本
+                            let newTaskItem = _.cloneDeep(taskItem);
+                            let newTaskDetail = _.cloneDeep(taskDetail);
+                            newTaskDetail.title = e.target.value;
+                            if (newTaskItem.title !== e.target.value) {
+                              dispatch(
+                                editTask(
+                                  {
+                                    key: newTaskDetail._key,
+                                    title: e.target.value,
+                                  },
+                                  headerIndex
+                                )
+                              );
+                              setTaskInfo(newTaskDetail);
+                            }
                             e.preventDefault(); // 阻止浏览器默认换行操作
                             return false;
                           }
@@ -606,6 +624,37 @@ const Task: React.FC<TaskProps> = (props) => {
                       />
                     </div>
                   </div>
+                  {(taskItem.creatorKey === user._key ||
+                    taskItem.executorKey === user._key) &&
+                  taskItem?.extraData?.auditStatus ? (
+                    <div  className="taskItem-auditStatus">
+                      {taskItem.extraData.auditStatus === 1 ? (
+                        <Button variant="outlined" size="small">
+                          待审核
+                        </Button>
+                      ) : null}
+                      {taskItem.extraData.auditStatus === 2 ? (
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          size="small"                       
+                        >
+                          审核已通过
+                        </Button>
+                      ) : null}
+                      {taskItem.extraData.auditStatus === 3 ? (
+                        <ThemeProvider theme={buttonTheme}>
+                          <Button
+                            variant="outlined"
+                            color="primary"
+                            size="small"
+                          >
+                            审核已拒绝
+                          </Button>
+                        </ThemeProvider>
+                      ) : null}
+                    </div>
+                  ) : null}
                   {taskDetail.path1 &&
                   headerIndex === 3 &&
                   (taskDetail.type === 6 || taskDetail.type === 1) ? (
@@ -932,7 +981,6 @@ const Task: React.FC<TaskProps> = (props) => {
                       setAddTaskVisible(false);
                       setAddInput('');
                     }}
-                    className={classes.button}
                   >
                     取消
                   </Button>

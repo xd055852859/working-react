@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './welcome.css';
 import { useHistory } from 'react-router-dom';
+import { getSearchParamValue } from '../../services/util';
 import { makeStyles, Theme, createStyles } from '@material-ui/core/styles';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import Button from '@material-ui/core/Button';
@@ -69,8 +70,20 @@ export default function Welcome() {
       url = url.replace('http:', 'https:');
       window.location.replace(url);
     }
-    if (localStorage.getItem('token') && !localStorage.getItem('viewWelcome')) {
-      history.push('/home/basic');
+    const createType = getSearchParamValue(location.search, 'createType');
+    if (createType) {
+      localStorage.setItem('createType', createType);
+      if (localStorage.getItem('token')) {
+        history.push('/home/create');
+      }
+    } else {
+      localStorage.removeItem('createType');
+      if (
+        localStorage.getItem('token') &&
+        !localStorage.getItem('viewWelcome')
+      ) {
+        history.push('/home/basic');
+      }
     }
   }, []);
   useEffect(() => {
@@ -103,8 +116,11 @@ export default function Welcome() {
       localStorage.removeItem('viewWelcome');
     } else {
       let redirect = '';
+
       if (localStorage.getItem('showType')) {
         redirect = `${window.location.protocol}//${window.location.host}/home/showPage`;
+      } else if (localStorage.getItem('createType')) {
+        redirect = `${window.location.protocol}//${window.location.host}/home/create`;
       } else {
         redirect = `${window.location.protocol}//${window.location.host}/home/basic`;
       }
@@ -126,7 +142,7 @@ export default function Welcome() {
       ref={bootpageRef}
       style={{ backgroundSize: clientWidth > 500 ? 'contain' : '400px 300px' }}
     >
-      <div className="welcome-link">
+      {/* <div className="welcome-link">
         <div
           className="welcome-link-help"
           onMouseLeave={() => {
@@ -194,7 +210,7 @@ export default function Welcome() {
         >
           Chrome插件
         </div>
-      </div>
+      </div> */}
       <Button
         variant="contained"
         size="large"

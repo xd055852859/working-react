@@ -29,6 +29,9 @@ const GroupCreate: React.FC<GroupCreateProps> = (props) => {
   const dispatch = useDispatch();
   // const classes = useStyles();
   const theme = useTypedSelector((state) => state.auth.theme);
+  const mainEnterpriseGroup = useTypedSelector(
+    (state) => state.auth.mainEnterpriseGroup
+  );
   const [addVisible, setAddVisible] = React.useState(false);
   const [addModelVisible, setAddModelVisible] = React.useState(false);
   const [addGroupVisible, setAddGroupVisible] = React.useState(false);
@@ -47,6 +50,10 @@ const GroupCreate: React.FC<GroupCreateProps> = (props) => {
   };
   const addGroup = async () => {
     let newGroupObj = _.cloneDeep(groupObj);
+    if (mainEnterpriseGroup?.mainEnterpriseGroupKey) {
+      newGroupObj.enterpriseGroupKey =
+        mainEnterpriseGroup.mainEnterpriseGroupKey;
+    }
     setLoading(true);
     if (
       !newGroupObj ||

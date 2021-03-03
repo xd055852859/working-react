@@ -59,17 +59,17 @@ const useStyles = makeStyles((theme: Theme) =>
       color: '#fff',
       marginRight: '10px',
       padding: ' 0px 5px',
-      height:'26px !important'
+      height: '26px !important'
     },
     small1: {
       width: '16px !important',
       height: '16px !important',
-      marginRight:'0px !important'
+      marginRight: '0px !important'
     },
     small2: {
       width: '20px !important',
       height: '16px !important',
-      marginRight:'0px !important'
+      marginRight: '0px !important'
     },
   })
 );
@@ -80,6 +80,7 @@ const WorkingTableHeader: React.FC = (prop) => {
   );
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
+  const clickType = useTypedSelector((state) => state.auth.clickType);
   const moveState = useTypedSelector((state) => state.common.moveState);
   const memberArray = useTypedSelector((state) => state.member.memberArray);
   const user = useTypedSelector((state) => state.auth.user);
@@ -176,11 +177,12 @@ const WorkingTableHeader: React.FC = (prop) => {
       targetUserInfo._key
     )
       setViewArray(
-        headerIndex === 1
+        headerIndex === 1 || clickType==='self'
           ? ['分频道', '分项目', '时间表', '执行表', '频道流', '项目流', '日历']
-          : user._key !== targetUserInfo._key
-          ? ['分频道', '分项目', '时间表', '', '频道流', '项目流', '日历']
-          : ['分频道', '分项目', '', '', '频道流', '项目流', '']
+          // : user._key !== targetUserInfo._key
+          // ? 
+          : ['分频道', '分项目', '时间表', '', '频道流', '项目流', '日历']
+        // : ['分频道', '分项目', '', '', '频道流', '项目流', '']
       );
   }, [headerIndex, user, targetUserInfo]);
   useEffect(() => {
@@ -297,7 +299,7 @@ const WorkingTableHeader: React.FC = (prop) => {
                 src={
                   targetUserInfo && targetUserInfo.profile.avatar
                     ? targetUserInfo.profile.avatar +
-                      '?imageMogr2/auto-orient/thumbnail/80x'
+                    '?imageMogr2/auto-orient/thumbnail/80x'
                     : defaultPersonPng
                 }
                 alt=""
@@ -568,7 +570,7 @@ const WorkingTableHeader: React.FC = (prop) => {
                     src={
                       filterObject.groupLogo
                         ? filterObject.groupLogo +
-                          '?imageMogr2/auto-orient/thumbnail/80x'
+                        '?imageMogr2/auto-orient/thumbnail/80x'
                         : defaultGroupPng
                     }
                     style={{ borderRadius: '5px' }}
@@ -591,7 +593,7 @@ const WorkingTableHeader: React.FC = (prop) => {
                     src={
                       filterObject.creatorAvatar
                         ? filterObject.creatorAvatar +
-                          '?imageMogr2/auto-orient/thumbnail/80x'
+                        '?imageMogr2/auto-orient/thumbnail/80x'
                         : defaultPersonPng
                     }
                   />
@@ -613,7 +615,7 @@ const WorkingTableHeader: React.FC = (prop) => {
                     src={
                       filterObject.executorAvatar
                         ? filterObject.executorAvatar +
-                          '?imageMogr2/auto-orient/thumbnail/80x'
+                        '?imageMogr2/auto-orient/thumbnail/80x'
                         : defaultPersonPng
                     }
                   />
@@ -666,22 +668,22 @@ const WorkingTableHeader: React.FC = (prop) => {
                                 ( 近{fileInput}天 )
                               </div>
                             ) : (
-                              <div style={{ marginLeft: '8px' }}>
-                                ( 近
-                                <input
-                                  type="number"
-                                  value={fileInput}
-                                  onChange={(e) => {
-                                    setFileInput(e.target.value);
-                                  }}
-                                  onBlur={(e) => {
-                                    changeFileDay(parseInt(e.target.value));
-                                  }}
-                                  className="fileday"
-                                />
+                                <div style={{ marginLeft: '8px' }}>
+                                  ( 近
+                                  <input
+                                    type="number"
+                                    value={fileInput}
+                                    onChange={(e) => {
+                                      setFileInput(e.target.value);
+                                    }}
+                                    onBlur={(e) => {
+                                      changeFileDay(parseInt(e.target.value));
+                                    }}
+                                    className="fileday"
+                                  />
                                 天 )
-                              </div>
-                            )}
+                                </div>
+                              )}
                           </React.Fragment>
                         ) : null}
                       </div>

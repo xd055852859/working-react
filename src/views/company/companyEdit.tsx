@@ -321,7 +321,7 @@ const CompanyEdit: React.FC<CompanyEditProps> = (props) => {
           </div>
         </React.Fragment>
       ) : null}
-      <div className="user-input">
+      <div className="companyEdit-input">
         <RadioGroup
           aria-label="gender"
           value={gender}
@@ -399,7 +399,7 @@ const CompanyEdit: React.FC<CompanyEditProps> = (props) => {
         </MuiPickersUtilsProvider>
       </div>
       <div className="companyEdit-input">
-        <TextField
+        {/* <TextField
           // required
           id="outlined-basic"
           variant="outlined"
@@ -411,7 +411,7 @@ const CompanyEdit: React.FC<CompanyEditProps> = (props) => {
             setMobile(e.target.value);
             changeTargetUser(e.target.value, 'mobile');
           }}
-        />
+        /> */}
         <TextField
           // required
           id="outlined-basic"

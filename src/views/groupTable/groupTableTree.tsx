@@ -61,7 +61,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
 
   const user = useTypedSelector((state) => state.auth.user);
   const theme = useTypedSelector((state) => state.auth.theme);
-
+  const homeMoveState = useTypedSelector((state) => state.common.moveState);
   const startId = useTypedSelector((state) => state.group.startId);
   const taskInfo = useTypedSelector((state) => state.task.taskInfo);
   const groupMemberArray = useTypedSelector(
@@ -1096,6 +1096,39 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                 : '100%',
           }}
         >
+          <div
+            className="tree-path"
+            style={homeMoveState === 'in' ? { left: '0px' } : { left: '320px' }}
+          >
+            {selectedPath
+              ? selectedPath.map((pathItem: any, pathIndex: number) => {
+                  return (
+                    <React.Fragment key={'path' + pathIndex}>
+                      <div
+                        onClick={() => {
+                          dispatch(changeStartId(pathItem._key));
+                          setSelectedPath(nodeObj[pathItem._key].path1);
+                        }}
+                        style={{
+                          fontWeight:
+                            startId === pathItem._key ? 'bold' : 'normal',
+                        }}
+                        className="tree-path-item"
+                      >
+                        {pathItem.title === '项目任务树根节点' ||
+                        (pathItem.title === '任务树' && pathIndex === 0)
+                          ? groupInfo.groupName
+                          : pathItem.title}
+                        <div className="tree-path-icon">
+                          <div className="tree-path-icon-top"></div>
+                          <div className="tree-path-icon-bottom"></div>
+                        </div>
+                      </div>
+                    </React.Fragment>
+                  );
+                })
+              : null}
+          </div>
           <div className="tree-time">
             <div className="tree-time-taskType">
               {taskTypeArray.map((item: any, index: number) => {
@@ -1125,36 +1158,6 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
                 targetNode={targetNode}
               />
             </div>
-          </div>
-          <div className="tree-path">
-            {selectedPath
-              ? selectedPath.map((pathItem: any, pathIndex: number) => {
-                  return (
-                    <React.Fragment key={'path' + pathIndex}>
-                      <div
-                        onClick={() => {
-                          dispatch(changeStartId(pathItem._key));
-                          setSelectedPath(nodeObj[pathItem._key].path1);
-                        }}
-                        style={{
-                          fontWeight:
-                            startId === pathItem._key ? 'bold' : 'normal',
-                        }}
-                        className="tree-path-item"
-                      >
-                        {pathItem.title === '项目任务树根节点' ||
-                        (pathItem.title === '任务树' && pathIndex === 0)
-                          ? groupInfo.groupName
-                          : pathItem.title}
-                        <div className="tree-path-icon">
-                          <div className="tree-path-icon-top"></div>
-                          <div className="tree-path-icon-bottom"></div>
-                        </div>
-                      </div>
-                    </React.Fragment>
-                  );
-                })
-              : null}
           </div>
           <div
             className="tree-container"

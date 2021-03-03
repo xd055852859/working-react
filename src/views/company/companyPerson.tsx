@@ -488,7 +488,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
               (item['手机区号'] + '').indexOf('+') === -1
                 ? '+' + item['手机区号']
                 : '' + item['手机区号'],
-            mobile: item['手机号'],
+            mobile: item['手机号'] + '',
             post: item['职位'],
             email: item['电子邮箱'],
             lunarBirthday: item['农历生日'],
@@ -605,10 +605,21 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
         let rowIndex = _.findIndex(newRow, { _key: newTargetUser._key });
         for (let key in newRow[rowIndex]) {
           if (newTargetUser[key] && key !== 'key') {
-            newRow[rowIndex][key] = newTargetUser[key];
+            if (key === 'birthday') {
+              newRow[rowIndex].birthday = moment(newTargetUser.birthday).format(
+                'YYYY/MM/DD'
+              );
+            }
+            if (key === 'gender') {
+              newRow[rowIndex].gender =
+                newTargetUser.gender === 1 ? '女' : '男';
+            } else {
+              newRow[rowIndex][key] = newTargetUser[key];
+            }
           }
         }
         // newRow.splice(personIndex, 1);
+        console.log(newRow);
         setRows(newRow);
         setUserVisible(false);
       } else {
@@ -1031,19 +1042,17 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
                           {column.id === 'operation' ? (
                             <TableCell align="center">
                               <React.Fragment>
-                                {row.mainEnterpriseGroupKey === groupKey ? (
-                                  <IconButton
-                                    color="primary"
-                                    component="span"
-                                    onClick={() => {
-                                      setUserVisible(true);
-                                      setTargetUser(row);
-                                    }}
-                                    size="small"
-                                  >
-                                    <Edit />
-                                  </IconButton>
-                                ) : null}
+                                <IconButton
+                                  color="primary"
+                                  component="span"
+                                  onClick={() => {
+                                    setUserVisible(true);
+                                    setTargetUser(row);
+                                  }}
+                                  size="small"
+                                >
+                                  <Edit />
+                                </IconButton>
                                 {groupRole && groupRole < row.role ? (
                                   <IconButton
                                     color="secondary"
@@ -1149,10 +1158,10 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
                               {isQuit ? (
                                 <TableCell key={column.id} align="center">
                                   {column.format && typeof value === 'number'
-                                    ? column.format(value)
+                                    ? column.format(value) !== 0
                                       ? '在职'
                                       : '离职'
-                                    : value
+                                    : value !== 0
                                     ? '在职'
                                     : '离职'}
                                 </TableCell>

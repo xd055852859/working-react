@@ -20,10 +20,12 @@ import {
 import {
   // setTargetUserKey,
   getTargetUserInfo,
+  setClickType,
   // userKeyToGroupKey
 } from '../../redux/actions/authActions';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
 import Dialog from '../../components/common/dialog';
+import { MenuTree } from 'tree-graph-react';
 import Avatar from '../../components/common/avatar';
 import TimeIcon from '../../components/common/timeIcon';
 import Loading from '../../components/common/loading';
@@ -65,8 +67,15 @@ const Contact: React.FC<ContactProps> = (props) => {
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
   const memberArray = useTypedSelector((state) => state.member.memberArray);
+  const companyMemberArray = useTypedSelector(
+    (state) => state.member.companyMemberArray
+  );
+
   const groupArray = useTypedSelector((state) => state.group.groupArray);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
+  const mainEnterpriseGroup = useTypedSelector(
+    (state) => state.auth.mainEnterpriseGroup
+  );
   const chatState = useTypedSelector((state) => state.common.chatState);
   const showChatState = useTypedSelector((state) => state.common.showChatState);
   const [contactArray, setContactArray] = useState<any>([]);
@@ -78,11 +87,16 @@ const Contact: React.FC<ContactProps> = (props) => {
   const [cloneGroupVisible, setCloneGroupVisible] = useState(false);
   const [cloneGroupIndex, setCloneGroupIndex] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [companyData, setCompanyData] = useState<any>(null);
+  const [startId, setStartId] = useState<any>(null);
+  const [selectedId, setSelectedId] = useState<any>(null);
   const theme = useTypedSelector((state) => state.auth.theme);
   let chatRef = useRef<any>(null);
+  let unDistory = true;
   // const theme = useTypedSelector((state) => state.auth.theme)
   useEffect(() => {
     return () => {
+      unDistory = false;
       if (chatRef.current) {
         clearInterval(chatRef.current);
       }
@@ -104,22 +118,45 @@ const Contact: React.FC<ContactProps> = (props) => {
       } else if (contactIndex === 1) {
         setLoading(true);
         dispatch(getMember(mainGroupKey));
+      } else if (contactIndex === 3) {
+        setLoading(true);
+        getGroupTree('');
       }
     }
   }, [user, contactIndex]);
   useEffect(() => {
     if (groupArray && contactIndex === 0) {
       setLoading(false);
-      setContactArray(groupArray);
+      let newGroupArray: any = null;
+      if (mainEnterpriseGroup && mainEnterpriseGroup.mainEnterpriseGroupKey) {
+        newGroupArray = groupArray.filter((item: any) => {
+          if (
+            item.enterpriseGroupKey ===
+              mainEnterpriseGroup.mainEnterpriseGroupKey ||
+            item._key === mainEnterpriseGroup.mainEnterpriseGroupKey
+          ) {
+            return item;
+          }
+        });
+      } else {
+        newGroupArray = groupArray;
+      }
+      console.log(newGroupArray);
+      setContactArray(newGroupArray);
     }
-  }, [groupArray, contactIndex]);
+  }, [groupArray, contactIndex, mainEnterpriseGroup]);
+
   useEffect(() => {
     if (memberArray && contactIndex === 1) {
       setLoading(false);
       setContactArray(memberArray);
     }
   }, [memberArray, contactIndex]);
-
+  useEffect(() => {
+    if (companyMemberArray && contactIndex === 2) {
+      setContactArray(companyMemberArray);
+    }
+  }, [companyMemberArray, contactIndex]);
   useEffect(() => {
     if (contactSearchInput === '') {
       if (groupArray && contactIndex === 0) {
@@ -144,7 +181,7 @@ const Contact: React.FC<ContactProps> = (props) => {
     // dispatch(setChatState(false));
   }, [contactKey]);
 
-  const toTargetGroup = async (groupKey: string, index: number) => {
+  const toTargetGroup = async (groupKey: string) => {
     dispatch(setGroupKey(groupKey));
     // dispatch(getGroupInfo(groupKey));
     dispatch(setCommonHeaderIndex(3));
@@ -156,9 +193,15 @@ const Contact: React.FC<ContactProps> = (props) => {
       dispatch(getGroup(3));
     }
   };
-  const toTargetUser = async (targetUserKey: string, index: number) => {
-    dispatch(getTargetUserInfo(targetUserKey));
-    dispatch(setCommonHeaderIndex(2));
+  const toTargetUser = async (targetUserKey: string) => {
+    if (targetUserKey !== user._key) {
+      dispatch(getTargetUserInfo(targetUserKey));
+      dispatch(setCommonHeaderIndex(2));
+    } else {
+      dispatch(setCommonHeaderIndex(1));
+      setClickType('self');
+    }
+
     if (!theme.moveState) {
       dispatch(setMoveState('in'));
     }
@@ -264,10 +307,68 @@ const Contact: React.FC<ContactProps> = (props) => {
       }
     }
   };
+  const getGroupTree = async (nodeId: any) => {
+    if (mainEnterpriseGroup && mainEnterpriseGroup.mainEnterpriseGroupKey) {
+      let newCompanyData: any = {};
+      let companyDepartmentRes: any = await api.company.getOrganizationTree(
+        mainEnterpriseGroup.mainEnterpriseGroupKey,
+        4
+      );
+      setLoading(false);
+      if (unDistory) {
+        if (companyDepartmentRes.msg === 'OK') {
+          let data = companyDepartmentRes.result;
+          for (let key in data) {
+            newCompanyData[key] = {
+              _key: data[key]._key,
+              contract: false,
+              father: data[key].parentOrgKey,
+              name: data[key].name,
+              // data[key].orgType === 1
+              //   ? data[key].name
+              //   : data[key].name +
+              //     ' (' +
+              //     (data[key].post ? data[key].post : '无职务') +
+              //     ' )',
+              path: data[key].path1,
+              sortList: data[key].children,
+              enterpriseGroupKey: data[key].enterpriseGroupKey,
+              groupMemberKey: data[key].groupMemberKey,
+              orgType: data[key].orgType,
+              staffKey: data[key].staffKey,
+              // disabled: data[key].orgType === 2,
+              childrenAll: data[key].childrenAll,
+            };
+            if (data[key].orgType === 2) {
+              //?imageMogr2/auto-orient/thumbnail/80x
+              newCompanyData[key].icon = data[key].avatar
+                ? data[key].avatar + '?roundPic/radius/!50p'
+                : defaultPersonPng;
+            }
+            if (!nodeId && !data[key].parentOrgKey) {
+              nodeId = data[key]._key;
+              newCompanyData[
+                key
+              ].icon = mainEnterpriseGroup.mainEnterpriseGroupLogo
+                ? mainEnterpriseGroup.mainEnterpriseGroupLogo +
+                  '?imageMogr2/auto-orient/thumbnail/80x'
+                : defaultGroupPng;
+              setStartId(nodeId);
+            }
+          }
+          console.log(newCompanyData);
+          // setSelectedId(nodeId);
+          setCompanyData(newCompanyData);
+        } else {
+          dispatch(setMessage(true, companyDepartmentRes.msg, 'error'));
+        }
+      }
+    }
+  };
   return (
     <div
       className="contact"
-      style={{ height: contactType ? '100%' : 'calc(100% - 60px)' }}
+      style={{ height: contactType ? '100%' : 'calc(100% - 40px)' }}
     >
       {loading ? <Loading loadingWidth="70px" loadingHeight="70px" /> : null}
       {contactType && contactIndex === 0 ? (
@@ -300,8 +401,9 @@ const Contact: React.FC<ContactProps> = (props) => {
           </Button> */}
         </div>
       ) : null}
-      {contactArray && contactArray.length > 0
-        ? contactArray.map((item: any, index: number) => {
+      {contactIndex !== 3 ? (
+        contactArray && contactArray.length > 0 ? (
+          contactArray.map((item: any, index: number) => {
             let name = contactIndex ? item.nickName : item.groupName;
             let avatar = contactIndex
               ? item.avatar
@@ -332,8 +434,8 @@ const Contact: React.FC<ContactProps> = (props) => {
                     // ;
                   } else {
                     contactIndex
-                      ? toTargetUser(key, index)
-                      : toTargetGroup(key, index);
+                      ? toTargetUser(key)
+                      : toTargetGroup(key);
                   }
                 }}
                 style={
@@ -403,7 +505,7 @@ const Contact: React.FC<ContactProps> = (props) => {
                       />
                     )
                   ) : null}
-                  {!contactType ? (
+                  {!contactType && !item.notActive ? (
                     <img
                       src={chatSvg}
                       alt=""
@@ -492,7 +594,42 @@ const Contact: React.FC<ContactProps> = (props) => {
               </div>
             );
           })
-        : null}
+        ) : null
+      ) : companyData && startId ? (
+        <MenuTree
+          // ref={targetTreeRef}
+          nodes={companyData}
+          uncontrolled={false}
+          showMoreButton
+          startId={startId}
+          defaultSelectedId={selectedId}
+          color="#e5e7eae6"
+          hoverColor="#fff"
+          disabled
+          handleClickNode={(node: any) => {
+            if (node.orgType === 2) {
+              toTargetUser(node.staffKey);
+            }
+          }}
+          // handleClickMoreButton={(node: any) => {
+          //   setMoreTop(node.y);
+          //   setInfoDialogShow(true);
+          // }}
+          // handleAddChild={(selectedNode: any) => {
+          //   addChildrenGroup(selectedNode, 'child');
+          // }}
+          // handleAddNext={(selectedNode: any) => {
+          //   addChildrenGroup(selectedNode, 'next');
+          // }}
+          // handleDeleteNode={(node: any) => {
+          //   setDeleteDialogShow(true);
+          // }}
+          // handleChangeNodeText={(nodeId: string, text: string) => {
+          //   editGroupName(nodeId, text);
+          // }}
+          // handleClickExpand={editContract}
+        />
+      ) : null}
 
       <Dialog
         visible={cloneGroupVisible}

@@ -136,13 +136,14 @@
 }
 
 .company-info-container {
-  width: calc(100% - 50px);
-  height: calc(100% - 120px);
-  margin-top: 25px;
-  margin-left: 25px;
+  width: 100%;
+  height: calc(100% - 70px);
+  /* margin-top: 25px;
+  margin-left: 25px; */
   background-color: #fff;
   border: 1px solid #ececec;
   overflow: auto;
+  box-sizing: border-box;
 }
 .company-info-title {
   width: 100%;

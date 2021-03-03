@@ -63,6 +63,9 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   // const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const groupRole = useTypedSelector((state) => state.group.groupRole);
+  const mainEnterpriseGroup = useTypedSelector(
+    (state) => state.auth.mainEnterpriseGroup
+  );
   const [groupName, setGroupName] = useState('');
   const [enterprise, setEnterprise] = useState(false);
   const [statisticsSonGroupEnergy, setStatisticsSonGroupEnergy] = useState(
@@ -309,14 +312,18 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
                 disabled={groupRole !== 1 && type === '设置'}
               />
             </div>
-            <div style={{ display: 'flex', alignItems: 'center' }}>
-              <div className="contact-name-title">企业群</div>
-              <Checkbox
-                checked={enterprise}
-                onChange={changeEnterprise}
-                disabled={groupRole !== 1 && type === '设置'}
-              />
-            </div>
+            {!(
+              type === '创建' && mainEnterpriseGroup?.mainEnterpriseGroupKey
+            ) && !(type === '设置' && groupInfo?.enterpriseGroupKey) ? (
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div className="contact-name-title">企业群</div>
+                <Checkbox
+                  checked={enterprise}
+                  onChange={changeEnterprise}
+                  disabled={groupRole !== 1 && type === '设置'}
+                />
+              </div>
+            ) : null}
           </div>
           {/* <div
             className="contact-name-content"

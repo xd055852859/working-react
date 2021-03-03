@@ -393,7 +393,9 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
       <div
         className="companySearch-info-container"
         ref={personRef}
-        style={{ height: 'calc(100% - 205px)' }}
+        style={{
+          height: companyObj.orgType === 1 ? 'calc(100% - 205px)' : '100%',
+        }}
       >
         {searchType === 3 ? (
           <Tabs
@@ -558,203 +560,210 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
           labelRowsPerPage="分页"
         />
       </div>
-      <div className="companySearch-info-title">
-        {companyObj?.name}:现有{searchType === 2 ? '成员' : '项目'} ({' '}
-        {nodeRows.length}人 )
-      </div>
-      <div className="companySearch-info-container">
-        <TableContainer
-          style={{
-            height: '150px',
-          }}
-        >
-          <Table stickyHeader aria-label="sticky table" size="small">
-            <TableHead>
-              <TableRow>
-                {searchType === 2
-                  ? columns3.map((column: any) => (
-                      <TableCell
-                        key={column.id}
-                        align="center"
-                        style={{ minWidth: column.minWidth }}
-                      >
-                        {column.label}
-                      </TableCell>
-                    ))
-                  : searchType === 3
-                  ? columns4.map((column: any) => (
-                      <TableCell
-                        key={column.id}
-                        align="center"
-                        style={{ minWidth: column.minWidth }}
-                      >
-                        {column.label}
-                      </TableCell>
-                    ))
-                  : null}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {nodeRows.map((row: any, index: number) => {
-                return (
-                  <TableRow
-                    hover
-                    role="checkbox"
-                    tabIndex={-1}
-                    key={'row' + index}
-                  >
+      {companyObj.orgType === 1 ? (
+        <React.Fragment>
+          <div className="companySearch-info-title">
+            {companyObj?.name}:现有{searchType === 2 ? '成员' : '项目'} ({' '}
+            {nodeRows.length}人 )
+          </div>
+          <div className="companySearch-info-container">
+            <TableContainer
+              style={{
+                height: '150px',
+              }}
+            >
+              <Table stickyHeader aria-label="sticky table" size="small">
+                <TableHead>
+                  <TableRow>
                     {searchType === 2
-                      ? columns3.map((column: any) => {
-                          const value = row[column.id];
-                          return (
-                            <React.Fragment key={column.id}>
-                              {column.id === 'isLeader' ? (
-                                <TableCell align="center">
-                                  <Checkbox
-                                    checked={
-                                      nodeRows[index].isLeader ? true : false
-                                    }
-                                    onChange={(e: any) => {
-                                      changeLeader(index);
-                                      // setMessageCheck(e.target.checked);
-                                    }}
-                                    color="primary"
-                                  />
-                                </TableCell>
-                              ) : column.id === 'post' ? (
-                                <TableCell align="center">
-                                  <div
-                                    suppressContentEditableWarning
-                                    contentEditable={true}
-                                    id={'postValue' + index}
-                                    onBlur={(e: any) => {
-                                      // setPostInput(document.getElementById('postValue' + index)?.innerText);
-                                      if (document) {
-                                        let postInput: any = document.getElementById(
-                                          'postValue' + index
-                                        )?.innerText;
-                                        changePost(index, postInput);
-                                      }
-                                    }}
-                                    style={{ width: '70px' }}
-                                  >
-                                    {nodeRows[index].post}
-                                  </div>
+                      ? columns3.map((column: any) => (
+                          <TableCell
+                            key={column.id}
+                            align="center"
+                            style={{ minWidth: column.minWidth }}
+                          >
+                            {column.label}
+                          </TableCell>
+                        ))
+                      : searchType === 3
+                      ? columns4.map((column: any) => (
+                          <TableCell
+                            key={column.id}
+                            align="center"
+                            style={{ minWidth: column.minWidth }}
+                          >
+                            {column.label}
+                          </TableCell>
+                        ))
+                      : null}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {nodeRows.map((row: any, index: number) => {
+                    return (
+                      <TableRow
+                        hover
+                        role="checkbox"
+                        tabIndex={-1}
+                        key={'row' + index}
+                      >
+                        {searchType === 2
+                          ? columns3.map((column: any) => {
+                              const value = row[column.id];
+                              return (
+                                <React.Fragment key={column.id}>
+                                  {column.id === 'isLeader' ? (
+                                    <TableCell align="center">
+                                      <Checkbox
+                                        checked={
+                                          nodeRows[index].isLeader
+                                            ? true
+                                            : false
+                                        }
+                                        onChange={(e: any) => {
+                                          changeLeader(index);
+                                          // setMessageCheck(e.target.checked);
+                                        }}
+                                        color="primary"
+                                      />
+                                    </TableCell>
+                                  ) : column.id === 'post' ? (
+                                    <TableCell align="center">
+                                      <div
+                                        suppressContentEditableWarning
+                                        contentEditable={true}
+                                        id={'postValue' + index}
+                                        onBlur={(e: any) => {
+                                          // setPostInput(document.getElementById('postValue' + index)?.innerText);
+                                          if (document) {
+                                            let postInput: any = document.getElementById(
+                                              'postValue' + index
+                                            )?.innerText;
+                                            changePost(index, postInput);
+                                          }
+                                        }}
+                                        style={{ width: '70px' }}
+                                      >
+                                        {nodeRows[index].post}
+                                      </div>
+                                    </TableCell>
+                                  ) : column.id === 'operation' ? (
+                                    <TableCell align="center">
+                                      <IconButton
+                                        color="primary"
+                                        component="span"
+                                        onClick={() => {
+                                          setDeleteDialogShow(true);
+                                          setDepartmentId(
+                                            nodeRows[index].staffKey
+                                          );
+                                        }}
+                                      >
+                                        <CloseOutlined />
+                                      </IconButton>
+                                    </TableCell>
+                                  ) : column.id === 'avatar' ? (
+                                    <TableCell key={column.id} align="center">
+                                      <div className="company-avatar-container ">
+                                        <div className="company-avatar">
+                                          <img
+                                            src={
+                                              row.avatar
+                                                ? row.avatar +
+                                                  '?imageMogr2/auto-orient/thumbnail/80x'
+                                                : defaultPersonPng
+                                            }
+                                            alt=""
+                                            onError={(e: any) => {
+                                              e.target.onerror = null;
+                                              e.target.src = defaultPersonPng;
+                                            }}
+                                          />
+                                        </div>
+                                      </div>
+                                    </TableCell>
+                                  ) : (
+                                    <TableCell key={column.id} align="center">
+                                      {column.format &&
+                                      typeof value === 'number'
+                                        ? column.format(value)
+                                        : value}
+                                    </TableCell>
+                                  )}
+                                </React.Fragment>
+                              );
+                            })
+                          : searchType === 3
+                          ? columns4.map((column: any, columnIndex: number) => {
+                              const value = row[column.id];
+                              return column.id === 'groupName' ? (
+                                <TableCell key={column.id} align="center">
+                                  {column.format && typeof value === 'number'
+                                    ? column.format(value)
+                                    : value}
                                 </TableCell>
                               ) : column.id === 'operation' ? (
-                                <TableCell align="center">
+                                <TableCell align="center" key={column.id}>
                                   <IconButton
                                     color="primary"
                                     component="span"
                                     onClick={() => {
                                       setDeleteDialogShow(true);
+                                      console.log(
+                                        '?????????',
+                                        nodeRows[index].staffKey
+                                      );
                                       setDepartmentId(nodeRows[index].staffKey);
                                     }}
                                   >
                                     <CloseOutlined />
                                   </IconButton>
                                 </TableCell>
-                              ) : column.id === 'avatar' ? (
+                              ) : column.id === 'groupLogo' ? (
                                 <TableCell key={column.id} align="center">
                                   <div className="company-avatar-container ">
                                     <div className="company-avatar">
                                       <img
                                         src={
-                                          row.avatar
-                                            ? row.avatar +
+                                          row.groupLogo
+                                            ? row.groupLogo +
                                               '?imageMogr2/auto-orient/thumbnail/80x'
-                                            : defaultPersonPng
+                                            : defaultGroupPng
                                         }
                                         alt=""
-                                        onError={(e: any) => {
-                                          e.target.onerror = null;
-                                          e.target.src = defaultPersonPng;
-                                        }}
                                       />
                                     </div>
                                   </div>
                                 </TableCell>
                               ) : (
                                 <TableCell key={column.id} align="center">
-                                  {column.format && typeof value === 'number'
-                                    ? column.format(value)
-                                    : value}
+                                  <React.Fragment>
+                                    <Checkbox
+                                      checked={value ? true : false}
+                                      disabled={
+                                        nodeRows[index].role >
+                                        nodeRows[index].checkIndex
+                                          ? true
+                                          : false
+                                      }
+                                      onChange={(e: any) => {
+                                        // changeRole(e, index, columnIndex);
+                                        // setMessageCheck(e.target.checked);
+                                      }}
+                                      color="primary"
+                                    />
+                                  </React.Fragment>
                                 </TableCell>
-                              )}
-                            </React.Fragment>
-                          );
-                        })
-                      : searchType === 3
-                      ? columns4.map((column: any, columnIndex: number) => {
-                          const value = row[column.id];
-                          return column.id === 'groupName' ? (
-                            <TableCell key={column.id} align="center">
-                              {column.format && typeof value === 'number'
-                                ? column.format(value)
-                                : value}
-                            </TableCell>
-                          ) : column.id === 'operation' ? (
-                            <TableCell align="center" key={column.id}>
-                              <IconButton
-                                color="primary"
-                                component="span"
-                                onClick={() => {
-                                  setDeleteDialogShow(true);
-                                  console.log(
-                                    '?????????',
-                                    nodeRows[index].staffKey
-                                  );
-                                  setDepartmentId(nodeRows[index].staffKey);
-                                }}
-                              >
-                                <CloseOutlined />
-                              </IconButton>
-                            </TableCell>
-                          ) : column.id === 'groupLogo' ? (
-                            <TableCell key={column.id} align="center">
-                              <div className="company-avatar-container ">
-                                <div className="company-avatar">
-                                  <img
-                                    src={
-                                      row.groupLogo
-                                        ? row.groupLogo +
-                                          '?imageMogr2/auto-orient/thumbnail/80x'
-                                        : defaultGroupPng
-                                    }
-                                    alt=""
-                                  />
-                                </div>
-                              </div>
-                            </TableCell>
-                          ) : (
-                            <TableCell key={column.id} align="center">
-                              <React.Fragment>
-                                <Checkbox
-                                  checked={value ? true : false}
-                                  disabled={
-                                    nodeRows[index].role >
-                                    nodeRows[index].checkIndex
-                                      ? true
-                                      : false
-                                  }
-                                  onChange={(e: any) => {
-                                    // changeRole(e, index, columnIndex);
-                                    // setMessageCheck(e.target.checked);
-                                  }}
-                                  color="primary"
-                                />
-                              </React.Fragment>
-                            </TableCell>
-                          );
-                        })
-                      : null}
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        {/* <TablePagination
+                              );
+                            })
+                          : null}
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+            {/* <TablePagination
           rowsPerPageOptions={[10, 25, 100]}
           component="div"
           count={rows.length}
@@ -764,23 +773,25 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
           onChangeRowsPerPage={handleChangeRowsPerPage}
           labelRowsPerPage="分页"
         /> */}
-        <Dialog
-          visible={deleteDialogShow}
-          onClose={() => {
-            setDeleteDialogShow(false);
-          }}
-          onOK={() => {
-            setDeleteDialogShow(false);
-            deleteDepartment(departmentId);
-          }}
-          title={'删除' + (searchType === 2 ? '成员' : '项目')}
-          dialogStyle={{ width: '400px', height: '200px' }}
-        >
-          <div className="dialog-onlyTitle">
-            是否删除该{searchType === 2 ? '成员' : '项目'}
+            <Dialog
+              visible={deleteDialogShow}
+              onClose={() => {
+                setDeleteDialogShow(false);
+              }}
+              onOK={() => {
+                setDeleteDialogShow(false);
+                deleteDepartment(departmentId);
+              }}
+              title={'删除' + (searchType === 2 ? '成员' : '项目')}
+              dialogStyle={{ width: '400px', height: '200px' }}
+            >
+              <div className="dialog-onlyTitle">
+                是否删除该{searchType === 2 ? '成员' : '项目'}
+              </div>
+            </Dialog>
           </div>
-        </Dialog>
-      </div>
+        </React.Fragment>
+      ) : null}
     </div>
   );
 };

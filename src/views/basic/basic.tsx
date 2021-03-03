@@ -32,6 +32,10 @@ const Calendar = Loadable({
   loader: () => import('../calendar/calendar'),
   loading: () => null,
 });
+const Company = Loadable({
+  loader: () => import('../companyBasic/company'),
+  loading: () => null,
+});
 
 const Basic: React.FC<BasicProps> = (props) => {
   const {} = props;
@@ -163,6 +167,9 @@ const Basic: React.FC<BasicProps> = (props) => {
       case 5:
         history.push('/home/basic/calendar');
         break;
+      case 6:
+        history.push('/home/basic/company');
+        break;
     }
     document.title = title;
   }, [headerIndex, targetUserInfo, groupInfo]);
@@ -196,6 +203,7 @@ const Basic: React.FC<BasicProps> = (props) => {
         <Route exact path="/home/basic/workTable" component={WorkingTable} />
         <Route exact path="/home/basic/calendar" component={Calendar} />
         <Route exact path="/home/basic/groupTable" component={GroupTable} />
+        <Route exact path="/home/basic/company" component={Company} />
       </Switch>
       <HeaderSet />
     </div>

@@ -3,7 +3,14 @@ import { useDispatch } from 'react-redux';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import DateFnsUtils from '@date-io/moment';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import {
+  createMuiTheme,
+  createStyles,
+  makeStyles,
+  Theme,
+  ThemeProvider,
+} from '@material-ui/core/styles';
+import { red } from '@material-ui/core/colors';
 import {
   MuiPickersUtilsProvider,
   KeyboardDatePicker,
@@ -88,7 +95,13 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   })
 );
-
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: '#ff1744',
+    },
+  },
+});
 const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   const { fatherTaskItem, onClose, type } = prop;
   const classes = useStyles();
@@ -387,6 +400,13 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     let deleteRes: any = await api.task.deleteComment(commentkey);
     if (deleteRes.msg === 'OK') {
       dispatch(setMessage(true, '删除评论成功', 'success'));
+      if (
+        newCommentArray[commentIndex].userKey === taskItem.executorKey &&
+        (newCommentArray[commentIndex].content === '同意' ||
+          newCommentArray[commentIndex].content === '拒绝')
+      ) {
+        changeAuditStatus(1);
+      }
       newCommentArray.splice(commentIndex, 1);
       newCommentTotal = newCommentTotal - 1;
       setTaskCommentArray(newCommentArray);
@@ -493,6 +513,39 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   //     dispatch(setMessage(true, labelRes.msg, 'error'));
   //   }
   // };
+  const changeAuditStatus = async (auditStatus: number) => {
+    let newTaskItem = _.cloneDeep(taskItem);
+    let newCommentArray = _.cloneDeep(taskCommentArray);
+    let newCommentTotal = taskCommentTotal;
+    let commentInput = '';
+    if (newTaskItem) {
+      if (!newTaskItem.extraData) {
+        newTaskItem.extraData = {};
+      }
+      newTaskItem.extraData.auditStatus = auditStatus;
+      dispatch(setTaskInfo(newTaskItem));
+      dispatch(
+        editTask({ key: newTaskItem._key, ...newTaskItem }, headerIndex)
+      );
+      if (auditStatus === 2 || auditStatus === 3) {
+        commentInput = auditStatus === 2 ? '同意' : '拒绝';
+        let saveRes: any = await api.task.addComment(
+          taskItem._key,
+          commentInput
+        );
+        if (saveRes.msg === 'OK') {
+          dispatch(setMessage(true, '审核成功', 'success'));
+          newCommentArray.push(saveRes.result);
+          newCommentTotal = newCommentTotal + 1;
+          setTaskCommentArray(newCommentArray);
+          setTaskCommentTotal(newCommentTotal);
+          setCommentInput('');
+        } else {
+          dispatch(setMessage(true, saveRes.msg, 'error'));
+        }
+      }
+    }
+  };
   const saveTaskInfo = (type?: number) => {
     if (!editRole) {
       dispatch(setMessage(true, '无编辑权限,请提升权限或加入对应群', 'error'));
@@ -637,6 +690,96 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
               </div>
 
               <div className="taskInfo-mainTitle-right">
+                {taskItem &&
+                (!taskItem.extraData || !taskItem.extraData.auditStatus) &&
+                taskItem.executorKey !== taskItem.creatorKey &&
+                taskItem.creatorKey === user._key ? (
+                  <Button
+                    variant="contained"
+                    color="secondary"
+                    size="small"
+                    onClick={() => {
+                      changeAuditStatus(1);
+                    }}
+                  >
+                    申请审核
+                  </Button>
+                ) : null}
+
+                {taskItem.extraData && taskItem.extraData.auditStatus ? (
+                  <React.Fragment>
+                    {taskItem.extraData.auditStatus === 1 &&
+                    taskItem.creatorKey === user._key ? (
+                      <Button variant="outlined" size="small">
+                        待审核
+                      </Button>
+                    ) : null}
+                    {taskItem.extraData.auditStatus === 2 &&
+                    taskItem.creatorKey === user._key ? (
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        size="small"
+                        style={{ marginRight: '7px' }}
+                      >
+                        已同意
+                      </Button>
+                    ) : null}
+                    {taskItem.extraData.auditStatus === 3 &&
+                    taskItem.creatorKey === user._key ? (
+                      <ThemeProvider theme={theme}>
+                        <Button variant="outlined" color="primary" size="small">
+                          已拒绝
+                        </Button>
+                      </ThemeProvider>
+                    ) : null}
+                    {taskItem.extraData.auditStatus === 1 &&
+                    taskItem.executorKey === user._key &&
+                    taskItem.creatorKey !== user._key ? (
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        size="small"
+                        onClick={() => {
+                          changeAuditStatus(2);
+                        }}
+                        style={{ marginRight: '7px', color: '#fff' }}
+                      >
+                        同意
+                      </Button>
+                    ) : null}
+                    {taskItem.extraData.auditStatus === 1 &&
+                    taskItem.executorKey === user._key &&
+                    taskItem.creatorKey !== user._key ? (
+                      <ThemeProvider theme={theme}>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          size="small"
+                          onClick={() => {
+                            changeAuditStatus(3);
+                          }}
+                        >
+                          拒绝
+                        </Button>
+                      </ThemeProvider>
+                    ) : null}
+                    {(taskItem.extraData.auditStatus === 2 ||
+                      taskItem.extraData.auditStatus === 3) &&
+                    taskItem.executorKey === user._key ? (
+                      <Button
+                        variant="contained"
+                        color="secondary"
+                        size="small"
+                        onClick={() => {
+                          changeAuditStatus(1);
+                        }}
+                      >
+                        重新审核
+                      </Button>
+                    ) : null}
+                  </React.Fragment>
+                ) : null}
                 <div
                   className="taskInfo-item-suggest"
                   onClick={() => {
@@ -805,74 +948,75 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
               >
                 {taskItem.title}
               </div>
-
-              <div className="taskInfo-item">
-                <div className="taskInfo-item-title">日期</div>
-                <div
-                  className="taskInfo-item-info"
-                  style={{ justifyContent: 'flex-start' }}
-                >
-                  <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                    <KeyboardDatePicker
-                      disableToolbar
-                      variant="inline"
-                      format="yyyy-MM-DD"
-                      margin="normal"
-                      id="date-picker-inline"
-                      // label="开始日期"
-                      value={startDate}
-                      onChange={(date) => {
-                        handleDateChange(date, 'start');
-                      }}
-                      KeyboardButtonProps={{
-                        'aria-label': 'change date',
-                      }}
-                      className={classes.root}
-                    />
-                    <KeyboardDatePicker
-                      disableToolbar
-                      variant="inline"
-                      format="yyyy-MM-DD"
-                      margin="normal"
-                      id="date-picker-inline"
-                      // label="截止日期"
-                      value={endDate}
-                      onChange={(date) => {
-                        handleDateChange(date, 'end');
-                      }}
-                      KeyboardButtonProps={{
-                        'aria-label': 'change date',
-                      }}
-                      className={classes.root}
-                      style={{ margin: '0px 15px' }}
-                    />
-                  </MuiPickersUtilsProvider>
+              {taskItem.taskEndDate !== 99999999999999 ? (
+                <div className="taskInfo-item">
+                  <div className="taskInfo-item-title">日期 </div>
                   <div
-                    className="taskInfo-item-hour"
-                    onClick={() => {
-                      setHourVisible(true);
-                    }}
+                    className="taskInfo-item-info"
+                    style={{ justifyContent: 'flex-start' }}
                   >
-                    <img src={hourSvg} alt="" />
-                    {/* {taskItem.hour ? taskItem.hour + ' 小时' : '预计工时'} */}
-                    <DropMenu
-                      visible={hourVisible}
-                      dropStyle={{ top: '36px', left: '-200px' }}
-                      onClose={() => {
-                        setHourVisible(false);
-                      }}
-                      title="预计工时"
-                    >
-                      <TimeSet
-                        timeSetClick={changeTimeSet}
-                        timestate={'hour'}
-                        dayNumber={0}
-                        timeNumber={taskItem.hour}
+                    <MuiPickersUtilsProvider utils={DateFnsUtils}>
+                      <KeyboardDatePicker
+                        disableToolbar
+                        variant="inline"
+                        format="yyyy-MM-DD"
+                        margin="normal"
+                        id="date-picker-inline"
+                        // label="开始日期"
+                        value={startDate}
+                        onChange={(date) => {
+                          handleDateChange(date, 'start');
+                        }}
+                        KeyboardButtonProps={{
+                          'aria-label': 'change date',
+                        }}
+                        className={classes.root}
                       />
-                    </DropMenu>
+                      <KeyboardDatePicker
+                        disableToolbar
+                        variant="inline"
+                        format="yyyy-MM-DD"
+                        margin="normal"
+                        id="date-picker-inline"
+                        // label="截止日期"
+                        value={endDate}
+                        onChange={(date) => {
+                          handleDateChange(date, 'end');
+                        }}
+                        KeyboardButtonProps={{
+                          'aria-label': 'change date',
+                        }}
+                        className={classes.root}
+                        style={{ margin: '0px 15px' }}
+                      />
+                    </MuiPickersUtilsProvider>
+                    <div
+                      className="taskInfo-item-hour"
+                      onClick={() => {
+                        setHourVisible(true);
+                      }}
+                    >
+                      <img src={hourSvg} alt="" />
+                      {/* {taskItem.hour ? taskItem.hour + ' 小时' : '预计工时'} */}
+                      <DropMenu
+                        visible={hourVisible}
+                        dropStyle={{ top: '36px', left: '-200px' }}
+                        onClose={() => {
+                          setHourVisible(false);
+                        }}
+                        title="预计工时"
+                      >
+                        <TimeSet
+                          timeSetClick={changeTimeSet}
+                          timestate={'hour'}
+                          dayNumber={0}
+                          timeNumber={taskItem.hour}
+                        />
+                      </DropMenu>
+                    </div>
                   </div>
                 </div>
-              </div>
+              ) : null}
               {/* <div className="taskInfo-item">
                 <div className="taskInfo-item-title">工时</div>
                 <div className="taskInfo-item-info">
@@ -916,7 +1060,8 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                   </Button>
                 ) : null} */}
               </div>
-              {!localStorage.getItem('page') ? (
+              {window.top.location.href.indexOf('localhost:3000') !== -1 ||
+              window.top.location.href.indexOf('workfly') !== -1 ? (
                 <div className="taskInfo-Editor">
                   <Editor
                     // editorHeight={'300px'}

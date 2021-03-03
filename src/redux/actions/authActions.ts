@@ -21,9 +21,11 @@ export const actionTypes = {
   CHANGE_UNFINISH_MUSIC: 'CHANGE_UNFINISH_MUSIC',
   CHANGE_BATCH_MUSIC: 'CHANGE_BATCH_MUSIC',
   CHANGE_CREATE_MUSIC: 'CHANGE_CREATE_MUSIC',
-  CHANGE_START_MUSIC:'CHANGE_START_MUSIC',
+  CHANGE_START_MUSIC: 'CHANGE_START_MUSIC',
   CHANGE_MOVE: 'CHANGE_MOVE',
   CLEAR_AUTH: 'CLEAR_AUTH',
+  SET_CLICK_TYPE: 'SET_CLICK_TYPE',
+  CHANGE_MAINENTERPRISE_GROUP: 'CHANGE_MAINENTERPRISE_GROUP',
 };
 
 export function getUserInfo(token: string | null) {
@@ -180,4 +182,19 @@ export function changeMove(finishPos: any) {
 }
 export function clearAuth() {
   return { type: actionTypes.CLEAR_AUTH };
+}
+export function setClickType(clickType: string) {
+  return { type: actionTypes.SET_CLICK_TYPE, clickType };
+}
+export function changeMainenterpriseGroup(
+  mainEnterpriseGroupKey: string,
+  mainEnterpriseGroupLogo: string,
+  mainEnterpriseGroupName: string
+) {
+  return {
+    type: actionTypes.CHANGE_MAINENTERPRISE_GROUP,
+    mainEnterpriseGroupKey,
+    mainEnterpriseGroupLogo,
+    mainEnterpriseGroupName,
+  };
 }
