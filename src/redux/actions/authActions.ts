@@ -24,6 +24,7 @@ export const actionTypes = {
   CHANGE_START_MUSIC:'CHANGE_START_MUSIC',
   CHANGE_MOVE: 'CHANGE_MOVE',
   CLEAR_AUTH: 'CLEAR_AUTH',
+  SET_CLICK_TYPE:'SET_CLICK_TYPE'
 };
 
 export function getUserInfo(token: string | null) {
@@ -180,4 +181,7 @@ export function changeMove(finishPos: any) {
 }
 export function clearAuth() {
   return { type: actionTypes.CLEAR_AUTH };
+}
+export function setClickType(clickType:string) {
+  return { type: actionTypes.SET_CLICK_TYPE };
 }

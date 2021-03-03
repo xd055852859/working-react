@@ -463,7 +463,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
               window.top.location.href = window.location.origin + '/home/basic';
               // changeShowType();
               localStorage.removeItem('showType');
-              e.stopPropagation();
+              e.stopPropagation();             
             }}
           >
             <img src={logoSvg} alt="" />

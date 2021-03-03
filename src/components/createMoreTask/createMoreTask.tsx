@@ -382,16 +382,18 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
                           >
                             <div className="createMoreTask-item-title">
                               <div className="createMoreTask-item-left">
-                                <Tooltip
+                                {/* <Tooltip
                                   title={
                                     item.labelName ? item.labelName : 'ToDo'
                                   }
-                                >
-                                  <div className="createMoreTask-item-label">
-                                    {item.labelName ? item.labelName : 'ToDo'}
+                                > */}
+                                  <div className="createMoreTask-item-label" style={{width:'100%'}}>
+                                    {item.labelName ? item.labelName : 'ToDo'} ( {item.executorName
+                                    ? item.executorName
+                                    : '无默认执行人'} )
                                   </div>
-                                </Tooltip>
-                                <div
+                                {/* </Tooltip> */}
+                                {/* <div
                                   className="createMoreTask-item-name"
                                   style={{
                                     marginLeft: '10px',
@@ -423,7 +425,7 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
                                     e.target.onerror = null;
                                     e.target.src = defaultPersonPng;
                                   }}
-                                />
+                                /> */}
                               </div>
                             </div>
                           </div>

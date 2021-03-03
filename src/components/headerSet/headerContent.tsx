@@ -3,9 +3,8 @@ import './headerSet.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { setMessage } from '../../redux/actions/commonActions';
-
-import { setTheme } from '../../redux/actions/authActions';
+import { setMessage, setCommonHeaderIndex, setMoveState as setCommonMoveState } from '../../redux/actions/commonActions';
+import { setTheme, getTargetUserInfo } from '../../redux/actions/authActions';
 import { setGroupKey } from '../../redux/actions/groupActions';
 import set1Png from '../../assets/img/set1.png';
 import set2Png from '../../assets/img/set2.png';
@@ -15,6 +14,7 @@ import set5Png from '../../assets/img/set5.png';
 import set5Svg from '../../assets/svg/set5.svg';
 import set6Svg from '../../assets/svg/set6.svg';
 import set7Svg from '../../assets/svg/set7.svg';
+import set8Svg from '../../assets/svg/set8.svg';
 import companySvg from '../../assets/svg/company.svg';
 import phoneSvg from '../../assets/svg/phone.svg';
 import phone1Svg from '../../assets/svg/phone1.svg';
@@ -138,6 +138,14 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
       dispatch(setMessage(true, res.msg, 'error'));
     }
   };
+  const toTargetUser = async () => {
+    dispatch(getTargetUserInfo(user._key));
+    dispatch(setCommonHeaderIndex(2));
+    if (!theme.moveState) {
+      dispatch(setCommonMoveState('in'));
+    }
+    await api.group.visitGroupOrFriend(1, user._key);
+  };
   return (
     <React.Fragment>
       {visible ? (
@@ -160,10 +168,10 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                     ? moveType === 1
                       ? '295px'
                       : moveType === 3
-                      ? 'calc(100% - 70px)'
-                      : '200px'
+                        ? 'calc(100% - 70px)'
+                        : '200px'
                     : 'calc(100% - 70px)'
-                  : '605px',
+                  : '650px',
             }}
           >
             <div
@@ -171,17 +179,17 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
               style={
                 moveState === 'right'
                   ? {
-                      animation: 'moveRight 500ms',
-                      // animationFillMode: 'forwards',
-                      left: '-260px',
-                    }
+                    animation: 'moveRight 500ms',
+                    // animationFillMode: 'forwards',
+                    left: '-260px',
+                  }
                   : moveState === 'left'
-                  ? {
+                    ? {
                       animation: 'moveLeft 500ms',
                       // animationFillMode: 'forwards',
                       left: '0px',
                     }
-                  : { left: '0px', height: '605px' }
+                    : { left: '0px', height: '650px' }
               }
             >
               <div className="contentHeader-set-left">
@@ -252,8 +260,8 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                         style={{
                           backgroundImage: theme.backgroundImg
                             ? 'url(' +
-                              theme.backgroundImg +
-                              '?imageMogr2/auto-orient/thumbnail/80x)'
+                            theme.backgroundImg +
+                            '?imageMogr2/auto-orient/thumbnail/80x)'
                             : '',
                           backgroundColor: !theme.backgroundImg
                             ? theme.backgroundColor
@@ -272,6 +280,28 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                           marginLeft: '5px',
                         }}
                       />
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className="contentHeader-set-item"
+                  onClick={() => {
+                    toTargetUser()
+                  }}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <div className="contentHeader-set-item-title contentHeader-set-item-bg">
+                    <div className="contentHeader-set-item-bg-info">
+                      <img
+                        src={set8Svg}
+                        alt=""
+                        style={{
+                          width: '18px',
+                          height: '18px',
+                          marginRight: '10px',
+                        }}
+                      />
+                      <div>个人工作台</div>
                     </div>
                   </div>
                 </div>
@@ -568,22 +598,12 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                   {moveType === 0
                     ? '壁纸设置'
                     : moveType === 1
-                    ? '创建项目'
-                    : moveType === 2
-                    ? '客户端下载'
-                    : moveType === 3
-                    ? '机构列表'
-                    : ''}
-                  {moveType === 0 ? (
-                    <Switch
-                      checked={theme.randomVisible ? true : false}
-                      onChange={() => {
-                        changeBoard('randomVisible');
-                      }}
-                      name="checkedD"
-                      inputProps={{ 'aria-label': 'primary checkbox' }}
-                    />
-                  ) : null}
+                      ? '创建项目'
+                      : moveType === 2
+                        ? '客户端下载'
+                        : moveType === 3
+                          ? '机构列表'
+                          : ''}
                   {moveType === 3 ? (
                     <span
                       style={{
@@ -748,7 +768,7 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                               src={
                                 item.groupLogo
                                   ? item.groupLogo +
-                                    '?imageMogr2/auto-orient/thumbnail/80x'
+                                  '?imageMogr2/auto-orient/thumbnail/80x'
                                   : defaultGroupPng
                               }
                               alt=""

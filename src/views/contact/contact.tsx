@@ -20,6 +20,7 @@ import {
 import {
   // setTargetUserKey,
   getTargetUserInfo,
+  setClickType
   // userKeyToGroupKey
 } from '../../redux/actions/authActions';
 import { setHeaderIndex } from '../../redux/actions/memberActions';
@@ -157,8 +158,14 @@ const Contact: React.FC<ContactProps> = (props) => {
     }
   };
   const toTargetUser = async (targetUserKey: string, index: number) => {
-    dispatch(getTargetUserInfo(targetUserKey));
-    dispatch(setCommonHeaderIndex(2));
+    if (targetUserKey !== user._key) {
+      dispatch(getTargetUserInfo(targetUserKey));
+      dispatch(setCommonHeaderIndex(2));
+    } else {
+      dispatch(setCommonHeaderIndex(1));
+      setClickType('self')
+    }
+
     if (!theme.moveState) {
       dispatch(setMoveState('in'));
     }
@@ -302,91 +309,91 @@ const Contact: React.FC<ContactProps> = (props) => {
       ) : null}
       {contactArray && contactArray.length > 0
         ? contactArray.map((item: any, index: number) => {
-            let name = contactIndex ? item.nickName : item.groupName;
-            let avatar = contactIndex
-              ? item.avatar
-                ? item.avatar + '?imageMogr2/auto-orient/thumbnail/80x'
-                : ''
-              : item.groupLogo
+          let name = contactIndex ? item.nickName : item.groupName;
+          let avatar = contactIndex
+            ? item.avatar
+              ? item.avatar + '?imageMogr2/auto-orient/thumbnail/80x'
+              : ''
+            : item.groupLogo
               ? item.groupLogo + '?imageMogr2/auto-orient/thumbnail/80x'
               : defaultGroupPng;
-            let key = contactIndex ? item.userId : item._key;
-            let onlineColor =
-              item.onlineStatus === 'online'
-                ? '#7ED321'
-                : item.onlineStatus === 'busy'
+          let key = contactIndex ? item.userId : item._key;
+          let onlineColor =
+            item.onlineStatus === 'online'
+              ? '#7ED321'
+              : item.onlineStatus === 'busy'
                 ? '#EA3836'
                 : item.onlineStatus === 'away'
-                ? '#F5A623'
-                : '#B3B3B3';
-            return (
-              <div
-                className="contact-item"
-                key={'contact' + index}
-                onClick={() => {
-                  if (contactType === 'create') {
-                    setCloneGroupKey(key);
-                    setCloneGroupName(name);
-                    setCloneGroupIndex(index);
-                    setCloneGroupVisible(true);
-                    // ;
-                  } else {
-                    contactIndex
-                      ? toTargetUser(key, index)
-                      : toTargetGroup(key, index);
-                  }
-                }}
-                style={
-                  cloneGroupIndex === index
-                    ? { backgroundColor: '#f0f0f0' }
-                    : {}
+                  ? '#F5A623'
+                  : '#B3B3B3';
+          return (
+            <div
+              className="contact-item"
+              key={'contact' + index}
+              onClick={() => {
+                if (contactType === 'create') {
+                  setCloneGroupKey(key);
+                  setCloneGroupName(name);
+                  setCloneGroupIndex(index);
+                  setCloneGroupVisible(true);
+                  // ;
+                } else {
+                  contactIndex
+                    ? toTargetUser(key, index)
+                    : toTargetGroup(key, index);
                 }
-              >
-                <div className="contact-left">
+              }}
+              style={
+                cloneGroupIndex === index
+                  ? { backgroundColor: '#f0f0f0' }
+                  : {}
+              }
+            >
+              <div className="contact-left">
+                <div
+                  className="contact-avatar"
+                  style={{ borderRadius: contactIndex ? '50%' : '5px' }}
+                >
+                  <img
+                    alt={name}
+                    src={avatar ? avatar : defaultPersonPng}
+                    onError={(e: any) => {
+                      e.target.onerror = null;
+                      e.target.src = defaultPersonPng;
+                    }}
+                  />
+                </div>
+                {contactIndex ? (
                   <div
-                    className="contact-avatar"
-                    style={{ borderRadius: contactIndex ? '50%' : '5px' }}
-                  >
+                    className="contact-online"
+                    style={{ backgroundColor: onlineColor }}
+                  ></div>
+                ) : null}
+                <div
+                  className="contact-left-title"
+                  style={
+                    contactType ? { maxWidth: '90%' } : { maxWidth: '65%' }
+                  }
+                >
+                  {name}
+                </div>
+                {!contactType ? (
+                  item.isCare ? (
                     <img
-                      alt={name}
-                      src={avatar ? avatar : defaultPersonPng}
-                      onError={(e: any) => {
-                        e.target.onerror = null;
-                        e.target.src = defaultPersonPng;
+                      src={carePng}
+                      alt=""
+                      className="contact-care-img"
+                      onClick={(e) => {
+                        changeCare(
+                          e,
+                          contactIndex === 0 ? 2 : 1,
+                          key,
+                          2,
+                          index
+                        );
                       }}
                     />
-                  </div>
-                  {contactIndex ? (
-                    <div
-                      className="contact-online"
-                      style={{ backgroundColor: onlineColor }}
-                    ></div>
-                  ) : null}
-                  <div
-                    className="contact-left-title"
-                    style={
-                      contactType ? { maxWidth: '90%' } : { maxWidth: '65%' }
-                    }
-                  >
-                    {name}
-                  </div>
-                  {!contactType ? (
-                    item.isCare ? (
-                      <img
-                        src={carePng}
-                        alt=""
-                        className="contact-care-img"
-                        onClick={(e) => {
-                          changeCare(
-                            e,
-                            contactIndex === 0 ? 2 : 1,
-                            key,
-                            2,
-                            index
-                          );
-                        }}
-                      />
-                    ) : (
+                  ) : (
                       <img
                         src={uncarePng}
                         alt=""
@@ -402,23 +409,23 @@ const Contact: React.FC<ContactProps> = (props) => {
                         }}
                       />
                     )
-                  ) : null}
-                  {!contactType ? (
-                    <img
-                      src={chatSvg}
-                      alt=""
-                      className="contact-uncare-img"
-                      onClick={(e: any) => {
-                        e.stopPropagation();
-                        // dispatch(setChatState(true))
-                        // dispatch(setShowChatState(true));
-                        dispatch(setShowChatState(true));
-                        dispatch(setChatState(true));
-                        setContactKey(contactIndex ? key : item.groupUUID);
-                      }}
-                    />
-                  ) : null}
-                  {/* {!contactType && !contactIndex ? (
+                ) : null}
+                {!contactType ? (
+                  <img
+                    src={chatSvg}
+                    alt=""
+                    className="contact-uncare-img"
+                    onClick={(e: any) => {
+                      e.stopPropagation();
+                      // dispatch(setChatState(true))
+                      // dispatch(setShowChatState(true));
+                      dispatch(setShowChatState(true));
+                      dispatch(setChatState(true));
+                      setContactKey(contactIndex ? key : item.groupUUID);
+                    }}
+                  />
+                ) : null}
+                {/* {!contactType && !contactIndex ? (
                     <img
                       src={unUseSvg}
                       alt=""
@@ -428,59 +435,59 @@ const Contact: React.FC<ContactProps> = (props) => {
                       }}
                     />
                   ) : null} */}
-                </div>
-                <div className="contact-icon-right">
-                  {contactType === 'create' && cloneGroupIndex === index ? (
-                    <img
-                      src={checkPersonPng}
-                      alt=""
-                      style={{
-                        width: '20px',
-                        height: '12px',
-                      }}
-                    ></img>
-                  ) : null}
-                  {!contactType && item.knowledgeBaseNodeKey ? (
-                    <img
-                      src={contactBook}
-                      alt=""
-                      style={{
-                        width: '14px',
-                        height: '17px',
-                        marginRight: '5px',
-                      }}
-                      onClick={() => {
-                        dispatch(setHeaderIndex(9));
-                      }}
-                    ></img>
-                  ) : null}
-                  {!contactType && item.isHasKnowledge ? (
-                    <img
-                      src={contactTree}
-                      alt=""
-                      className="contact-uncare-img"
-                      style={{
-                        width: '18px',
-                        height: '17px',
-                        marginRight: '5px',
-                      }}
-                      onClick={() => {
-                        dispatch(setHeaderIndex(11));
-                      }}
-                    ></img>
-                  ) : null}
-                  {item.onlineStatus === 'online' && !contactType ? (
-                    <img
-                      src={computer}
-                      alt=""
-                      style={{
-                        width: '20px',
-                        height: '17px',
-                        marginRight: '5px',
-                      }}
-                    ></img>
-                  ) : null}
-                  {/* {item.todayTotalTaskNumber && !contactType ? (
+              </div>
+              <div className="contact-icon-right">
+                {contactType === 'create' && cloneGroupIndex === index ? (
+                  <img
+                    src={checkPersonPng}
+                    alt=""
+                    style={{
+                      width: '20px',
+                      height: '12px',
+                    }}
+                  ></img>
+                ) : null}
+                {!contactType && item.knowledgeBaseNodeKey ? (
+                  <img
+                    src={contactBook}
+                    alt=""
+                    style={{
+                      width: '14px',
+                      height: '17px',
+                      marginRight: '5px',
+                    }}
+                    onClick={() => {
+                      dispatch(setHeaderIndex(9));
+                    }}
+                  ></img>
+                ) : null}
+                {!contactType && item.isHasKnowledge ? (
+                  <img
+                    src={contactTree}
+                    alt=""
+                    className="contact-uncare-img"
+                    style={{
+                      width: '18px',
+                      height: '17px',
+                      marginRight: '5px',
+                    }}
+                    onClick={() => {
+                      dispatch(setHeaderIndex(11));
+                    }}
+                  ></img>
+                ) : null}
+                {item.onlineStatus === 'online' && !contactType ? (
+                  <img
+                    src={computer}
+                    alt=""
+                    style={{
+                      width: '20px',
+                      height: '17px',
+                      marginRight: '5px',
+                    }}
+                  ></img>
+                ) : null}
+                {/* {item.todayTotalTaskNumber && !contactType ? (
                     <TimeIcon
                       timeHour={Math.ceil(item.todayTotalTaskHours)}
                       timeDay={Math.ceil(item.todayTotalTaskNumber)}
@@ -488,10 +495,10 @@ const Contact: React.FC<ContactProps> = (props) => {
                   ) : (
                     <div style={{ width: '24px' }}></div>
                   )} */}
-                </div>
               </div>
-            );
-          })
+            </div>
+          );
+        })
         : null}
 
       <Dialog

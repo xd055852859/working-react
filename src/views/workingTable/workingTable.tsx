@@ -22,7 +22,7 @@ import Calendar from '../../views/calendar/calendar';
 
 import taskAddPng from '../../assets/img/taskAdd.png';
 import usePrevious from '../../hook/usePrevious';
-interface WorkingTableProps {}
+interface WorkingTableProps { }
 
 const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
   const user = useTypedSelector((state) => state.auth.user);
@@ -31,6 +31,7 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
     (state) => state.member.memberHeaderIndex
   );
   const userKey = useTypedSelector((state) => state.auth.userKey);
+  const clickType = useTypedSelector((state) => state.auth.clickType);
   const targetUserKey = useTypedSelector((state) => state.auth.targetUserKey);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const filterObject = useTypedSelector((state) => state.task.filterObject);
@@ -51,7 +52,7 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
   };
   useEffect(() => {
     if (user && user._key) {
-      if (headerIndex === 1) {
+      if (headerIndex === 1 || clickType === 'self') {
         setLoading(true);
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10]));
       } else if (targetUserInfo && targetUserInfo._key && headerIndex === 2) {
@@ -131,13 +132,13 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
   return (
     <div
       className="workingTable"
-      // style={
-      //   moveState === 'in'
-      //     ? { animation: 'contentmoveIn 50ms', width: '100%' }
-      //     : moveState === 'out'
-      //     ? { animation: 'contentmoveOut 50ms', width: 'calc(100% - 320px)' }
-      //     : {}
-      // }
+    // style={
+    //   moveState === 'in'
+    //     ? { animation: 'contentmoveIn 50ms', width: '100%' }
+    //     : moveState === 'out'
+    //     ? { animation: 'contentmoveOut 50ms', width: 'calc(100% - 320px)' }
+    //     : {}
+    // }
     >
       {loading ? <Loading /> : null}
       <WorkingTableHeader />
@@ -169,62 +170,62 @@ const WorkingTable: React.FC<WorkingTableProps> = (prop) => {
               headerIndex === 1
                 ? mainGroupKey
                 : headerIndex === 2
-                ? targetUserInfo._key
-                : null
+                  ? targetUserInfo._key
+                  : null
             }
           />
         ) : null}
       </div>
       {headerIndex === 1 ||
-      (headerIndex === 2 &&
-        targetUserKey &&
-        userKey &&
-        userKey === targetUserKey) ? (
-        <React.Fragment>
-          <input
-            className="workingTable-addLabel-input"
-            onChange={handleInputChange}
-            onBlur={() => {
-              handleInputConfirm();
-            }}
-            value={inputValue}
-            ref={addLabelRef}
-            placeholder="输入标签名"
-            style={
-              addLabelInputState === 'in'
-                ? {
+        (headerIndex === 2 &&
+          targetUserKey &&
+          userKey &&
+          userKey === targetUserKey) ? (
+          <React.Fragment>
+            <input
+              className="workingTable-addLabel-input"
+              onChange={handleInputChange}
+              onBlur={() => {
+                handleInputConfirm();
+              }}
+              value={inputValue}
+              ref={addLabelRef}
+              placeholder="输入标签名"
+              style={
+                addLabelInputState === 'in'
+                  ? {
                     animation: 'addLabelInputIn 500ms',
                     width: '0px',
                     padding: '0px',
                   }
-                : addLabelInputState === 'out'
-                ? {
-                    animation: 'addLabelInputOut 500ms',
-                    width: '250px',
-                    padding: '0px 8px',
-                  }
-                : { width: '0px', opacity: 0, padding: '0px' }
-            }
-          />
-          <div
-            // className="cooperation-info-labelName"
-            className="workingTable-addLabel"
-            onClick={() => {
-              // setInputVisible(true);
-              addLabelRef.current.focus();
-              setAddLabelInputState('out');
-              // handleInputConfirm();
-            }}
-            // style={{ background: '#fff', color: '#333' }}
-          >
-            <img
-              src={taskAddPng}
-              alt=""
-              style={{ height: '35px', color: '35px' }}
+                  : addLabelInputState === 'out'
+                    ? {
+                      animation: 'addLabelInputOut 500ms',
+                      width: '250px',
+                      padding: '0px 8px',
+                    }
+                    : { width: '0px', opacity: 0, padding: '0px' }
+              }
             />
-          </div>
-        </React.Fragment>
-      ) : null}
+            <div
+              // className="cooperation-info-labelName"
+              className="workingTable-addLabel"
+              onClick={() => {
+                // setInputVisible(true);
+                addLabelRef.current.focus();
+                setAddLabelInputState('out');
+                // handleInputConfirm();
+              }}
+            // style={{ background: '#fff', color: '#333' }}
+            >
+              <img
+                src={taskAddPng}
+                alt=""
+                style={{ height: '35px', color: '35px' }}
+              />
+            </div>
+          </React.Fragment>
+        ) : null}
     </div>
   );
 };

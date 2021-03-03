@@ -111,10 +111,9 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
   };
   return (
     <React.Fragment>
-      {theme.randomVisible ? (
-        <div className="contentHeader-set-item" style={{ marginTop: '0px' }}>
-          <div className="contentHeader-set-item-title">
-            <img
+      <div className="contentHeader-set-item" style={{ marginTop: '0px' }}>
+        <div className="contentHeader-set-item-title">
+          {/* <img
               src={set2Png}
               alt=""
               style={{
@@ -122,8 +121,33 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
                 height: '17px',
                 marginRight: '10px',
               }}
-            />
-            <div>自动更新</div>
+            /> */}
+          <div>自动更新</div>
+        </div>
+        <div className="contentHeader-set-item-radio">
+          <Switch
+            checked={theme.randomVisible ? true : false}
+            onChange={() => {
+              changeBoard('randomVisible');
+            }}
+            name="checkedD"
+            inputProps={{ 'aria-label': 'primary checkbox' }}
+          />
+        </div>
+      </div>
+      {theme.randomVisible ? (
+        <div className="contentHeader-set-item" style={{ marginTop: '0px' }}>
+          <div className="contentHeader-set-item-title">
+            {/* <img
+              src={set2Png}
+              alt=""
+              style={{
+                width: '15px',
+                height: '17px',
+                marginRight: '10px',
+              }}
+            /> */}
+            <div>更新频率</div>
           </div>
           <div className="contentHeader-set-item-radio">
             <input
@@ -194,11 +218,11 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
         className="bg-container"
         style={{
           height: theme.randomVisible
-            ? 'calc(100% - 300px)'
-            : 'calc(100% - 275px)',
+            ? 'calc(100% - 350px)'
+            : 'calc(100% - 322px)',
           overflow: 'auto',
         }}
-        // onScroll={scrollBgLoading}
+      // onScroll={scrollBgLoading}
       >
         {loading ? <Loading loadingWidth="60px" loadingHeight="60px" /> : null}
         {themeBg.map((imgBigArr2Item: any, imgBigArr2Index: number) => {
