@@ -163,12 +163,12 @@ const Header = ({
     }
   }, [canvas, uploadToken]);
 
-  useEffect(() => {
-    if (data) {
-      handleSave.callback();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data]);
+  // useEffect(() => {
+  //   if (data) {
+  //     handleSave.callback();
+  //   }
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [data]);
 
   useEffect(() => {
     switch (data.type) {
@@ -540,10 +540,10 @@ const Header = ({
    * 延时保存
    */
 
-  const handleSave = useDebouncedCallback(() => {
-    canvas.data.grid = false;
-    onHandleSelect({ key: 'save' });
-  }, 1000 * 30);
+  // const handleSave = useDebouncedCallback(() => {
+  //   canvas.data.grid = false;
+  //   onHandleSelect({ key: 'save' });
+  // }, 1000 * 30);
 
   return (
     <>
@@ -1084,7 +1084,7 @@ const Header = ({
             onChange={(e) => {
               // dispatch(editArticleSaveStatus(-1));
               settitle(e.target.value);
-              handleSave.callback();
+              // handleSave.callback();
             }}
             onBlur={(e) => {
               setEditTitle(false);

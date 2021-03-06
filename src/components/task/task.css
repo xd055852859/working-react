@@ -474,3 +474,7 @@ input {
     height: 25px;
   }
 }
+.taskItem-auditStatus{
+  width:100%;
+  margin:5px 0px;
+}

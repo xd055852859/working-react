@@ -58,6 +58,11 @@ const Download = Loadable({
   loader: () => import('./views/download/download'),
   loading: () => null,
 });
+const Create = Loadable({
+  loader: () => import('./views/create/create'),
+  loading: () => null,
+});
+
 const App: React.FC = () => {
   const location = useLocation();
   const history = useHistory();
@@ -196,6 +201,8 @@ const App: React.FC = () => {
       if (getSearchParamValue(location.search, 'token')) {
         if (showType) {
           history.push('/home/showPage');
+        } else if (localStorage.getItem('createType')) {
+          history.push('/home/create');
         } else {
           history.push('/home/basic');
         }
@@ -357,7 +364,7 @@ const App: React.FC = () => {
         obj.right = pageRef.current.offsetWidth - timeSetX;
       }
       obj.display = 'block';
-      if(!theme.hourVisible){
+      if (!theme.hourVisible) {
         obj.height = '160px';
       }
       setTimesetObj(obj);
@@ -463,6 +470,7 @@ const App: React.FC = () => {
           <Route exact path="/home/showPage" component={ShowPage} />
           <Route path="/home/company" component={Company} />
           <Route exact path="/home/download" component={Download} />
+          <Route exact path="/home/create" component={Create} />
         </Switch>
       ) : null}
       {taskInfoVisible ? <TaskInfo /> : null}

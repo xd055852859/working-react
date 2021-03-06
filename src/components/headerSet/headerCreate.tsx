@@ -34,6 +34,7 @@ interface HeaderCreateProps {
   visible: boolean;
   onClose?: any;
   createStyle?: any;
+  showList?: boolean;
 }
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -60,7 +61,7 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
-  const { visible, onClose, createStyle } = props;
+  const { visible, onClose, createStyle, showList } = props;
   const classes = useStyles();
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
@@ -93,14 +94,28 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
   const searchRef: React.RefObject<any> = useRef();
 
   useEffect(() => {
-    if (user && visible && groupArray) {
-      getTaskCreate(1);
+    if (user) {
+      if (showList) {
+        getTaskCreate(1);
+      }
+      if (!groupArray) {
+        setLoading(true);
+        dispatch(getGroup(3));
+      }
+    }
+    return () => {
+      unDistory = false;
+    };
+  }, [user, visible, groupArray]);
+  useEffect(() => {
+    if (groupArray) {
+      setLoading(false);
       getGroupArray();
     }
     return () => {
       unDistory = false;
     };
-  }, [user, visible]);
+  }, [groupArray]);
   useEffect(() => {
     if (
       taskInfo &&
@@ -267,7 +282,11 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
       {visible ? (
         <React.Fragment>
           <div
-            className="headerCreate  animate__animated animate__slideInRight"
+            className={
+              showList
+                ? 'headerCreate  animate__animated animate__slideInRight'
+                : 'create'
+            }
             style={createStyle}
             onClick={() => {
               setGroupVisible(false);
@@ -278,17 +297,19 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
             ) : null}
             <div className="headerCreate-mainTitle">
               新建任务
-              <img
-                src={closePng}
-                onClick={() => {
-                  if (addInput !== '') {
-                    setCloseVisible(true);
-                  } else {
-                    onClose();
-                  }
-                }}
-                style={{ height: '25px', width: '25px', cursor: 'pointer' }}
-              />
+              {showList ? (
+                <img
+                  src={closePng}
+                  onClick={() => {
+                    if (addInput !== '') {
+                      setCloseVisible(true);
+                    } else {
+                      onClose();
+                    }
+                  }}
+                  style={{ height: '25px', width: '25px', cursor: 'pointer' }}
+                />
+              ) : null}
             </div>
             <div className="headerSet-container">
               <div className="headerSet-search-title" ref={searchRef}>
@@ -405,7 +426,8 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
                       chooseIndex * 40 +
                       'px',
                     left: '0px',
-                    height: 'calc(100% - 280px)',
+                    height: 'calc(100% - 260px)',
+                    minHeight: '260px',
                   }}
                   changeGroupArray={changeGroupArray}
                   onClose={() => {
@@ -446,38 +468,40 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
                     setAddState(false);
                   }}
                 />
-                <div className="headerCreate-url">
-                  <IconButton
-                    color="primary"
-                    component="span"
-                    onClick={() => {
-                      setMoveState(true);
-                    }}
-                  >
-                    <img
-                      src={urlSvg}
-                      alt=""
-                      style={{ height: '25px', width: '25px' }}
-                    />
-                  </IconButton>
+                {showList ? (
+                  <div className="headerCreate-url">
+                    <IconButton
+                      color="primary"
+                      component="span"
+                      onClick={() => {
+                        setMoveState(true);
+                      }}
+                    >
+                      <img
+                        src={urlSvg}
+                        alt=""
+                        style={{ height: '25px', width: '25px' }}
+                      />
+                    </IconButton>
 
-                  <input
-                    className="headerCreate-url-input"
-                    value={urlInput}
-                    onChange={(e: any) => {
-                      setUrlInput(e.target.value);
-                    }}
-                    placeholder="请输入链接地址"
-                    style={
-                      moveState
-                        ? {
-                            animation: 'urlInputOut 500ms',
-                            animationFillMode: 'forwards',
-                          }
-                        : {}
-                    }
-                  />
-                </div>
+                    <input
+                      className="headerCreate-url-input"
+                      value={urlInput}
+                      onChange={(e: any) => {
+                        setUrlInput(e.target.value);
+                      }}
+                      placeholder="请输入链接地址"
+                      style={
+                        moveState
+                          ? {
+                              animation: 'urlInputOut 500ms',
+                              animationFillMode: 'forwards',
+                            }
+                          : {}
+                      }
+                    />
+                  </div>
+                ) : null}
                 {addInput && !loading ? (
                   <Button
                     variant="contained"
@@ -500,34 +524,39 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
                   </Button>
                 )}
               </div>
-
-              <div className="addTask-create">最近创建</div>
-              {createTaskList.length > 0 ? (
-                <div
-                  className="headerSet-search-info"
-                  onScroll={scrollCreateLoading}
-                  style={{
-                    height:
-                      'calc(100% - ' +
-                      ((createRef.current
-                        ? createRef.current.offsetHeight
-                        : 0) +
-                        205) +
-                      'px)',
-                  }}
-                >
-                  {createTaskList.map((taskItem: any, taskIndex: number) => {
-                    return (
-                      <Task
-                        key={'create' + taskIndex}
-                        taskItem={taskItem}
-                        showGroupName={true}
-                        createTime={moment(taskItem.createTime).fromNow()}
-                        outSide={true}
-                      />
-                    );
-                  })}
-                </div>
+              {showList ? (
+                <React.Fragment>
+                  <div className="addTask-create">最近创建</div>
+                  {createTaskList.length > 0 ? (
+                    <div
+                      className="headerSet-search-info"
+                      onScroll={scrollCreateLoading}
+                      style={{
+                        height:
+                          'calc(100% - ' +
+                          ((createRef.current
+                            ? createRef.current.offsetHeight
+                            : 0) +
+                            205) +
+                          'px)',
+                      }}
+                    >
+                      {createTaskList.map(
+                        (taskItem: any, taskIndex: number) => {
+                          return (
+                            <Task
+                              key={'create' + taskIndex}
+                              taskItem={taskItem}
+                              showGroupName={true}
+                              createTime={moment(taskItem.createTime).fromNow()}
+                              outSide={true}
+                            />
+                          );
+                        }
+                      )}
+                    </div>
+                  ) : null}
+                </React.Fragment>
               ) : null}
             </div>
             <Dialog

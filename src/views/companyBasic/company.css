@@ -1,0 +1,10 @@
+.company {
+  height: 100%;
+  width: 100%;
+  font-size: 20px;
+  color: #fff;
+  padding:10px;
+  box-sizing: border-box;
+  /* position: relative;
+  z-index:3 */
+}

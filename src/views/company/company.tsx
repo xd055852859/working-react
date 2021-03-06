@@ -78,13 +78,13 @@ const Company: React.FC<CompanyProps> = (props) => {
             setSecondOpen(false);
             handleClick(0, '/home/company/companyPerson');
           }}
-          style={
-            linkIndex === 0
-              ? {
-                  background: '#37373C',
-                }
-              : {}
-          }
+          // style={
+          //   linkIndex === 0
+          //     ? {
+          //         background: '#37373C',
+          //       }
+          //     : {}
+          // }
         >
           <img
             src={companyIcon1}
@@ -101,13 +101,6 @@ const Company: React.FC<CompanyProps> = (props) => {
             handleClick(1, '/home/company/companyDepartment/1');
           }}
           className="company-menu-link"
-          style={
-            firstOpen
-              ? {
-                  background: '#37373C',
-                }
-              : {}
-          }
         >
           <img
             src={companyIcon2}
@@ -123,13 +116,6 @@ const Company: React.FC<CompanyProps> = (props) => {
           <List
             component="div"
             disablePadding
-            style={
-              firstOpen
-                ? {
-                    background: '#37373C',
-                  }
-                : {}
-            }
           >
             {/* <ListItem
               button
@@ -232,13 +218,6 @@ const Company: React.FC<CompanyProps> = (props) => {
             setSecondOpen(false);
             handleClick(6, '/home/company/companyAccount');
           }}
-          style={
-            linkIndex === 6
-              ? {
-                  background: '#37373C',
-                }
-              : {}
-          }
         >
           <img
             src={companyIcon4}

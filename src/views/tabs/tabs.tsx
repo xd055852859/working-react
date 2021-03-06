@@ -3,11 +3,10 @@ import './tabs.css';
 import { useDispatch } from 'react-redux';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import { Button, TextField } from '@material-ui/core';
+import { Button, TextField, Tooltip } from '@material-ui/core';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import _ from 'lodash';
 import api from '../../services/api';
-
 import {
   setMessage,
   setCommonHeaderIndex,
@@ -34,6 +33,8 @@ import addPng from '../../assets/img/contact-add.png';
 import downArrowbPng from '../../assets/img/downArrowb.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
+import contactTree from '../../assets/svg/contactTree.svg';
+import listSvg from '../../assets/svg/list.svg';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -80,7 +81,14 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   const user = useTypedSelector((state) => state.auth.user);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const memberArray = useTypedSelector((state) => state.member.memberArray);
+  const companyMemberArray = useTypedSelector(
+    (state) => state.member.companyMemberArray
+  );
+
   const groupArray = useTypedSelector((state) => state.group.groupArray);
+  const mainEnterpriseGroup = useTypedSelector(
+    (state) => state.auth.mainEnterpriseGroup
+  );
   const theme = useTypedSelector((state) => state.auth.theme);
   const [contactIndex, setContactIndex] = React.useState(0);
   const [searchVisible, setSearchVisible] = React.useState(false);
@@ -400,8 +408,8 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       style={{
         height:
           theme && theme.calendarVisible
-            ? 'calc(100% - 215px)'
-            : 'calc(100% - 170px)',
+            ? 'calc(100% - 260px)'
+            : 'calc(100% - 210px)',
       }}
     >
       <ClickAwayListener
@@ -426,8 +434,23 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             }
             className="tabs-tab-nav-item"
           >
-            项目 ( {groupArray && groupArray.length > 0 ? groupArray.length : 0}{' '}
-            )
+            项目 
+            {/* ({' '}
+            {mainEnterpriseGroup.mainEnterpriseGroupKey
+              ? groupArray &&
+                _.filter(groupArray, {
+                  enterpriseGroupKey:
+                    mainEnterpriseGroup.mainEnterpriseGroupKey,
+                }).length > 0
+                ? _.filter(groupArray, {
+                    enterpriseGroupKey:
+                      mainEnterpriseGroup.mainEnterpriseGroupKey,
+                  }).length + 1
+                : 1
+              : groupArray && groupArray.length > 0
+              ? groupArray.length
+              : 0}{' '}
+            ) */}
           </div>
           <div
             onClick={() => {
@@ -440,9 +463,30 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             }
             className="tabs-tab-nav-item"
           >
-            队友 ({' '}
-            {memberArray && memberArray.length > 0 ? memberArray.length : 0} )
+            好友 
+            {/* ({' '} */}
+            {/* {memberArray && memberArray.length > 0 ? memberArray.length : 0} ) */}
           </div>
+          {mainEnterpriseGroup?.mainEnterpriseGroupKey ? (
+            <div
+              onClick={() => {
+                setContactIndex(2);
+              }}
+              style={
+                contactIndex === 2
+                  ? { background: 'rgba(255, 255, 255, 0.34)' }
+                  : {}
+              }
+              className="tabs-tab-nav-item"
+            >
+              同事
+               {/* ({' '}
+              {companyMemberArray && companyMemberArray.length > 0
+                ? companyMemberArray.length
+                : 0}{' '}
+              ) */}
+            </div>
+          ) : null}
           <img
             src={searchPng}
             alt=""
@@ -532,6 +576,28 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                 setAddGroupVisible(true);
               }}
             />
+          ) : contactIndex === 2 ? (
+            <Tooltip title={'组织'}>
+              <img
+                src={contactTree}
+                alt=""
+                className="add-icon"
+                onClick={() => {
+                  setContactIndex(3);
+                }}
+              />
+            </Tooltip>
+          ) : contactIndex === 3 ? (
+            <Tooltip title={'列表'}>
+              <img
+                src={listSvg}
+                alt=""
+                className="add-icon"
+                onClick={() => {
+                  setContactIndex(2);
+                }}
+              />
+            </Tooltip>
           ) : null}
           {/* {contactIndex === 1 ? (
             <img

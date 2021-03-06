@@ -206,7 +206,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
       searchType: 1,
     };
     if (check) {
-      obj.finishPercentStr = '1,2,3';
+      obj.finishPercentStr = '0,1,2';
     }
     if (groupCheck) {
       obj.groupKey = groupKey;
@@ -413,6 +413,7 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
           overflow: 'auto',
           padding: '0px 15px',
         }}
+        showList={true}
       />
 
       <Dialog

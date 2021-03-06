@@ -4,27 +4,27 @@ import io from 'socket.io-client';
 import api from '../../services/api';
 import _ from 'lodash';
 export interface AuthType {
-  user : any;
-  userKey : string;
-  mainGroupKey : string;
-  mainEnterpriseGroup : any;
-  targetUserKey : string;
-  targetUserInfo : any;
-  token : string | null;
-  uploadToken : string | null;
-  theme : any;
-  themeBg : any;
-  themeBgTotal : number;
-  nowTime : number;
-  socket : any;
-  finishMusic : boolean;
-  messageMusic : boolean;
-  unFinishMusic : boolean;
-  batchMusic : boolean;
-  createMusic : boolean;
-  startMusic : boolean;
-  finishPos : any;
-  clickType : string;
+  user: any;
+  userKey: string;
+  mainGroupKey: string;
+  mainEnterpriseGroup: any;
+  targetUserKey: string;
+  targetUserInfo: any;
+  token: string | null;
+  uploadToken: string | null;
+  theme: any;
+  themeBg: any;
+  themeBgTotal: number;
+  nowTime: number;
+  socket: any;
+  finishMusic: boolean;
+  messageMusic: boolean;
+  unFinishMusic: boolean;
+  batchMusic: boolean;
+  createMusic: boolean;
+  startMusic: boolean;
+  finishPos: any;
+  clickType: string;
 }
 
 const defaultState : AuthType = {
@@ -86,7 +86,7 @@ const defaultState : AuthType = {
   createMusic: false,
   startMusic: false,
   finishPos: [],
-  clickType: 'other'
+  clickType: 'other',
 };
 
 export const auth = (state = defaultState, action : any) => {
@@ -111,9 +111,9 @@ export const auth = (state = defaultState, action : any) => {
           ? localStorage.getItem('targetUserKey')
           : ''
       };
-      // case actionTypes.GET_MAIN_GROUP_KEY_SUCCESS:
-      // localStorage.setItem('mainGroupKey', action.data.mainGroupKey);   return {
-      // ...state,   };
+    // case actionTypes.GET_MAIN_GROUP_KEY_SUCCESS:
+    // localStorage.setItem('mainGroupKey', action.data.mainGroupKey);   return {
+    // ...state,   };
     case actionTypes.SET_TARGET_USER_KEY:
       localStorage.setItem('targetUserKey', action.targetUserInfo._key);
       return {
@@ -148,10 +148,16 @@ export const auth = (state = defaultState, action : any) => {
         theme: theme,
         mainGroupKey: otherInfo.mainGroupKey,
         mainEnterpriseGroup: {
-          mainEnterpriseGroupKey: otherInfo.mainEnterpriseGroupKey,
-          mainEnterpriseGroupLogo: otherInfo.mainEnterpriseGroupLogo,
+          mainEnterpriseGroupKey: otherInfo.mainEnterpriseGroupKey
+            ? otherInfo.mainEnterpriseGroupKey
+            : '',
+          mainEnterpriseGroupLogo: otherInfo.mainEnterpriseGroupLogo
+            ? otherInfo.mainEnterpriseGroupLogo
+            : '',
           mainEnterpriseGroupName: otherInfo.mainEnterpriseGroupName
-        }
+            ? otherInfo.mainEnterpriseGroupName
+            : '所有项目',
+        },
       };
     case actionTypes.GET_THEME_BG_SUCCESS:
       let themeBg:
@@ -234,6 +240,21 @@ export const auth = (state = defaultState, action : any) => {
       return {
         ...state,
         clickType: action.clickType
+      };
+    case actionTypes.SET_CLICK_TYPE:
+      return {
+        ...state,
+        clickType: action.clickType,
+      };
+    case actionTypes.CHANGE_MAINENTERPRISE_GROUP:
+      console.log(action);
+      return {
+        ...state,
+        mainEnterpriseGroup: {
+          mainEnterpriseGroupKey: action.mainEnterpriseGroupKey,
+          mainEnterpriseGroupLogo: action.mainEnterpriseGroupLogo,
+          mainEnterpriseGroupName: action.mainEnterpriseGroupName,
+        },
       };
 
     default:

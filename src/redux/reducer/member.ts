@@ -5,6 +5,7 @@ export interface MemberType {
   memberHeaderIndex: number;
   groupMemberArray: any;
   groupMemberItem: any;
+  companyMemberArray: any;
 }
 
 const defaultState: MemberType = {
@@ -12,6 +13,7 @@ const defaultState: MemberType = {
   memberHeaderIndex: 0,
   groupMemberArray: null,
   groupMemberItem: null,
+  companyMemberArray: null,
 };
 
 export const member = (state = defaultState, action: any) => {
@@ -65,6 +67,16 @@ export const member = (state = defaultState, action: any) => {
       state.groupMemberItem = null;
       return {
         ...state,
+      };
+    case actionTypes.GET_COMPANY_MEMBER_SUCCESS:
+      action.data.forEach((item: any) => {
+        if (item.avatar && item.avatar.indexOf('https') === -1) {
+          item.avatar = item.avatar.replace('http', 'https');
+        }
+      });
+      return {
+        ...state,
+        companyMemberArray: action.data,
       };
     default:
       return state;

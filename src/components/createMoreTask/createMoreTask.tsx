@@ -199,7 +199,7 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
     let labelIndex: number = newLabelChooseArray.indexOf(labelItem.labelKey);
     labelItem.index = index;
     // if (labelIndex === -1) {
-    newLabelChooseArray.push(labelItem);
+    // newLabelChooseArray.push(labelItem);
     // } else {
     //   newLabelChooseArray.splice(labelIndex);
     // }

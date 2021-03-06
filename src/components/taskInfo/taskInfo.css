@@ -139,6 +139,7 @@
   font-size: 12px;
   position: relative;
   z-index: 1;
+  margin-left: 7px;
 }
 .taskInfo-item-suggest-item {
   width: 100%;

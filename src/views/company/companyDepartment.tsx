@@ -165,7 +165,7 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
           if (data[key].orgType === 3) {
             //?imageMogr2/auto-orient/thumbnail/80x
             newCompanyData[key].icon = data[key].groupLogo
-              ? data[key].groupLogo  + '?imageMogr2/auto-orient/thumbnail/80x'
+              ? data[key].groupLogo + '?imageMogr2/auto-orient/thumbnail/80x'
               : defaultGroupPng;
           }
           if (!nodeId && !data[key].parentOrgKey) {
@@ -269,6 +269,7 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
         enterpriseGroupKey: addCompanyRes.result.enterpriseGroupKey,
         groupMemberKey: addCompanyRes.result.groupMemberKey,
         orgType: 1,
+        childrenAll: [],
         // icon: defaultDepartMentSvg,
       };
       if (type === 'child') {
@@ -398,16 +399,22 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
   const addMember = async (node: any) => {
     const newCompanyObj = _.cloneDeep(companyObj);
     const newCompanyData = _.cloneDeep(companyData);
+    let newCompanyKey = '';
     let addMemberRes: any = null;
+    if(newCompanyObj.orgType===1){
+      newCompanyKey=newCompanyObj._key
+    }else{
+      newCompanyKey=newCompanyObj.father
+    }
     if (departmentType === 2) {
       addMemberRes = await api.company.batchAddOrgStaff(
-        newCompanyObj._key,
+        newCompanyKey,
         [node._key],
         newCompanyObj.enterpriseGroupKey
       );
     } else {
       addMemberRes = await api.company.batchAddOrgGroup(
-        newCompanyObj._key,
+        newCompanyKey,
         [node._key],
         newCompanyObj.enterpriseGroupKey
       );
@@ -415,7 +422,7 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
     if (addMemberRes.msg === 'OK') {
       if (addMemberRes.result.length > 0) {
         dispatch(setMessage(true, '添加到组织成功', 'success'));
-        getCompanyTree(newCompanyObj._key, departmentType);
+        getCompanyTree(newCompanyKey, departmentType);
       } else if (addMemberRes.result.length === 0) {
         dispatch(setMessage(true, '该节点已经被添加', 'error'));
       }
@@ -557,7 +564,7 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
       <div className="company-header">
         <div className="company-header-title">
           组织结构
-          {companyObj && companyObj.orgType === 1 ? (
+          {/* {companyObj && companyObj.orgType === 1 ? (
             <Chip
               variant="outlined"
               color="primary"
@@ -565,10 +572,10 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
               style={{ fontSize: '14px', marginLeft: '10px' }}
               size="small"
             />
-          ) : null}
+          ) : null} */}
         </div>
         <div className="company-header-right">
-          {departmentType === 2 && companyObj?.orgType === 1 ? (
+          {departmentType === 2 ? (
             <Button
               variant="outlined"
               color="primary"
@@ -581,7 +588,7 @@ const CompanyDepartment: React.FC<CompanyDepartmentProps> = (props) => {
               人员设置
             </Button>
           ) : null}
-          {departmentType === 3 && companyObj?.orgType === 1 ? (
+          {departmentType === 3 ? (
             <Button
               variant="outlined"
               color="primary"

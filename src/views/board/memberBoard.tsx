@@ -287,7 +287,7 @@ const MemberBoard: React.FC = () => {
           setBoardVisible(true);
         }}
       >
-        {boardIndex === 0 ? '关注队友看板' : '关注项目看板'}
+        {boardIndex === 0 ? '关注好友看板' : '关注项目看板'}
         <img
           src={downArrowPng}
           alt=""
@@ -311,7 +311,7 @@ const MemberBoard: React.FC = () => {
               setBoardIndex(0);
             }}
           >
-            队友看板
+            好友看板
           </div>
           <div
             className="memberBoard-maintitle-board"
@@ -338,7 +338,7 @@ const MemberBoard: React.FC = () => {
             <React.Fragment>
               <img src={noneBoardPng} className="memberBoard-item-img" />
               <div className="memberBoard-item-title">
-                点击项目和队友右侧的
+                点击项目和好友右侧的
                 <img
                   style={{ width: '17px', height: '15px', margin: '0px 5px' }}
                   src={uncarePng}

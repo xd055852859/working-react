@@ -5,6 +5,9 @@
   padding: 5px 10px;
   box-sizing: border-box;
 }
+.contact .menu-wrapper {
+  background-color: transparent !important;
+}
 .contact-item {
   height: 45px;
   display: flex;

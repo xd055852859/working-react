@@ -11,14 +11,17 @@
   z-index: 5;
 }
 .tabs-tab-nav-item {
-  width: 85px;
+  width: 75px;
   height: 100%;
   border-radius: 8px;
-  margin-right: 10px;
+  margin-right: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  /* font-size: 15px; */
+  padding:0px 7px;
+  box-sizing: border-box;
 }
 .search-icon,
 .sort-icon,

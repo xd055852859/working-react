@@ -113,7 +113,14 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
         } else {
           setContent('<p>备注信息:</p>');
         }
+        console.log(taskInfo)
+        if (taskInfo.type === 11) {
+          taskInfo.content = taskInfo.content.replace('<p>', '');
+          taskInfo.content = taskInfo.content.replace('</p>', '');
+          taskInfo.content = taskInfo.content.replace('<p data-f-id="pbf" style="text-align: center; font-size: 14px; margin-top: 30px; opacity: 0.65; font-family: sans-serif;">Powered by <a href="https://www.froala.com/wysiwyg-editor?pb=1" title="Froala Editor">Froala Editor</a></p>', '')
+        }
         setTargetNode(taskInfo);
+
         getHistoryList(taskHistoryPage, taskInfo);
         getCommentList(taskHistoryPage, taskInfo);
       } else {
@@ -285,12 +292,12 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
                   onChange={changeTaskContent}
                 />
               ) : (
-                <DrawView
-                  //@ts-ignore
-                  targetNode={targetNode}
+                  <DrawView
+                    //@ts-ignore
+                    targetNode={targetNode}
                   // onChange={changeContent}
-                />
-              )
+                  />
+                )
             ) : null}
             {targetNode.type === 12 ? <Table node={targetNode} /> : null}
             {targetNode.type === 13 ? (
@@ -320,9 +327,9 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
                   style={
                     commentIndex === 0
                       ? {
-                          borderBottom: '1px solid #17B881',
-                          color: '#17B881',
-                        }
+                        borderBottom: '1px solid #17B881',
+                        color: '#17B881',
+                      }
                       : {}
                   }
                 >
@@ -336,9 +343,9 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
                   style={
                     commentIndex === 1
                       ? {
-                          borderBottom: '1px solid #17B881',
-                          color: '#17B881',
-                        }
+                        borderBottom: '1px solid #17B881',
+                        color: '#17B881',
+                      }
                       : {}
                   }
                 >
@@ -366,40 +373,40 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
                   </div>
                 </React.Fragment>
               ) : (
-                <div
-                  className="taskInfo-comment-tab"
-                  onScroll={scrollHistoryLoading}
-                >
-                  {taskHistoryArray.map(
-                    (historyItem: any, historyIndex: number) => {
-                      return (
-                        <div
-                          key={'history' + historyIndex}
-                          className="taskInfo-comment-historyLog"
-                        >
-                          <div className="taskInfo-comment-avatar">
-                            <img
-                              src={historyItem.etc && historyItem.etc.avatar}
-                              alt=""
-                            />
-                          </div>
-                          <div className="taskInfo-comment-info">
-                            <div>
-                              {moment(
-                                parseInt(historyItem.createTime)
-                              ).fromNow()}
+                  <div
+                    className="taskInfo-comment-tab"
+                    onScroll={scrollHistoryLoading}
+                  >
+                    {taskHistoryArray.map(
+                      (historyItem: any, historyIndex: number) => {
+                        return (
+                          <div
+                            key={'history' + historyIndex}
+                            className="taskInfo-comment-historyLog"
+                          >
+                            <div className="taskInfo-comment-avatar">
+                              <img
+                                src={historyItem.etc && historyItem.etc.avatar}
+                                alt=""
+                              />
                             </div>
-                            <div style={{ fontSize: '12px', color: '#8091a0' }}>
-                              {historyItem.log}
+                            <div className="taskInfo-comment-info">
+                              <div>
+                                {moment(
+                                  parseInt(historyItem.createTime)
+                                ).fromNow()}
+                              </div>
+                              <div style={{ fontSize: '12px', color: '#8091a0' }}>
+                                {historyItem.log}
+                              </div>
                             </div>
+                            {/* {historyItem.log} */}
                           </div>
-                          {/* {historyItem.log} */}
-                        </div>
-                      );
-                    }
-                  )}
-                </div>
-              )}
+                        );
+                      }
+                    )}
+                  </div>
+                )}
             </div>
           </div>
         </React.Fragment>
@@ -437,10 +444,10 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
             发布
           </Button>
         ) : (
-          <Button variant="contained" className={classes.disbutton} disabled>
-            发布
-          </Button>
-        )}
+            <Button variant="contained" className={classes.disbutton} disabled>
+              发布
+            </Button>
+          )}
       </div>
     </React.Fragment>
   );

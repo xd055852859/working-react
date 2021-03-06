@@ -3,7 +3,11 @@ import './headerSet.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { useHistory } from 'react-router-dom';
-import { setMessage, setCommonHeaderIndex, setMoveState as setCommonMoveState } from '../../redux/actions/commonActions';
+import {
+  setMessage,
+  setCommonHeaderIndex,
+  setMoveState as setCommonMoveState,
+} from '../../redux/actions/commonActions';
 import { setTheme, getTargetUserInfo } from '../../redux/actions/authActions';
 import { setGroupKey } from '../../redux/actions/groupActions';
 import set1Png from '../../assets/img/set1.png';
@@ -189,12 +193,18 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                       // animationFillMode: 'forwards',
                       left: '0px',
                     }
-                    : { left: '0px', height: '650px' }
+                  : { left: '0px', height: '650px' }
               }
             >
               <div className="contentHeader-set-left">
                 <div className="contentHeader-set-title">
-                  <div className="contentHeader-set-avatar">
+                  <div
+                    className="contentHeader-set-avatar"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setUserVisible(true);
+                    }}
+                  >
                     {user ? <img src={user.profile.avatar} alt="" /> : null}
                   </div>
                   <div
@@ -286,7 +296,7 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                 <div
                   className="contentHeader-set-item"
                   onClick={() => {
-                    toTargetUser()
+                    toTargetUser();
                   }}
                   style={{ cursor: 'pointer' }}
                 >
@@ -464,10 +474,12 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                 <div
                   className="contentHeader-set-item"
                   onClick={() => {
-                    dispatch(
-                      setGroupKey(mainEnterpriseGroup.mainEnterpriseGroupKey)
-                    );
-                    history.push('/home/company');
+                    if (mainEnterpriseGroup.mainEnterpriseGroupKey) {
+                      dispatch(
+                        setGroupKey(mainEnterpriseGroup.mainEnterpriseGroupKey)
+                      );
+                      history.push('/home/company');
+                    }
                   }}
                 >
                   <div className="contentHeader-set-item-title">
@@ -483,7 +495,7 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                     <div>机构</div>
                   </div>
                   <div>
-                    {mainEnterpriseGroup.mainEnterpriseGroupName
+                    {mainEnterpriseGroup.mainEnterpriseGroupKey
                       ? mainEnterpriseGroup.mainEnterpriseGroupName
                       : ''}
                     <img
@@ -598,12 +610,12 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                   {moveType === 0
                     ? '壁纸设置'
                     : moveType === 1
-                      ? '创建项目'
-                      : moveType === 2
-                        ? '客户端下载'
-                        : moveType === 3
-                          ? '机构列表'
-                          : ''}
+                    ? '创建项目'
+                    : moveType === 2
+                    ? '客户端下载'
+                    : moveType === 3
+                    ? '机构列表'
+                    : ''}
                   {moveType === 3 ? (
                     <span
                       style={{
@@ -783,7 +795,7 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                             </div>
                           </div>
                           <div>
-                            <Tooltip title="设置主企业群">
+                            {/* <Tooltip title="设置主企业群">
                               <Checkbox
                                 checked={
                                   targetInfo.mainEnterpriseGroupKey ===
@@ -797,7 +809,7 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                                 }}
                                 color="primary"
                               />
-                            </Tooltip>
+                            </Tooltip> */}
                             <img
                               src={rightArrowPng}
                               alt=""
