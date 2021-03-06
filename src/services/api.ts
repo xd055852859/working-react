@@ -464,7 +464,7 @@ const task = {
       date: moment().date(),
       taskEndDate: params.taskEndDate
         ? params.taskEndDate
-        : moment().hour() > 20
+        : moment().hour() > 17
         ? moment().add(1, 'days').endOf('day').valueOf()
         : moment().endOf('day').valueOf(),
       groupRole: params.groupRole,
@@ -519,7 +519,10 @@ const task = {
       labelKey: labelKey,
       date: moment().date(),
       cardIndex: -1,
-      taskEndDate: moment().endOf('day').valueOf(),
+      taskEndDate:
+        moment().hour() > 17
+          ? moment().add(1, 'days').endOf('day').valueOf()
+          : moment().endOf('day').valueOf(),
       day: 1,
       hour: 1,
     });
@@ -684,7 +687,10 @@ const task = {
       ...params,
       type: 2,
       rootType: 0,
-      taskEndDate: moment().endOf('day').valueOf(),
+      taskEndDate:
+        moment().hour() > 17
+          ? moment().add(1, 'days').endOf('day').valueOf()
+          : moment().endOf('day').valueOf(),
     });
   },
   //复制树任务
@@ -733,6 +739,12 @@ const member = {
       searchCondition: searchCondition,
       curPage: curPage,
       perPage: perPage,
+    });
+  },
+  getConfig(groupKey: string) {
+    return request.post(HOME_URL + '/groupmember/getConfig', {
+      token: auth_token,
+      groupKey: groupKey,
     });
   },
   setConfig(groupMemberKey: string, config: any) {
@@ -1015,7 +1027,7 @@ const company = {
     batchNumber?: string,
     currOrgKey?: any,
     isQuit?: number,
-    sonGroupKey?:string
+    sonGroupKey?: string
   ) {
     return request.post(
       HOME_URL + '/organization/getEnterpriseGroupOrOrganizationMemberList',
@@ -1029,7 +1041,7 @@ const company = {
         batchNumber: batchNumber,
         currOrgKey: currOrgKey,
         isQuit: isQuit,
-        sonGroupKey:sonGroupKey
+        sonGroupKey: sonGroupKey,
       }
     );
   },

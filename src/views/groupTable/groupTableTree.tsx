@@ -1081,7 +1081,9 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
       newTargetNode.title = newTitle;
       changeGridList(newTargetNode);
     }
-    setEditable(false);
+    if (newTargetNode.type !== 11) {
+      setEditable(false);
+    }
   };
   return (
     <div className="tree">
@@ -1710,6 +1712,7 @@ const GroupTableTree: React.FC<GroupTableTreeProps> = (props) => {
             changeContent={changeContent}
             changeTargetContent={setContent}
             editInfoType={editInfoType}
+            changeEditable={setEditable}
           />
           <img
             src={bigCloseSvg}

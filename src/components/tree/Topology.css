@@ -1,11 +1,10 @@
-
 @media only screen and (max-width: 600px) {
   
 }
 .page {
   display: flex;
   width: 100%;
-  height: calc(100% - 114px);
+  height: calc(100% - 80px);
   background: red;
   position: relative;
 }
@@ -99,4 +98,22 @@
 .tool-img-box{
   width: 30px;
   height: 30px;
+}
+
+
+
+.full .topology {
+  font-size: 30px;
+}
+
+.tool .MuiAccordion-root.Mui-expanded{
+  margin: 0;
+}
+
+.tool .MuiAccordionDetails-root{
+  padding: 0;
+}
+
+.page .tool .button a:hover{
+  color:blue;
 }

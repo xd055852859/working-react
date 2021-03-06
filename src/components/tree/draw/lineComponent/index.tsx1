@@ -1,9 +1,36 @@
-import React, { useMemo, useEffect, FC } from 'react';
-import { Form, InputNumber, Tabs, Collapse, Row, Col, Select, Input,  Checkbox } from 'antd';
+import React, { useMemo, useEffect, FC ,useState} from 'react';
+import { Form, InputNumber,   Row, Col, Select, Input,  Checkbox } from 'antd';
+import { createStyles, makeStyles, Tab, Tabs, Theme } from '@material-ui/core';
+
 import './index.css';
-const { Panel } = Collapse;
-const { TabPane } = Tabs;
+import { TabPanel } from '../../../pages/Topology';
+
 const { Option } = Select;
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    root: {
+      minWidth: '80px',
+      textAlign: 'center',
+    },
+    title: {
+      fontSize: '16px',
+      fontWeight: 500,
+      padding: '10px',
+      borderBottom: '1px solid #d9d9d9',
+    },
+    toolbar_button: {
+      marginTop: 0,
+      padding: '2px',
+      border: 'none',
+    },
+    align_box: {
+      height: '40px',
+      width: '100%',
+      display: 'inline-flex',
+    },
+  }),
+);
 interface LineComponentProps{
   data:any
   form:{
@@ -15,6 +42,8 @@ interface LineComponentProps{
 }
 
 const LineComponent:FC<LineComponentProps> = ({ data, form: { getFieldDecorator }, form, onFormValueChange }) => {
+  console.log(data.pen.lineWidth);
+  
   const {
     lineWidth,
     dash,
@@ -33,7 +62,7 @@ const LineComponent:FC<LineComponentProps> = ({ data, form: { getFieldDecorator 
     animateColor,
     animateSpan,
     animateDotSize,
-  } = data?.line || {};
+  } = data?.pen || {};
 
   useEffect(() => {
     form.validateFields((err:any, value:any) => {
@@ -891,24 +920,28 @@ const LineComponent:FC<LineComponentProps> = ({ data, form: { getFieldDecorator 
     toArrowSize,
   ]);
 
+  const [value, setValue] = useState(0);
+  const classes = useStyles();
+  const handleChange = (event: React.ChangeEvent<{}>, newValue: number) => {
+    setValue(newValue);
+  };
+  
   return (
     <div className="rightArea">
-      <Tabs defaultActiveKey="1">
-        <TabPane tab="外观" key="1" style={{ margin: 0 }}>
-          <Collapse defaultActiveKey={['1']}>
-            <Panel header="样式" key="1" forceRender>
-              {renderForm}
-            </Panel>
-          </Collapse>
-        </TabPane>
-        <TabPane tab="动效" key="2" style={{ margin: 0 }}>
-          <Collapse defaultActiveKey={['1']}>
-            <Panel header="动画" key="1" forceRender>
-              {renderAnimationForm}
-            </Panel>
-          </Collapse>
-        </TabPane>
+      <Tabs
+        variant="scrollable"
+        scrollButtons="auto"
+        value={value}
+        indicatorColor="primary"
+        textColor="primary"
+        onChange={handleChange}
+      >
+        <Tab className={classes.root} label="外观" value={0} />
+        <Tab className={classes.root} label="动效" value={1} />
       </Tabs>
+      <TabPanel value={value} index={0}>{renderForm}</TabPanel>
+      <TabPanel value={value} index={1}>{renderAnimationForm}</TabPanel>
+    
     </div>
   );
 };

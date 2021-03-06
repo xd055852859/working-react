@@ -23,9 +23,13 @@ import {
   setClickType,
   // userKeyToGroupKey
 } from '../../redux/actions/authActions';
-import { setHeaderIndex } from '../../redux/actions/memberActions';
+import { Breadcrumbs, Link, Typography } from '@material-ui/core';
+import {
+  setHeaderIndex,
+  changeCompanyItem,
+} from '../../redux/actions/memberActions';
 import Dialog from '../../components/common/dialog';
-import { MenuTree } from 'tree-graph-react';
+import { Tree } from 'tree-graph-react';
 import Avatar from '../../components/common/avatar';
 import TimeIcon from '../../components/common/timeIcon';
 import Loading from '../../components/common/loading';
@@ -39,7 +43,7 @@ import unUseSvg from '../../assets/svg/unUse.svg';
 import contactTree from '../../assets/svg/contactTree.svg';
 import contactBook from '../../assets/svg/contactBook.svg';
 import computer from '../../assets/svg/computer.svg';
-import { Search } from '@material-ui/icons';
+import { Search, NavigateNext } from '@material-ui/icons';
 import api from '../../services/api';
 import _ from 'lodash';
 export interface ContactProps {
@@ -70,7 +74,7 @@ const Contact: React.FC<ContactProps> = (props) => {
   const companyMemberArray = useTypedSelector(
     (state) => state.member.companyMemberArray
   );
-
+  const companyItem = useTypedSelector((state) => state.member.companyItem);
   const groupArray = useTypedSelector((state) => state.group.groupArray);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const mainEnterpriseGroup = useTypedSelector(
@@ -90,6 +94,8 @@ const Contact: React.FC<ContactProps> = (props) => {
   const [companyData, setCompanyData] = useState<any>(null);
   const [startId, setStartId] = useState<any>(null);
   const [selectedId, setSelectedId] = useState<any>(null);
+  const [selectedPath, setSelectedPath] = useState<any>([]);
+  const [targetNode, setTargetNode] = useState<any>(null);
   const theme = useTypedSelector((state) => state.auth.theme);
   let chatRef = useRef<any>(null);
   let unDistory = true;
@@ -118,12 +124,15 @@ const Contact: React.FC<ContactProps> = (props) => {
       } else if (contactIndex === 1) {
         setLoading(true);
         dispatch(getMember(mainGroupKey));
-      } else if (contactIndex === 3) {
-        setLoading(true);
-        getGroupTree('');
       }
     }
   }, [user, contactIndex]);
+  useEffect(() => {
+    if (contactIndex === 3) {
+      setLoading(true);
+      getGroupTree(companyItem.config.startId);
+    }
+  }, [companyItem, contactIndex]);
   useEffect(() => {
     if (groupArray && contactIndex === 0) {
       setLoading(false);
@@ -180,7 +189,11 @@ const Contact: React.FC<ContactProps> = (props) => {
     }
     // dispatch(setChatState(false));
   }, [contactKey]);
-
+  useEffect(() => {
+    if (startId && companyData && companyData[startId]) {
+      setSelectedPath(companyData[startId].path);
+    }
+  }, [startId, companyData]);
   const toTargetGroup = async (groupKey: string) => {
     dispatch(setGroupKey(groupKey));
     // dispatch(getGroupInfo(groupKey));
@@ -336,13 +349,15 @@ const Contact: React.FC<ContactProps> = (props) => {
               groupMemberKey: data[key].groupMemberKey,
               orgType: data[key].orgType,
               staffKey: data[key].staffKey,
+              color: data[key].orgType === 2 ? '#fff' : '#333',
+              backgroundColor: data[key].orgType === 2 ? 'transparent' : '#fff',
               // disabled: data[key].orgType === 2,
               childrenAll: data[key].childrenAll,
             };
             if (data[key].orgType === 2) {
               //?imageMogr2/auto-orient/thumbnail/80x
               newCompanyData[key].icon = data[key].avatar
-                ? data[key].avatar + '?roundPic/radius/!50p'
+                ? data[key].avatar + '?imageMogr2/auto-orient/thumbnail/80x'
                 : defaultPersonPng;
             }
             if (!nodeId && !data[key].parentOrgKey) {
@@ -353,17 +368,36 @@ const Contact: React.FC<ContactProps> = (props) => {
                 ? mainEnterpriseGroup.mainEnterpriseGroupLogo +
                   '?imageMogr2/auto-orient/thumbnail/80x'
                 : defaultGroupPng;
-              setStartId(nodeId);
             }
           }
-          console.log(newCompanyData);
-          // setSelectedId(nodeId);
+          setStartId(nodeId);
+          setSelectedId(nodeId);
           setCompanyData(newCompanyData);
         } else {
           dispatch(setMessage(true, companyDepartmentRes.msg, 'error'));
         }
       }
     }
+  };
+  const clickDot = (node: any) => {
+    // targetTreeRef.current.closeOptions();
+    let newCompanyItem = _.cloneDeep(companyItem);
+    setStartId(node._key);
+    setSelectedPath(node.path);
+    newCompanyItem.config.startId = node._key;
+    getGroupTree(node._key);
+    api.member.setConfig(newCompanyItem.groupMemberKey, newCompanyItem.config);
+    dispatch(changeCompanyItem(newCompanyItem));
+    // setSelectedPath(nodeObj[node._key].path1);
+  };
+  const editContract = (node: any) => {
+    let newTargetNode = _.cloneDeep(targetNode);
+    let newCompanyData = _.cloneDeep(companyData);
+    newTargetNode.contract = newTargetNode.contract ? false : true;
+    newCompanyData[node._key].contract = !newCompanyData[node._key].contract;
+    setTargetNode(newTargetNode);
+    setCompanyData(newCompanyData);
+    // setGridList(newGridList);
   };
   return (
     <div
@@ -433,9 +467,7 @@ const Contact: React.FC<ContactProps> = (props) => {
                     setCloneGroupVisible(true);
                     // ;
                   } else {
-                    contactIndex
-                      ? toTargetUser(key)
-                      : toTargetGroup(key);
+                    contactIndex ? toTargetUser(key) : toTargetGroup(key);
                   }
                 }}
                 style={
@@ -596,41 +628,104 @@ const Contact: React.FC<ContactProps> = (props) => {
           })
         ) : null
       ) : companyData && startId ? (
-        <MenuTree
-          // ref={targetTreeRef}
-          nodes={companyData}
-          uncontrolled={false}
-          showMoreButton
-          startId={startId}
-          defaultSelectedId={selectedId}
-          color="#e5e7eae6"
-          hoverColor="#fff"
-          disabled
-          handleClickNode={(node: any) => {
-            if (node.orgType === 2) {
-              toTargetUser(node.staffKey);
+        <div style={{ marginTop: '40px' }}>
+          <Tree
+            // disabled
+            itemHeight={32}
+            blockHeight={25}
+            singleColumn={true}
+            nodes={companyData}
+            uncontrolled={false}
+            showIcon={true}
+            showMoreButton
+            startId={startId}
+            // selectedBackgroundColor="#E3E3E3"
+            defaultSelectedId={selectedId}
+            handleClickNode={(node: any) => {
+              console.log(node);
+              setTargetNode(node);
+              if (node.orgType === 2) {
+                toTargetUser(node.staffKey);
+              }
+            }}
+            handleClickDot={
+              clickDot
+              // setSelectedId(node._key);
             }
-          }}
-          // handleClickMoreButton={(node: any) => {
-          //   setMoreTop(node.y);
-          //   setInfoDialogShow(true);
-          // }}
-          // handleAddChild={(selectedNode: any) => {
-          //   addChildrenGroup(selectedNode, 'child');
-          // }}
-          // handleAddNext={(selectedNode: any) => {
-          //   addChildrenGroup(selectedNode, 'next');
-          // }}
-          // handleDeleteNode={(node: any) => {
-          //   setDeleteDialogShow(true);
-          // }}
-          // handleChangeNodeText={(nodeId: string, text: string) => {
-          //   editGroupName(nodeId, text);
-          // }}
-          // handleClickExpand={editContract}
-        />
+            handleClickExpand={editContract}
+            // itemHeight={32}
+            // blockHeight={
+            //   departmentRef.current ? departmentRef.current.offsetHeight : 0
+            // }
+          />
+        </div>
       ) : null}
-
+      <div className="contact-tree-path">
+        {selectedPath && contactIndex === 3 ? (
+          // ? selectedPath.map((pathItem: any, pathIndex: number) => {
+          //     return (
+          //       <React.Fragment key={'path' + pathIndex}>
+          //         <div
+          //           onClick={() => {
+          //             getGroupTree(pathItem._key);
+          //             // setSelectedPath(companyData[pathItem._key].path);
+          //           }}
+          //           style={{
+          //             fontWeight: startId === pathItem._key ? 'bold' : 'normal',
+          //           }}
+          //           className="contact-tree-path-item"
+          //         >
+          //           {pathItem.name}{' '}
+          //           {pathIndex !== selectedPath.length - 1 ? '>' : ''}
+          //         </div>
+          //       </React.Fragment>
+          //     );
+          //   })
+          <Breadcrumbs
+            aria-label="breadcrumb"
+            maxItems={3}
+            separator={<NavigateNext fontSize="small" color="primary" />}
+          >
+            {selectedPath.map((pathItem: any, pathIndex: number) => {
+              const dom: any =
+                pathIndex < selectedPath.length - 1 ||
+                selectedPath.length == 1 ? (
+                  <Link
+                    href="#"
+                    onClick={() => {
+                      getGroupTree(pathItem._key);
+                      let newCompanyItem = _.cloneDeep(companyItem);
+                      newCompanyItem.config.startId = pathItem._key;
+                      api.member.setConfig(
+                        newCompanyItem.groupMemberKey,
+                        newCompanyItem.config
+                      );
+                      dispatch(changeCompanyItem(newCompanyItem));
+                    }}
+                    style={{ fontSize: '14px', color: '#fff' }}
+                    // color={'primary'}
+                    underline={'none'}
+                    key={'path' + pathIndex}
+                  >
+                    {pathItem.name}
+                  </Link>
+                ) : (
+                  <Typography
+                    color={'primary'}
+                    // onClick={() => {
+                    //   getGroupTree(pathItem._key);
+                    // }}
+                    style={{ fontSize: '14px' }}
+                    key={'path' + pathIndex}
+                  >
+                    {pathItem.name}
+                  </Typography>
+                );
+              return dom;
+            })}
+          </Breadcrumbs>
+        ) : null}
+      </div>
       <Dialog
         visible={cloneGroupVisible}
         onClose={() => {

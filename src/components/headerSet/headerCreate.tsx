@@ -95,9 +95,6 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
 
   useEffect(() => {
     if (user) {
-      if (showList) {
-        getTaskCreate(1);
-      }
       if (!groupArray) {
         setLoading(true);
         dispatch(getGroup(3));
@@ -110,11 +107,9 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
   useEffect(() => {
     if (groupArray) {
       setLoading(false);
+      getTaskCreate(1);
       getGroupArray();
     }
-    return () => {
-      unDistory = false;
-    };
   }, [groupArray]);
   useEffect(() => {
     if (
@@ -468,40 +463,38 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
                     setAddState(false);
                   }}
                 />
-                {showList ? (
-                  <div className="headerCreate-url">
-                    <IconButton
-                      color="primary"
-                      component="span"
-                      onClick={() => {
-                        setMoveState(true);
-                      }}
-                    >
-                      <img
-                        src={urlSvg}
-                        alt=""
-                        style={{ height: '25px', width: '25px' }}
-                      />
-                    </IconButton>
-
-                    <input
-                      className="headerCreate-url-input"
-                      value={urlInput}
-                      onChange={(e: any) => {
-                        setUrlInput(e.target.value);
-                      }}
-                      placeholder="请输入链接地址"
-                      style={
-                        moveState
-                          ? {
-                              animation: 'urlInputOut 500ms',
-                              animationFillMode: 'forwards',
-                            }
-                          : {}
-                      }
+                <div className="headerCreate-url">
+                  <IconButton
+                    color="primary"
+                    component="span"
+                    onClick={() => {
+                      setMoveState(true);
+                    }}
+                  >
+                    <img
+                      src={urlSvg}
+                      alt=""
+                      style={{ height: '25px', width: '25px' }}
                     />
-                  </div>
-                ) : null}
+                  </IconButton>
+
+                  <input
+                    className="headerCreate-url-input"
+                    value={urlInput}
+                    onChange={(e: any) => {
+                      setUrlInput(e.target.value);
+                    }}
+                    placeholder="请输入链接地址"
+                    style={
+                      moveState
+                        ? {
+                            animation: 'urlInputOut 500ms',
+                            animationFillMode: 'forwards',
+                          }
+                        : {}
+                    }
+                  />
+                </div>
                 {addInput && !loading ? (
                   <Button
                     variant="contained"
@@ -524,40 +517,36 @@ const HeaderCreate: React.FC<HeaderCreateProps> = (props) => {
                   </Button>
                 )}
               </div>
-              {showList ? (
-                <React.Fragment>
-                  <div className="addTask-create">最近创建</div>
-                  {createTaskList.length > 0 ? (
-                    <div
-                      className="headerSet-search-info"
-                      onScroll={scrollCreateLoading}
-                      style={{
-                        height:
-                          'calc(100% - ' +
-                          ((createRef.current
-                            ? createRef.current.offsetHeight
-                            : 0) +
-                            205) +
-                          'px)',
-                      }}
-                    >
-                      {createTaskList.map(
-                        (taskItem: any, taskIndex: number) => {
-                          return (
-                            <Task
-                              key={'create' + taskIndex}
-                              taskItem={taskItem}
-                              showGroupName={true}
-                              createTime={moment(taskItem.createTime).fromNow()}
-                              outSide={true}
-                            />
-                          );
-                        }
-                      )}
-                    </div>
-                  ) : null}
-                </React.Fragment>
-              ) : null}
+              <React.Fragment>
+                <div className="addTask-create">最近创建</div>
+                {createTaskList.length > 0 ? (
+                  <div
+                    className="headerSet-search-info"
+                    onScroll={scrollCreateLoading}
+                    style={{
+                      height:
+                        'calc(100% - ' +
+                        ((createRef.current
+                          ? createRef.current.offsetHeight
+                          : 0) +
+                          205) +
+                        'px)',
+                    }}
+                  >
+                    {createTaskList.map((taskItem: any, taskIndex: number) => {
+                      return (
+                        <Task
+                          key={'create' + taskIndex}
+                          taskItem={taskItem}
+                          showGroupName={true}
+                          createTime={moment(taskItem.createTime).fromNow()}
+                          outSide={true}
+                        />
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </React.Fragment>
             </div>
             <Dialog
               visible={closeVisible}

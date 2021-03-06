@@ -4,13 +4,13 @@ import { IconList } from '../config/config';
 import './index.css';
 import IconPage from '../iconComponent';
 import { useSelector } from 'react-redux';
-import { uploadImage } from '../../../../services/uploadImage';
+import { uploadImage } from '../../../util/uploadImage';
 const { Panel } = Collapse;
 const { TabPane } = Tabs;
 const { Option } = Select;
 const { TextArea } = Input;
 
-interface CanvasPropsProps {
+interface NodeComponentProps {
   data: any;
   form: {
     getFieldDecorator: any;
@@ -27,14 +27,14 @@ interface eventType {
   action: number;
   value?: string;
 }
-const NodeComponent: FC<CanvasPropsProps> = ({
+const NodeComponent: FC<NodeComponentProps> = ({
   data,
   form: { getFieldDecorator, getFieldValue },
   form,
   onFormValueChange,
 }) => {
   const qiniuToken = useSelector((state: any) => state.auth.qiniuToken);
-  const { x, y, width, height } = data?.node?.rect || {};
+  const { x, y, width, height } = data?.pen?.rect || {};
   const {
     rotate,
     lineWidth,
@@ -55,9 +55,9 @@ const NodeComponent: FC<CanvasPropsProps> = ({
     image,
     imageAlign,
     events,
-  } = data?.node || {};
+  } = data?.pen || {};
   const { color, fontSize, fontFamily, fontWeight, fontStyle, textAlign, textBaseline } = data?.node?.font || {};
-  const extraFields = data.node.data; // 用户自定义数据片段
+  const extraFields = data?.pen.data; // 用户自定义数据片段
   const [iconShow, setIconShow] = useState(false);
   const [iconData, setIconData] = useState<{
     class: string;
@@ -321,45 +321,7 @@ const NodeComponent: FC<CanvasPropsProps> = ({
     );
   }, [getFieldDecorator, color, fontFamily, fontSize, fontStyle, fontWeight, textAlign, textBaseline, text]);
 
-  /**
-   * 渲染元素本身数据
-   */
-  /* 
-  const renderDataForm = useMemo(() => {
-    const formItemLayout = {
-      labelCol: { span: 4 },
-      wrapperCol: { span: 20 },
-    }
-    return (
-      <Form {...formItemLayout}>
-        <Col>
-          <Form.Item label="ID">
-            <span className="ant-form-text">
-              <Tag color="#f50">{id}</Tag>
-            </span>
-          </Form.Item>
-        </Col>
-      </Form>
-    )
-  }, [id])
-
   
-
-  const renderExtraDataForm = useMemo(() => {
-    return (
-      <Form>
-        <Col>
-          <Form.Item label="自定义数据字段">
-            {getFieldDecorator("data", {
-              initialValue: extraFields,
-            })(<TextArea rows={10} />)}
-          </Form.Item>
-         <ExtraDataForm extraFields={extraFields} form={form} /> 
-        </Col>
-      </Form>
-    )
-  }, [extraFields, getFieldDecorator])
- */
   const animationList = [
     {
       id: 'upDown',

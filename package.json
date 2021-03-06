@@ -17,7 +17,7 @@
     "@testing-library/user-event": "^7.1.2",
     "@topology/activity-diagram": "^0.3.0",
     "@topology/class-diagram": "^0.3.0",
-    "@topology/core": "^0.3.24",
+    "@topology/core": "^0.3.28",
     "@topology/flow-diagram": "^0.3.0",
     "@topology/layout": "^0.3.0",
     "@topology/sequence-diagram": "^0.3.0",

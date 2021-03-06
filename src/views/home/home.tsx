@@ -22,7 +22,7 @@ import {
   setTheme,
   changeMainenterpriseGroup,
 } from '../../redux/actions/authActions';
-import { getCompanyMember } from '../../redux/actions/memberActions';
+import { getCompanyItem } from '../../redux/actions/memberActions';
 import _ from 'lodash';
 import api from '../../services/api';
 import { Tooltip } from '@material-ui/core';
@@ -46,7 +46,6 @@ const Home: React.FC<HomeProps> = (props) => {
   const [companyGroupList, setCompanyGroupList] = useState<any>([]);
   const [companyVisible, setCompanyVisible] = useState(false);
   const [loading, setLoading] = useState(false);
- 
 
   useEffect(() => {
     if (
@@ -55,7 +54,7 @@ const Home: React.FC<HomeProps> = (props) => {
       mainEnterpriseGroup &&
       mainEnterpriseGroup.mainEnterpriseGroupKey
     ) {
-      dispatch(getCompanyMember(mainEnterpriseGroup.mainEnterpriseGroupKey));
+      dispatch(getCompanyItem(mainEnterpriseGroup.mainEnterpriseGroupKey));
     }
   }, [user, mainEnterpriseGroup]);
 
@@ -102,7 +101,7 @@ const Home: React.FC<HomeProps> = (props) => {
           groupItem.groupName
         )
       );
-      dispatch(getCompanyMember(groupItem._key));
+      dispatch(getCompanyItem(groupItem._key));
       setCompanyVisible(false);
     } else {
       dispatch(setMessage(true, res.msg, 'error'));

@@ -29,6 +29,7 @@ interface GroupTableTreeInfoProps {
   editInfoType: string;
   changeContent: Function;
   changeTargetContent: Function;
+  changeEditable:Function
 }
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -75,6 +76,7 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
     editable,
     changeContent,
     changeTargetContent,
+    changeEditable
   } = props;
   const dispatch = useDispatch();
   const classes = useStyles();
@@ -112,6 +114,14 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
           setContent(taskInfo.content);
         } else {
           setContent('<p>备注信息:</p>');
+        }
+        if (taskInfo.type === 11) {
+          taskInfo.content = taskInfo.content.replace('<p>', '');
+          taskInfo.content = taskInfo.content.replace('</p>', '');
+          taskInfo.content = taskInfo.content.replace(
+            '<p data-f-id="pbf" style="text-align: center; font-size: 14px; margin-top: 30px; opacity: 0.65; font-family: sans-serif;">Powered by <a href="https://www.froala.com/wysiwyg-editor?pb=1" title="Froala Editor">Froala Editor</a></p>',
+            ''
+          );
         }
         setTargetNode(taskInfo);
         getHistoryList(taskHistoryPage, taskInfo);
@@ -255,10 +265,7 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
     <React.Fragment>
       {targetNode ? (
         <React.Fragment>
-          <div
-            className="groupTableTreeInfo-container"
-            ref={containerRef}
-          >
+          <div className="groupTableTreeInfo-container" ref={containerRef}>
             {loading ? (
               <Loading loadingHeight="90px" loadingWidth="90px" />
             ) : null}
@@ -283,7 +290,8 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
                   //@ts-ignore
                   targetNode={targetNode}
                   onChange={changeTaskContent}
-                />
+                  changeEditable={changeEditable}
+                  />
               ) : (
                 <DrawView
                   //@ts-ignore
