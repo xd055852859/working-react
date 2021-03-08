@@ -152,10 +152,11 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
         newTaskItem.calendarEditType = 1;
       }
       if (calendarType !== '新建') {
+        console.log(newTaskItem.circleData);
         if (newTaskItem.repeatCircle === 3) {
           setDayInput(newTaskItem.circleData[0]);
         }
-        if (newTaskItem.repeatCircle === 4) {
+        if (newTaskItem.repeatCircle === 4 && newTaskItem.circleData[0]) {
           setMonthInput(newTaskItem.circleData[0].month + 1);
           setDayInput(newTaskItem.circleData[0].date);
         }
@@ -193,6 +194,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
     } else {
       newCalendarInfo.circleData.splice(weekIndex, 1);
     }
+    console.log(newCalendarInfo.circleData);
     setCalendarInfo(newCalendarInfo);
     setCalendar(newCalendarInfo);
     changeEdit(true);
@@ -418,27 +420,29 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
           ) : null}
         </div>
       </div>
-      <div className="calendarInfo-item">
-        <div className="calendarInfo-item-title">结束时间</div>
-        <MuiPickersUtilsProvider utils={DateFnsUtils}>
-          <KeyboardDatePicker
-            disableToolbar
-            variant="inline"
-            format="yyyy-MM-DD"
-            margin="normal"
-            id="date-picker-inline"
-            // label="截止日期"
-            value={moment(calendarInfo.endDay)}
-            onChange={(date) => {
-              changeDate(date, 'end');
-            }}
-            KeyboardButtonProps={{
-              'aria-label': 'change date',
-            }}
-            className={classes.dateRoot}
-          />
-        </MuiPickersUtilsProvider>
-      </div>
+      {repeatIndex !== 0 ?
+        <div className="calendarInfo-item">
+          <div className="calendarInfo-item-title">结束时间</div>
+          <MuiPickersUtilsProvider utils={DateFnsUtils}>
+            <KeyboardDatePicker
+              disableToolbar
+              variant="inline"
+              format="yyyy-MM-DD"
+              margin="normal"
+              id="date-picker-inline"
+              // label="截止日期"
+              value={moment(calendarInfo.endDay)}
+              onChange={(date) => {
+                changeDate(date, 'end');
+              }}
+              KeyboardButtonProps={{
+                'aria-label': 'change date',
+              }}
+              className={classes.dateRoot}
+            />
+          </MuiPickersUtilsProvider>
+        </div>
+        : null}
       <div className="calendarInfo-item">
         <div className="calendarInfo-item-title">提醒</div>
         <div className="calendarInfo-item-notice">
@@ -489,36 +493,36 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
         </div>
       </div>
       {calendarType === '编辑' &&
-      calendarInfo.startDay === moment().startOf('day').valueOf() &&
-      calendarInfo.origionalKey ? (
-        // <div className="taskItem-check-icon">
-        <div className="calendarInfo-item" style={{ marginTop: '20px' }}>
-          <div className="calendarInfo-item-title">设置</div>
-          <div className="calendarInfo-item-color">
-            <RadioGroup
-              aria-label="gender"
-              value={calendarEditType}
-              onChange={onChange}
-            >
-              <FormControlLabel
-                value={'1'}
-                control={<Radio />}
-                label={'当日'}
-                key={'radio1'}
-                style={{ height: '40px' }}
-              />
-              <FormControlLabel
-                value={'2'}
-                control={<Radio />}
-                label={'循环'}
-                key={'radio2'}
-                style={{ height: '40px' }}
-              />
-            </RadioGroup>
+        calendarInfo.startDay === moment().startOf('day').valueOf() &&
+        calendarInfo.origionalKey ? (
+          // <div className="taskItem-check-icon">
+          <div className="calendarInfo-item" style={{ marginTop: '20px' }}>
+            <div className="calendarInfo-item-title">设置</div>
+            <div className="calendarInfo-item-color">
+              <RadioGroup
+                aria-label="gender"
+                value={calendarEditType}
+                onChange={onChange}
+              >
+                <FormControlLabel
+                  value={'1'}
+                  control={<Radio />}
+                  label={'当日'}
+                  key={'radio1'}
+                  style={{ height: '40px' }}
+                />
+                <FormControlLabel
+                  value={'2'}
+                  control={<Radio />}
+                  label={'循环'}
+                  key={'radio2'}
+                  style={{ height: '40px' }}
+                />
+              </RadioGroup>
+            </div>
           </div>
-        </div>
-      ) : // </div>
-      null}
+        ) : // </div>
+        null}
       {calendarType === '编辑' ? (
         // <div className="taskItem-check-icon">
         // <img
@@ -539,7 +543,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
           删除日程
         </Button>
       ) : // </div>
-      null}
+        null}
       {calendarType === '编辑' ? (
         <div className="calendarInfo-icon">
           <div className="calendarInfo-icon-title">关注者：</div>
@@ -552,7 +556,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
                       src={
                         iconItem.avatar
                           ? iconItem.avatar +
-                            '?imageMogr2/auto-orient/thumbnail/80x'
+                          '?imageMogr2/auto-orient/thumbnail/80x'
                           : defaultPersonPng
                       }
                       alt=""
@@ -585,7 +589,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
           </div>
         </div>
       ) : // </div>
-      null}
+        null}
       {calendarType === '新建' ? (
         <div className="calendarInfo-icon">
           <div className="calendarInfo-icon-title">复制到日程表：</div>
@@ -601,7 +605,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
                       src={
                         iconItem.groupLogo
                           ? iconItem.groupLogo +
-                            '?imageMogr2/auto-orient/thumbnail/80x'
+                          '?imageMogr2/auto-orient/thumbnail/80x'
                           : defaultGroupPng
                       }
                       alt=""
@@ -650,41 +654,41 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
         <div className="calendarInfo-group-box">
           {groupArray
             ? groupArray.map((groupItem: any, groupIndex: number) => {
-                return (
+              return (
+                <div
+                  className="calendarInfo-group-box-container"
+                  key={'group' + groupIndex}
+                  onClick={() => {
+                    chooseCalendarGroup(groupItem);
+                  }}
+                  style={
+                    calendarGroup.indexOf(groupItem._key) !== -1
+                      ? { backgroundColor: '#efefef' }
+                      : {}
+                  }
+                >
                   <div
-                    className="calendarInfo-group-box-container"
-                    key={'group' + groupIndex}
-                    onClick={() => {
-                      chooseCalendarGroup(groupItem);
-                    }}
-                    style={
-                      calendarGroup.indexOf(groupItem._key) !== -1
-                        ? { backgroundColor: '#efefef' }
-                        : {}
-                    }
+                    className="calendarInfo-group-box-item"
+                    style={{ borderRadius: '5px' }}
                   >
-                    <div
-                      className="calendarInfo-group-box-item"
-                      style={{ borderRadius: '5px' }}
-                    >
-                      <img
-                        src={
-                          groupItem.groupLogo
-                            ? groupItem.groupLogo +
-                              '?imageMogr2/auto-orient/thumbnail/80x'
-                            : defaultGroupPng
-                        }
-                        alt=""
-                      />
-                    </div>
-                    <Tooltip title={groupItem.groupName}>
-                      <div className="calendarInfo-group-title">
-                        {groupItem.groupName}
-                      </div>
-                    </Tooltip>
+                    <img
+                      src={
+                        groupItem.groupLogo
+                          ? groupItem.groupLogo +
+                          '?imageMogr2/auto-orient/thumbnail/80x'
+                          : defaultGroupPng
+                      }
+                      alt=""
+                    />
                   </div>
-                );
-              })
+                  <Tooltip title={groupItem.groupName}>
+                    <div className="calendarInfo-group-title">
+                      {groupItem.groupName}
+                    </div>
+                  </Tooltip>
+                </div>
+              );
+            })
             : null}
         </div>
       </Dialog>

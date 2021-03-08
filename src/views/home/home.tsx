@@ -22,14 +22,14 @@ import {
   setTheme,
   changeMainenterpriseGroup,
 } from '../../redux/actions/authActions';
-import { getCompanyMember } from '../../redux/actions/memberActions';
+import { getCompanyItem } from '../../redux/actions/memberActions';
 import _ from 'lodash';
 import api from '../../services/api';
 import { Tooltip } from '@material-ui/core';
 import DropMenu from '../../components/common/dropMenu';
 import Loading from '../../components/common/loading';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
-export interface HomeProps {}
+export interface HomeProps { }
 
 const Home: React.FC<HomeProps> = (props) => {
   // const location = useLocation();
@@ -46,7 +46,6 @@ const Home: React.FC<HomeProps> = (props) => {
   const [companyGroupList, setCompanyGroupList] = useState<any>([]);
   const [companyVisible, setCompanyVisible] = useState(false);
   const [loading, setLoading] = useState(false);
- 
 
   useEffect(() => {
     if (
@@ -55,7 +54,7 @@ const Home: React.FC<HomeProps> = (props) => {
       mainEnterpriseGroup &&
       mainEnterpriseGroup.mainEnterpriseGroupKey
     ) {
-      dispatch(getCompanyMember(mainEnterpriseGroup.mainEnterpriseGroupKey));
+      dispatch(getCompanyItem(mainEnterpriseGroup.mainEnterpriseGroupKey));
     }
   }, [user, mainEnterpriseGroup]);
 
@@ -102,7 +101,9 @@ const Home: React.FC<HomeProps> = (props) => {
           groupItem.groupName
         )
       );
-      dispatch(getCompanyMember(groupItem._key));
+      if (groupItem._key) {
+        dispatch(getCompanyItem(groupItem._key));
+      }
       setCompanyVisible(false);
     } else {
       dispatch(setMessage(true, res.msg, 'error'));
@@ -114,17 +115,17 @@ const Home: React.FC<HomeProps> = (props) => {
       style={
         moveState === 'in'
           ? {
-              animation: 'moveIn 500ms',
-              // animationFillMode: 'forwards',
-              left: '-320px',
-            }
+            animation: 'moveIn 500ms',
+            // animationFillMode: 'forwards',
+            left: '-320px',
+          }
           : moveState === 'out'
-          ? {
+            ? {
               animation: 'moveOut 500ms',
               // animationFillMode: 'forwards',
               left: '0px',
             }
-          : { left: '0px' }
+            : { left: '0px' }
       }
     >
       <div
@@ -138,8 +139,8 @@ const Home: React.FC<HomeProps> = (props) => {
         style={
           theme.backgroundImg
             ? {
-                backgroundImage: 'url(' + theme.backgroundImg + ')',
-              }
+              backgroundImage: 'url(' + theme.backgroundImg + ')',
+            }
             : { backgroundColor: theme.backgroundColor }
         }
       ></div>
@@ -166,17 +167,17 @@ const Home: React.FC<HomeProps> = (props) => {
               />
             </Tooltip>
           ) : (
-            <Tooltip title="动态伸缩左侧面板">
-              <img
-                src={unfixIconSvg}
-                alt=""
-                style={{ width: '30px', height: '30px' }}
-                onClick={() => {
-                  changeBoard('moveState', true);
-                }}
-              />
-            </Tooltip>
-          )}
+              <Tooltip title="动态伸缩左侧面板">
+                <img
+                  src={unfixIconSvg}
+                  alt=""
+                  style={{ width: '30px', height: '30px' }}
+                  onClick={() => {
+                    changeBoard('moveState', true);
+                  }}
+                />
+              </Tooltip>
+            )}
         </div>
         <div
           className="home-header-item"
@@ -241,8 +242,8 @@ const Home: React.FC<HomeProps> = (props) => {
                 </div>
               </React.Fragment>
             ) : (
-              '所有项目'
-            )}
+                '所有项目'
+              )}
           </div>
           <IconButton
             color="primary"
@@ -273,32 +274,32 @@ const Home: React.FC<HomeProps> = (props) => {
               {loading ? <Loading /> : null}
               {companyGroupList.length > 0
                 ? companyGroupList.map((groupItem: any, groupIndex: number) => {
-                    return (
-                      <div
-                        key={'clockInGroup' + groupIndex}
-                        onClick={() => {
-                          changeMainEnterpriseKey(groupItem._key);
-                        }}
-                        className="clockInGroup-item"
-                      >
-                        <div className="clockInGroup-item-logo">
-                          <img
-                            src={
-                              groupItem.groupLogo
-                                ? groupItem.groupLogo
-                                : defaultGroupPng
-                            }
-                            alt=""
-                          />
-                        </div>
-                        <Tooltip title={groupItem.groupName}>
-                          <div className="clockInGroup-item-name">
-                            {groupItem.groupName}
-                          </div>
-                        </Tooltip>
+                  return (
+                    <div
+                      key={'home' + groupIndex}
+                      onClick={() => {
+                        changeMainEnterpriseKey(groupItem._key);
+                      }}
+                      className="home-item"
+                    >
+                      <div className="home-item-logo">
+                        <img
+                          src={
+                            groupItem.groupLogo
+                              ? groupItem.groupLogo
+                              : defaultGroupPng
+                          }
+                          alt=""
+                        />
                       </div>
-                    );
-                  })
+                      <Tooltip title={groupItem.groupName}>
+                        <div className="home-item-name tolong">
+                          {groupItem.groupName}
+                        </div>
+                      </Tooltip>
+                    </div>
+                  );
+                })
                 : null}
             </React.Fragment>
           </DropMenu>

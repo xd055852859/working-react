@@ -434,7 +434,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             }
             className="tabs-tab-nav-item"
           >
-            项目 
+            项目
             {/* ({' '}
             {mainEnterpriseGroup.mainEnterpriseGroupKey
               ? groupArray &&
@@ -463,24 +463,24 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             }
             className="tabs-tab-nav-item"
           >
-            好友 
+            协作
             {/* ({' '} */}
             {/* {memberArray && memberArray.length > 0 ? memberArray.length : 0} ) */}
           </div>
           {mainEnterpriseGroup?.mainEnterpriseGroupKey ? (
             <div
               onClick={() => {
-                setContactIndex(2);
+                setContactIndex(3);
               }}
               style={
-                contactIndex === 2
+                contactIndex === 3
                   ? { background: 'rgba(255, 255, 255, 0.34)' }
                   : {}
               }
               className="tabs-tab-nav-item"
             >
-              同事
-               {/* ({' '}
+              组织树
+              {/* ({' '}
               {companyMemberArray && companyMemberArray.length > 0
                 ? companyMemberArray.length
                 : 0}{' '}
@@ -576,28 +576,6 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
                 setAddGroupVisible(true);
               }}
             />
-          ) : contactIndex === 2 ? (
-            <Tooltip title={'组织'}>
-              <img
-                src={contactTree}
-                alt=""
-                className="add-icon"
-                onClick={() => {
-                  setContactIndex(3);
-                }}
-              />
-            </Tooltip>
-          ) : contactIndex === 3 ? (
-            <Tooltip title={'列表'}>
-              <img
-                src={listSvg}
-                alt=""
-                className="add-icon"
-                onClick={() => {
-                  setContactIndex(2);
-                }}
-              />
-            </Tooltip>
           ) : null}
           {/* {contactIndex === 1 ? (
             <img

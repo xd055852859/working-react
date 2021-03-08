@@ -108,3 +108,35 @@
   display: flex;
   align-items: center;
 }
+.home-item-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-item {
+  height: 38px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+.home-item:hover {
+  background-color: #f0f0f0;
+}
+.home-item-logo {
+  width: 24px;
+  height: 24px;
+  overflow: hidden;
+  border-radius: 5px;
+  margin: 0px 10px;
+  flex-shrink: 0;
+}
+
+.home-item-name {
+  width: calc(100% - 34px);
+  height: 38px;
+  white-space: nowrap;
+  line-height: 38px;
+}

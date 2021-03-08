@@ -18,8 +18,7 @@ const ToolModal: FC<ToolModalProps> = ({ visible, current, onCancel, onSubmit })
     if (current) {
       setSelectedTool(current);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [current]);
 
   const handleOk = (values: { [key: string]: any }) => {
     if (onSubmit) {
@@ -27,18 +26,6 @@ const ToolModal: FC<ToolModalProps> = ({ visible, current, onCancel, onSubmit })
       localStorage.setItem('tool', JSON.stringify(selectedTool));
     }
   };
-
-  // 渲染树状组件
-  /* const renderTreeNodes = () => {
-    console.log('渲染');
-
-    return Tools.map((item: any) => {
-      if (item.children) {
-        return <TreeNode title={item.group} key={item.id} dataRef={item}></TreeNode>;
-      }
-      return <TreeNode key={item.key} title={item.group} />;
-    });
-  }; */
 
   const onCheck = (checkedKeys: any) => {
     setSelectedTool(checkedKeys);

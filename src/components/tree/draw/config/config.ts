@@ -247,6 +247,7 @@ export const Tools = [
           image: require('./agv.jpg'),
         },
       },
+     
       // {
       //   name: "jichuang",
       //   icon: "icon-jichuang",
@@ -296,7 +297,21 @@ export const Tools = [
           iconColor: '#000000',
           strokeStyle: 'rgba(255, 255, 255, 0)',
         },
-      } /* {
+      },
+      {
+        name: '曲线',
+        icon: 'icon-curve2',
+        data: {
+          // text: '曲线',
+          rect: {
+            width: 100,
+            height: 100,
+          },
+          name: 'curve',
+          toArrow: "triangleSolid",
+          type:1,
+        },
+      }/* {
         name: '火车',
         icon: 'icon-huoche',
         data: {
@@ -778,7 +793,7 @@ export const Tools = [
     ],
   },
   {
-    group: '自定义canvas组件',
+    group: '自定义组件',
     id: '5',
     children: [
       {
@@ -1058,39 +1073,39 @@ export const IconList = [
   { class: 'icon-zcpt-shujutongji', unicode: '0xe6b7' },
 ];
 
-export const imgTool = [
-  {
-    group: '自定义图片组件',
-    id: '1',
-    children: [
-      {
-        name: 'logo',
-        url: '/icon/logo.svg',
-        icon: 'icon-image',
-        data: {
-          text: '',
-          rect: {
-            width: 100,
-            height: 100,
-          },
-          name: 'image',
-          image: '/icon/logo.svg',
-        },
-      },
-      {
-        name: 'mindcute',
-        url: '/icon/mindcute2.svg',
-        icon: 'icon-image',
-        data: {
-          text: '',
-          rect: {
-            width: 300,
-            height: 100,
-          },
-          name: 'image',
-          image: '/icon/mindcute2.svg',
-        },
-      },
-    ],
-  },
-];
+// export const imgTool = [
+//   {
+//     group: '图片组件',
+//     id: '1',
+//     children: [
+//       {
+//         name: 'logo',
+//         url: '/icon/logo.svg',
+//         icon: 'icon-image',
+//         data: {
+//           text: '',
+//           rect: {
+//             width: 100,
+//             height: 100,
+//           },
+//           name: 'image',
+//           image: '/icon/logo.svg',
+//         },
+//       },
+//       {
+//         name: 'mindcute',
+//         url: '/icon/mindcute2.svg',
+//         icon: 'icon-image',
+//         data: {
+//           text: '',
+//           rect: {
+//             width: 300,
+//             height: 100,
+//           },
+//           name: 'image',
+//           image: '/icon/mindcute2.svg',
+//         },
+//       },
+//     ],
+//   },
+// ];

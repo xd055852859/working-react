@@ -111,7 +111,7 @@ const Download: React.FC<DownloadProps> = (props) => {
               }}
             />
             <a href="http://extension.workfly.cn" target="_blank">
-              飞鸽插件
+              雁行插件
             </a>
             <a href="https://cheerchat.qingtime.cn" target="_blank">
               洽洽官网

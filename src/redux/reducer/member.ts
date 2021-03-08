@@ -6,6 +6,7 @@ export interface MemberType {
   groupMemberArray: any;
   groupMemberItem: any;
   companyMemberArray: any;
+  companyItem: any;
 }
 
 const defaultState: MemberType = {
@@ -14,6 +15,7 @@ const defaultState: MemberType = {
   groupMemberArray: null,
   groupMemberItem: null,
   companyMemberArray: null,
+  companyItem: null,
 };
 
 export const member = (state = defaultState, action: any) => {
@@ -77,6 +79,42 @@ export const member = (state = defaultState, action: any) => {
       return {
         ...state,
         companyMemberArray: action.data,
+      };
+    case actionTypes.GET_COMPANY_ITEM_SUCCESS:
+      console.log(action);
+      let companyItem: any = {
+        config: {
+          groupKey: null,
+          groupName: '',
+          groupLogo: '',
+          creatorKey: null,
+          creatorAvatar: '',
+          creatorName: '',
+          executorKey: null,
+          executorAvatar: '',
+          executorName: '',
+          filterType: ['过期', '今天', '未来', '已完成'],
+          startId: '',
+        },
+        groupMemberKey: '',
+      };
+      if (action.data.config) {
+        for (let key in action.data.config) {
+          companyItem.config[key] = action.data.config[key];
+        }
+      }
+      if (!companyItem.config.startId) {
+        companyItem.config.startId = '';
+      }
+      companyItem.groupMemberKey = action.data.groupMemberKey;
+      return {
+        ...state,
+        companyItem: companyItem,
+      };
+    case actionTypes.CHANGE_COMPANY_ITEM:
+      return {
+        ...state,
+        companyItem: action.companyItem,
       };
     default:
       return state;

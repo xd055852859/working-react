@@ -358,8 +358,8 @@ const GroupTableHeader: React.FC = (prop) => {
       modelUrl: groupInfo.modelUrl
         ? groupInfo.modelUrl
         : theme.backgroundImg
-        ? theme.backgroundImg
-        : '',
+          ? theme.backgroundImg
+          : '',
       templateJson: [
         // {
         //   name: '测试频道1',
@@ -417,6 +417,9 @@ const GroupTableHeader: React.FC = (prop) => {
   };
   const changeFileDay = async (fileDay: number) => {
     let newFilterObject = _.cloneDeep(filterObject);
+    if (!fileDay) {
+      fileDay = 7;
+    }
     newFilterObject.fileDay = fileDay;
     let res: any = await api.member.setConfig(
       groupMemberItem._key,
@@ -478,7 +481,7 @@ const GroupTableHeader: React.FC = (prop) => {
               src={
                 groupInfo && groupInfo.groupLogo
                   ? groupInfo.groupLogo +
-                    '?imageMogr2/auto-orient/thumbnail/80x'
+                  '?imageMogr2/auto-orient/thumbnail/80x'
                   : defaultGroupPng
               }
               alt=""
@@ -556,7 +559,7 @@ const GroupTableHeader: React.FC = (prop) => {
             onClose={() => {
               setInfoVisible(false);
             }}
-            // title={'视图切换'}
+          // title={'视图切换'}
           >
             <div className="groupTableHeader-info-container">
               <div
@@ -866,7 +869,7 @@ const GroupTableHeader: React.FC = (prop) => {
                           src={
                             filterObject.groupLogo
                               ? filterObject.groupLogo +
-                                '?imageMogr2/auto-orient/thumbnail/80x'
+                              '?imageMogr2/auto-orient/thumbnail/80x'
                               : defaultGroupPng
                           }
                         />
@@ -888,7 +891,7 @@ const GroupTableHeader: React.FC = (prop) => {
                           src={
                             filterObject.creatorAvatar
                               ? filterObject.creatorAvatar +
-                                '?imageMogr2/auto-orient/thumbnail/80x'
+                              '?imageMogr2/auto-orient/thumbnail/80x'
                               : defaultPersonPng
                           }
                         />
@@ -910,7 +913,7 @@ const GroupTableHeader: React.FC = (prop) => {
                           src={
                             filterObject.executorAvatar
                               ? filterObject.executorAvatar +
-                                '?imageMogr2/auto-orient/thumbnail/80x'
+                              '?imageMogr2/auto-orient/thumbnail/80x'
                               : defaultPersonPng
                           }
                         />
@@ -968,22 +971,22 @@ const GroupTableHeader: React.FC = (prop) => {
                                   ( 近{fileInput}天 )
                                 </div>
                               ) : (
-                                <div style={{ marginLeft: '8px' }}>
-                                  ( 近
-                                  <input
-                                    type="number"
-                                    value={fileInput}
-                                    onChange={(e) => {
-                                      setFileInput(e.target.value);
-                                    }}
-                                    onBlur={(e) => {
-                                      changeFileDay(parseInt(e.target.value));
-                                    }}
-                                    className="fileday"
-                                  />
+                                  <div style={{ marginLeft: '8px' }}>
+                                    ( 近
+                                    <input
+                                      type="number"
+                                      value={fileInput}
+                                      onChange={(e) => {
+                                        setFileInput(e.target.value);
+                                      }}
+                                      onBlur={(e) => {
+                                        changeFileDay(parseInt(e.target.value));
+                                      }}
+                                      className="fileday"
+                                    />
                                   天 )
-                                </div>
-                              )}
+                                  </div>
+                                )}
                             </React.Fragment>
                           ) : null}
                         </div>
@@ -1057,7 +1060,7 @@ const GroupTableHeader: React.FC = (prop) => {
           width: '850px',
           height: '700px',
         }}
-        // showMask={false}
+      // showMask={false}
       >
         <div className="groupSet-tab">
           <div
@@ -1069,9 +1072,9 @@ const GroupTableHeader: React.FC = (prop) => {
             style={
               groupTabIndex == 0
                 ? {
-                    borderBottom: '2px solid #17B881',
-                    color: '#17B881',
-                  }
+                  borderBottom: '2px solid #17B881',
+                  color: '#17B881',
+                }
                 : {}
             }
           >
@@ -1086,9 +1089,9 @@ const GroupTableHeader: React.FC = (prop) => {
             style={
               groupTabIndex == 1
                 ? {
-                    borderBottom: '2px solid #17B881',
-                    color: '#17B881',
-                  }
+                  borderBottom: '2px solid #17B881',
+                  color: '#17B881',
+                }
                 : {}
             }
           >

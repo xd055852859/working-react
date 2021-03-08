@@ -468,14 +468,14 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
           >
             <img src={logoSvg} alt="" />
           </div>
-          <div
+          {/* <div
             className="showPage-bigLogo"
             onClick={(e: any) => {
               window.open('https://mindcute.com/login?token=' + timeOsToken);
             }}
           >
             <img src={mindcuteLogoSvg} alt="" />
-          </div>
+          </div> */}
         </div>
         <div className="showPage-task-menu">
           {theme.taskShow ? (
@@ -494,7 +494,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
               今日事务
             </div>
           ) : null}
-          <div
+          {/* <div
             className="showPage-task-menu-item"
             style={{
               borderBottom:
@@ -506,7 +506,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
             }}
           >
             我的文件
-          </div>
+          </div> */}
         </div>
         {menuShow === 0 ? (
           theme.taskShow !== false ? (

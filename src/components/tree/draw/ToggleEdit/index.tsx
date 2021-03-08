@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import Loadable from 'react-loadable';
 import { useDispatch } from 'react-redux';
-import { useTypedSelector } from '../../../../redux/reducer/RootState';
 import Loading from '../../../common/loading';
 import './index.css';
-// import { clearArticle } from '../../../../redux/actions/articleActions';
+// import { clearArticle } from '../../../redux/actions/articleActions';
+
 const DrawView = Loadable({
   loader: () => import('../../DrawView'),
   loading: () => <Loading />,
@@ -23,7 +23,7 @@ interface Props {
 export default function ToggleEdit({ editMode, hideEditButton }: Props) {
   const dispatch = useDispatch();
   const [editor, setEditor] = useState(false);
-  // const article = useTypedSelector((state) => state.article.article);
+ //  const article = useTypedSelector((state) => state.article.article);
 
   useEffect(() => {
     return () => {

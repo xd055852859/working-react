@@ -10,56 +10,38 @@ import React, {
 import { Topology, Node, Line, Options, Pen } from '@topology/core';
 import { alignNodes, layout, spaceBetween } from '@topology/layout';
 import { register as registerFlow } from '@topology/flow-diagram'; // 流程图
-
 import { register as registerActivity } from '@topology/activity-diagram'; // 活动图
-
 import { register as registerClass } from '@topology/class-diagram'; // 类图
-
 import { register as registerSequence } from '@topology/sequence-diagram'; // 时序图
-
 import { register as registerMyself } from './customized-diagram/index';
-
-import { Tools, imgTool } from './draw/config/config';
-import Header from './draw/Header';
-import NodeComponent from './draw/nodeComponent';
-import BackgroundComponent from './draw/backgroundComponent';
-import LineComponent from './draw/lineComponent';
-import ToolModal from './draw/toolComponent';
-import Multi from './draw/multiComponent';
 import './Topology.css';
-
 import { useLocation } from 'react-router-dom';
 // import { getArticleById, clearArticle, editArticleSaveStatus } from '../redux/actions/articleActions';
 // import { getQiniuToken } from '../redux/actions/authActions';
 import { useDispatch } from 'react-redux';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { getSearchParamValue } from '../../services/util';
-// import { ArticleType } from '../interfaces/Article';
-import Tooltip from '@material-ui/core/Tooltip';
-import { IconButton } from '@material-ui/core';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
-import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import KeyboardOutlinedIcon from '@material-ui/icons/KeyboardOutlined';
 import DrawShortcutPanel from './draw/DrawShortcutPanel';
+import { IconButton, Menu, MenuItem, Tooltip } from '@material-ui/core';
+import KeyboardOutlinedIcon from '@material-ui/icons/KeyboardOutlined';
+import RightMenu from './draw/RightMenu';
+import LeftMenu from './draw/LeftMenu';
+import Header from './draw/Header';
 
 let canvas: Topology;
 const spaceData = {
   type: -1,
-  node: undefined,
-  line: undefined,
-  multi: undefined,
+  multi: false,
+  pen: undefined,
   nodes: undefined,
   locked: false,
 };
 
-interface selectType {
+export interface selectType {
   type: number;
-  node?: Node;
-  line?: Line;
   multi?: boolean;
-  nodes?: any;
+  pen?: Pen | Node | Line;
+  nodes?: Pen[];
   locked?: boolean;
 }
 
@@ -72,31 +54,32 @@ const DrawEditor: FC<{
   embed?: boolean;
   targetNode?: any;
   onChange?: Function;
-}> = ({ embed = false, targetNode, onChange }) => {
+  changeEditable?:Function
+}> = ({ embed = false, targetNode, onChange,changeEditable }) => {
   const dispatch = useDispatch();
   const location = useLocation();
   const key = getSearchParamValue(location.search, 'key');
   const typeNew = getSearchParamValue(location.search, 'type');
   const user = useTypedSelector((state) => state.auth.user);
   // const article = useTypedSelector((state) => state.article.article);
-  // const articleRef = useRef<ArticleType>();
-
+  // const styleType = (article as any)?.styleType;
+  let styleType: any = {};
   const [selected, setSelected] = useState<selectType>(spaceData);
   const selectedRef = useRef<selectType>();
   const [isLoadCanvas, setIsLoadCanvas] = useState(false);
   const [right, setRight] = useState(false);
-  const [visible, setVisible] = useState(false);
   const [moreTool, setMoreTool] = useState<string[]>(['1', '2', '3', '4', '5']);
   const [shortcutVisible, setShortcutVisible] = useState(false);
   const [showTool, setShowTool] = useState(true);
 
-  const [state, setState] = React.useState<{
+  const [state, setState] = useState<{
     mouseX: null | number;
     mouseY: null | number;
   }>(initialState);
 
   const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     event.preventDefault();
+    if (!selected.pen) return;
     setState({
       mouseX: event.clientX - 2,
       mouseY: event.clientY - 4,
@@ -131,12 +114,10 @@ const DrawEditor: FC<{
             }
           }); */
           // dispatch(editArticleSaveStatus(-1));
-          if (selectedRef.current?.node?.id !== data.id) {
-            // handleSave.callback();
+          if (selectedRef.current?.pen?.id !== data.id) {
             setSelected({
               type: 0,
-              node: data,
-              line: undefined,
+              pen: data,
               multi: false,
               nodes: undefined,
               locked: data.locked,
@@ -145,12 +126,10 @@ const DrawEditor: FC<{
           break;
         case 'addNode':
           // dispatch(editArticleSaveStatus(-1));
-          if (selectedRef.current?.node?.id !== data.id) {
-            // handleSave.callback();
+          if (selectedRef.current?.pen?.id !== data.id) {
             setSelected({
               type: 0,
-              node: data,
-              line: undefined,
+              pen: data,
               multi: false,
               nodes: undefined,
               locked: data.locked,
@@ -159,18 +138,30 @@ const DrawEditor: FC<{
           break;
         case 'line': // 连线
         case 'addLine':
+          // console.log(event, data,canvas?.activeLayer);
           let distance =
             (data.from.x - data.to.x) * (data.from.x - data.to.x) +
             (data.from.y - data.to.y) * (data.from.y - data.to.y);
-          if (!data.to.id && distance < 4000) {
+          if (
+            !data.to.id &&
+            distance < 4000 &&
+            canvas?.activeLayer.pens[0].type === 1
+          ) {
             canvas.delete();
           }
+          if (data.from.id && !canvas.find(data.from.id)) {
+            data.from.id = null;
+            canvas.updateProps();
+          }
+          if (data.to.id && !canvas.find(data.to.id)) {
+            data.to.id = null;
+            canvas.updateProps();
+          }
           // dispatch(editArticleSaveStatus(-1));
-          if (selectedRef.current?.line?.id !== data.id) {
+          if (selectedRef.current?.pen?.id !== data.id) {
             setSelected({
               type: 1,
-              node: undefined,
-              line: data,
+              pen: data,
               multi: false,
               nodes: undefined,
               locked: data.locked,
@@ -190,8 +181,7 @@ const DrawEditor: FC<{
           // dispatch(editArticleSaveStatus(-1));
           setSelected({
             type: 2,
-            node: undefined,
-            line: undefined,
+            pen: undefined,
             multi: true,
             nodes: data,
             locked: undefined,
@@ -208,6 +198,7 @@ const DrawEditor: FC<{
         case 'paste':
           //@ts-ignore
           /*    navigator.clipboard.read().then((value) => {
+            console.log(value);
             
             if(value[0].types.includes("image/png")){
               canvas.delete([data]);
@@ -218,15 +209,38 @@ const DrawEditor: FC<{
           break;
       }
     },
-
     [dispatch]
   );
+
+  useEffect(() => {
+    if (canvas?.options && canvas.data && styleType) {
+      canvas.options.color = styleType.lineColor;
+      if (right) {
+        canvas.data.pens.forEach((pen: Pen) => {
+          if (pen.type === 0) {
+            //@ts-ignore
+            pen.font.color = styleType.fontColor;
+            pen.fillStyle = styleType.bgColor;
+            pen.strokeStyle = styleType.borderColor;
+          } else if (pen.type === 1) {
+            // line
+            pen.strokeStyle = styleType.lineColor;
+          }
+          pen.lineWidth = styleType.lineWidth;
+        });
+        canvas.data.lineWidth = styleType.lineWidth;
+      }
+      canvas.updateProps();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [styleType]);
 
   useEffect(() => {
     const canvasOptions: Options = {
       rotateCursor: '/rotate.cur',
       activeColor: 'red',
-      // translateKey: 4,
+      autoAnchor: true,
+      translateKey: 4,
     };
     canvasOptions.on = onMessage;
     canvasRegister();
@@ -243,10 +257,10 @@ const DrawEditor: FC<{
     if (toolArray.length) {
       setMoreTool(toolArray);
     }
-
     return () => {
       canvas.destroy();
     };
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -257,14 +271,14 @@ const DrawEditor: FC<{
   // 获取绘图数据
   // useEffect(() => {
   //   if (user) {
-  //     // dispatch(getQiniuToken());
+  //     dispatch(getQiniuToken());
   //     if (typeNew) {
-  //       // dispatch(clearArticle());
+  //       dispatch(clearArticle());
   //       canvas.open();
   //     }
   //     if (key) {
   //       // 获取文章详情
-  //       // dispatch(getArticleById(key));
+  //       dispatch(getArticleById(key));
   //     }
   //   }
   //   canvas.data.grid = true;
@@ -273,6 +287,7 @@ const DrawEditor: FC<{
   //   canvas.render();
   // }, [dispatch, user, key, typeNew]);
 
+  // 加载绘图数据
   // 加载绘图数据
   useEffect(() => {
     if (targetNode) {
@@ -304,130 +319,60 @@ const DrawEditor: FC<{
     // registerNode('myShape', myShapeData, myShapeDataAnchors, myShapeDataIconRect, myShapeDataTextRect);
   };
 
-  const onDrag = (event: any, node: any) => {
-    node.data.lineWidth = 2;
-    event.dataTransfer.setData('Topology', JSON.stringify(node.data));
-  };
+  const onDrag = useCallback(
+    (event: any, node: any) => {
+      node.data = {
+        ...node.data,
+        lineWidth: styleType?.lineWidth,
+        font: { color: styleType?.fontColor },
+        fillStyle: styleType?.bgColor,
+        strokeStyle: styleType?.borderColor,
+      };
+      if (node.data.type === 1) {
+        node.data.strokeStyle = styleType.lineColor;
+      }
+      event.dataTransfer.setData('Topology', JSON.stringify(node.data));
+    },
+    [styleType]
+  );
 
-  /**
-   * 当表单数据变化时, 重新渲染canvas
-   * @params {object} value - 图形的宽度,高度, x, y等等
-   */
-
-  const onHandleFormValueChange = useCallback((value) => {
-    // console.log(value);
-    const {
-      rotate,
-      data,
-      lineWidth,
-      strokeStyle,
-      dash,
-      color,
-      fontSize,
-      fontFamily,
-      fontWeight,
-      fontStyle,
-      text,
-      animateStart,
-      animatePlay,
-      animateType,
-      animateDuration,
-      animateCycle,
-      textAlign,
-      textBaseline,
-      borderRadius,
-      fillStyle,
-      icon,
-      iconSize,
-      iconColor,
-      iconFamily,
-      image,
-      imageAlign,
-      events,
-      ...other
-    } = value;
-    const changedValues: any = {
-      node: {
-        rect: other,
-        font: {
-          color,
-          fontSize,
-          fontFamily,
-          fontWeight,
-          fontStyle,
-          textAlign,
-          textBaseline,
+  const onDragFont = useCallback(
+    (event: any, node: any) => {
+      const data = {
+        rect: {
+          width: 100,
+          height: 100,
         },
-        rotate,
-        lineWidth,
-        strokeStyle,
-        dash,
-        text,
-        data,
-        animateStart,
-        animatePlay,
-        animateType,
-        animateDuration,
-        animateCycle,
-        borderRadius,
-        fillStyle,
-        icon,
-        iconSize,
-        iconColor,
-        iconFamily,
-        image,
-        imageAlign,
-        events,
-      },
-    };
-    if (changedValues.node) {
-      if (animateType) {
-        animationSet(canvas.activeLayer.pens[0], animateType);
-      }
+        text: '字体图标',
+        paddingLeft: 10,
+        paddingRight: 10,
+        paddingTop: 10,
+        paddingBottom: 10,
+        name: 'image',
+        icon: String.fromCharCode(node.unicode),
+        iconFamily: 'Topology',
+        iconColor: '#000000',
+        lineWidth: styleType?.lineWidth,
+        font: { color: styleType?.fontColor },
+        fillStyle: styleType?.bgColor,
+        strokeStyle: styleType?.borderColor,
+      };
+      event.dataTransfer.setData('Topology', JSON.stringify(data));
+    },
+    [styleType]
+  );
 
-      // 遍历查找修改的属性，赋值给原始Node
-      for (const key in changedValues.node) {
-        if (Array.isArray(changedValues.node[key])) {
-          //@ts-ignore
-          canvas.activeLayer.pens[0]['events'] = [
-            ...changedValues.node['events'],
-          ];
-        } else if (typeof changedValues.node[key] === 'object') {
-          for (const k in changedValues.node[key]) {
-            //@ts-ignore
-            canvas.activeLayer.pens[0]['icon'] = changedValues.node['icon'];
-            //@ts-ignore
-            canvas.activeLayer.pens[0]['image'] = changedValues.node['image'];
-
-            if (
-              changedValues.node[key] ||
-              changedValues.node[key] === 0 ||
-              changedValues.node[key] === false ||
-              changedValues.node[key] === ''
-            ) {
-              //@ts-ignore
-              canvas.activeLayer.pens[0][key][k] = changedValues.node[key][k];
-            }
-          }
-        } else {
-          if (
-            changedValues.node[key] ||
-            changedValues.node[key] === 0 ||
-            changedValues.node[key] === false ||
-            changedValues.node[key] === ''
-          ) {
-            //@ts-ignore
-            canvas.activeLayer.pens[0][key] = changedValues.node[key];
-          }
-        }
-      }
-      animateStart
-        ? (canvas.activeLayer.pens[0]['animateStart'] = new Date().getTime())
-        : (canvas.activeLayer.pens[0]['animateStart'] = 0);
-      canvas.animate();
+  const changeFontIcon = useCallback((event: any, value: any) => {
+    if (
+      canvas.activeLayer.pens.length === 1 &&
+      canvas.activeLayer.pens[0].type === 0
+    ) {
+      canvas.activeLayer.pens.forEach((item: any) => {
+        item.icon = String.fromCharCode(value.unicode);
+        item.iconFamily = 'Topology';
+        canvas.updateProps();
+      });
     }
-
-    canvas.updateProps();
   }, []);
 
   /**
@@ -603,91 +548,6 @@ const DrawEditor: FC<{
   };
 
   /**
-   * 当线条表单数据变化时, 重新渲染canvas
-   * @params {object} value - 图形的宽度,高度, x, y等等
-   */
-
-  const onHandleLineFormValueChange = useCallback((value) => {
-    const {
-      dash,
-      lineWidth,
-      strokeStyle,
-      name,
-      fromArrow,
-      toArrow,
-      animateStart,
-      animatePlay,
-      animateType,
-      animateCycle,
-      animateColor,
-      animateSpan,
-      animateDotSize,
-      fromArrowColor,
-      toArrowColor,
-      fromArrowSize,
-      toArrowSize,
-      ...other
-    } = value;
-    const changedValues: any = {
-      line: {
-        rect: other,
-        lineWidth,
-        dash,
-        strokeStyle,
-        name,
-        fromArrow,
-        toArrow,
-        animateStart,
-        animatePlay,
-        animateType,
-        animateCycle,
-        animateColor,
-        animateSpan,
-        animateDotSize,
-        fromArrowColor,
-        toArrowColor,
-        fromArrowSize,
-        toArrowSize,
-      },
-    };
-    if (changedValues.line) {
-      // 遍历查找修改的属性，赋值给原始line
-      for (const key in changedValues.line) {
-        if (Array.isArray(changedValues.line[key])) {
-        } else if (typeof changedValues.line[key] === 'object') {
-          for (const k in changedValues.line[key]) {
-            if (
-              changedValues.line[key][k] ||
-              changedValues.line[key][k] === 0 ||
-              changedValues.line[key] === false
-            ) {
-              //@ts-ignore
-              canvas.activeLayer.pens[0][key][k] = changedValues.line[key][k];
-            }
-          }
-        } else {
-          if (
-            changedValues.line[key] ||
-            changedValues.line[key] === 0 ||
-            changedValues.line[key] === false
-          ) {
-            //@ts-ignore
-            canvas.activeLayer.pens[0][key] = changedValues.line[key];
-          }
-        }
-      }
-
-      animateStart
-        ? (canvas.activeLayer.pens[0]['animateStart'] = new Date().getTime())
-        : (canvas.activeLayer.pens[0]['animateStart'] = 0);
-      canvas.animate();
-      //@ts-ignore
-      canvas.activeLayer.pens[0].calcControlPoints();
-    }
-    canvas.updateProps();
-  }, []);
-
-  /**
    * 监听画布上元素的事件
    * @params {string} event - 事件名称
    * @params {object} data - 节点数据
@@ -696,28 +556,95 @@ const DrawEditor: FC<{
   /**
    * 渲染画布右侧区域操作栏
    */
+  const changeRightView = useCallback((value) => {
+    setRight(() => {
+      canvas.resize();
+      return value;
+    });
+  }, []);
 
-  const renderHeader = useMemo(() => {
-    if (isLoadCanvas)
-      return (
-        <Header
-          node={targetNode}
-          canvas={canvas}
-          onChange={onChange}
+  const propsChange = useCallback(
+    (value: any) => {
+      if (!canvas.activeLayer.pens.length) {
+        return;
+      }
+      for (const k in value) {
+        if (k === 'rect') {
+          for (const s in value[k]) {
+            //@ts-ignore
+            canvas.activeLayer.pens[0][k][s] = parseInt(value[k][s]);
+          }
+        } else if (k === 'font') {
+          for (const s in value[k]) {
+            //@ts-ignore
+            canvas.activeLayer.pens[0][k][s] = value[k][s];
+          }
+        } else {
           //@ts-ignore
-          data={selected}
-          embed={embed}
-          showLeftTool={(value: boolean) => {
-            setShowTool(value);
-          }}
-        />
-      );
-  }, [isLoadCanvas, selected, embed]);
+          canvas.activeLayer.pens[0][k] = value[k];
+        }
+      }
 
-  const changeTool = (value: string[]) => {
-    setMoreTool(value);
-    setVisible(false);
-  };
+      if (value.animateType && selectedRef.current?.type === 0) {
+        animationSet(canvas.activeLayer.pens[0], value.animateType);
+      }
+
+      if (value.animateStart) {
+        canvas.activeLayer.pens[0].startAnimate();
+      }
+      if (value.animateStart === 0) {
+        canvas.activeLayer.pens[0].stopAnimate();
+      }
+      setSelected((selected) => ({
+        ...selected,
+        pen: canvas.activeLayer.pens[0],
+      }));
+      canvas.updateProps();
+    },
+
+    []
+  );
+
+  const allPropsChange = useCallback(
+    (value: any) => {
+      if (!canvas.activeLayer.pens.length) {
+        return;
+      }
+      for (const k in value) {
+        if (k === 'rect') {
+          for (const s in value[k]) {
+            // eslint-disable-next-line no-loop-func
+            canvas.activeLayer.pens.forEach((element, index) => {
+              //@ts-ignore
+              canvas.activeLayer.pens[index][k][s] = parseInt(value[k][s]);
+            });
+          }
+        } else if (k === 'font') {
+          for (const s in value[k]) {
+            // eslint-disable-next-line no-loop-func
+            canvas.activeLayer.pens.forEach((element, index) => {
+              //@ts-ignore
+              canvas.activeLayer.pens[index][k][s] = value[k][s];
+            });
+          }
+        } else {
+          // eslint-disable-next-line no-loop-func
+          canvas.activeLayer.pens.forEach((element, index) => {
+            //@ts-ignore
+            canvas.activeLayer.pens[index][k] = value[k];
+          });
+        }
+      }
+      // setSelected({ ...(selectedRef.current as selectType), pen: canvas.activeLayer.pens[0] });
+      setSelected((selected) => ({
+        ...selected,
+        pen: canvas.activeLayer.pens[0],
+      }));
+      canvas.updateProps();
+    },
+
+    []
+  );
 
   /**
    *
@@ -730,55 +657,13 @@ const DrawEditor: FC<{
     }
     setState(initialState);
   };
+
   const handleDownLayer = () => {
     if (canvas.activeLayer.pens[0]) {
       canvas.bottom(canvas.activeLayer.pens[0]);
     }
     setState(initialState);
   };
-
-  /**
-   * 风格模板
-   */
-
-  const changeStyle = useCallback((type: string) => {
-    const changeCanvasStyle = (
-      lineWidth: number = 1,
-      lineColor: string = 'black',
-      bgColor: string = '',
-      fontColor: string = 'black'
-    ) => {
-      canvas.data.pens.forEach((pen: Pen) => {
-        if (pen.type === 0) {
-          // node
-          pen.font.color = fontColor;
-          pen.fillStyle = bgColor;
-        } else if (pen.type === 1) {
-          // line
-        }
-        pen.strokeStyle = lineColor;
-        pen.lineWidth = lineWidth;
-      });
-      canvas.updateProps();
-    };
-    switch (type) {
-      case 'thin':
-        changeCanvasStyle(1);
-        break;
-      case 'blod':
-        changeCanvasStyle(3);
-        break;
-      case 'blue':
-        changeCanvasStyle(3, 'blue', 'blue', 'white');
-        break;
-      case 'red':
-        changeCanvasStyle(3, 'red', 'red', 'white');
-        break;
-      case 'green':
-        changeCanvasStyle(3, '#6ed464', '#6ed464', 'black');
-        break;
-    }
-  }, []);
 
   // 布局
   const handleSelect = useCallback((pen: Pen) => {
@@ -801,152 +686,44 @@ const DrawEditor: FC<{
     canvas.updateProps();
   }, []);
 
-  const rightAreaConfig = useMemo(() => {
-    return {
-      node: selected && (
-        <NodeComponent
+  const renderHeader = useMemo(() => {
+    if (isLoadCanvas)
+      return (
+        <Header
+          node={targetNode}
+          canvas={canvas}
+          onChange={onChange}
+          changeEditable={changeEditable}
           //@ts-ignore
           data={selected}
-          onFormValueChange={onHandleFormValueChange}
+          embed={embed}
+          right={right}
+          propsChange={allPropsChange}
+          showRight={changeRightView}
+          showLeftTool={(value: boolean) => {
+            setShowTool(value);
+            setTimeout(() => {
+              canvas.resize();
+            }, 0);
+          }}
         />
-      ), // 渲染Node节点类型的组件
-      line: selected && (
-        <LineComponent
-          //@ts-ignore
-          data={selected}
-          onFormValueChange={onHandleLineFormValueChange}
-        />
-      ), // 渲染线条类型的组件
-      multi: selected && (
-        <Multi
-          data={selected}
-          handleSelect={handleSelect}
-          onNodesAlign={onNodesAlign}
-          onSpaceBetween={onSpaceBetween}
-          onLayout={onLayout}
-        />
-      ),
-      default: <BackgroundComponent changeStyle={changeStyle} />, // 渲染画布背景的组件
-    };
-  }, [
-    selected,
-    onHandleFormValueChange,
-    onHandleLineFormValueChange,
-    handleSelect,
-    onNodesAlign,
-    onSpaceBetween,
-    onLayout,
-    changeStyle,
-  ]);
-
-  const renderRightArea = useMemo(() => {
-    let _component = rightAreaConfig.default;
-    Object.keys(rightAreaConfig).forEach((item) => {
-      //@ts-ignore
-      if (selected[item] && rightAreaConfig[item]) {
-        //@ts-ignore
-        _component = rightAreaConfig[item];
-      }
-    });
-    return _component;
-  }, [selected, rightAreaConfig]);
+      );
+  }, [isLoadCanvas, selected, embed, right, allPropsChange, changeRightView]);
 
   return (
     <Fragment>
       {renderHeader}
       <div className="page">
         {showTool ? (
-          <div className="tool">
-            {Tools.filter((item: any) => moreTool.includes(item.id)).map(
-              (item, index) => (
-                <div key={index}>
-                  <div className="title">{item.group}</div>
-                  <div className="button">
-                    {
-                      //@ts-ignore
-                      item.children.map((item: any, idx: any) => {
-                        // eslint-disable-next-line jsx-a11y/anchor-is-valid
-                        return (
-                          // eslint-disable-next-line jsx-a11y/anchor-is-valid
-                          <a
-                            key={idx}
-                            title={item.name}
-                            draggable
-                            onDragStart={(ev) => onDrag(ev, item)}
-                          >
-                            <i
-                              className={'iconfont ' + item.icon}
-                              style={{ fontSize: 13 }}
-                            ></i>
-                          </a>
-                        );
-                      })
-                    }
-                  </div>
-                </div>
-              )
-            )}
-
-            {imgTool.map((item, index) => (
-              <div key={index}>
-                <div className="title">{item.group}</div>
-                <div className="button">
-                  {
-                    //@ts-ignore
-                    item.children.map((item: any, idx: any) => {
-                      // eslint-disable-next-line jsx-a11y/anchor-is-valid
-                      return (
-                        // eslint-disable-next-line jsx-a11y/anchor-is-valid
-                        <a
-                          key={idx}
-                          title={item.name}
-                          draggable
-                          onDragStart={(ev) => onDrag(ev, item)}
-                        >
-                          <img
-                            src={item.url}
-                            alt={item.name}
-                            className="tool-img-box"
-                          />
-                        </a>
-                      );
-                    })
-                  }
-                </div>
-              </div>
-            ))}
-            {/*   <button
-            onClick={() => {
-              setVisible(true);
-            }}
-            className="more-tool"
-          >
-            图形库设置
-          </button> */}
-          </div>
+          <LeftMenu
+            moreTool={moreTool}
+            onDrag={onDrag}
+            onDragFont={onDragFont}
+            changeFontIcon={changeFontIcon}
+          />
         ) : null}
 
         <div className="full">
-          {/* <svg
-            width="100%"
-            height="100%"
-            style={{
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              top: 0,
-              bottom: 0,
-            }}
-            xmlns="http://www.w3.org/2000/svg"
-          > 
-            <defs>
-              <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                <path d="M 10 0 L 0 0 0 10" fill="none" stroke="#f3f3f3" strokeWidth="1" />
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)"></rect>
-          </svg>
-          */}
           <div
             id="topology-canvas"
             onContextMenu={handleClick}
@@ -975,6 +752,7 @@ const DrawEditor: FC<{
             </IconButton>
           </Tooltip>
         </div>
+
         <DrawShortcutPanel
           visible={shortcutVisible}
           handleClose={() => setShortcutVisible(false)}
@@ -982,35 +760,17 @@ const DrawEditor: FC<{
 
         {right ? (
           <div className="props">
-            <Tooltip placement="bottom-start" title="收起" arrow>
-              <IconButton
-                onClick={() => setRight(false)}
-                className="toggle-icon"
-              >
-                <ArrowForwardIcon />
-              </IconButton>
-            </Tooltip>
-            {renderRightArea}
+            <RightMenu
+              data={selected}
+              onLayout={onLayout}
+              onNodesAlign={onNodesAlign}
+              onSpaceBetween={onSpaceBetween}
+              handleSelect={handleSelect}
+              propsChange={propsChange}
+            />
           </div>
-        ) : (
-          <Tooltip placement="bottom-start" title="更多属性设置" arrow>
-            <IconButton onClick={() => setRight(true)} className="toggle-icon">
-              <ArrowBackIcon />
-            </IconButton>
-          </Tooltip>
-        )}
+        ) : null}
       </div>
-
-      {visible ? (
-        <ToolModal
-          current={moreTool}
-          visible={visible}
-          onCancel={() => {
-            setVisible(false);
-          }}
-          onSubmit={changeTool}
-        />
-      ) : null}
     </Fragment>
   );
 };
