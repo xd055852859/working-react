@@ -12,7 +12,7 @@
 .tree-container {
   width: 100%;
   height: calc(100% - 110px);
-  margin-top: 10px;
+  margin-top: 30px;
   display: flex;
   /* justify-content: center; */
   overflow: auto;
@@ -66,7 +66,7 @@
   position: fixed;
   top: 118px;
   left: 0px;
-  z-index: 10;
+  z-index: 2;
 }
 
 .tree-path-item {
@@ -289,7 +289,7 @@
 .help-container {
   position: fixed;
   bottom: 10px;
-  z-index: 20;
+  z-index: 2;
 }
 .help-item {
   width: 100%;

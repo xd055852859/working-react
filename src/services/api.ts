@@ -316,7 +316,7 @@ const auth = {
   clearMessage() {
     return request.post(HOME_URL + '/card/deleteNoticeBatch', {
       token: auth_token,
-      type: 3,
+      type: 2,
     });
   },
   getUrlIcon(linkUrl: string) {

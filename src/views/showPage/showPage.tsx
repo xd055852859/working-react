@@ -35,10 +35,10 @@ import leftArrowPng from '../../assets/img/leftArrow.png';
 import rightArrowPng from '../../assets/img/rightArrow.png';
 import radioCheckPng from '../../assets/img/radioCheck.png';
 import unradioCheckPng from '../../assets/img/unradioCheck.png';
-import search1Png from '../../assets/img/search1.png';
-import search2Png from '../../assets/img/search2.png';
-import search3Png from '../../assets/img/search3.png';
-import search4Png from '../../assets/img/search4.png';
+import search1Svg from '../../assets/svg/search1.svg';
+import search2Svg from '../../assets/svg/search2.svg';
+import search3Svg from '../../assets/svg/search3.svg';
+import search4Svg from '../../assets/svg/search4.svg';
 import showAddSvg from '../../assets/svg/showAdd.svg';
 import { getGroup } from '../../redux/actions/groupActions';
 import bgImg from '../../assets/img/bgImg.png';
@@ -75,7 +75,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
   const day = moment().date();
   const week = moment().day();
   const weekStr = ['日', '一', '二', '三', '四', '五', '六'];
-  const searchImgArr = [search2Png, search1Png, search4Png, search3Png];
+  const searchImgArr = [search2Svg, search1Svg, search4Svg, search3Svg];
   let timerRef = useRef<any>(null);
   let unDistory = true;
   useEffect(() => {
@@ -252,23 +252,22 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
       ></div>
       {theme.searchShow !== false ? (
         <div className="showPage-input">
-          <div className="showPage-input-img">
+          <div
+            className="showPage-input-img"
+            onClick={() => {
+              setSearchIconVisible(true);
+            }}
+          >
             <Tooltip title="选择搜索引擎">
-              <img
-                src={searchImgArr[searchIndex]}
-                alt=""
-                onClick={() => {
-                  setSearchIconVisible(true);
-                }}
-              />
+              <img src={searchImgArr[searchIndex]} alt="" />
             </Tooltip>
             <DropMenu
               visible={searchIconVisible}
               dropStyle={{
-                width: '85px',
+                width: '35px',
                 height: '150px',
                 top: '35px',
-                left: '0px',
+                left: '8px',
                 color: '#333',
               }}
               onClose={() => {
@@ -463,7 +462,7 @@ const ShowPage: React.FC<ShowPageProps> = (props) => {
               window.top.location.href = window.location.origin + '/home/basic';
               // changeShowType();
               localStorage.removeItem('showType');
-              e.stopPropagation();             
+              e.stopPropagation();
             }}
           >
             <img src={logoSvg} alt="" />

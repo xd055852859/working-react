@@ -198,11 +198,13 @@ const format = {
           ? 'item.finishPercent===2'
           : str + '||' + 'item.finishPercent===2';
     }
+    console.log(str);
     state =
       str !== '' ? (state !== '' ? state + '&& (' + str + ')' : str) : state;
     if (state === '' && str === '') {
       state = true;
     }
+   
     cardArray.forEach((item, index) => {
       item.show = false;
       if (eval(state)) {

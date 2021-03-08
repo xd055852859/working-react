@@ -311,7 +311,7 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                           marginRight: '10px',
                         }}
                       />
-                      <div>个人工作台</div>
+                      <div>私人事务</div>
                     </div>
                   </div>
                 </div>

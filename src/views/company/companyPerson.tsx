@@ -626,10 +626,10 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
         dispatch(setMessage(true, updatePersonRes.msg, 'error'));
       }
     } else {
-      if (!newTargetUser || !newTargetUser.mobile) {
-        dispatch(setMessage(true, '请输入手机号', 'error'));
-        return;
-      }
+      // if (!newTargetUser || !newTargetUser.mobile) {
+      //   dispatch(setMessage(true, '请输入手机号', 'error'));
+      //   return;
+      // }
       if (newTargetUser.birthday) {
         newTargetUser.birthday = moment(newTargetUser.birthday).valueOf();
       }

@@ -357,7 +357,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
               disabled={groupRole !== 1 && type === '设置'}
             />
           </div>
-          <div className="contact-name-content" style={{ height: '250px' }}>
+          {/* <div className="contact-name-content" style={{ height: '250px' }}>
             <div className="contact-name-title">群概念图</div>
             <div className="contact-model">
               <img
@@ -386,7 +386,7 @@ const GroupSet: React.FC<GroupSetProps> = (props) => {
                 }}
               />
             </div>
-          </div>
+          </div> */}
           <div className="contact-name-content">
             <div className="contact-name-title">群特性</div>
             <RadioGroup

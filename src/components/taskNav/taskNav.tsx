@@ -110,6 +110,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
   const [batchAddText, setBatchAddText] = useState('');
   const [deleteVisible, setDeleteVisible] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [batchLoading, setBatchLoading] = useState(false);
   const [addTaskVisible, setAddTaskVisible] = useState(false);
   const [taskTypeVisible, setTaskTypeVisible] = useState(false);
 
@@ -326,11 +327,13 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
     dispatch(changeLabelarray(newLabelArray));
   };
   const batchAddTask = async () => {
+    setBatchLoading(true);
     let batchTaskRes: any = await api.task.batchCard(
       batchAddText,
       taskNavArray[0]._key,
       taskNavArray[1]._key
     );
+    setBatchLoading(false);
     if (batchTaskRes.msg === 'OK') {
       dispatch(setMessage(true, '新增成功', 'success'));
       dispatch(changeCreateMusic(true));
@@ -730,6 +733,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
               dialogStyle={{ width: '500px', height: '450px' }}
             >
               <div className="taskNav-textarea-container">
+                {batchLoading ? <Loading /> : null}
                 <textarea
                   value={batchAddText}
                   onChange={(e: any) => {
