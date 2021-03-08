@@ -4,7 +4,6 @@
   overflow: auto;
   padding: 5px 10px;
   box-sizing: border-box;
-  position: relative;
   z-index: 1;
 }
 .contact::-webkit-scrollbar {
@@ -172,6 +171,8 @@
   color: #fff;
   display: flex;
   align-items: center;
+  padding:0px 20px;
+  box-sizing: border-box;
 }
 .contact-tree-path-item {
   cursor: pointer;

@@ -227,8 +227,8 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       (taskInfo.groupRole &&
         taskInfo.groupRole > 0 &&
         taskInfo.groupRole < 4) ||
-        taskInfo.creatorKey === user._key ||
-        taskInfo.executorKey === user._key
+      taskInfo.creatorKey === user._key ||
+      taskInfo.executorKey === user._key
     );
     if (taskInfo.content) {
       setContent(taskInfo.content);
@@ -495,9 +495,9 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     const redirect = `${window.location.protocol}//${window.location.host}`;
     copy(
       redirect +
-        '/home/showPage?shareKey=' +
-        (chooseKey ? chooseKey : taskItem._key) +
-        '&showType=1'
+      '/home/showPage?shareKey=' +
+      (chooseKey ? chooseKey : taskItem._key) +
+      '&showType=1'
     );
     dispatch(setMessage(true, '复制链接任务成功', 'success'));
   };
@@ -621,7 +621,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                       src={
                         taskItem.executorAvatar
                           ? taskItem.executorAvatar +
-                            '?imageMogr2/auto-orient/thumbnail/80x'
+                          '?imageMogr2/auto-orient/thumbnail/80x'
                           : unExecutorPng
                       }
                       alt=""
@@ -670,7 +670,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                                   src={
                                     taskMemberItem.avatar
                                       ? taskMemberItem.avatar +
-                                        '?imageMogr2/auto-orient/thumbnail/80x'
+                                      '?imageMogr2/auto-orient/thumbnail/80x'
                                       : defaultPersonPng
                                   }
                                   onError={(e: any) => {
@@ -1093,9 +1093,9 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     style={
                       commentIndex === 0
                         ? {
-                            borderBottom: '1px solid #17B881',
-                            color: '#17B881',
-                          }
+                          borderBottom: '1px solid #17B881',
+                          color: '#17B881',
+                        }
                         : {}
                     }
                   >
@@ -1109,9 +1109,9 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     style={
                       commentIndex === 1
                         ? {
-                            borderBottom: '1px solid #17B881',
-                            color: '#17B881',
-                          }
+                          borderBottom: '1px solid #17B881',
+                          color: '#17B881',
+                        }
                         : {}
                     }
                   >
@@ -1139,47 +1139,47 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     </div>
                   </React.Fragment>
                 ) : (
-                  <div
-                    className="taskInfo-comment-tab"
-                    onScroll={scrollHistoryLoading}
-                  >
-                    {taskHistoryArray.map(
-                      (historyItem: any, historyIndex: number) => {
-                        return (
-                          <div
-                            key={'history' + historyIndex}
-                            className="taskInfo-comment-historyLog"
-                          >
-                            <div className="taskInfo-comment-avatar">
-                              <img
-                                src={
-                                  historyItem.etc && historyItem.etc.avatar
-                                    ? historyItem.etc.avatar +
+                    <div
+                      className="taskInfo-comment-tab"
+                      onScroll={scrollHistoryLoading}
+                    >
+                      {taskHistoryArray.map(
+                        (historyItem: any, historyIndex: number) => {
+                          return (
+                            <div
+                              key={'history' + historyIndex}
+                              className="taskInfo-comment-historyLog"
+                            >
+                              <div className="taskInfo-comment-avatar">
+                                <img
+                                  src={
+                                    historyItem.etc && historyItem.etc.avatar
+                                      ? historyItem.etc.avatar +
                                       '?imageMogr2/auto-orient/thumbnail/80x'
-                                    : defaultPersonPng
-                                }
-                                alt=""
-                              />
-                            </div>
-                            <div className="taskInfo-comment-info">
-                              <div>
-                                {moment(
-                                  parseInt(historyItem.createTime)
-                                ).fromNow()}
+                                      : defaultPersonPng
+                                  }
+                                  alt=""
+                                />
                               </div>
-                              <div
-                                style={{ fontSize: '12px', color: '#8091a0' }}
-                              >
-                                {historyItem.log}
+                              <div className="taskInfo-comment-info">
+                                <div>
+                                  {moment(
+                                    parseInt(historyItem.createTime)
+                                  ).fromNow()}
+                                </div>
+                                <div
+                                  style={{ fontSize: '12px', color: '#8091a0' }}
+                                >
+                                  {historyItem.log}
+                                </div>
                               </div>
+                              {/* {historyItem.log} */}
                             </div>
-                            {/* {historyItem.log} */}
-                          </div>
-                        );
-                      }
-                    )}
-                  </div>
-                )}
+                          );
+                        }
+                      )}
+                    </div>
+                  )}
               </div>
               <div className="taskInfo-comment-input">
                 <TextField
@@ -1214,14 +1214,14 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                     发布
                   </Button>
                 ) : (
-                  <Button
-                    variant="contained"
-                    className={classes.disbutton}
-                    disabled
-                  >
-                    发布
-                  </Button>
-                )}
+                    <Button
+                      variant="contained"
+                      className={classes.disbutton}
+                      disabled
+                    >
+                      发布
+                    </Button>
+                  )}
               </div>
               <Dialog
                 visible={deleteDialogShow}

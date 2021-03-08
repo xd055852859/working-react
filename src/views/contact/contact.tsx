@@ -35,6 +35,8 @@ import TimeIcon from '../../components/common/timeIcon';
 import Loading from '../../components/common/loading';
 import checkPersonPng from '../../assets/img/checkPerson.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
+import defaultPersonSvg from '../../assets/svg/defaultPerson.svg';
+
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import carePng from '../../assets/img/care.png';
 import chatSvg from '../../assets/svg/chat.svg';
@@ -141,7 +143,7 @@ const Contact: React.FC<ContactProps> = (props) => {
         newGroupArray = groupArray.filter((item: any) => {
           if (
             item.enterpriseGroupKey ===
-              mainEnterpriseGroup.mainEnterpriseGroupKey ||
+            mainEnterpriseGroup.mainEnterpriseGroupKey ||
             item._key === mainEnterpriseGroup.mainEnterpriseGroupKey
           ) {
             return item;
@@ -202,9 +204,9 @@ const Contact: React.FC<ContactProps> = (props) => {
       dispatch(setMoveState('in'));
     }
     await api.group.visitGroupOrFriend(2, groupKey);
-    if (contactType === 'header') {
-      dispatch(getGroup(3));
-    }
+    // if (contactType === 'header') {
+    dispatch(getGroup(3));
+    // }
   };
   const toTargetUser = async (targetUserKey: string) => {
     if (targetUserKey !== user._key) {
@@ -357,17 +359,17 @@ const Contact: React.FC<ContactProps> = (props) => {
             if (data[key].orgType === 2) {
               //?imageMogr2/auto-orient/thumbnail/80x
               newCompanyData[key].icon = data[key].avatar
-                ? data[key].avatar + '?imageMogr2/auto-orient/thumbnail/80x'
-                : defaultPersonPng;
+                ? data[key].avatar + '?roundPic/radius/!50p'
+                : defaultPersonSvg;
             }
             if (!nodeId && !data[key].parentOrgKey) {
               nodeId = data[key]._key;
               newCompanyData[
                 key
               ].icon = mainEnterpriseGroup.mainEnterpriseGroupLogo
-                ? mainEnterpriseGroup.mainEnterpriseGroupLogo +
+                  ? mainEnterpriseGroup.mainEnterpriseGroupLogo +
                   '?imageMogr2/auto-orient/thumbnail/80x'
-                : defaultGroupPng;
+                  : defaultGroupPng;
             }
           }
           setStartId(nodeId);
@@ -402,7 +404,7 @@ const Contact: React.FC<ContactProps> = (props) => {
   return (
     <div
       className="contact"
-      style={{ height: contactType ? '100%' : 'calc(100% - 40px)' }}
+      style={{ height: contactType ? '100%' : 'calc(100% - 40px)', position: contactIndex === 3 ? 'relative' : 'static' }}
     >
       {loading ? <Loading loadingWidth="70px" loadingHeight="70px" /> : null}
       {contactType && contactIndex === 0 ? (
@@ -444,17 +446,17 @@ const Contact: React.FC<ContactProps> = (props) => {
                 ? item.avatar + '?imageMogr2/auto-orient/thumbnail/80x'
                 : ''
               : item.groupLogo
-              ? item.groupLogo + '?imageMogr2/auto-orient/thumbnail/80x'
-              : defaultGroupPng;
+                ? item.groupLogo + '?imageMogr2/auto-orient/thumbnail/80x'
+                : defaultGroupPng;
             let key = contactIndex ? item.userId : item._key;
             let onlineColor =
               item.onlineStatus === 'online'
                 ? '#7ED321'
                 : item.onlineStatus === 'busy'
-                ? '#EA3836'
-                : item.onlineStatus === 'away'
-                ? '#F5A623'
-                : '#B3B3B3';
+                  ? '#EA3836'
+                  : item.onlineStatus === 'away'
+                    ? '#F5A623'
+                    : '#B3B3B3';
             return (
               <div
                 className="contact-item"
@@ -521,21 +523,21 @@ const Contact: React.FC<ContactProps> = (props) => {
                         }}
                       />
                     ) : (
-                      <img
-                        src={uncarePng}
-                        alt=""
-                        className="contact-uncare-img"
-                        onClick={(e) => {
-                          changeCare(
-                            e,
-                            contactIndex === 0 ? 2 : 1,
-                            key,
-                            1,
-                            index
-                          );
-                        }}
-                      />
-                    )
+                        <img
+                          src={uncarePng}
+                          alt=""
+                          className="contact-uncare-img"
+                          onClick={(e) => {
+                            changeCare(
+                              e,
+                              contactIndex === 0 ? 2 : 1,
+                              key,
+                              1,
+                              index
+                            );
+                          }}
+                        />
+                      )
                   ) : null}
                   {!contactType && !item.notActive ? (
                     <img
@@ -624,7 +626,7 @@ const Contact: React.FC<ContactProps> = (props) => {
                   )} */}
                 </div>
               </div>
-            );
+            )
           })
         ) : null
       ) : companyData && startId ? (
@@ -653,79 +655,61 @@ const Contact: React.FC<ContactProps> = (props) => {
               // setSelectedId(node._key);
             }
             handleClickExpand={editContract}
-            // itemHeight={32}
-            // blockHeight={
-            //   departmentRef.current ? departmentRef.current.offsetHeight : 0
-            // }
+          // itemHeight={32}
+          // blockHeight={
+          //   departmentRef.current ? departmentRef.current.offsetHeight : 0
+          // }
           />
         </div>
       ) : null}
-      <div className="contact-tree-path">
+      <React.Fragment>
         {selectedPath && contactIndex === 3 ? (
-          // ? selectedPath.map((pathItem: any, pathIndex: number) => {
-          //     return (
-          //       <React.Fragment key={'path' + pathIndex}>
-          //         <div
-          //           onClick={() => {
-          //             getGroupTree(pathItem._key);
-          //             // setSelectedPath(companyData[pathItem._key].path);
-          //           }}
-          //           style={{
-          //             fontWeight: startId === pathItem._key ? 'bold' : 'normal',
-          //           }}
-          //           className="contact-tree-path-item"
-          //         >
-          //           {pathItem.name}{' '}
-          //           {pathIndex !== selectedPath.length - 1 ? '>' : ''}
-          //         </div>
-          //       </React.Fragment>
-          //     );
-          //   })
-          <Breadcrumbs
-            aria-label="breadcrumb"
-            maxItems={3}
-            separator={<NavigateNext fontSize="small" color="primary" />}
-          >
-            {selectedPath.map((pathItem: any, pathIndex: number) => {
-              const dom: any =
-                pathIndex < selectedPath.length - 1 ||
-                selectedPath.length == 1 ? (
-                  <Link
-                    href="#"
-                    onClick={() => {
-                      getGroupTree(pathItem._key);
-                      let newCompanyItem = _.cloneDeep(companyItem);
-                      newCompanyItem.config.startId = pathItem._key;
-                      api.member.setConfig(
-                        newCompanyItem.groupMemberKey,
-                        newCompanyItem.config
-                      );
-                      dispatch(changeCompanyItem(newCompanyItem));
-                    }}
-                    style={{ fontSize: '14px', color: '#fff' }}
-                    // color={'primary'}
-                    underline={'none'}
-                    key={'path' + pathIndex}
-                  >
-                    {pathItem.name}
-                  </Link>
-                ) : (
-                  <Typography
-                    color={'primary'}
-                    // onClick={() => {
-                    //   getGroupTree(pathItem._key);
-                    // }}
-                    style={{ fontSize: '14px' }}
-                    key={'path' + pathIndex}
-                  >
-                    {pathItem.name}
-                  </Typography>
-                );
-              return dom;
-            })}
-          </Breadcrumbs>
-        ) : null}
-      </div>
+          <div className="contact-tree-path">
+            <Breadcrumbs
+              aria-label="breadcrumb"
+              maxItems={3}
+              separator={<NavigateNext fontSize="small" color="primary" />}
+            >
+              {selectedPath.map((pathItem: any, pathIndex: number) => {
+                const dom: any =
+                  pathIndex < selectedPath.length - 1 ||
+                    selectedPath.length == 1 ? (
+                      <Link
+                        href="#"
+                        onClick={() => {
+                          getGroupTree(pathItem._key);
+                          let newCompanyItem = _.cloneDeep(companyItem);
+                          newCompanyItem.config.startId = pathItem._key;
+                          api.member.setConfig(
+                            newCompanyItem.groupMemberKey,
+                            newCompanyItem.config
+                          );
+                          dispatch(changeCompanyItem(newCompanyItem));
+                        }}
+                        style={{ fontSize: '14px', color: '#fff' }}
+                        // color={'primary'}
+                        underline={'none'}
+                        key={'path' + pathIndex}
+                      >
+                        {pathItem.name}
+                      </Link>
+                    ) : (
+                      <Typography
+                        color={'primary'}
+                        // onClick={() => {
+                        //   getGroupTree(pathItem._key);
+                        // }}
+                        style={{ fontSize: '14px' }}
+                        key={'path' + pathIndex}
+                      >
+                        {pathItem.name}
+                      </Typography>
+                    );
+                return dom;
+              })}
+            </Breadcrumbs>
+          </div>) : null}
+      </React.Fragment>
       <Dialog
         visible={cloneGroupVisible}
         onClose={() => {

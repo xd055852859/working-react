@@ -172,8 +172,8 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                     ? moveType === 1
                       ? '295px'
                       : moveType === 3
-                      ? 'calc(100% - 70px)'
-                      : '200px'
+                        ? 'calc(100% - 70px)'
+                        : '200px'
                     : 'calc(100% - 70px)'
                   : '650px',
             }}
@@ -183,12 +183,12 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
               style={
                 moveState === 'right'
                   ? {
-                      animation: 'moveRight 500ms',
-                      // animationFillMode: 'forwards',
-                      left: '-260px',
-                    }
+                    animation: 'moveRight 500ms',
+                    // animationFillMode: 'forwards',
+                    left: '-260px',
+                  }
                   : moveState === 'left'
-                  ? {
+                    ? {
                       animation: 'moveLeft 500ms',
                       // animationFillMode: 'forwards',
                       left: '0px',
@@ -270,8 +270,8 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                         style={{
                           backgroundImage: theme.backgroundImg
                             ? 'url(' +
-                              theme.backgroundImg +
-                              '?imageMogr2/auto-orient/thumbnail/80x)'
+                            theme.backgroundImg +
+                            '?imageMogr2/auto-orient/thumbnail/80x)'
                             : '',
                           backgroundColor: !theme.backgroundImg
                             ? theme.backgroundColor
@@ -780,7 +780,7 @@ const HeaderContent: React.FC<HeaderContentProps> = (props) => {
                               src={
                                 item.groupLogo
                                   ? item.groupLogo +
-                                    '?imageMogr2/auto-orient/thumbnail/80x'
+                                  '?imageMogr2/auto-orient/thumbnail/80x'
                                   : defaultGroupPng
                               }
                               alt=""

@@ -45,12 +45,12 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundSize: 'contain',
       position: 'absolute',
       top: 'calc(45vh - 150px)',
-      left: '0px',
+      right: '0px',
       animation: '58s linear 1s infinite running $slidein',
     },
     '@keyframes slidein': {
-      from: { left: '0px' },
-      to: { left: '100%' },
+      from: { right: '0px' },
+      to: { right: '100%' },
     },
   })
 );
