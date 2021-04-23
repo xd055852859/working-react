@@ -1,115 +1,65 @@
-import React, { useState, useEffect } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useImperativeHandle,
+  forwardRef,
+  useRef,
+} from 'react';
+import './clockIn.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
-import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
-import { Button, Tooltip } from '@material-ui/core';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import { Button, Tooltip, Dropdown } from 'antd';
 import moment from 'moment';
 import _ from 'lodash';
-import './clockIn.css';
+
 import api from '../../services/api';
 import { setMessage } from '../../redux/actions/commonActions';
-import downArrowbPng from '../../assets/img/downArrowb.png';
-import DropMenu from '../common/dropMenu';
-import Dialog from '../common/dialog';
-import WorkingReport from '../../views/workingTable/workingReport_clone1';
 
+import ClickOutSide from '..//common/clickOutside';
+import Dialog from '../common/dialog';
+import DropMenu from '../common/dropMenu';
+
+import WorkingReport from '../../views/workingTable/workingReport';
+
+import downArrowbPng from '../../assets/img/downArrowb.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import reportSvg from '../../assets/svg/report.svg';
-interface ClockInProps {
-  visible: boolean;
-  onClose: any;
-}
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    saveButton: {
-      backgroundColor: '#16AE7A',
-      color: '#fff',
-      marginRight: '10px',
-    },
-    clockInButton: {
-      backgroundColor: '#FC766A',
-      color: '#fff',
-    },
-  })
-);
-const ClockIn: React.FC<ClockInProps> = (prop) => {
-  const { visible, onClose } = prop;
-  const classes = useStyles();
+const ClockIn = forwardRef((prop, ref) => {
+  const {} = prop;
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
-  const selfTaskArray = useTypedSelector((state) => state.task.selfTaskArray);
-  // const nowTime = useTypedSelector((state) => state.auth.nowTime);
-  const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
+  const allTask = useTypedSelector((state) => state.auth.allTask);
   const [note, setNote] = useState('');
   const [positive, setPositive] = useState('');
   const [negative, setNegative] = useState('');
-  const [expanded, setExpanded] = React.useState<string | false>('panel1');
   const [nowTime, setNowTime] = useState(0);
   const [groupVisible, setGroupVisible] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [groupList, setGroupList] = useState<any>([]);
-  const [taskNumber, setTaskNumber] = useState(0);
   const [clockInIndex, setClockInIndex] = useState(0);
-  let unDistory = true;
+  let unDistory = useRef<any>(null);
+  unDistory.current = true;
   useEffect(() => {
-    if (user && user._key && visible) {
+    if (user && user._key) {
       getClockIn();
       getGroupList();
     }
     return () => {
-      unDistory = false;
+      // unDistory.current = false;
     };
-  }, [user, visible]);
+  }, [user]);
   useEffect(() => {
     setNowTime(moment().hour() < 12 ? 0 : 1);
   }, []);
-  useEffect(() => {
-    if (selfTaskArray) {
-      let newGroupList: any = [];
-      let newTaskNumber = 0;
-      const startTime = moment().startOf('day').valueOf();
-      const endTime = moment().endOf('day').valueOf();
-      selfTaskArray.forEach((item: any, index: number) => {
-        let finishState =
-          item.finishPercent === 1 &&
-          item.taskEndDate >= startTime &&
-          item.taskEndDate <= endTime;
-        if (
-          item.executorKey === user._key &&
-          ((item.finishPercent === 0 && item.taskEndDate <= endTime) ||
-            finishState) &&
-          item.title !== '' &&
-          item.taskEndDate &&
-          item.groupKey != mainGroupKey
-        ) {
-          // if (!newGroupObj[item.groupKey]) {
-          //   newGroupObj[item.groupKey] = {
-          //     groupLogo: item.groupLogo,
-          //     groupName: item.groupName,
-          //     groupKey: item.groupKey,
-          //     taskNumber: 1,
-          //   };
-          // } else {
-          //   newGroupObj[item.groupKey].taskNumber =
-          //     newGroupObj[item.groupKey].taskNumber + 1;
-          // }
-          if (item.finishPercent === 1) {
-            newTaskNumber = newTaskNumber + 1;
-          }
-        }
-      });
-      // newGroupList = _.sortBy(Object.values(newGroupObj), [
-      //   'taskNumber',
-      // ]).reverse();
-      setTaskNumber(newTaskNumber);
-    }
-  }, [selfTaskArray]);
+  useImperativeHandle(ref, () => ({
+    saveClockIn: () => {
+      saveNote();
+    },
+  }));
   const getGroupList = async () => {
     let newGroupList: any = [];
     let groupRes: any = await api.group.getGroup(3, null, 4);
-    if (unDistory) {
+    if (unDistory.current) {
       if (groupRes.msg === 'OK') {
         groupRes.result = groupRes.result.filter(
           (groupItem: any, groupIndex: number) => {
@@ -129,7 +79,7 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
       user._key,
       moment().startOf('day').valueOf()
     );
-    if (unDistory) {
+    if (unDistory.current) {
       if (noteRes.msg === 'OK') {
         setPositive(noteRes.result.positive);
         setNegative(noteRes.result.negative);
@@ -182,9 +132,6 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
       obj.positive = positive;
       obj.negative = negative;
       obj.note = note;
-      // obj.positiveClose = this.positiveClose;
-      // obj.negativeClose = this.negativeClose;
-      // obj.noteClose = this.noteClose;
     }
     let res: any = await api.auth.clockIn(obj);
     if (res.msg === 'OK') {
@@ -192,7 +139,7 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
       if (nowTime) {
         let url =
           'http://tts.baidu.com/text2audio?lan=zh&ie=UTF-8&per=3&text=打卡成功,你已完成' +
-          taskNumber +
+          (allTask[0] - allTask[1]) +
           '条任务';
         let n = new Audio(url);
         n.src = url;
@@ -202,175 +149,152 @@ const ClockIn: React.FC<ClockInProps> = (prop) => {
       dispatch(setMessage(true, res.msg, 'error'));
     }
   };
-  const handleChange = (panel: string) => (
-    event: React.ChangeEvent<{}>,
-    isExpanded: boolean
-  ) => {
-    setExpanded(isExpanded ? panel : false);
-  };
   return (
     <React.Fragment>
-      {visible ? (
-        <ClickAwayListener
-          onClickAway={() => {
-            onClose();
-            saveNote();
-          }}
-        >
-          <div className="clockIn  animate__animated animate__slideInRight">
-            <div className="clockIn-mainTitle">打卡中心</div>
-            {groupList.length > 0 ? (
-              <div
-                className="clockIn-title"
-                onClick={() => {
-                  setGroupVisible(true);
-                }}
-              >
-                晒一晒:
-                <div className="clockIn-title-logo">
-                  <img
-                    src={
-                      groupList[clockInIndex].groupLogo
-                        ? groupList[clockInIndex].groupLogo
-                        : defaultGroupPng
-                    }
-                    alt=""
-                  />
-                </div>
-                {groupList[clockInIndex].groupName}
-                <img src={downArrowbPng} alt="" className="clockIn-logo" />
-                <DropMenu
-                  visible={groupVisible}
-                  dropStyle={{
-                    width: '200px',
-                    height: '500px',
-                    top: '40px',
-                    left: '95px',
-                    color: '#333',
-                    overflow: 'auto',
-                  }}
-                  onClose={() => {
-                    setGroupVisible(false);
-                  }}
-                >
-                  <React.Fragment>
-                    {groupList.map((groupItem: any, groupIndex: number) => {
-                      return (
-                        <div
-                          key={'clockInGroup' + groupIndex}
-                          onClick={() => {
-                            setClockInIndex(groupIndex);
-                          }}
-                          className="clockInGroup-item"
-                        >
-                          <div className="clockInGroup-item-logo">
-                            <img
-                              src={
-                                groupItem.groupLogo
-                                  ? groupItem.groupLogo
-                                  : defaultGroupPng
-                              }
-                              alt=""
-                            />
-                          </div>
-                          <Tooltip title={groupItem.groupName}>
-                            <div className="clockInGroup-item-name">
-                              {groupItem.groupName}
-                            </div>
-                          </Tooltip>
-                        </div>
-                      );
-                    })}
-                  </React.Fragment>
-                </DropMenu>
-              </div>
-            ) : null}
-            <div className="clockIn-info">
-              <div className="clockIn-info-title">随记</div>
-              <textarea
-                value={note}
-                placeholder="随记"
-                className="clockIn-textarea"
-                onChange={(e) => {
-                  setNote(e.target.value);
-                }}
-              />
-            </div>
-            <div className="clockIn-info">
-              <div className="clockIn-info-title">成就</div>
-              <textarea
-                value={positive}
-                placeholder="成绩,收获,价值创造"
-                className="clockIn-textarea"
-                onChange={(e) => {
-                  setPositive(e.target.value);
-                }}
-              />
-            </div>
-            <div className="clockIn-info">
-              <div className="clockIn-info-title">审视</div>
-              <textarea
-                value={negative}
-                placeholder="困难，挑战，潜在问题"
-                className="clockIn-textarea"
-                onChange={(e) => {
-                  setNegative(e.target.value);
-                }}
-              />
-            </div>
-            <div className="clockIn-button">
-              {/* <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            saveNote();
-          }}
-          className={classes.saveButton}
-        >
-          保存
-        </Button> */}
-              <div
-                onClick={() => {
-                  setShowReport(true);
-                }}
-                className="clockIn-report"
-              >
-                <img src={reportSvg} alt="" style={{ marginRight: '5px' }} />
-                <div>日志</div>
-              </div>
-              {groupList.length > 0 ? (
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => {
-                    clockIn();
-                  }}
-                  style={{ color: '#fff' }}
-                  // className={classes.clockInButton}
-                >
-                  {nowTime ? '下班打卡' : '上班打卡'}
-                </Button>
-              ) : null}
-            </div>
-            <Dialog
-              visible={showReport}
-              onClose={() => {
-                setShowReport(false);
+      <div className="clockIn">
+        {groupList.length > 0 ? (
+          <div className="clockIn-button">
+            <Button
+              type="primary"
+              onClick={() => {
+                clockIn();
               }}
-              footer={false}
-              title={'日志'}
-              dialogStyle={{
-                width: '90%',
-                height: '90%',
+              style={{ color: '#fff' }}
+              // className={classes.clockInButton}
+            >
+              {nowTime ? '下班打卡' : '上班打卡'}
+            </Button>
+
+            <div
+              onClick={() => {
+                setShowReport(true);
+              }}
+              className="clockIn-report"
+            >
+              <img src={reportSvg} alt="" style={{ marginRight: '5px' }} />
+              <div>日志</div>
+            </div>
+          </div>
+        ) : null}
+        {groupList.length > 0 ? (
+          <div
+            className="clockIn-title"
+            onClick={() => {
+              setGroupVisible(true);
+            }}
+          >
+            晒一晒:
+            <div className="clockIn-title-logo">
+              <img
+                src={
+                  groupList[clockInIndex].groupLogo
+                    ? groupList[clockInIndex].groupLogo
+                    : defaultGroupPng
+                }
+                alt=""
+              />
+            </div>
+            <div className="toLong" style={{ width: '123px' }}>
+              {groupList[clockInIndex].groupName}
+            </div>
+            <img src={downArrowbPng} alt="" className="clockIn-logo" />
+            <DropMenu
+              visible={groupVisible}
+              dropStyle={{
+                width: '200px',
+                height: '500px',
+                top: '40px',
+                left: '55px',
+                color: '#333',
                 overflow: 'auto',
               }}
+              onClose={() => {
+                setGroupVisible(false);
+              }}
             >
-              <WorkingReport headerType={true} />
-            </Dialog>
+              <React.Fragment>
+                {groupList.map((groupItem: any, groupIndex: number) => {
+                  return (
+                    <div
+                      key={'clockInGroup' + groupIndex}
+                      onClick={() => {
+                        setClockInIndex(groupIndex);
+                      }}
+                      className="clockInGroup-item"
+                    >
+                      <div className="clockInGroup-item-logo">
+                        <img
+                          src={
+                            groupItem.groupLogo
+                              ? groupItem.groupLogo
+                              : defaultGroupPng
+                          }
+                          alt=""
+                        />
+                      </div>
+                      {/* <Tooltip title={groupItem.groupName}> */}
+                        <div className="clockInGroup-item-name">
+                          {groupItem.groupName}
+                        </div>
+                      {/* </Tooltip> */}
+                    </div>
+                  );
+                })}
+              </React.Fragment>
+            </DropMenu>
           </div>
-        </ClickAwayListener>
-      ) : null}
+        ) : null}
+        <div className="clockIn-info">
+          <div className="clockIn-info-title">随记</div>
+          <textarea
+            value={note}
+            placeholder="随记"
+            className="clockIn-textarea"
+            onChange={(e) => {
+              setNote(e.target.value);
+            }}
+          />
+        </div>
+        <div className="clockIn-info">
+          <div className="clockIn-info-title">成就</div>
+          <textarea
+            value={positive}
+            placeholder="成绩,收获,价值创造"
+            className="clockIn-textarea"
+            onChange={(e) => {
+              setPositive(e.target.value);
+            }}
+          />
+        </div>
+        <div className="clockIn-info">
+          <div className="clockIn-info-title">审视</div>
+          <textarea
+            value={negative}
+            placeholder="困难，挑战，潜在问题"
+            className="clockIn-textarea"
+            onChange={(e) => {
+              setNegative(e.target.value);
+            }}
+          />
+        </div>
+      </div>
+      <Dialog
+        visible={showReport}
+        onClose={() => {
+          setShowReport(false);
+        }}
+        footer={false}
+        title={'日志'}
+        dialogStyle={{
+          position: 'fixed',
+          width: '90%',
+          height: '90%',
+          overflow: 'auto',
+        }}
+      >
+        <WorkingReport headerType={true} />
+      </Dialog>
     </React.Fragment>
   );
-};
+});
 export default ClockIn;

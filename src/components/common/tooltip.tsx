@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
 import './tooltip.css';
 interface TooltipProp {
   children: any;

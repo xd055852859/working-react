@@ -1,12 +1,12 @@
 .contentHeader-set {
+  width: 280px;
   height: 68px;
-  position: fixed;
-  top: 0px;
-  right: 10px;
   color: #333;
   display: flex;
   align-items: center;
-  z-index: 5;
+  position: absolute;
+  top: 0px;
+  right: 0px;
 }
 .contentHeader-avatar-info {
   width: 40px;
@@ -96,6 +96,7 @@
   font-size: 14px;
   font-weight: 600;
   color: #333333;
+  margin-top: 5px;
   margin-bottom: 14px;
 }
 .bg-header {
@@ -163,9 +164,7 @@
 }
 .headerSet-search-info {
   width: 100%;
-  height: calc(100% - 100px);
-  padding: 0px 10px;
-  box-sizing: border-box;
+  height: calc(100% - 80px);
   overflow: auto;
 }
 .addTask-container {
@@ -207,8 +206,8 @@
 }
 .addTask-create {
   width: 100%;
-  height: 50px;
-  line-height: 50px;
+  height: 30px;
+  line-height: 30px;
   font-size: 14px;
   font-weight: bold;
 }
@@ -250,6 +249,7 @@
 .contentHeader-set-left {
   width: 260px;
   height: 100%;
+  overflow: auto;
 }
 .contentHeader-set-item-radio {
   width: 130px;
@@ -287,7 +287,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #f0f0f0;
+  /* border-bottom: 1px solid #f0f0f0; */
   padding-bottom: 15px;
   box-sizing: border-box;
 }
@@ -303,6 +303,14 @@
   z-index: 20;
   overflow: hidden;
   display: flex;
+}
+.ant-drawer-close {
+  padding: 10px !important;
+  box-sizing: border-box !important;
+}
+.ant-drawer-title {
+  font-size: 14px;
+  font-weight: bold;
 }
 @keyframes avatarSmall {
   from {

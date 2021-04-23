@@ -1,22 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useDispatch } from 'react-redux';
-import { Button } from '@material-ui/core';
-import { useTypedSelector } from '../../redux/reducer/RootState';
-import { changeGroupInfo } from '../../redux/actions/groupActions';
-import { setMessage } from '../../redux/actions/commonActions';
 import './groupTableDocument.css';
+import { useDispatch } from 'react-redux';
+import { Button } from 'antd';
+import { useTypedSelector } from '../../redux/reducer/RootState';
 import api from '../../services/api';
 import _ from 'lodash';
-import Editor from '../../components/common/Editor';
-import { group } from '../../redux/reducer/group';
+import { changeGroupInfo } from '../../redux/actions/groupActions';
+import { setMessage } from '../../redux/actions/commonActions';
+
+import Editor from '../../components/common/editor/editor';
 interface GroupTableProps {}
 
 const GroupTableDocument: React.FC<GroupTableProps> = (prop) => {
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
-  const groupInfo = useTypedSelector((state) => state.group.groupInfo);
-  const [groupDocument, setGroupDocument] = useState('');
+  const groupRole = useTypedSelector((state) => state.group.groupRole);
+  const [groupDocument, setGroupDocument] = useState('<p>项目文档:</p>');
   const [fileArr, setFileArr] = useState<any>([]);
   const [initState, setInitState] = useState(false);
   const documentRef: React.RefObject<any> = useRef();
@@ -81,7 +81,7 @@ const GroupTableDocument: React.FC<GroupTableProps> = (prop) => {
     documentRef.current.scrollTo(0, top);
   };
   const formatHtml = (wrapper: any) => {
-    let arr = [];
+    let arr: any = [];
     let nodeList = wrapper.getElementsByTagName('*');
     for (let i = 0, len = nodeList.length; i < len; i++) {
       let node = nodeList[i];
@@ -110,7 +110,7 @@ const GroupTableDocument: React.FC<GroupTableProps> = (prop) => {
         groupDocument: groupDocument,
       })
     );
-    dispatch(setMessage(true, '保存群文档成功', 'success'));
+    dispatch(setMessage(true, '保存项目文档成功', 'success'));
   };
   return (
     <div className="groupDocument">
@@ -131,27 +131,36 @@ const GroupTableDocument: React.FC<GroupTableProps> = (prop) => {
         })}
       </div>
       <div className="groupDocument-editor" ref={documentRef}>
-        <Editor
-          editorHeight={'100%'}
-          data={groupDocument}
-          onChange={changeGroupDocument}
-          editable={true}
-          editorState={true}
-          setInit={() => {
-            setInitState(true);
-          }}
-        />
+        {groupRole < 3 && groupRole > 0 && document.body?.offsetHeight ? (
+          <React.Fragment>
+            <Editor
+              data={groupDocument}
+              height={document.body.offsetHeight - 68}
+              onChange={changeGroupDocument}
+              zIndex={2}
+              editorKey={groupKey}
+            />
+            <Button
+              type="primary"
+              onClick={() => {
+                saveFile();
+              }}
+              className="saveButton"
+            >
+              保存
+            </Button>
+          </React.Fragment>
+        ) : (
+          <div
+            dangerouslySetInnerHTML={{ __html: groupDocument }}
+            style={{
+              width: '100%',
+              height: '100%',
+              overflow: 'auto',
+            }}
+          ></div>
+        )}
       </div>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => {
-          saveFile();
-        }}
-        className="saveButton"
-      >
-        保存
-      </Button>
     </div>
   );
 };

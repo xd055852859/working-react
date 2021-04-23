@@ -3,9 +3,11 @@ import './workingCalendar.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import moment from 'moment';
 import _ from 'lodash';
+
 import format from '../../components/common/format';
-import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import Task from '../../components/task/task';
+
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
 
 interface WorkingCanlendarProps {}
 
@@ -24,7 +26,7 @@ const WorkingCanlendar: React.FC<WorkingCanlendarProps> = (prop) => {
   const canlendarRef: React.RefObject<any> = useRef();
 
   useEffect(() => {
-    if (workingTaskArray && headerIndex !== 3) {
+    if (workingTaskArray && headerIndex !== 3 && filterObject) {
       getData(workingTaskArray, filterObject);
     }
   }, [workingTaskArray, filterObject]);
@@ -55,9 +57,9 @@ const WorkingCanlendar: React.FC<WorkingCanlendarProps> = (prop) => {
   const getData = (taskArray: any, filterObject: any) => {
     let dateArray: any = [];
     let dayCanlendarArray: any = [];
-    let arr1 = [];
-    let arr2 = [];
-    let arr3 = [];
+    let arr1: any = [];
+    let arr2: any = [];
+    let arr3: any = [];
     for (let i = 15; i > 0; i--) {
       arr1.push({
         start: moment(new Date()).subtract(i, 'days').startOf('day').valueOf(),

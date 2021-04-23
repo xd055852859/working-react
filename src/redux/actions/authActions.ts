@@ -12,16 +12,12 @@ export const actionTypes = {
   GET_THEME_BG_SUCCESS: 'GET_THEME_BG_SUCCESS',
   SET_THEME_BG_PAGE: 'SET_THEME_BG_PAGE',
   SET_THEME: 'SET_THEME',
+  SET_THEME_LOCAL:'SET_THEME_LOCAL',
   SET_THEME_SUCCESS: 'SET_THEME_SUCCESS',
   SET_UPLOAD_TOKEN: 'SET_UPLOAD_TOKEN',
   GET_UPLOAD_TOKEN: 'GET_UPLOAD_TOKEN',
   GET_UPLOAD_TOKEN_SUCCESS: 'GET_UPLOAD_TOKEN_SUCCESS',
-  CHANGE_FINISH_MUSIC: 'CHANGE_FINISH_MUSIC',
-  CHANGE_MESSAGE_MUSIC: 'CHANGE_MESSAGE_MUSIC',
-  CHANGE_UNFINISH_MUSIC: 'CHANGE_UNFINISH_MUSIC',
-  CHANGE_BATCH_MUSIC: 'CHANGE_BATCH_MUSIC',
-  CHANGE_CREATE_MUSIC: 'CHANGE_CREATE_MUSIC',
-  CHANGE_START_MUSIC: 'CHANGE_START_MUSIC',
+  CHANGE_MUSIC_NUMBER: 'CHANGE_MUSIC_NUMBER',
   CHANGE_MOVE: 'CHANGE_MOVE',
   CLEAR_AUTH: 'CLEAR_AUTH',
   SET_CLICK_TYPE: 'SET_CLICK_TYPE',
@@ -111,6 +107,12 @@ export function setTheme(configInfo: any) {
     configInfo: configInfo,
   };
 }
+export function setThemeLocal(theme: any) {
+  return {
+    type: actionTypes.SET_THEME_LOCAL,
+    theme: theme,
+  };
+}
 
 export function setThemeSuccess(data: any, action: any) {
   return {
@@ -137,43 +139,13 @@ export function getUploadTokenSuccess(data: any) {
     data,
   };
 }
-export function changeMusic(finishMusic: boolean) {
+export function changeMusic(musicNum: number) {
   return {
-    type: actionTypes.CHANGE_FINISH_MUSIC,
-    finishMusic,
+    type: actionTypes.CHANGE_MUSIC_NUMBER,
+    musicNum,
   };
 }
 
-export function changeMessageMusic(messageMusic: boolean) {
-  return {
-    type: actionTypes.CHANGE_MESSAGE_MUSIC,
-    messageMusic,
-  };
-}
-export function changeunMusic(unFinishMusic: boolean) {
-  return {
-    type: actionTypes.CHANGE_UNFINISH_MUSIC,
-    unFinishMusic,
-  };
-}
-export function changeBatchMusic(batchMusic: boolean) {
-  return {
-    type: actionTypes.CHANGE_BATCH_MUSIC,
-    batchMusic,
-  };
-}
-export function changeCreateMusic(createMusic: boolean) {
-  return {
-    type: actionTypes.CHANGE_CREATE_MUSIC,
-    createMusic,
-  };
-}
-export function changeStartMusic(startMusic: boolean) {
-  return {
-    type: actionTypes.CHANGE_START_MUSIC,
-    startMusic,
-  };
-}
 export function changeMove(finishPos: any) {
   return {
     type: actionTypes.CHANGE_MOVE,
@@ -189,12 +161,14 @@ export function setClickType(clickType: string) {
 export function changeMainenterpriseGroup(
   mainEnterpriseGroupKey: string,
   mainEnterpriseGroupLogo: string,
-  mainEnterpriseGroupName: string
+  mainEnterpriseGroupName: string,
+  mainEnterpriseRight:Number
 ) {
   return {
     type: actionTypes.CHANGE_MAINENTERPRISE_GROUP,
     mainEnterpriseGroupKey,
     mainEnterpriseGroupLogo,
     mainEnterpriseGroupName,
+    mainEnterpriseRight
   };
 }

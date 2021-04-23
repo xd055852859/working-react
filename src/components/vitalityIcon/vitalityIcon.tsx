@@ -41,7 +41,7 @@ const VitalityIcon: React.FC<VitalityProps> = (props) => {
     width: string,
     height: string
   ) => {
-    let dom = [];
+    let dom:any = [];
     if (vitalityDirection === 'vertical') {
       if (num > 0) {
         dom.push(

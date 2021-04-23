@@ -24,7 +24,7 @@ export const group = (state = defaultState, action: any) => {
         if (item.groupLogo && item.groupLogo.indexOf('https') === -1) {
           item.groupLogo = item.groupLogo.replace('http', 'https');
         }
-        return item.groupName.indexOf('主群') === -1;
+        return item.groupName.indexOf('主项目') === -1;
       });
       return {
         ...state,

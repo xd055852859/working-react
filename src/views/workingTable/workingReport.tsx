@@ -1,82 +1,41 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import './workingReport.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import { TextField, Button, Tooltip } from '@material-ui/core';
-import { useDispatch } from 'react-redux';
-import { setMessage } from '../../redux/actions/commonActions';
-import { getWorkingTableTask } from '../../redux/actions/taskActions';
-import { changeCreateMusic } from '../../redux/actions/authActions';
+import { Input, Button, Tooltip } from 'antd';
 import _ from 'lodash';
 import api from '../../services/api';
 import moment from 'moment';
-// import replyPng from '../../assets/img/replyDiary.png';
+
+import { useDispatch } from 'react-redux';
+import { setMessage } from '../../redux/actions/commonActions';
+import { getWorkingTableTask } from '../../redux/actions/taskActions';
+import { changeMusic } from '../../redux/actions/authActions';
+
+import Loading from '../../components/common/loading';
+import Task from '../../components/task/task';
+
+import memberSvg from '../../assets/svg/member.svg';
 import deletePng from '../../assets/img/deleteDiary.png';
 import commentPng from '../../assets/img/comment.png';
 import reportIcon from '../../assets/svg/reportIcon.svg';
-// import likePng from '../../assets/img/like.png';
-// import unlikePng from '../../assets/img/unlike.png';
-// import clickNumberPng from '../../assets/img/clickNumber.png';
-import DropMenu from '../../components/common/dropMenu';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
-import Loading from '../../components/common/loading';
-import Task from '../../components/task/task';
-import memberSvg from '../../assets/svg/member.svg';
-
 export interface WorkingReportProps {
   headerType?: boolean;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      margin: '-10px 0px',
-    },
-    input: {
-      width: '80%',
-      color: '#fff',
-      '& .MuiInput-formControl': {
-        marginTop: '0px',
-        borderColor: '#fff',
-      },
-      '& .MuiOutlinedInput-input': {
-        padding: '10px 14px',
-        borderColor: '#fff',
-        // color: '#fff',
-      },
-      '& .MuiInputLabel-formControl': {
-        marginTop: '-10px',
-        // color: '#fff',
-      },
-    },
-    button: {
-      backgroundColor: '#17B881',
-      color: '#fff',
-    },
-    datePicker: {
-      '& .MuiInput-formControl': {
-        marginLeft: '5px',
-      },
-    },
-  })
-);
 const WorkingReport: React.FC<WorkingReportProps> = (props) => {
   const { headerType } = props;
   const dispatch = useDispatch();
-  const classes = useStyles();
   const user = useTypedSelector((state) => state.auth.user);
   const theme = useTypedSelector((state) => state.auth.theme);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
-  const groupKey = useTypedSelector((state) => state.group.groupKey);
   const taskArray = useTypedSelector((state) => state.task.taskArray);
   const taskInfo = useTypedSelector((state) => state.task.taskInfo);
   const workingTaskArray = useTypedSelector(
     (state) => state.task.workingTaskArray
   );
-  const [dateArray, setDateArray] = useState<any>([]);
-  const [diaryList, setDiaryList] = useState<any>([]);
   const [diaryIndex, setDiaryIndex] = useState('');
   const [diaryKey, setDiaryKey] = useState<any>(null);
   const [comment, setComment] = useState('');
@@ -84,21 +43,16 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
   const [negative, setNegative] = useState('');
   const [note, setNote] = useState('');
   const [commentList, setCommentList] = useState<any>([]);
-  const [dayCanlendarArray, setDayCanlendarArray] = useState<any>([]);
   const [commentPage, setCommentPage] = useState(1);
   const [commentTotal, setCommentTotal] = useState(0);
-  const [contentItem, setContentItem] = useState<any>(null);
-  const [contentState, setContentState] = useState(false);
   const [contentKey, setContentKey] = useState(0);
-  const [isLike, setIsLike] = useState(false);
   const [personObj, setPersonObj] = useState<any>(null);
   const [personArray, setPersonArray] = useState<any>([{}]);
-  const [personIndex, setPersonIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [moveState, setMoveState] = useState<any>(null);
 
   const commentLimit = 10;
-  let unDistory = true;
+let unDistory = useRef<any>(null);   unDistory.current=true;
   useEffect(() => {
     if (user && user._key) {
       setLoading(true);
@@ -119,7 +73,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       }
     }
     return () => {
-      unDistory = false;
+      // unDistory.current = false;
     };
   }, [user, targetUserInfo, taskArray, workingTaskArray]);
   useEffect(() => {
@@ -161,7 +115,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
           taskInfo.creatorKey
         ].creatorArray = newPersonObj[
           moment(taskInfo.createTime).endOf('day').valueOf()
-        ][taskInfo.creatorKey].creatorArray.map((item: any, index: number) => {
+        ][taskInfo.creatorKey].creatorArray.map((item: any) => {
           if (item._key === taskInfo._key) {
             item = _.cloneDeep(taskInfo);
           }
@@ -172,7 +126,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     }
   }, [taskInfo]);
 
-  const chooseDiary = async (item: string, index: number) => {
+  const chooseDiary = async (item: string) => {
     setDiaryIndex(item);
     getDiaryList(
       moment(parseInt(item)).startOf('day').valueOf(),
@@ -186,14 +140,10 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     setComment('');
     if (headerIndex != 3) {
       getDiaryNote(moment(parseInt(item)).startOf('day').valueOf());
-      // if (dateArray[index]._key) {
-      //   getCommentList(1, dateArray[index]._key);
-      // }
     }
   };
-  const choosePerson = (key: string, index: number) => {
+  const choosePerson = (key: string) => {
     setDiaryKey(key);
-    setPersonIndex(index);
     getData(taskArray, key);
   };
   const getData = async (taskArray: any, personKey: string) => {
@@ -337,7 +287,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
         headerIndex == 1 || headerType ? user._key : targetUserInfo._key,
         startTime
       );
-      if (unDistory) {
+      if (unDistory.current) {
         if (noteRes.msg == 'OK') {
           setPositive(noteRes.result.positive);
           setNegative(noteRes.result.negative);
@@ -367,9 +317,8 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       startTime,
       endTime
     );
-    if (unDistory) {
+    if (unDistory.current) {
       if (res.msg == 'OK') {
-        setDiaryList(res.result);
         if (res.result.length > 0) {
           if (res.result[0]._key) {
             setContentKey(res.result[0]._key);
@@ -392,7 +341,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
       page,
       commentLimit
     );
-    if (unDistory) {
+    if (unDistory.current) {
       if (res.msg == 'OK') {
         newCommentList.push(...res.result);
         setCommentList(newCommentList);
@@ -446,13 +395,11 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
             : personItem[personKey].creatorArray.length > 0
             ? personItem[personKey].creatorArray[0].creatorName
             : '';
-        personItem[personKey].executorArray.forEach(
-          (item: any, index: number) => {
-            if (item.finishPercent > 0) {
-              executorNum++;
-            }
+        personItem[personKey].executorArray.forEach((item: any) => {
+          if (item.finishPercent > 0) {
+            executorNum++;
           }
-        );
+        });
         dom.push(
           <React.Fragment key={'day' + personKey}>
             <div className="diaryall-subtitle">
@@ -580,7 +527,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
     });
     if (addTaskRes.msg === 'OK') {
       dispatch(setMessage(true, '新增任务成功', 'success'));
-      dispatch(changeCreateMusic(true));
+      dispatch(changeMusic(5));
       newPersonObj[diaryIndex][diaryKey].executorArray.unshift(
         addTaskRes.result
       );
@@ -594,7 +541,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
   };
   return (
     <div className="diary">
-      {loading ? <Loading /> : null}
+      {/* {loading ? <Loading /> : null} */}
       {personObj && personObj[diaryIndex] ? (
         <div className="diary-bg">
           <div className="diary-menu">
@@ -614,7 +561,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                             <div
                               className="diary-menu-item"
                               onClick={() => {
-                                chooseDiary(item, index);
+                                chooseDiary(item);
                               }}
                               style={{
                                 backgroundColor:
@@ -718,8 +665,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                           {parseInt(diaryIndex) <
                           moment().startOf('day').valueOf() ? (
                             <Button
-                              variant="contained"
-                              color="primary"
+                              type="primary"
                               onClick={() => {
                                 saveNote();
                               }}
@@ -729,8 +675,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                             </Button>
                           ) : null}
                           <Button
-                            variant="contained"
-                            color="primary"
+                            type="primary"
                             onClick={() => {
                               addTask();
                             }}
@@ -971,7 +916,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                       </div>
 
                       <div className="diary-comment-button">
-                        <TextField
+                        <Input
                           placeholder="我要评论......"
                           style={{ width: '90%' }}
                           onChange={(e: any) => {
@@ -985,10 +930,11 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                           }}
                         />
                         <Button
-                          variant="contained"
-                          color="primary"
-                          style={{ marginRight: '10px' }}
-                          className={classes.button}
+                          style={{
+                            marginRight: '10px',
+                            backgroundColor: '#17B881',
+                            color: '#fff',
+                          }}
                           onClick={() => {
                             addComment();
                           }}
@@ -1024,7 +970,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                 : { height: '100%' }
             }
           >
-            <Tooltip title="选择群成员">
+            <Tooltip title="选择项目成员">
               <img
                 src={memberSvg}
                 alt=""
@@ -1042,7 +988,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                         <div
                           className="diary-avatar"
                           onClick={() => {
-                            choosePerson(item.key, index);
+                            choosePerson(item.key);
                           }}
                           style={
                             item.key === diaryKey
@@ -1059,7 +1005,7 @@ const WorkingReport: React.FC<WorkingReportProps> = (props) => {
                         <div
                           className="diary-avatar"
                           onClick={() => {
-                            choosePerson(item.key, index);
+                            choosePerson(item.key);
                           }}
                           style={
                             item.key === diaryKey

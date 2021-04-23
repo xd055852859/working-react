@@ -1,188 +1,61 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './companyPerson.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-import { MiniMenu } from 'tree-graph-react';
-import { makeStyles } from '@material-ui/core/styles';
-
 import { useDispatch } from 'react-redux';
 import moment from 'moment';
 import XLSX from 'xlsx';
 import { setGroupKey, getGroupInfo } from '../../redux/actions/groupActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import Loading from '../../components/common/loading';
-import Dialog from '../../components/common/dialog';
-import DropMenu from '../../components/common/dropMenu';
-import MiniTree from '../../components/common/miniTree';
-
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
-import defaultGroupPng from '../../assets/img/defaultGroup.png';
-import defaultDepartMentSvg from '../../assets/svg/defaultDepartMent.svg';
 import {
   Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
-  IconButton,
+  Modal,
   Button,
-  Breadcrumbs,
-  Link,
-  Typography,
-  Chip,
-  Tooltip,
-} from '@material-ui/core';
+  Breadcrumb,
+  Tag,
+  Tree,
+  Dropdown,
+  Input,
+  Select,
+} from 'antd';
+const { Search } = Input;
+const { Option } = Select;
 import {
-  AssignmentOutlined,
-  ExpandMoreOutlined,
-  CancelOutlined,
-  DeleteOutlineOutlined,
-  NavigateNext,
-  Edit,
-  Search,
-  Done,
-  CloudUpload,
-  GroupAddOutlined,
-} from '@material-ui/icons';
+  EditOutlined,
+  UserAddOutlined,
+  CloudUploadOutlined,
+} from '@ant-design/icons';
+const { CheckableTag } = Tag;
+
 import _ from 'lodash';
 import api from '../../services/api';
-import CompanySearch from './companySearch';
-import CompanySearchList from './companySearchList';
+
 import CompanyEdit from './companyEdit';
 
-import deletePng from '../../assets/img/deleteDiary.png';
-import set6Svg from '../../assets/svg/set6.svg';
-import { setTargetUserKey } from '../../redux/actions/authActions';
-const useStyles = makeStyles({
-  root: {},
-  // container: {
-  //   maxHeight: 440,
-  // },
-});
-
-const columns = [
-  {
-    id: 'batchNumber',
-    label: '批次号',
-    minWidth: 200,
-  },
-  {
-    id: 'avatar',
-    label: '头像',
-    minWidth: 50,
-  },
-  {
-    id: 'nickName',
-    label: '姓名',
-    minWidth: 100,
-  },
-  {
-    id: 'loginTime',
-    label: '最近上线时间',
-    minWidth: 220,
-  },
-  {
-    id: 'mobileArea',
-    label: '手机区号',
-    minWidth: 100,
-  },
-  {
-    id: 'mobile',
-    label: '手机号',
-    minWidth: 100,
-  },
-  {
-    id: 'post',
-    label: '职位',
-    minWidth: 400,
-  },
-  {
-    id: 'email',
-    label: '电子邮箱',
-    minWidth: 170,
-  },
-  {
-    id: 'birthday',
-    label: '生日',
-    minWidth: 100,
-  },
-  {
-    id: 'lunarBirthday',
-    label: '农历生日',
-    minWidth: 120,
-  },
-  {
-    id: 'gender',
-    label: '性别',
-    minWidth: 70,
-  },
-  {
-    id: 'emergencyContact',
-    label: '紧急联系人',
-    minWidth: 160,
-  },
-  {
-    id: 'emergencyContactTel',
-    label: '联系人电话',
-    minWidth: 120,
-  },
-  {
-    id: 'address',
-    label: '住址',
-    minWidth: 170,
-  },
-  {
-    id: 'status',
-    label: '状态',
-    minWidth: 170,
-  },
-  {
-    id: 'notActive',
-    label: '账户已激活',
-    minWidth: 120,
-  },
-  {
-    id: 'disable',
-    label: '禁用',
-    minWidth: 80,
-  },
-  {
-    id: 'operation',
-    label: '操作',
-    minWidth: 160,
-    align: 'center',
-  },
-];
 interface CompanyPersonProps {}
 
 const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
   const {} = props;
   const dispatch = useDispatch();
-  const classes = useStyles();
   const user = useTypedSelector((state) => state.auth.user);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const groupRole = useTypedSelector((state) => state.group.groupRole);
 
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const [updateValue, setUpdateValue] = useState<any>('');
-  const [searchDialogShow, setSearchDialogShow] = useState(false);
-  const [searchVisible, setSearchVisible] = useState(false);
   const [batchVisible, setBatchVisible] = useState(false);
-  const [batchDialogShow, setBatchDialogShow] = useState(false);
 
   const [postVisible, setPostVisible] = useState(false);
-  const [postArray, setPostArray] = useState<any>([]);
   const [batchArray, setBatchArray] = useState<any>([]);
   const [batchIndex, setBatchIndex] = useState(0);
   const [batchMoveIndex, setBatchMoveIndex] = useState<any>(null);
 
   const [rows, setRows] = useState<any>([]);
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(100);
+  const [pageSize, setPageSize] = React.useState(20);
   const [total, setTotal] = React.useState(0);
   const [loading, setLoading] = useState(false);
-  const [deleteDialogShow, setDeleteDialogShow] = useState(false);
   const [deleteVisible, setDeleteVisible] = useState(false);
 
   const [companyData, setCompanyData] = useState<any>(null);
@@ -193,54 +66,257 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
   const [selectedId, setSelectedId] = useState<any>(null);
   const [treeVisible, setTreeVisible] = useState<any>(false);
   const [treeDialogShow, setTreeDialogShow] = useState<any>(false);
-  const [treeMenuVisible, setTreeMenuVisible] = useState<any>(false);
 
   const [personKey, setPersonKey] = useState<any>('');
   const [searchInput, setSearchInput] = useState<any>('');
   const [personIndex, setPersonIndex] = useState<any>(null);
   const [userVisible, setUserVisible] = useState(false);
   const [targetUser, setTargetUser] = useState<any>(null);
+  const [changeState, setChangeState] = useState<any>(false);
+  const [clearState, setClearState] = useState<any>(false);
   const [isQuit, setIsQuit] = useState<any>(false);
   const personRef: React.RefObject<any> = useRef();
-  let unDistory = true;
+  let unDistory = useRef<any>(null);
+  unDistory.current = true;
+  const columns = [
+    {
+      title: '操作',
+      dataIndex: 'operation',
+      key: 'operation',
+      fixed: 'left' as 'left',
+      render: (operation, item, index) => (
+        <React.Fragment>
+          <Button
+            onClick={() => {
+              setClearState(false);
+              setTargetUser(item);
+              setUserVisible(true);
+              setPersonIndex(index);
+            }}
+            type="primary"
+            shape="circle"
+            icon={<EditOutlined />}
+            ghost
+            style={{ marginRight: '5px', border: '0px' }}
+          />
+        </React.Fragment>
+      ),
+
+      width: 100,
+      align: 'center' as 'center',
+    },
+    {
+      title: '头像',
+      dataIndex: 'avatar',
+      key: 'avatar',
+      fixed: true,
+      render: (avatar, item, index) => (
+        <div
+          className="company-avatar-container "
+          onClick={() => {
+            setClearState(false);
+            setTargetUser(item);
+            setUserVisible(true);
+            setPersonIndex(index);
+          }}
+        >
+          <div className="company-avatar">
+            <img
+              src={
+                avatar
+                  ? avatar.indexOf('data:') === -1
+                    ? avatar + '?imageMogr2/auto-orient/thumbnail/80x'
+                    : avatar
+                  : defaultPersonPng
+              }
+              alt=""
+              onError={(e: any) => {
+                e.target.onerror = null;
+                e.target.src = defaultPersonPng;
+              }}
+            />
+            <div
+              className="companyPerson-online"
+              style={{
+                backgroundColor: item.online ? '#7ED321' : '#B3B3B3',
+              }}
+            ></div>
+          </div>
+        </div>
+      ),
+      width: 60,
+      align: 'center' as 'center',
+    },
+    {
+      title: '姓名',
+      dataIndex: 'nickName',
+      key: 'nickName',
+      fixed: true,
+      width: 150,
+      align: 'center' as 'center',
+    },
+    {
+      title: '批次号',
+      dataIndex: 'batchNumber',
+      key: 'batchNumber',
+      width: 150,
+      align: 'center' as 'center',
+    },
+    {
+      key: 'loginTime',
+      title: '最近上线时间',
+      dataIndex: 'loginTime',
+      width: 150,
+      align: 'center' as 'center',
+    },
+    {
+      key: 'mobileArea',
+      title: '手机区号',
+      dataIndex: 'mobileArea',
+      width: 140,
+      align: 'center' as 'center',
+    },
+    {
+      key: 'mobile',
+      title: '手机号',
+      dataIndex: 'mobile',
+      width: 150,
+      align: 'center' as 'center',
+    },
+    {
+      key: 'post',
+      title: '职位',
+      dataIndex: 'post',
+      render: (post, row) => (
+        <React.Fragment>
+          {row?.organizationInfo?.length > 0 ? (
+            row.organizationInfo.map((item: any, index: number) => {
+              return (
+                <div className="company-choose-info" key={'post' + index}>
+                  {item.path1.map((pathItem: any, pathIndex: number) => {
+                    return (
+                      <span key={'postItem' + pathIndex}>
+                        {pathIndex === 0 ? pathItem : ' / ' + pathItem}
+                      </span>
+                    );
+                  })}
+                  {' / ' + (item.post ? item.post : '暂无职位')}
+                </div>
+              );
+            })
+          ) : (
+            <div className="company-choose-info">
+              {row.post ? row.post : '暂无职位'}
+            </div>
+          )}
+        </React.Fragment>
+      ),
+      width: 400,
+      align: 'center' as 'center',
+    },
+    {
+      key: 'email',
+      title: '电子邮箱',
+      dataIndex: 'email',
+      width: 150,
+      align: 'center' as 'center',
+    },
+    {
+      key: 'birthday',
+      title: '生日',
+      dataIndex: 'birthday',
+      width: 150,
+      align: 'center' as 'center',
+    },
+    {
+      key: 'lunarBirthday',
+      title: '农历生日',
+      dataIndex: 'lunarBirthday',
+      width: 150,
+      align: 'center' as 'center',
+    },
+    {
+      key: 'gender',
+      title: '性别',
+      dataIndex: 'gender',
+      width: 100,
+      align: 'center' as 'center',
+    },
+    {
+      key: 'emergencyContact',
+      title: '紧急联系人',
+      dataIndex: 'emergencyContact',
+      width: 150,
+      align: 'center' as 'center',
+    },
+    {
+      key: 'emergencyContactTel',
+      title: '联系人电话',
+      dataIndex: 'emergencyContactTel',
+      width: 150,
+      align: 'center' as 'center',
+    },
+    {
+      key: 'address',
+      title: '住址',
+      dataIndex: 'address',
+      width: 200,
+      align: 'center' as 'center',
+    },
+    {
+      key: 'status',
+      title: '状态',
+      dataIndex: 'status',
+      render: (status) => (
+        <React.Fragment>{status !== 0 ? '在职' : '离职'}</React.Fragment>
+      ),
+      width: 100,
+      align: 'center' as 'center',
+    },
+    {
+      key: 'notActive',
+      title: '账户已激活',
+      dataIndex: 'notActive',
+      width: 150,
+      align: 'center' as 'center',
+    },
+    {
+      key: 'disable',
+      title: '禁用',
+      dataIndex: 'notActive',
+      width: 150,
+      align: 'center' as 'center',
+    },
+  ];
   useEffect(() => {
     if (user) {
-      let groupKey: any = localStorage.getItem('groupKey');
-      if (groupKey) {
-        dispatch(setGroupKey(groupKey));
-        dispatch(getGroupInfo(groupKey));
+      let newGroupKey = localStorage.getItem('companyKey');
+      if (newGroupKey) {
+        dispatch(setGroupKey(newGroupKey));
+        dispatch(getGroupInfo(newGroupKey));
       }
     }
   }, [user]);
   useEffect(() => {
     if (groupInfo) {
-      getCompanyRow(0, rowsPerPage, searchInput);
-      // getCompanyTree('', 1);
+      getCompanyRow(0, pageSize, searchInput);
       getBatchArray();
     }
     return () => {
-      unDistory = false;
+      // unDistory.current = false;
     };
   }, [groupInfo]);
 
   useEffect(() => {
-    if (searchInput === '') {
-      setPage(0);
-      getCompanyRow(0, rowsPerPage, '');
+    if (treeVisible) {
+      getCompanyTree('', 1);
     }
-  }, [searchInput]);
+  }, [treeVisible]);
   useEffect(() => {
-    if (isQuit) {
-      setPage(0);
-      getCompanyRow(0, rowsPerPage, '', null, '', isQuit);
+    if (postVisible) {
+      getCompanyTree('', 1);
     }
-  }, [isQuit]);
-
-  useEffect(() => {
-    if (rowsPerPage * page < total) {
-      getCompanyRow(page, rowsPerPage, searchInput);
-    }
-  }, [page, rowsPerPage]);
+  }, [postVisible]);
   useEffect(() => {
     if (treeVisible) {
       getCompanyTree('', 1);
@@ -249,25 +325,29 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
   useEffect(() => {
     if (selectedId) {
       chooseNode(companyData[selectedId]);
-      getCompanyRow(page, rowsPerPage, searchInput, companyData[selectedId]);
+      getCompanyRow(page, pageSize, searchInput, companyData[selectedId]);
     }
   }, [selectedId]);
+  useEffect(() => {
+    if (groupInfo) {
+      getCompanyRow(page, pageSize, '');
+    }
+  }, [isQuit]);
   const getCompanyRow = async (
     page: number,
     limit: number,
     searchInput: string,
     node?: any,
-    batchNumber?: string,
-    isQuit?: boolean
+    batchNumber?: string
   ) => {
     let newRow: any = [];
     let companyPersonRes: any = '';
-    page = page + 1;
+    console.log(node);
     setLoading(true);
     if (node) {
       companyPersonRes = await api.company.getCompanyList(
         2,
-        node._key,
+        node.key,
         page,
         limit
       );
@@ -284,7 +364,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
       );
     }
 
-    if (unDistory) {
+    if (unDistory.current) {
       if (companyPersonRes.msg === 'OK') {
         setLoading(false);
         companyPersonRes.result.map((item: any, index: number) => {
@@ -320,29 +400,26 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
     }
   };
   const getCompanyTree = async (nodeId: any, type: number) => {
-    let newStartId: string = '';
     let newCompanyData: any = {};
     let newNodeData: any = {};
     // if (nodeId) {
     //   setSelectedId(nodeId);
     // }
     setLoading(true);
-    let companyDepartmentRes: any = await api.company.getOrganizationTree(
-      groupKey,
-      type
-    );
-    if (unDistory) {
+    let companyDepartmentRes: any = await api.company.getOrganizationTree({
+      enterpriseGroupKey: groupKey,
+      type: type,
+    });
+    if (unDistory.current) {
       if (companyDepartmentRes.msg === 'OK') {
         setLoading(false);
         let data = companyDepartmentRes.result;
         for (let key in data) {
           newCompanyData[key] = {
-            _key: data[key]._key,
-            father: data[key].parentOrgKey,
-            name: data[key].name,
-            sortList: data[key].children,
+            key: data[key]._key,
+            title: data[key].name,
             path: data[key].path1,
-            nodes: [],
+            children: data[key].children,
           };
           if (!nodeId && !data[key].parentOrgKey) {
             nodeId = data[key]._key;
@@ -351,9 +428,8 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
         }
         // newCompanyData = addPath(newCompanyData, nodeId);
         newNodeData = formatData(newCompanyData, nodeId);
-        setNodeData(newNodeData);
+        setNodeData([newNodeData]);
         chooseNode(newCompanyData[nodeId]);
-        console.log(newCompanyData);
         setCompanyData(newCompanyData);
       } else {
         setLoading(false);
@@ -363,53 +439,28 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
   };
   const formatData = (nodeObj: any, nodeId: string) => {
     let obj: any = {
-      _key: nodeId,
-      name: nodeObj[nodeId].name,
+      key: nodeId,
+      title: nodeObj[nodeId].title,
       children: [],
     };
-    if (nodeObj[nodeId].sortList.length > 0) {
-      nodeObj[nodeId].sortList.forEach((item: any) => {
+
+    if (nodeObj[nodeId].children.length > 0) {
+      nodeObj[nodeId].children.forEach((item: any) => {
         let nodeItem = formatData(nodeObj, item);
         obj.children.push(nodeItem);
       });
     }
     return obj;
   };
-  // const addPath = (nodeObj: any, nodeId: string) => {
-  //   nodeObj[nodeId].path = nodeObj[nodeId].father
-  //     ? [
-  //         ...nodeObj[nodeObj[nodeId].father].path,
-  //         {
-  //           name: nodeObj[nodeId].name,
-  //           _key: nodeObj[nodeId]._key,
-  //         },
-  //       ]
-  //     : [
-  //         {
-  //           name: nodeObj[nodeId].name,
-  //           _key: nodeObj[nodeId]._key,
-  //         },
-  //       ];
-  //   if (nodeObj[nodeId].sortList.length > 0) {
-  //     nodeObj[nodeId].sortList.forEach((item: any) => {
-  //       addPath(nodeObj, item);
-  //     });
-  //   }
-  //   return nodeObj;
-  // };
+
   const chooseNode = async (node: any) => {
-    // setSelectedId(node._key);
-    // setSelectedType(node.orgType);
     setPage(0);
     setCompanyObj(node);
-    console.log(node);
-    // setRows([]);
-    // getCompanyRow(0, rowsPerPage, node);
   };
   const getBatchArray = async () => {
     let newBatchArray: any = [];
     let batchRes: any = await api.company.getBatchList(groupKey);
-    if (unDistory) {
+    if (unDistory.current) {
       if (batchRes.msg === 'OK') {
         newBatchArray = ['全部', ...batchRes.results];
         setBatchArray(newBatchArray);
@@ -418,12 +469,14 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
       }
     }
   };
-  const handleChangePage = (event: any, newPage: number) => {
-    setPage(newPage);
+  const handleChangePage = (page: number) => {
+    setPage(page);
+    getCompanyRow(page, pageSize, searchInput);
   };
 
-  const handleChangeRowsPerPage = (event: any) => {
-    setRowsPerPage(+event.target.value);
+  const handleChangePageSize = (current, size) => {
+    setPageSize(size);
+    getCompanyRow(page, size, searchInput);
   };
   // const [updateValue, setUpdateValue] = useState<any>('');
   const uploadData = (e: any, num: number) => {
@@ -520,7 +573,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
       let res: any = await api.company.addCompanyUser(groupKey, newsheetArr);
       if (res.msg === 'OK') {
         setLoading(false);
-        getCompanyRow(0, rowsPerPage, '');
+        getCompanyRow(0, pageSize, '');
         getBatchArray();
         dispatch(setMessage(true, '导入人员成功', 'success'));
       } else {
@@ -550,21 +603,7 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
     );
     return o;
   };
-  const deletePerson = async () => {
-    setDeleteDialogShow(false);
-    let newRow: any = _.cloneDeep(rows);
-    let deletePersonRes: any = await api.company.deletePerson(
-      personKey,
-      groupKey
-    );
-    if (deletePersonRes.msg === 'OK') {
-      dispatch(setMessage(true, '删除人员成功', 'success'));
-      newRow.splice(personIndex, 1);
-      setRows(newRow);
-    } else {
-      dispatch(setMessage(true, deletePersonRes.msg, 'error'));
-    }
-  };
+
   const deleteBatch = async () => {
     setDeleteVisible(false);
     let newBatchArray: any = _.cloneDeep(batchArray);
@@ -577,15 +616,30 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
       newBatchArray.splice(batchIndex, 1);
       setBatchIndex(0);
       setBatchArray(newBatchArray);
-      getCompanyRow(0, rowsPerPage, '');
+      getCompanyRow(0, pageSize, '');
     } else {
       dispatch(setMessage(true, deletePersonRes.msg, 'error'));
     }
   };
 
-  const editPerson = async () => {
+  const editPerson = async (type: string) => {
     let newRow: any = _.cloneDeep(rows);
     let newTargetUser = _.cloneDeep(targetUser);
+    if (!newTargetUser.nickName) {
+      dispatch(setMessage(true, '昵称不能为空', 'error'));
+      return;
+    }
+    let reg1 = /^1(3[0-9]|4[5,7]|5[0,1,2,3,5,6,7,8,9]|6[2,5,6,7]|7[0,1,7,8]|8[0-9]|9[1,8,9])\d{8}$/;
+    if (!reg1.test(newTargetUser.mobile)) {
+      dispatch(setMessage(true, '手机号码输入错误', 'error'));
+      return;
+    }
+    let reg2 = /^(\w)+(\.\w+)*@(\w)+((\.\w+)+)$/;
+    if (!reg2.test(newTargetUser.email)) {
+      dispatch(setMessage(true, '邮箱输入错误', 'error'));
+      return;
+    }
+    setClearState(false);
     if (targetUser._key) {
       let updatePersonRes: any = await api.company.updatePerson({
         groupMemberKey: newTargetUser._key,
@@ -609,19 +663,18 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
               newRow[rowIndex].birthday = moment(newTargetUser.birthday).format(
                 'YYYY/MM/DD'
               );
-            }
-            if (key === 'gender') {
-              newRow[rowIndex].gender =
-                newTargetUser.gender === 1 ? '女' : '男';
+            } else if (key === 'gender') {
+              newRow[rowIndex].gender = newTargetUser.gender == 1 ? '女' : '男';
             } else {
               newRow[rowIndex][key] = newTargetUser[key];
             }
           }
         }
         // newRow.splice(personIndex, 1);
-        console.log(newRow);
+        if (type === '退出') {
+          setUserVisible(false);
+        }
         setRows(newRow);
-        setUserVisible(false);
       } else {
         dispatch(setMessage(true, updatePersonRes.msg, 'error'));
       }
@@ -644,8 +697,12 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
       ]);
       if (res.msg === 'OK') {
         dispatch(setMessage(true, '添加人员成功', 'success'));
-        getCompanyRow(0, rowsPerPage, '');
-        setUserVisible(false);
+        getCompanyRow(0, pageSize, '');
+        setTargetUser(null);
+        setClearState(true);
+        if (type === '退出') {
+          setUserVisible(false);
+        }
       } else {
         dispatch(setMessage(true, res.msg, 'error'));
       }
@@ -656,22 +713,13 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
       {loading ? <Loading /> : null}
       <div className="company-header">
         <div className="company-header-title">
-          <span style={{ fontSize: '18px' }}>通讯录</span>
+          <span style={{ fontSize: '18px' }}>通讯录（{total}人）</span>
         </div>
         <div className="company-header-button">
-          <a
-            href="https://cdn-icare.qingtime.cn/花名册示例.xlsx"
-            download="花名册（例子）.xlsx"
-            style={{ marginRight: '8px' }}
-          >
-            点击下载示例
-          </a>
-
           <Button
-            variant="outlined"
-            color="primary"
+            type="primary"
             // className={classes.button}
-            startIcon={<GroupAddOutlined />}
+            icon={<UserAddOutlined />}
             onClick={() => {
               setTargetUser(null);
               setUserVisible(true);
@@ -680,14 +728,9 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
             新增成员
           </Button>
           {groupInfo && groupInfo.role === 1 ? (
-            <div className="company-button">
-              <Button
-                variant="outlined"
-                color="primary"
-                // className={classes.button}
-                startIcon={<CloudUpload />}
-              >
-                上传花名册
+            <div className="company-button" style={{ marginRight: '5px' }}>
+              <Button type="primary" icon={<CloudUploadOutlined />}>
+                上传通讯录
               </Button>
               <input
                 type="file"
@@ -700,6 +743,13 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
               />
             </div>
           ) : null}
+          <a
+            href="https://cdn-icare.qingtime.cn/花名册示例.xlsx"
+            download="花名册（例子）.xlsx"
+            style={{ marginRight: '8px' }}
+          >
+            下载模板
+          </a>
         </div>
       </div>
       <div className="company-info-container" ref={personRef}>
@@ -709,567 +759,189 @@ const CompanyPerson: React.FC<CompanyPersonProps> = (props) => {
               className="companySearch-container"
               style={{ margin: '0px 10px' }}
             >
-              <input
-                type="text"
+              <Search
+                placeholder="请输入成员名"
                 value={searchInput}
+                onSearch={() => getCompanyRow(0, pageSize, searchInput)}
                 onChange={(e: any) => {
+                  if (e.target.value === '') {
+                    setPage(0);
+                    getCompanyRow(0, pageSize, '');
+                  }
                   setSearchInput(e.target.value);
                 }}
-                placeholder="请输入成员名"
-                className="companySearch-input"
-                onKeyDown={(e: any) => {
-                  if (e.keyCode === 13) {
-                    getCompanyRow(0, rowsPerPage, searchInput);
-                  }
-                }}
               />
-              <IconButton
-                color="primary"
-                component="span"
-                className="companySearch-button"
-                onClick={() => {
-                  getCompanyRow(0, rowsPerPage, searchInput);
-                }}
-                size="small"
-              >
-                <Search />
-              </IconButton>
             </div>
             {batchVisible ? (
-              <div className="company-header-batch">
-                <div>{batchArray[batchIndex]}</div>
-                <IconButton
-                  color="primary"
-                  component="span"
-                  onClick={() => {
-                    setBatchDialogShow(true);
-                  }}
-                  size="small"
-                >
-                  <ExpandMoreOutlined />
-                </IconButton>
-                <DropMenu
-                  visible={batchDialogShow}
-                  dropStyle={{
-                    width: '250px',
-                    maxHeight: '250px',
-                    top: '39px',
-                    left: '0px',
-                    color: '#333',
-                    overflow: 'auto',
-                    zIndex: 20,
-                    padding: '15px 0px',
-                    boxSizing: 'border-box',
-                  }}
-                  onClose={() => {
-                    setBatchDialogShow(false);
-                  }}
-                >
-                  {batchArray.map((item: any, index: number) => {
-                    return (
-                      <div
-                        key={'batch' + index}
-                        className="company-header-batch-item"
-                        onClick={() => {
-                          setBatchIndex(index);
-                          if (index === 0) {
-                            getCompanyRow(0, rowsPerPage, searchInput);
-                          } else {
-                            getCompanyRow(
-                              0,
-                              rowsPerPage,
-                              '',
-                              null,
-                              batchArray[index]
-                            );
-                          }
-                        }}
-                        onMouseEnter={() => {
-                          setBatchMoveIndex(index);
-                        }}
-                      >
-                        {item}
-                        {batchMoveIndex === index ? (
-                          <IconButton
-                            color="secondary"
-                            component="span"
-                            onClick={() => {
-                              setDeleteVisible(true);
-                            }}
-                            size="small"
-                          >
-                            <CancelOutlined />
-                          </IconButton>
-                        ) : null}
-                      </div>
-                    );
-                  })}
-                </DropMenu>
-              </div>
+              <Select
+                defaultValue={0}
+                style={{ width: '250px' }}
+                onChange={(value: number) => {
+                  console.log(value);
+                  setBatchIndex(value);
+                  if (value === 0) {
+                    getCompanyRow(0, pageSize, searchInput);
+                  } else {
+                    getCompanyRow(0, pageSize, '', null, batchArray[value]);
+                  }
+                }}
+              >
+                {batchArray.map((item: any, index: number) => {
+                  return (
+                    <Option
+                      key={'batch' + index}
+                      value={index}
+                      onMouseEnter={() => {
+                        setBatchMoveIndex(index);
+                      }}
+                    >
+                      {item}
+                      {/* {batchMoveIndex === index && index !== 0 ? (
+                        <Button
+                          shape="circle"
+                          onClick={() => {
+                            setDeleteVisible(false);
+                          }}
+                          icon={<CloseOutlined />}
+                          size="small"
+                        />
+                      ) : null} */}
+                    </Option>
+                  );
+                })}
+              </Select>
             ) : null}
+
             {companyObj && companyObj.path && treeVisible ? (
-              <div className="company-path-tree">
-                {/* {pathItem.name}
-                      <div className="tree-path-icon">
-                        <div className="tree-path-icon-top"></div>
-                        <div className="tree-path-icon-bottom"></div>
-                      </div> */}
-                <Breadcrumbs
-                  aria-label="breadcrumb"
-                  maxItems={3}
-                  separator={<NavigateNext fontSize="small" />}
-                >
-                  {companyObj.path.map((pathItem: any, pathIndex: number) => {
-                    const dom: any =
-                      pathIndex < companyObj.path.length - 1 ||
-                      companyObj.path.length == 1 ? (
-                        <Link
-                          href="#"
+              <Dropdown
+                overlay={
+                  <div className="dropDown-box">
+                    {nodeData ? (
+                      <Tree
+                        treeData={nodeData}
+                        onSelect={(selectedKeys: React.Key[]) => {
+                          setTreeDialogShow(false);
+                          setSelectedId(selectedKeys[0]);
+                        }}
+                      />
+                    ) : null}
+                  </div>
+                }
+                onVisibleChange={() => {
+                  setTreeDialogShow(true);
+                }}
+                visible={treeDialogShow}
+              >
+                <div className="company-path-tree">
+                  <Breadcrumb separator=">">
+                    {companyObj.path.map((pathItem: any, pathIndex: number) => {
+                      return (
+                        <Breadcrumb.Item
                           onClick={() => {
                             setTreeDialogShow(true);
                           }}
-                          style={{ fontSize: '14px' }}
-                          color={'secondary'}
-                          underline={'always'}
                           key={'path' + pathIndex}
                         >
                           {pathItem.name}
-                        </Link>
-                      ) : (
-                        <Typography
-                          color="textPrimary"
-                          onClick={() => {
-                            setTreeDialogShow(true);
-                          }}
-                          style={{ fontSize: '14px' }}
-                          key={'path' + pathIndex}
-                        >
-                          {pathItem.name}
-                        </Typography>
+                        </Breadcrumb.Item>
                       );
-                    return dom;
-                  })}
-                </Breadcrumbs>
-                <DropMenu
-                  visible={treeDialogShow}
-                  dropStyle={{
-                    width: '400px',
-                    minHeight: '260px',
-                    top: '45px',
-                    left: '0px',
-                    color: '#333',
-                    overflow: 'auto',
-                    zIndex: 20,
-                    padding: '15px 0px',
-                    boxSizing: 'border-box',
-                  }}
-                  onClose={() => {
-                    setTreeDialogShow(false);
-                  }}
-                >
-                  {nodeData ? (
-                    <MiniTree
-                      startId={startId}
-                      nodes={nodeData}
-                      clickFunc={setSelectedId}
-                    />
-                  ) : null}
-                </DropMenu>
-              </div>
+                    })}
+                  </Breadcrumb>
+                </div>
+              </Dropdown>
             ) : null}
           </div>
           <div className="company-info-right">
-            {!postVisible ? (
-              <Chip
-                label="职位"
-                onClick={() => {
-                  setPostVisible(true);
-                }}
-                onDelete={() => {
-                  setPostVisible(true);
-                }}
-                deleteIcon={<Done />}
-                variant="outlined"
-                size="small"
-                style={{ marginRight: '8px' }}
-              />
-            ) : (
-              <Chip
-                label="职位"
-                color="primary"
-                onClick={() => {
-                  setPostVisible(false);
-                }}
-                onDelete={() => {
-                  setPostVisible(false);
-                }}
-                variant="outlined"
-                size="small"
-                style={{ marginRight: '8px' }}
-              />
-            )}
-            {!batchVisible ? (
-              <Chip
-                label="批次"
-                onDelete={() => {
-                  setBatchVisible(true);
-                }}
-                onClick={() => {
-                  setBatchVisible(true);
-                }}
-                deleteIcon={<Done />}
-                variant="outlined"
-                size="small"
-                style={{ marginRight: '8px' }}
-              />
-            ) : (
-              <Chip
-                label="批次"
-                color="primary"
-                onDelete={() => {
-                  setBatchVisible(false);
-                }}
-                onClick={() => {
-                  setBatchVisible(false);
-                }}
-                variant="outlined"
-                size="small"
-                style={{ marginRight: '8px' }}
-              />
-            )}
-            {!treeVisible ? (
-              <Chip
-                label="组织树"
-                onDelete={() => {
-                  setTreeVisible(true);
-                }}
-                onClick={() => {
-                  setTreeVisible(true);
-                }}
-                deleteIcon={<Done />}
-                variant="outlined"
-                size="small"
-                style={{ marginRight: '8px' }}
-              />
-            ) : (
-              <Chip
-                label="组织树"
-                color="primary"
-                onDelete={() => {
-                  setTreeVisible(false);
-                  getCompanyRow(0, rowsPerPage, searchInput);
-                }}
-                onClick={() => {
-                  setTreeVisible(false);
-                  getCompanyRow(0, rowsPerPage, searchInput);
-                }}
-                variant="outlined"
-                size="small"
-                style={{ marginRight: '8px' }}
-              />
-            )}
-            {!isQuit ? (
-              <Chip
-                label="离职"
-                onDelete={() => {
-                  setIsQuit(true);
-                }}
-                onClick={() => {
-                  setIsQuit(true);
-                }}
-                deleteIcon={<Done />}
-                variant="outlined"
-                size="small"
-                style={{ marginRight: '8px' }}
-              />
-            ) : (
-              <Chip
-                label="离职"
-                color="primary"
-                onDelete={() => {
-                  setIsQuit(false);
-                  getCompanyRow(0, rowsPerPage, searchInput);
-                }}
-                onClick={() => {
-                  setIsQuit(false);
-                  getCompanyRow(0, rowsPerPage, searchInput);
-                }}
-                variant="outlined"
-                size="small"
-                style={{ marginRight: '8px' }}
-              />
-            )}
+            <CheckableTag
+              checked={batchVisible}
+              onChange={(checked) => setBatchVisible(checked)}
+            >
+              批次
+            </CheckableTag>
+            <CheckableTag
+              checked={treeVisible}
+              onChange={(checked) => {
+                if (!checked) {
+                  getCompanyRow(0, pageSize, searchInput);
+                }
+                setTreeVisible(checked);
+              }}
+            >
+              组织树
+            </CheckableTag>
+            <CheckableTag
+              checked={isQuit}
+              onChange={(checked) => {
+                if (checked) {
+                  setPage(0);
+                }
+                setIsQuit(checked);
+              }}
+            >
+              离职
+            </CheckableTag>
           </div>
         </div>
-        <TableContainer
-          style={{
-            height: 'calc(100% - 105px)',
+        <Table
+          columns={columns}
+          dataSource={rows}
+          size="small"
+          scroll={{ x: 2600, y: document.body.offsetHeight - 230 }}
+          pagination={{
+            pageSize: pageSize,
+            pageSizeOptions: ['10', '20', '50', '100'],
+            showQuickJumper: true,
+            onChange: handleChangePage,
+            onShowSizeChange: handleChangePageSize,
+            total: total,
           }}
-        >
-          <Table stickyHeader aria-label="sticky table" size="small">
-            <TableHead>
-              <TableRow>
-                {columns.map((column: any) => (
-                  <React.Fragment key={column.id}>
-                    {((!postVisible && column.id !== 'post') || postVisible) &&
-                    ((!batchVisible && column.id !== 'batchNumber') ||
-                      batchVisible) &&
-                    ((!isQuit && column.id !== 'status') || isQuit) ? (
-                      <TableCell
-                        align="center"
-                        style={{ minWidth: column.minWidth }}
-                      >
-                        {column.label}
-                      </TableCell>
-                    ) : null}
-                  </React.Fragment>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map((row: any, index: number) => {
-                return (
-                  <TableRow
-                    hover
-                    role="checkbox"
-                    tabIndex={-1}
-                    key={'row' + index}
-                  >
-                    {columns.map((column: any) => {
-                      const value = row[column.id];
-                      return (
-                        <React.Fragment key={column.id}>
-                          {column.id === 'operation' ? (
-                            <TableCell align="center">
-                              <React.Fragment>
-                                <IconButton
-                                  color="primary"
-                                  component="span"
-                                  onClick={() => {
-                                    setUserVisible(true);
-                                    setTargetUser(row);
-                                  }}
-                                  size="small"
-                                >
-                                  <Edit />
-                                </IconButton>
-                                {groupRole && groupRole < row.role ? (
-                                  <IconButton
-                                    color="secondary"
-                                    component="span"
-                                    onClick={() => {
-                                      setPersonIndex(index);
-                                      setPersonKey(row.userId);
-                                      setDeleteDialogShow(true);
-                                    }}
-                                    size="small"
-                                  >
-                                    <CancelOutlined />
-                                  </IconButton>
-                                ) : null}
-                              </React.Fragment>
-                            </TableCell>
-                          ) : column.id === 'avatar' ? (
-                            <TableCell key={column.id} align="center">
-                              <div className="company-avatar-container ">
-                                <div className="company-avatar">
-                                  <img
-                                    src={
-                                      row.avatar
-                                        ? row.avatar.indexOf('data:') === -1
-                                          ? row.avatar +
-                                            '?imageMogr2/auto-orient/thumbnail/80x'
-                                          : row.avatar
-                                        : defaultPersonPng
-                                    }
-                                    alt=""
-                                    onError={(e: any) => {
-                                      e.target.onerror = null;
-                                      e.target.src = defaultPersonPng;
-                                    }}
-                                  />
-                                  <div
-                                    className="companyPerson-online"
-                                    style={{
-                                      backgroundColor: row.online
-                                        ? '#7ED321'
-                                        : '#B3B3B3',
-                                    }}
-                                  ></div>
-                                </div>
-                              </div>
-                            </TableCell>
-                          ) : column.id === 'post' ? (
-                            <React.Fragment>
-                              {postVisible ? (
-                                <TableCell key={column.id} align="center">
-                                  {row.organizationInfo.length > 0 ? (
-                                    row.organizationInfo.map(
-                                      (item: any, index: number) => {
-                                        return (
-                                          <div
-                                            className="company-choose-info"
-                                            key={'post' + index}
-                                          >
-                                            {item.path1.map(
-                                              (
-                                                pathItem: any,
-                                                pathIndex: number
-                                              ) => {
-                                                return (
-                                                  <span
-                                                    key={'postItem' + pathIndex}
-                                                  >
-                                                    {pathIndex === 0
-                                                      ? pathItem
-                                                      : ' / ' + pathItem}
-                                                  </span>
-                                                );
-                                              }
-                                            )}
-                                            {' / ' +
-                                              (item.post
-                                                ? item.post
-                                                : '无职位')}
-                                          </div>
-                                        );
-                                      }
-                                    )
-                                  ) : (
-                                    <div className="company-choose-info">
-                                      暂无职位
-                                    </div>
-                                  )}
-                                </TableCell>
-                              ) : null}
-                            </React.Fragment>
-                          ) : column.id === 'batchNumber' ? (
-                            <React.Fragment>
-                              {batchVisible ? (
-                                <TableCell key={column.id} align="center">
-                                  {column.format && typeof value === 'number'
-                                    ? column.format(value)
-                                    : value}
-                                </TableCell>
-                              ) : null}
-                            </React.Fragment>
-                          ) : column.id === 'status' ? (
-                            <React.Fragment>
-                              {isQuit ? (
-                                <TableCell key={column.id} align="center">
-                                  {column.format && typeof value === 'number'
-                                    ? column.format(value) !== 0
-                                      ? '在职'
-                                      : '离职'
-                                    : value !== 0
-                                    ? '在职'
-                                    : '离职'}
-                                </TableCell>
-                              ) : null}
-                            </React.Fragment>
-                          ) : (
-                            <TableCell key={column.id} align={'center'}>
-                              {column.format && typeof value === 'number'
-                                ? column.format(value)
-                                : value}
-                            </TableCell>
-                          )}
-                        </React.Fragment>
-                      );
-                    })}
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[10, 25, 100]}
-          component="div"
-          count={total}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onChangePage={handleChangePage}
-          onChangeRowsPerPage={handleChangeRowsPerPage}
-          labelRowsPerPage="分页"
         />
       </div>
-      <Dialog
-        visible={deleteDialogShow}
-        onClose={() => {
-          setDeleteDialogShow(false);
-        }}
-        onOK={() => {
-          deletePerson();
-        }}
-        title={'删除人员'}
-        dialogStyle={{ width: '400px', height: '200px' }}
-      >
-        <div className="dialog-onlyTitle">
-          是否将该人员从所有群组和组织中删除
-        </div>
-      </Dialog>
-      <Dialog
+      <Modal
         visible={deleteVisible}
-        onClose={() => {
+        onCancel={() => {
           setDeleteVisible(false);
         }}
-        onOK={() => {
+        onOk={() => {
           deleteBatch();
         }}
         title={'删除批次'}
-        dialogStyle={{ width: '400px', height: '200px' }}
       >
-        <div className="dialog-onlyTitle">是否将该批次下所有人员删除</div>
-      </Dialog>
-      <Dialog
+        是否将该批次下所有人员删除
+      </Modal>
+      <Modal
         visible={userVisible}
-        onOK={() => {
-          editPerson();
+        onOk={() => {
+          if (changeState) {
+            editPerson('继续');
+          }
+          setChangeState(false);
         }}
-        onClose={() => {
-          setUserVisible(false);
+        onCancel={() => {
+          if (changeState) {
+            editPerson('退出');
+          } else {
+            setUserVisible(false);
+          }
+          setChangeState(false);
         }}
+        okText={'保存并继续'}
+        cancelText={'保存并退出'}
         title={'用户设置'}
-        dialogStyle={{
-          width: '400px',
-          height: '90%',
-          overflow: 'auto',
-        }}
+        centered={true}
+        destroyOnClose={true}
       >
-        <CompanyEdit targetUser={targetUser} setTargetUser={setTargetUser} />
-      </Dialog>
-      {/* <Dialog
-        visible={postVisible}
-        onClose={() => {
-          setPostVisible(false);
-        }}
-        title={'用户职位'}
-        dialogStyle={{
-          minWidth: '300px',
-          maxHeight: '90%',
-          overflow: 'auto',
-        }}
-        footer={false}
-      >
-        {postArray.length > 0 ? (
-          postArray.map((item: any, index: number) => {
-            return (
-              <div className="company-choose-info" key={'post' + index}>
-                {item.path1.map((pathItem: any, pathIndex: number) => {
-                  return (
-                    <span key={'postItem' + pathIndex}>
-                      {pathIndex === 0 ? pathItem : ' / ' + pathItem}
-                    </span>
-                  );
-                })}
-              </div>
-            );
-          })
-        ) : (
-          <div className="company-choose-info">暂无职位</div>
-        )}
-      </Dialog> */}
+        <CompanyEdit
+          targetUser={targetUser}
+          setTargetUser={setTargetUser}
+          setChangeState={setChangeState}
+          clearState={clearState}
+          rows={rows}
+          setRows={setRows}
+          personIndex={personIndex}
+          setUserVisible={setUserVisible}
+        />
+      </Modal>
     </div>
   );
 };

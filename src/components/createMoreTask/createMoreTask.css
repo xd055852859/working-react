@@ -51,7 +51,7 @@
 }
 .createMoreTask-item:hover .createMoreTask-item-label,
 .createMoreTask-item:hover .createMoreTask-item-name {
-  color: #17b881;
+  color: #1890ff;
 }
 .createMoreTask-item-left {
   width: calc(100% - 35px);

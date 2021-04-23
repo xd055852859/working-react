@@ -29,19 +29,7 @@ const defaultState: TaskType = {
   workingTaskArray: null,
   taskKey: '',
   chooseKey: '',
-  filterObject: {
-    groupKey: null,
-    groupName: '',
-    groupLogo: '',
-    creatorKey: null,
-    creatorAvatar: '',
-    creatorName: '',
-    executorKey: null,
-    executorAvatar: '',
-    executorName: '',
-    filterType: ['过期', '今天', '未来', '已完成'],
-    headerIndex: 0,
-  },
+  filterObject: null,
   taskInfoVisible: false,
   calendarList: null,
   taskActionArray: [],
@@ -134,58 +122,58 @@ export const task = (state = defaultState, action: any) => {
           action.taskInfo && action.taskInfo._key ? action.taskInfo._key : '',
       };
     case actionTypes.EDIT_TASK_SUCCESS:
-      let taskInfo = _.cloneDeep(action.data[0]);
-      let headerIndex = action.data[1];
-      if (headerIndex === 0 && state.selfTaskArray) {
-        state.selfTaskArray = state.selfTaskArray.map(
-          (taskItem: any, taskIndex: number) => {
-            if (taskItem._key === taskInfo.key) {
-              for (let key in taskInfo) {
-                if (key !== '_key') {
-                  taskItem[key] = _.cloneDeep(taskInfo[key]);
-                }
-              }
-            }
-            return taskItem;
-          }
-        );
-      } else if (
-        (headerIndex === 1 || headerIndex === 2) &&
-        state.workingTaskArray
-      ) {
-        state.workingTaskArray = state.workingTaskArray.map(
-          (taskItem: any, taskIndex: number) => {
-            taskItem = taskItem.map((item: any, index: number) => {
-              if (item._key === taskInfo.key) {
-                for (let key in taskInfo) {
-                  if (key !== '_key') {
-                    item[key] = _.cloneDeep(taskInfo[key]);
-                  }
-                }
-              }
-              return item;
-            });
-            return taskItem;
-          }
-        );
-      } else if (headerIndex === 3 && state.taskArray) {
-        state.taskArray = state.taskArray.map(
-          (taskItem: any, taskIndex: number) => {
-            if (taskItem._key === taskInfo.key) {
-              for (let key in taskInfo) {
-                if (key !== '_key') {
-                  taskItem[key] = _.cloneDeep(taskInfo[key]);
-                }
-              }
-            }
+    // let taskInfo = _.cloneDeep(action.data[0]);
+    // let headerIndex = action.data[1];
+    // if (headerIndex === 0 && state.selfTaskArray) {
+    //   state.selfTaskArray = state.selfTaskArray.map(
+    //     (taskItem: any, taskIndex: number) => {
+    //       if (taskItem._key === taskInfo.key) {
+    //         for (let key in taskInfo) {
+    //           if (key !== '_key') {
+    //             taskItem[key] = _.cloneDeep(taskInfo[key]);
+    //           }
+    //         }
+    //       }
+    //       return taskItem;
+    //     }
+    //   );
+    // } else if (
+    //   (headerIndex === 1 || headerIndex === 2) &&
+    //   state.workingTaskArray
+    // ) {
+    //   state.workingTaskArray = state.workingTaskArray.map(
+    //     (taskItem: any, taskIndex: number) => {
+    //       taskItem = taskItem.map((item: any, index: number) => {
+    //         if (item._key === taskInfo.key) {
+    //           for (let key in taskInfo) {
+    //             if (key !== '_key') {
+    //               item[key] = _.cloneDeep(taskInfo[key]);
+    //             }
+    //           }
+    //         }
+    //         return item;
+    //       });
+    //       return taskItem;
+    //     }
+    //   );
+    // } else if (headerIndex === 3 && state.taskArray) {
+    //   state.taskArray = state.taskArray.map(
+    //     (taskItem: any, taskIndex: number) => {
+    //       if (taskItem._key === taskInfo.key) {
+    //         for (let key in taskInfo) {
+    //           if (key !== '_key') {
+    //             taskItem[key] = _.cloneDeep(taskInfo[key]);
+    //           }
+    //         }
+    //       }
 
-            return taskItem;
-          }
-        );
-      }
-      return {
-        ...state,
-      };
+    //       return taskItem;
+    //     }
+    //   );
+    // }
+    // return {
+    //   ...state,
+    // };
     // case actionTypes.ADD_WORKING_TABLE_TASK_SUCCESS:
     //   console.log('新建成功');
     //   return {
@@ -193,7 +181,24 @@ export const task = (state = defaultState, action: any) => {
     //     // taskKey: action.taskKey
     //   };
     case actionTypes.SET_FILTER_OBJECT:
-      let filterObject = _.cloneDeep(state.filterObject);
+      let filterObject: any = {};
+      if (state.filterObject) {
+        filterObject = _.cloneDeep(state.filterObject);
+      } else {
+        filterObject = {
+          groupKey: null,
+          groupName: '',
+          groupLogo: '',
+          creatorKey: null,
+          creatorAvatar: '',
+          creatorName: '',
+          executorKey: null,
+          executorAvatar: '',
+          executorName: '',
+          filterType: ['过期', '今天', '未来', '已完成'],
+          headerIndex: 0,
+        };
+      }
       for (let key in action.filterObj) {
         filterObject[key] = action.filterObj[key];
       }

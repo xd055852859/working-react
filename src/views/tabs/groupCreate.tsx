@@ -24,8 +24,11 @@ import GroupModel from './groupModel';
 import addGroup1Png from '../../assets/img/addGroup1.png';
 import addGroup2Png from '../../assets/img/addGroup2.png';
 import cloneGroupSvg from '../../assets/svg/cloneGroup.svg';
-export interface GroupCreateProps {}
+export interface GroupCreateProps {
+  //onClose: Function;
+}
 const GroupCreate: React.FC<GroupCreateProps> = (props) => {
+  // const { onClose } = props;
   const dispatch = useDispatch();
   // const classes = useStyles();
   const theme = useTypedSelector((state) => state.auth.theme);
@@ -60,14 +63,14 @@ const GroupCreate: React.FC<GroupCreateProps> = (props) => {
       !newGroupObj.groupName ||
       !newGroupObj.groupName.trim()
     ) {
-      dispatch(setMessage(true, '请输入群名', 'error'));
+      dispatch(setMessage(true, '请输入项目名', 'error'));
       setLoading(false);
       return;
     }
     let groupRes: any = await api.group.addGroup(newGroupObj);
     if (groupRes.msg === 'OK') {
       setLoading(false);
-      dispatch(setMessage(true, '创建群成功', 'success'));
+      dispatch(setMessage(true, '创建项目成功', 'success'));
       dispatch(setGroupKey(groupRes.result._key));
       dispatch(getGroupInfo(groupRes.result._key));
       dispatch(setCommonHeaderIndex(3));
@@ -84,7 +87,7 @@ const GroupCreate: React.FC<GroupCreateProps> = (props) => {
   return (
     <React.Fragment>
       <div
-        className="addGroup-container"
+        className="addGroup-container dropDown-box"
         style={addGroupVisible ? { height: '397px' } : {}}
       >
         <div
@@ -148,11 +151,13 @@ const GroupCreate: React.FC<GroupCreateProps> = (props) => {
         visible={addVisible}
         onClose={() => {
           setAddVisible(false);
+          // onClose();
         }}
         onOK={() => {
           addGroup();
+          // onClose();
         }}
-        title={'添加群'}
+        title={'添加项目'}
         dialogStyle={{ width: '750px', height: '700px' }}
       >
         {loading ? <Loading></Loading> : null}
@@ -162,8 +167,9 @@ const GroupCreate: React.FC<GroupCreateProps> = (props) => {
         visible={addModelVisible}
         onClose={() => {
           setAddModelVisible(false);
+          // onClose();
         }}
-        title={'模板创群'}
+        title={'模板创项目'}
         dialogStyle={{ width: '80%', height: '80%' }}
         footer={false}
       >

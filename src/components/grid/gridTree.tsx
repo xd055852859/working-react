@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
+import './gridTree.css';
 import { useDispatch } from 'react-redux';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-import { getGroupMember } from '../../redux/actions/memberActions';
-import './gridTree.css';
-import { editTask,setTaskInfo } from '../../redux/actions/taskActions';
-import { setMessage } from '../../redux/actions/commonActions';
-import Task from '../task/task';
-import NewGridTree from './gridTree';
 import api from '../../services/api';
 import _ from 'lodash';
+
+import { editTask, setTaskInfo } from '../../redux/actions/taskActions';
+
+import Task from '../task/task';
+
 interface GridTreeProps {
   taskItem: any;
   left: number;
@@ -50,8 +50,10 @@ const GridTree: React.FC<GridTreeProps> = (props) => {
       return item !== '';
     });
     newGridTaskItem.dayArr[taskNavIndex] = '';
-    newGridTaskNavDay[taskNavIndex].allTaskNum =
-      newGridTaskNavDay[taskNavIndex].allTaskNum - 1;
+    if (newGridTaskNavDay[taskNavIndex]?.allTaskNum) {
+      newGridTaskNavDay[taskNavIndex].allTaskNum =
+        newGridTaskNavDay[taskNavIndex].allTaskNum - 1;
+    }
     newGridTaskItem.dayArr[index] = newGridTaskItem.hour;
     newGridTaskNavDay[index].allTaskNum =
       newGridTaskNavDay[index].allTaskNum + 1;
@@ -86,11 +88,12 @@ const GridTree: React.FC<GridTreeProps> = (props) => {
         newGridTaskItem[key] = item[key];
       }
     }
+    console.log(newGridTaskItem);
     setGridTaskItem(newGridTaskItem);
   };
   return (
     <React.Fragment>
-      {gridTaskItem? (
+      {gridTaskItem ? (
         <React.Fragment>
           <div
             className="grid-title"

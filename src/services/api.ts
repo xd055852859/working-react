@@ -1,5 +1,6 @@
 import axios from 'axios';
 import moment from 'moment';
+import { message } from 'antd';
 const AUTH_URL = 'https://baokudata.qingtime.cn/sgbh';
 const HOME_URL = 'https://workingdata.qingtime.cn/sgbh';
 // const AUTH_URL = 'http://192.168.0.101:8529/_db/working/my_sgbh';
@@ -12,6 +13,22 @@ const PNG_URL = 'https://timeosdata.qingtime.cn';
 // string | null = localStorage.getItem('auth_token');
 let auth_token: string | null = null;
 // axios.defaults.headers.common['Cache-Control'] = 'no-store'
+// axios.defaults.timeout = 30000;
+// axios.interceptors.response.use(
+//   (response) => {
+//     return response;
+//   },
+//   (error) => {
+//     if (error.message.includes('timeout')) {
+//       // 判断请求异常信息中是否含有超时timeout字符串
+//       // console.log('错误回调', error);
+//       // alert('网络超时,数据获取失败');
+//       message.error('网络超时,数据获取失败', 2);
+//       return Promise.reject(error); // reject这个错误信息
+//     }
+//     return Promise.reject(error);
+//   }
+// );
 const request = {
   get(path: string, params?: object) {
     return new Promise(async function (resolve, reject) {
@@ -132,11 +149,17 @@ const auth = {
       status: status,
     });
   },
-  getMessageList(curPage: number, perPage: number, isReceipt?: number) {
+  getMessageList(
+    curPage: number,
+    perPage: number,
+    filterType: number,
+    isReceipt?: number
+  ) {
     return request.post(HOME_URL + '/card/getNoticeList', {
       token: auth_token,
       curPage: curPage,
       perPage: perPage,
+      filterType: filterType,
       isReceipt: isReceipt,
     });
   },
@@ -314,9 +337,8 @@ const auth = {
     });
   },
   clearMessage() {
-    return request.post(HOME_URL + '/card/deleteNoticeBatch', {
+    return request.post(HOME_URL + '/card/deleteNoticeAll', {
       token: auth_token,
-      type: 2,
     });
   },
   getUrlIcon(linkUrl: string) {
@@ -643,11 +665,17 @@ const task = {
       ...params,
     });
   },
-  getCardCreate(curPage: number, perPage: number, typeArray?: any) {
+  getCardCreate(
+    curPage: number,
+    perPage: number,
+    filterType: number,
+    typeArray?: any
+  ) {
     return request.post(HOME_URL + '/card/getLatelyTaskList', {
       token: auth_token,
       curPage: curPage,
       perPage: perPage,
+      filterType: filterType,
       typeArray: typeArray ? typeArray : [2, 6],
     });
   },
@@ -687,6 +715,7 @@ const task = {
       ...params,
       type: 2,
       rootType: 0,
+      hour: 1,
       taskEndDate:
         moment().hour() > 17
           ? moment().add(1, 'days').endOf('day').valueOf()
@@ -713,6 +742,32 @@ const task = {
       token: auth_token,
       cardKey: cardKey,
       patchData: patchData,
+    });
+  },
+  //最近访问的文件
+  setVisitCardTime(cardKey: string) {
+    return request.post(HOME_URL + '/card/setVisitCardTime', {
+      token: auth_token,
+      cardKey: cardKey,
+    });
+  },
+  //访问文件列表
+  getVisitCardTime(groupKey: string, curPage: number, perPage: number) {
+    return request.post(HOME_URL + '/card/getVisitCardTime', {
+      token: auth_token,
+      groupKey: groupKey,
+      curPage: curPage,
+      perPage: perPage,
+      typeArray: [10, 11, 12, 13, 14],
+    });
+  },
+  getCreateCardTime(groupKey: string, curPage: number, perPage: number) {
+    return request.post(HOME_URL + '/card/getLasestCreateCard', {
+      token: auth_token,
+      groupKey: groupKey,
+      curPage: curPage,
+      perPage: perPage,
+      typeArray: [10, 11, 12, 13, 14],
     });
   },
 };
@@ -862,7 +917,7 @@ const group = {
       ...params,
     });
   },
-  //获取群标签
+  //获取项目标签
   getLabelInfo(groupKey: string) {
     return request.post(HOME_URL + '/group/getLabelInfo ', {
       token: auth_token,
@@ -882,7 +937,7 @@ const group = {
       fatherGroupKey: fatherGroupKey,
     });
   },
-  //设置子群
+  //设置子项目
   setSonGroup(fatherGroupKey: string, sonGroupKey: string) {
     return request.post(HOME_URL + '/group/setSonGroup', {
       token: auth_token,
@@ -903,7 +958,7 @@ const group = {
       groupKey: groupKey,
     });
   },
-  //移除群申请
+  //移除项目申请
   deleteApplyJoinGroup(applyJoinGroupKey: string) {
     return request.post(HOME_URL + '/group/deleteApplyJoinGroup', {
       token: auth_token,
@@ -917,7 +972,7 @@ const group = {
       targetUGKey: targetUGKey,
     });
   },
-  //获取创群模板
+  //获取创项目模板
   getTemplateTypeList() {
     return request.post(HOME_URL + '/group/getTemplateTypeList', {
       token: auth_token,
@@ -957,6 +1012,7 @@ const group = {
   changeAddMessage(
     targetUKey: string,
     groupKey: string,
+    noticeKey: string,
     agreeOrReject: number,
     applyKey: string | number
   ) {
@@ -964,6 +1020,7 @@ const group = {
       token: auth_token,
       targetUKey: targetUKey,
       groupKey: groupKey,
+      noticeKey: noticeKey,
       agreeOrReject: agreeOrReject,
       applyKey: applyKey,
     });
@@ -975,13 +1032,13 @@ const group = {
       newGroupName: newGroupName,
     });
   },
-  //企业群列表
+  //企业项目列表
   getUserEnterpriseGroupList() {
     return request.post(HOME_URL + '/group/getUserEnterpriseGroupList', {
       token: auth_token,
     });
   },
-  //更换群主
+  //更换项目管理
   groupOwnerChange(groupKey: string, targetUKey: string) {
     return request.patch(HOME_URL + '/group/groupOwnerChange', {
       token: auth_token,
@@ -1085,11 +1142,10 @@ const company = {
       targetUKey: targetUKey,
     });
   },
-  getOrganizationTree(enterpriseGroupKey: string, type: number) {
+  getOrganizationTree(params: any) {
     return request.post(HOME_URL + '/organization/getOrganizationTree', {
       token: auth_token,
-      enterpriseGroupKey: enterpriseGroupKey,
-      type: type,
+      ...params,
     });
   },
   addSonOrganization(
@@ -1169,7 +1225,7 @@ const company = {
       }
     );
   },
-  //修改群成员属性
+  //修改项目成员属性
   updatePerson(params: any) {
     return request.post(HOME_URL + '/organization/updateRosterUserInfo', {
       token: auth_token,
@@ -1201,6 +1257,66 @@ const company = {
       batchNumber: batchNumber,
     });
   },
+  //企业首页数据
+  getEnterpriseGroupData(enterpriseGroupKey: string) {
+    return request.post(
+      HOME_URL + '/organization/getEnterpriseGroupHomePageNew',
+      {
+        token: auth_token,
+        enterpriseGroupKey: enterpriseGroupKey,
+      }
+    );
+  },
+  getEnterpriseGroupList(
+    enterpriseGroupKey: string,
+    isCare: number,
+    curPage: number,
+    perPage: number
+  ) {
+    return request.post(
+      HOME_URL + '/organization/getEnterpriseGroupGroupRankingList',
+      {
+        token: auth_token,
+        enterpriseGroupKey: enterpriseGroupKey,
+        isCare: isCare,
+        curPage: curPage,
+        perPage: perPage,
+      }
+    );
+  },
+  getEnterpriseMemberList(
+    enterpriseGroupKey: string,
+    isCare: number,
+    curPage: number,
+    perPage: number
+  ) {
+    return request.post(
+      HOME_URL + '/organization/getEnterpriseGroupUserRankingList',
+      {
+        token: auth_token,
+        enterpriseGroupKey: enterpriseGroupKey,
+        isCare: isCare,
+        curPage: curPage,
+        perPage: perPage,
+      }
+    );
+  },
+};
+const thirdApi = {
+  getThirdRandomPng() {
+    return request.get('https://api.unsplash.com/photos/random?=&count=30', {
+      client_id: 'PWr2enHljv71dG8XrmNwVorgtYkPfe89j5OXywvx7sc',
+      count: 30,
+    });
+  },
+  searchThirdPng(query: string) {
+    return request.post('https://api.unsplash.com/search/photos', {
+      client_id: 'PWr2enHljv71dG8XrmNwVorgtYkPfe89j5OXywvx7sc',
+      query: query,
+      page: 1,
+      per_page: 500,
+    });
+  },
 };
 export default {
   common,
@@ -1209,6 +1325,7 @@ export default {
   member,
   group,
   company,
+  thirdApi,
   ROCKET_CHAT_URL,
   SOCKET_URL,
 };

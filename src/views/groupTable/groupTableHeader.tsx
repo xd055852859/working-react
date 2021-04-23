@@ -1,15 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { Checkbox, Chip, Avatar, Button, Tooltip } from '@material-ui/core';
+import React, { useState, useEffect, useRef } from 'react';
+import '../workingTable/workingTableHeader.css';
+import './groupTableHeader.css';
+import { Button, Tooltip, Checkbox, Dropdown, Modal, Menu } from 'antd';
+const { SubMenu } = Menu;
+import { CloseOutlined } from '@ant-design/icons';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
+import _ from 'lodash';
+import copy from 'copy-to-clipboard';
+import api from '../../services/api';
+
 import { setHeaderIndex } from '../../redux/actions/memberActions';
 import {
   setCommonHeaderIndex,
   setMessage,
   setMoveState,
-  setChatState,
 } from '../../redux/actions/commonActions';
-import { setTheme } from '../../redux/actions/authActions';
 import { setFilterObject, getGroupTask } from '../../redux/actions/taskActions';
 import {
   changeGroupInfo,
@@ -18,38 +24,20 @@ import {
   getGroupInfo,
 } from '../../redux/actions/groupActions';
 import { getGroupMember } from '../../redux/actions/memberActions';
-import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
-import _ from 'lodash';
-import copy from 'copy-to-clipboard';
-import moment from 'moment';
-import '../workingTable/workingTableHeader.css';
+
+import ClickOutSide from '../../components/common/clickOutside';
 import DropMenu from '../../components/common/dropMenu';
-import Dialog from '../../components/common/dialog';
-// import Tooltip from '../../components/common/tooltip';
 import GroupSet from '../tabs/groupSet';
 import GroupMember from '../tabs/groupMember';
 import SonGroup from '../tabs/sonGroup';
-import Vitality from '../../components/vitality/vitality';
-import api from '../../services/api';
+
 import HeaderFilter from '../../components/headerFilter/headerFilter';
-import VitalityIcon from '../../components/vitalityIcon/vitalityIcon';
-import checkPersonPng from '../../assets/img/checkPerson.png';
 import Contact from '../../views/contact/contact';
-import boardPng from '../../assets/img/board.png';
-import labelPng from '../../assets/img/label.png';
-import labelbPng from '../../assets/img/labelb.png';
-import calendarPng from '../../assets/img/calendar.png';
-import calendarbPng from '../../assets/img/calendarb.png';
-import gridTimePng from '../../assets/img/gridTime.png';
-import gridPersonPng from '../../assets/img/gridPerson.png';
-import gridTimebPng from '../../assets/img/gridTimeb.png';
-import gridPersonbPng from '../../assets/img/gridPersonb.png';
-import treePng from '../../assets/img/tree.png';
-import treebPng from '../../assets/img/treeb.png';
+import labelbSvg from '../../assets/svg/labelb.svg';
+import gridTimebSvg from '../../assets/svg/gridTimeb.svg';
+import gridPersonbSvg from '../../assets/svg/gridPersonb.svg';
 import filterPng from '../../assets/img/filter.png';
-import chatPng from '../../assets/img/chat.png';
 import infoPng from '../../assets/img/info.png';
-import filePng from '../../assets/img/file.png';
 import groupSet1Png from '../../assets/img/groupSet1.png';
 import groupSet2Png from '../../assets/img/groupSet2.png';
 import groupSet3Png from '../../assets/img/groupSet3.png';
@@ -73,43 +61,16 @@ import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import downArrowPng from '../../assets/img/downArrow.png';
 import logoutPng from '../../assets/img/logout.png';
-import './groupTableHeader.css';
-import sonGroup from '../tabs/sonGroup';
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    chip: {
-      backgroundColor: 'rgba(255,255,255,0.24)',
-      color: '#fff',
-      marginRight: '10px',
-      padding: ' 0px 5px',
-      height: '26px !important',
-    },
-    small1: {
-      width: '16px !important',
-      height: '16px !important',
-      marginRight: '0px !important',
-    },
-    small2: {
-      width: '20px !important',
-      height: '16px !important',
-      marginRight: '0px !important',
-    },
-  })
-);
+import Code from '../../components/qrCode/qrCode';
+
 const GroupTableHeader: React.FC = (prop) => {
-  const classes = useStyles();
   const memberHeaderIndex = useTypedSelector(
     (state) => state.member.memberHeaderIndex
   );
-  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const user = useTypedSelector((state) => state.auth.user);
   const filterObject = useTypedSelector((state) => state.task.filterObject);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
-  const labelArray = useTypedSelector((state) => state.task.labelArray);
-  const taskArray = useTypedSelector((state) => state.task.taskArray);
   const groupRole = useTypedSelector((state) => state.group.groupRole);
-  const groupMemberArray = useTypedSelector(
-    (state) => state.member.groupMemberArray
-  );
   const groupMemberItem = useTypedSelector(
     (state) => state.member.groupMemberItem
   );
@@ -117,51 +78,27 @@ const GroupTableHeader: React.FC = (prop) => {
   const theme = useTypedSelector((state) => state.auth.theme);
   const moveState = useTypedSelector((state) => state.common.moveState);
   const dispatch = useDispatch();
-  const viewArray: string[] = ['项目', '时间表', '执行表', '日历'];
-  //
-  const viewImg: string[] = [
-    labelPng,
-    gridTimePng,
-    gridPersonPng,
-    calendarPng,
-    treePng,
-  ];
-  const viewImgb: string[] = [
-    labelbPng,
-    gridTimebPng,
-    gridPersonbPng,
-    calendarbPng,
-    treebPng,
-  ];
+  const viewArray: string[] = ['分频道看板', '时间计划表', '任务分配表'];
+
+  const viewImgb: string[] = [labelbSvg, gridTimebSvg, gridPersonbSvg];
   const tabImg: string[] = [
     tab0Svg,
+    tab5Svg,
     tab1Svg,
     tab2Svg,
-    tab3Svg,
     tab4Svg,
-    tab5Svg,
     tab6Svg,
   ];
   const tabbImg: string[] = [
     tabb0Svg,
+    tabb5Svg,
     tabb1Svg,
     tabb2Svg,
-    tabb3Svg,
     tabb4Svg,
-    tabb5Svg,
     tabb6Svg,
   ];
-  const checkedTitle = [
-    '过期',
-    '今天',
-    '已完成',
-    '未来',
-    '重要',
-    '一般卡片',
-    '已归档',
-    // '树任务',
-  ];
-  const tabArray = ['任务', '日报', '排行榜', '文档', '活力', '知识树', '日程'];
+  const checkedTitle = ['过期', '今天', '未来', '已完成', '已归档'];
+  const tabArray = ['任务', '超级树', '日报', '排行榜', '活力', '日程'];
   const [viewVisible, setViewVisible] = useState(false);
   const [tabVisible, setTabVisible] = useState(false);
   const [filterVisible, setFilterVisible] = useState(false);
@@ -169,11 +106,9 @@ const GroupTableHeader: React.FC = (prop) => {
   const [infoVisible, setInfoVisible] = useState(false);
   const [groupSetVisible, setGroupSetVisible] = useState(false);
   const [tabIndex, setTabIndex] = useState(0);
-  const [vitalityVisible, setVitalityVisible] = useState(false);
-
-  const [sonGroupVisible, setSonGroupVisible] = useState(false);
   const [joinCount, setJoinCount] = useState(0);
   const [dismissVisible, setDismissVisible] = useState(false);
+  const [shareVisible, setShareVisible] = useState(false);
   const [groupMember, setGroupMember] = useState<any>([]);
   const [groupObj, setGroupObj] = React.useState<any>(null);
   const [groupTabIndex, setGroupTabIndex] = React.useState(0);
@@ -184,42 +119,34 @@ const GroupTableHeader: React.FC = (prop) => {
     false,
     false,
     false,
-    false,
-    false,
   ]);
   const [outGroupVisible, setOutGroupVisible] = useState(false);
   const [fileState, setFileState] = useState(true);
   const [fileInput, setFileInput] = useState('7');
   const [infoChangeState, setInfoChangeState] = useState(false);
-
+  const groupTableRef: React.RefObject<any> = useRef();
   const chooseMemberHeader = async (headIndex: number) => {
     dispatch(setHeaderIndex(headIndex));
     setViewVisible(false);
     let newFilterObject: any = _.cloneDeep(filterObject);
     newFilterObject.headerIndex = headIndex;
-    // await api.member.setConfig(groupMemberItem._key, newFilterObject);
     dispatch(setFilterObject(newFilterObject));
   };
   useEffect(() => {
     if (groupMemberItem) {
       dispatch(setFilterObject(groupMemberItem.config));
-      // if (!groupMemberItem.config.headerIndex) {
-      //   groupMemberItem.config.headerIndex = 0;
-      // }
-      // dispatch(setHeaderIndex(groupMemberItem.config.headerIndex));
-      // dispatch(setHeaderIndex(0));
     }
   }, [groupMemberItem]);
   useEffect(() => {
     if (groupInfo && infoChangeState) {
       dispatch(getGroup(3));
       setInfoChangeState(false);
-      dispatch(setMessage(true, '修改群属性成功', 'success'));
+      // dispatch(setMessage(true, '修改项目属性成功', 'success'));
     }
   }, [groupInfo]);
 
   useEffect(() => {
-    let index = memberHeaderIndex === 0 ? 0 : memberHeaderIndex - 6;
+    let index = memberHeaderIndex < 3 ? 0 : memberHeaderIndex - 2;
     setTabIndex(index);
   }, [memberHeaderIndex]);
   useEffect(() => {
@@ -248,6 +175,7 @@ const GroupTableHeader: React.FC = (prop) => {
       newFilterObject.filterType.splice(fikterIndex, 1);
     }
     await api.member.setConfig(groupMemberItem._key, newFilterObject);
+    dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
     dispatch(setFilterObject({ filterType: newFilterObject.filterType }));
   };
   const saveGroupSet = (obj: any) => {
@@ -259,7 +187,7 @@ const GroupTableHeader: React.FC = (prop) => {
         setInfoChangeState(true);
         dispatch(changeGroupInfo(groupKey, groupObj));
       } else {
-        dispatch(setMessage(false, '权限不够,无法修改群属性', 'success'));
+        dispatch(setMessage(false, '权限不够,无法修改项目属性', 'success'));
       }
     }
   };
@@ -270,10 +198,6 @@ const GroupTableHeader: React.FC = (prop) => {
     if (groupMember.length > 0) {
       let newGroupMember: any = [];
       groupMember.forEach((groupMemberItem: any) => {
-        // let newGroupIndex = _.findIndex(groupMemberArray, {
-        //   userId: groupMemberItem.userId,
-        // });
-        // if (newGroupIndex === -1) {
         newGroupMember.push({
           userKey: groupMemberItem.userId,
           nickName: groupMemberItem.nickName,
@@ -287,12 +211,9 @@ const GroupTableHeader: React.FC = (prop) => {
         groupKey,
         newGroupMember
       );
-      // api.group.addAllGroupMember(groupKey, newGroupMember);
-      // dispatch(setMessage(true, '修改群成员成功', 'success'));
-
       if (addRes.msg === 'OK') {
         dispatch(getGroupMember(groupKey));
-        dispatch(setMessage(true, '修改群成员成功', 'success'));
+        // dispatch(setMessage(true, '修改项目成员成功', 'success'));
       } else {
         dispatch(setMessage(true, addRes.msg, 'error'));
       }
@@ -316,6 +237,7 @@ const GroupTableHeader: React.FC = (prop) => {
         newFilterObject.executorAvatar = '';
         newFilterObject.executorName = '';
     }
+    console.log(newFilterObject);
     await api.member.setConfig(groupMemberItem._key, newFilterObject);
     dispatch(setFilterObject(newFilterObject));
   };
@@ -323,7 +245,7 @@ const GroupTableHeader: React.FC = (prop) => {
   const dismissGroup = async () => {
     let groupRes: any = await api.group.dismissGroup(groupKey);
     if (groupRes.msg === 'OK') {
-      dispatch(setMessage(true, '解散群组成功', 'success'));
+      dispatch(setMessage(true, '解散项目成功', 'success'));
       dispatch(getGroup(3));
       dispatch(setCommonHeaderIndex(1));
       if (!theme.moveState) {
@@ -333,74 +255,9 @@ const GroupTableHeader: React.FC = (prop) => {
       dispatch(setMessage(true, groupRes.msg, 'error'));
     }
   };
-  const goChat = () => {
-    const dom: any = document.querySelector('iframe');
-    dom.contentWindow.postMessage(
-      {
-        externalCommand: 'go',
-        path: '/channel/' + groupInfo.groupUUID,
-      },
-      '*'
-    );
-    dispatch(setChatState(true));
-  };
-  const shareGroup = () => {
-    const redirect = `${window.location.protocol}//${window.location.host}`;
-    copy(redirect + '/home/basic?groupKey=' + groupKey);
-    dispatch(setMessage(true, '复制链接群成功', 'success'));
-  };
-  const addTemplate = async () => {
-    let patchData = {
-      type: '用户模板',
-      name: groupInfo.groupName,
-      description: groupInfo.groupDesc,
-      templateUrl: '',
-      modelUrl: groupInfo.modelUrl
-        ? groupInfo.modelUrl
-        : theme.backgroundImg
-          ? theme.backgroundImg
-          : '',
-      templateJson: [
-        // {
-        //   name: '测试频道1',
-        //   children: [{ name: '测试任务11' }, { name: '测试任务12' }],
-        // },
-        // {
-        //   name: '测试频道2',
-        //   children: [{ name: '测试任务21' }, { name: '测试任务22' }],
-        // },
-      ],
-    };
-    let templateJson: any = [{ name: 'ToDo', children: [] }];
-    labelArray.forEach((labelItem: any, labelIndex: number) => {
-      if (labelItem.cardLabelName) {
-        templateJson[labelIndex] = {
-          name: labelItem.cardLabelName,
-          children: [],
-        };
-      }
-      taskArray.forEach((taskItem: any, taskIndex: number) => {
-        if (
-          taskItem.taskEndDate >= moment().startOf('day').valueOf() &&
-          taskItem.taskEndDate <= moment().endOf('day').valueOf()
-        ) {
-          if (taskItem.labelKey) {
-            if (taskItem.labelKey === labelItem._key) {
-              templateJson[labelIndex].children.push({ name: taskItem.title });
-            }
-          } else {
-            templateJson[labelIndex].children.push({ name: taskItem.title });
-          }
-        }
-      });
-    });
-    patchData.templateJson = templateJson;
-    let templateRes: any = await api.group.addTemplate(patchData);
-    if (templateRes.msg === 'OK') {
-      dispatch(setMessage(true, '模板生成成功,请等待审核', 'success'));
-    } else {
-      dispatch(setMessage(true, templateRes.msg, 'error'));
-    }
+  const shareGroup = (url: string) => {
+    copy(url);
+    dispatch(setMessage(true, '复制分享链接成功', 'success'));
   };
   const outGroup = async () => {
     let memberRes: any = await api.group.outGroup(groupKey);
@@ -426,8 +283,6 @@ const GroupTableHeader: React.FC = (prop) => {
       newFilterObject
     );
     if (res.msg === 'OK') {
-      console.log('设置成功');
-      // dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
       setFileState(true);
       dispatch(setFilterObject(newFilterObject));
     } else {
@@ -440,7 +295,7 @@ const GroupTableHeader: React.FC = (prop) => {
       groupInfo.groupName + '_副本'
     );
     if (cloneRes.msg === 'OK') {
-      dispatch(setMessage(true, '克隆群成功', 'success'));
+      dispatch(setMessage(true, '克隆项目成功', 'success'));
       dispatch(setGroupKey(cloneRes.result));
       dispatch(getGroupInfo(cloneRes.result));
       dispatch(setCommonHeaderIndex(3));
@@ -453,23 +308,233 @@ const GroupTableHeader: React.FC = (prop) => {
       dispatch(setMessage(true, cloneRes.msg, 'error'));
     }
   };
+  const menu = (
+    <div className="dropDown-box" style={{ padding: '5px' }}>
+      <Menu>
+        {tabArray.map((tabItem: any, index: number) => {
+          return (
+            <React.Fragment key={'tabTable' + index}>
+              {index === 0 ? (
+                <SubMenu
+                  className="viewTableHeader-tab"
+                  title={
+                    <div
+                      onClick={() => {
+                        chooseMemberHeader(0);
+                        setTabIndex(0);
+                      }}
+                    >
+                      {tabItem}
+                    </div>
+                  }
+                  icon={
+                    <img
+                      src={tabbImg[index]}
+                      alt=""
+                      className="viewTableHeader-tab-logo"
+                    />
+                  }
+                >
+                  {viewArray.map((viewItem: any, viewIndex: number) => {
+                    return (
+                      <Menu.Item
+                        key={'viewTable' + viewIndex}
+                        className="viewTableHeader-tab"
+                        onClick={() => {
+                          chooseMemberHeader(viewIndex);
+                          setTabIndex(0);
+                        }}
+                      >
+                        <img
+                          src={viewImgb[viewIndex]}
+                          alt=""
+                          className="viewTableHeader-tab-logo"
+                        />
+                        {viewItem}
+                      </Menu.Item>
+                    );
+                  })}
+                </SubMenu>
+              ) : (
+                <Menu.Item
+                  className="viewTableHeader-tab"
+                  onClick={() => {
+                    chooseMemberHeader(index + 2);
+                    setTabIndex(index);
+                    console.log(index + 2);
+                  }}
+                >
+                  <img
+                    src={tabbImg[index]}
+                    alt=""
+                    className="viewTableHeader-tab-logo"
+                  />
+                  {tabItem}
+                </Menu.Item>
+              )}
+            </React.Fragment>
+          );
+        })}
+      </Menu>
+    </div>
+  );
+  const setMenu = (
+    <div className="dropDown-box">
+      <div className="groupTableHeader-info-container">
+        <div
+          className="groupTableHeader-info-item"
+          onClick={() => {
+            setGroupSetVisible(true);
+            setGroupTabIndex(0);
+          }}
+        >
+          <img
+            src={groupSet1Png}
+            alt=""
+            style={{ width: '18px', height: '18px' }}
+          />
+          项目属性
+        </div>
+        <div
+          className="groupTableHeader-info-item"
+          onClick={() => {
+            setGroupSetVisible(true);
+            setGroupTabIndex(1);
+          }}
+        >
+          <img
+            src={groupSet5Png}
+            alt=""
+            style={{ width: '22px', height: '20px' }}
+          />
+          项目成员
+          {groupInfo && joinCount > 0 ? (
+            <div
+              className="group-member-title-num"
+              style={
+                joinCount > 10
+                  ? { borderRadius: '12px', padding: '0px 3px' }
+                  : { borderRadius: '50%', width: '20px' }
+              }
+            >
+              {joinCount}
+            </div>
+          ) : null}
+        </div>
+        <div
+          className="groupTableHeader-info-item"
+          onClick={() => {
+            setShareVisible(true);
+          }}
+        >
+          <img
+            src={groupSet2Png}
+            alt=""
+            style={{ width: '20px', height: '19px' }}
+          />
+          分享项目
+        </div>
+        {groupInfo && groupInfo.role == 1 ? (
+          <div
+            className="groupTableHeader-info-item"
+            onClick={() => {
+              setDismissVisible(true);
+            }}
+          >
+            <img
+              src={groupSet4Png}
+              alt=""
+              style={{ width: '20px', height: '18px' }}
+            />
+            解散项目
+          </div>
+        ) : null}
+        <div
+          className="groupTableHeader-info-item"
+          onClick={() => {
+            setCloneGroupVisible(true);
+          }}
+        >
+          <img
+            src={groupSet3Png}
+            alt=""
+            style={{ width: '17px', height: '17px' }}
+          />
+          克隆项目
+        </div>
+      </div>
+    </div>
+  );
+  const filterMenu = (
+    <ClickOutSide
+      onClickOutside={() => {
+        setFilterVisible(false);
+      }}
+    >
+      <div className="dropDown-box">
+        <HeaderFilter />
+        <div className="filter-info">
+          <div className="filter-title">状态 :</div>
+          <div className="filter-menu">
+            {checkedTitle.map((item: any, index: number) => {
+              return (
+                <div key={'filter' + item} className="filter-menu-item">
+                  <Checkbox
+                    checked={!!filterCheckedArray[index]}
+                    onChange={() => {
+                      changeFilterCheck(item);
+                    }}
+                  >
+                    {item}
+                  </Checkbox>
+                  {item == '已归档' ? (
+                    <React.Fragment>
+                      {fileState ? (
+                        <span
+                          onClick={() => {
+                            setFileState(false);
+                          }}
+                          style={{
+                            marginLeft: '8px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          ( 近{fileInput}天 )
+                        </span>
+                      ) : (
+                        <span style={{ marginLeft: '8px' }}>
+                          ( 近
+                          <input
+                            type="number"
+                            value={fileInput}
+                            onChange={(e) => {
+                              setFileInput(e.target.value);
+                            }}
+                            onBlur={(e) => {
+                              changeFileDay(parseInt(e.target.value));
+                            }}
+                            className="fileday"
+                          />
+                          天 )
+                        </span>
+                      )}
+                    </React.Fragment>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </ClickOutSide>
+  );
   return (
     <React.Fragment>
       <div
         className="workingTableHeader groupTableHeader"
         style={{ left: moveState === 'in' ? '0px' : '320px' }}
+        ref={groupTableRef}
       >
-        <div
-          className="workingTableHeader-logo"
-          style={{ width: '35px' }}
-          onClick={() => {
-            dispatch(setMoveState(''));
-            dispatch(setCommonHeaderIndex(1));
-          }}
-        >
-          <img src={boardPng} alt="" />
-        </div>
-        <div className="workingTableHeader-line">|</div>
         <div
           className="groupTableHeader-name"
           onClick={() => {
@@ -480,8 +545,7 @@ const GroupTableHeader: React.FC = (prop) => {
             <img
               src={
                 groupInfo && groupInfo.groupLogo
-                  ? groupInfo.groupLogo +
-                  '?imageMogr2/auto-orient/thumbnail/80x'
+                  ? groupInfo.groupLogo
                   : defaultGroupPng
               }
               alt=""
@@ -499,7 +563,7 @@ const GroupTableHeader: React.FC = (prop) => {
             visible={groupVisible}
             dropStyle={{
               width: '300px',
-              height: '500px',
+              height: document.body.offsetHeight - 80,
               top: '55px',
               left: '0px',
               color: '#333',
@@ -513,188 +577,41 @@ const GroupTableHeader: React.FC = (prop) => {
             <Contact contactIndex={0} contactType={'header'} />
           </DropMenu>
         </div>
-        {/* <div
-        className="groupTableHeader-vitalityNum"
-        onClick={() => {
-          setVitalityVisible(true);
-        }}
-      >
-        <div style={{ width: '50px', flexShrink: 0 }}>活力值</div>
-        <VitalityIcon
-          vitalityNum={groupInfo && groupInfo.energyValueTotal}
-          vitalityDirection={'vertical'}
-          vitalityStyle={{ marginLeft: '5px', color: '#fff' }}
-        />
-      </div> */}
 
         <div className="groupTableHeader-info">
-          <Tooltip title="群属性">
-            <img
-              src={infoPng}
-              alt=""
-              style={{ width: '18px', height: '18px' }}
-              onClick={() => {
-                setFilterVisible(false);
-                setTabVisible(false);
-                setViewVisible(false);
-                setInfoVisible(true);
-              }}
-              onMouseEnter={() => {
-                setFilterVisible(false);
-                setTabVisible(false);
-                setViewVisible(false);
-                setInfoVisible(true);
-              }}
-            />
-          </Tooltip>
-          <DropMenu
-            visible={infoVisible}
-            dropStyle={{
-              width: '264px',
-              top: '45px',
-              left: '-15px',
-              color: '#333',
-              overflow: 'visible',
-            }}
-            onClose={() => {
-              setInfoVisible(false);
-            }}
-          // title={'视图切换'}
+          <Tooltip
+            title="项目属性"
+            getPopupContainer={() => groupTableRef.current}
           >
-            <div className="groupTableHeader-info-container">
-              <div
-                className="groupTableHeader-info-item"
-                onClick={() => {
-                  setGroupSetVisible(true);
-                  setGroupTabIndex(0);
-                }}
-              >
-                <img
-                  src={groupSet1Png}
-                  alt=""
-                  style={{ width: '18px', height: '18px' }}
-                />
-                项目属性
-              </div>
-              <div
-                className="groupTableHeader-info-item"
-                onClick={() => {
-                  setGroupSetVisible(true);
-                  setGroupTabIndex(1);
-                }}
-              >
-                <img
-                  src={groupSet5Png}
-                  alt=""
-                  style={{ width: '22px', height: '20px' }}
-                />
-                群成员
-                {groupInfo && joinCount > 0 ? (
-                  <div
-                    className="group-member-title-num"
-                    style={
-                      joinCount > 10
-                        ? { borderRadius: '12px', padding: '0px 3px' }
-                        : { borderRadius: '50%', width: '20px' }
-                    }
-                  >
-                    {joinCount}
-                  </div>
-                ) : null}
-              </div>
-              {/* <div
-                className="groupTableHeader-info-item"
-                onClick={() => {
-                  setSonGroupVisible(true);
-                }}
-              >
-                <img />
-                子群列表
-              </div> */}
-              <div
-                className="groupTableHeader-info-item"
-                onClick={() => {
-                  shareGroup();
-                }}
-              >
-                <img
-                  src={groupSet2Png}
-                  alt=""
-                  style={{ width: '20px', height: '19px' }}
-                />
-                分享群组
-              </div>
-              {groupInfo && groupInfo.role == 1 ? (
-                <div
-                  className="groupTableHeader-info-item"
-                  onClick={() => {
-                    setDismissVisible(true);
-                  }}
-                >
-                  <img
-                    src={groupSet4Png}
-                    alt=""
-                    style={{ width: '20px', height: '18px' }}
-                  />
-                  解散群组
-                </div>
-              ) : null}
-              {/* {groupInfo && groupInfo.role == 1 ? ( */}
-              {/* <div
-                  className="groupTableHeader-info-item"
-                  onClick={() => {
-                    addTemplate();
-                  }}
-                >
-                  <img
-                    src={groupSet3Png}
-                    alt=""
-                    style={{ width: '17px', height: '17px' }}
-                  />
-                  设为模板
-                </div> */}
-              <div
-                className="groupTableHeader-info-item"
-                onClick={() => {
-                  setCloneGroupVisible(true);
-                }}
-              >
-                <img
-                  src={groupSet3Png}
-                  alt=""
-                  style={{ width: '17px', height: '17px' }}
-                />
-                克隆群
-              </div>
-              {/* ) : null} */}
-            </div>
-          </DropMenu>
-        </div>
-
-        {tabIndex !== 5 ? (
-          <div className="groupTableHeader-info">
-            <Tooltip title="知识树">
+            <Dropdown
+              overlay={setMenu}
+              trigger={['click']}
+              getPopupContainer={() => groupTableRef.current}
+            >
               <img
-                src={tabImg[5]}
+                src={infoPng}
                 alt=""
-                style={{
-                  width: '18px',
-                  height: '18px',
-                  marginRight: '7px',
-                  cursor: 'pointer',
-                }}
+                style={{ width: '18px', height: '18px' }}
                 onClick={() => {
-                  chooseMemberHeader(11);
-                  setTabIndex(5);
+                  setFilterVisible(false);
+                  setTabVisible(false);
+                  setViewVisible(false);
+                  setInfoVisible(true);
                 }}
               />
-            </Tooltip>
-          </div>
-        ) : null}
+            </Dropdown>
+          </Tooltip>
+        </div>
+
         <div className="view-container">
-          {memberHeaderIndex === 0 || memberHeaderIndex > 5 ? (
+          <Dropdown
+            overlay={menu}
+            trigger={['click']}
+            getPopupContainer={() => groupTableRef.current}
+          >
             <div
               // style={{ width: '85px' }}
+              className="workingTableHeader-tag"
               onMouseEnter={() => {
                 setTabVisible(true);
                 setViewVisible(false);
@@ -708,373 +625,159 @@ const GroupTableHeader: React.FC = (prop) => {
                 setInfoVisible(false);
               }}
             >
-              {/* <img src={tabImg[tabIndex]} alt=""></img> */}
-              <Chip
-                size="small"
-                label={tabArray[tabIndex]}
-                className={classes.chip}
-                avatar={
-                  <Avatar
-                    alt="Natacha"
-                    variant="square"
-                    src={tabImg[tabIndex]}
-                    className={classes.small1}
-                  />
-                }
+              <img
+                src={tabImg[tabIndex]}
+                alt=""
+                style={{ width: '20px', height: '16px' }}
               />
-              <DropMenu
-                visible={tabVisible}
-                dropStyle={{
-                  width: '180px',
-                  top: '60px',
-                  left: '0px',
-                  color: '#333',
-                }}
-                onClose={() => {
-                  setTabVisible(false);
-                }}
-                closeType={1}
-              >
-                {tabArray.map((tabItem: any, index: number) => {
-                  return (
-                    <div
-                      className="viewTableHeader-logo  viewTableHeader-tab"
-                      onClick={() => {
-                        chooseMemberHeader(index === 0 ? 0 : index + 6);
-                        setTabIndex(index);
-                      }}
-                      key={'tabTable' + index}
-                      style={{
-                        backgroundColor: tabIndex === index ? '#f0f0f0' : '',
-                      }}
-                    >
-                      <div className="viewTableHeader-tab">
-                        <img src={tabbImg[index]} alt=""></img>
-                        {tabItem}
-                      </div>
-                      {tabIndex === index ? (
-                        <img
-                          src={checkPersonPng}
-                          alt=""
-                          style={{
-                            width: '20px',
-                            height: '12px',
-                          }}
-                        ></img>
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </DropMenu>
+              {tabArray[tabIndex]}
             </div>
-          ) : null}
-          {memberHeaderIndex < 5 ? (
-            <React.Fragment>
-              <div
-                // style={{ width: '85px' }}
-                onMouseEnter={() => {
-                  setViewVisible(true);
-                  setTabVisible(false);
-                  setFilterVisible(false);
-                  setInfoVisible(false);
-                }}
-                onClick={() => {
-                  setViewVisible(true);
-                  setTabVisible(false);
-                  setFilterVisible(false);
-                  setInfoVisible(false);
-                }}
-              >
-                {/* <img src={viewImg[memberHeaderIndex]} alt=""></img> */}
-                <Chip
-                  size="small"
-                  label={viewArray[memberHeaderIndex]}
-                  className={classes.chip}
-                  avatar={
-                    <Avatar
-                      alt="Natacha"
-                      variant="square"
-                      src={viewImg[memberHeaderIndex]}
-                      className={classes.small2}
-                    />
-                  }
-                />
-                <DropMenu
-                  visible={viewVisible}
-                  dropStyle={{
-                    width: '180px',
-                    top: '60px',
-                    left: memberHeaderIndex < 7 ? '70px' : '0px',
-                    color: '#333',
+          </Dropdown>
+
+          <React.Fragment>
+            {memberHeaderIndex < 2 ? (
+              <React.Fragment>
+                <Dropdown
+                  overlay={filterMenu}
+                  onVisibleChange={() => {
+                    setFilterVisible(true);
                   }}
-                  onClose={() => {
-                    setViewVisible(false);
-                  }}
-                  title={'视图切换'}
+                  visible={filterVisible}
+                  overlayStyle={{ width: '350px' }}
+                  trigger={['click']}
+                  getPopupContainer={() => groupTableRef.current}
                 >
-                  {viewArray.map((viewItem, viewIndex) => {
-                    return (
-                      <div
-                        className="viewTableHeader-logo"
-                        onClick={() => {
-                          chooseMemberHeader(viewIndex);
-                        }}
-                        key={'viewTable' + viewIndex}
-                      >
-                        <img src={viewImgb[viewIndex]} alt=""></img>
-                        {viewItem}
-                      </div>
-                    );
-                  })}
-                </DropMenu>
-              </div>
-              {memberHeaderIndex == 0 ? (
-                <React.Fragment>
-                  {filterObject?.filterType.length > 0 ? (
-                    <Chip
-                      size="small"
-                      label={filterObject.filterType.join(' / ')}
-                      className={classes.chip}
-                      onClick={() => {
-                        setFilterVisible(true);
-                      }}
-                      avatar={
-                        <Avatar
-                          alt="Natacha"
-                          variant="square"
-                          src={filterPng}
-                          className={classes.small1}
-                          onClick={() => {
-                            setFilterVisible(true);
-                            setTabVisible(false);
-                            setViewVisible(false);
-                            setInfoVisible(false);
-                          }}
-                          onMouseEnter={() => {
-                            setFilterVisible(true);
-                            setTabVisible(false);
-                            setViewVisible(false);
-                            setInfoVisible(false);
-                          }}
-                        />
-                      }
+                  <div
+                    className="workingTableHeader-tag"
+                    onClick={() => {
+                      setFilterVisible(true);
+                      setTabVisible(false);
+                      setViewVisible(false);
+                      setInfoVisible(false);
+                    }}
+                    onMouseEnter={() => {
+                      setFilterVisible(true);
+                      setTabVisible(false);
+                      setViewVisible(false);
+                      setInfoVisible(false);
+                    }}
+                  >
+                    <img
+                      src={filterPng}
+                      alt=""
+                      style={{ width: '16px', height: '16px' }}
                     />
-                  ) : null}
-                  {filterObject?.groupKey ? (
-                    <Chip
-                      size="small"
-                      avatar={
-                        <Avatar
-                          alt=""
-                          src={
-                            filterObject.groupLogo
-                              ? filterObject.groupLogo +
-                              '?imageMogr2/auto-orient/thumbnail/80x'
-                              : defaultGroupPng
-                          }
-                        />
-                      }
-                      label={filterObject.groupName}
-                      onClick={() => {
-                        setFilterVisible(true);
-                      }}
-                      onDelete={() => deleteFilter('groupKey')}
-                      className={classes.chip}
-                    />
-                  ) : null}
-                  {filterObject?.creatorKey ? (
-                    <Chip
-                      size="small"
-                      avatar={
-                        <Avatar
-                          alt=""
-                          src={
-                            filterObject.creatorAvatar
-                              ? filterObject.creatorAvatar +
-                              '?imageMogr2/auto-orient/thumbnail/80x'
-                              : defaultPersonPng
-                          }
-                        />
-                      }
-                      label={'创建人: ' + filterObject.creatorName}
-                      onClick={() => {
-                        setFilterVisible(true);
-                      }}
-                      onDelete={() => deleteFilter('creatorKey')}
-                      className={classes.chip}
-                    />
-                  ) : null}
-                  {filterObject?.executorKey ? (
-                    <Chip
-                      size="small"
-                      avatar={
-                        <Avatar
-                          alt=""
-                          src={
-                            filterObject.executorAvatar
-                              ? filterObject.executorAvatar +
-                              '?imageMogr2/auto-orient/thumbnail/80x'
-                              : defaultPersonPng
-                          }
-                        />
-                      }
-                      label={'执行人: ' + filterObject.executorName}
-                      onClick={() => {
-                        setFilterVisible(true);
-                      }}
-                      onDelete={() => deleteFilter('executorKey')}
-                      className={classes.chip}
-                    />
-                  ) : null}
-                </React.Fragment>
-              ) : null}
-              <DropMenu
-                visible={filterVisible}
-                dropStyle={{
-                  width: '328px',
-                  top: '60px',
-                  left: '108px',
-                  color: '#333',
-                }}
-                onClose={() => {
-                  setFilterVisible(false);
-                }}
-                title={'过滤器'}
-              >
-                <HeaderFilter />
-                <div className="filter-info">
-                  <div className="filter-title">状态 :</div>
-                  <div className="filter-menu">
-                    {checkedTitle.map((item: any, index: number) => {
-                      return (
-                        <div key={'filter' + item} className="filter-menu-item">
-                          <Checkbox
-                            checked={filterCheckedArray[index]}
-                            onChange={() => {
-                              changeFilterCheck(item);
-                            }}
-                            color="primary"
-                          />
-                          {item}
-                          {item == '已归档' ? (
-                            <React.Fragment>
-                              {fileState ? (
-                                <div
-                                  onClick={() => {
-                                    setFileState(false);
-                                  }}
-                                  style={{
-                                    marginLeft: '8px',
-                                    cursor: 'pointer',
-                                  }}
-                                >
-                                  ( 近{fileInput}天 )
-                                </div>
-                              ) : (
-                                  <div style={{ marginLeft: '8px' }}>
-                                    ( 近
-                                    <input
-                                      type="number"
-                                      value={fileInput}
-                                      onChange={(e) => {
-                                        setFileInput(e.target.value);
-                                      }}
-                                      onBlur={(e) => {
-                                        changeFileDay(parseInt(e.target.value));
-                                      }}
-                                      className="fileday"
-                                    />
-                                  天 )
-                                  </div>
-                                )}
-                            </React.Fragment>
-                          ) : null}
-                        </div>
-                      );
-                    })}
+                    {filterObject?.filterType.length > 0
+                      ? filterObject.filterType.join(' / ')
+                      : null}
                   </div>
-                </div>
-              </DropMenu>
-            </React.Fragment>
-          ) : null}
+                </Dropdown>
+
+                {filterObject?.creatorKey ? (
+                  <div
+                    className="workingTableHeader-smalltag"
+                    onClick={() => {
+                      setFilterVisible(true);
+                    }}
+                  >
+                    <img
+                      src={
+                        filterObject.creatorAvatar
+                          ? filterObject.creatorAvatar +
+                            '?imageMogr2/auto-orient/thumbnail/80x'
+                          : defaultPersonPng
+                      }
+                      alt=""
+                      style={{
+                        width: '16px',
+                        height: '16px',
+                        borderRadius: '50%',
+                      }}
+                    />
+                    {'创建人: ' + filterObject.creatorName}
+                    <CloseOutlined
+                      onClick={(e: any) => {
+                        e.stopPropagation();
+                        deleteFilter('creatorKey');
+                      }}
+                      style={{ marginLeft: '6px' }}
+                    />
+                  </div>
+                ) : null}
+                {filterObject?.executorKey ? (
+                  <div
+                    className="workingTableHeader-smalltag"
+                    onClick={() => {
+                      setFilterVisible(true);
+                    }}
+                  >
+                    <img
+                      src={
+                        filterObject.executorAvatar
+                          ? filterObject.executorAvatar +
+                            '?imageMogr2/auto-orient/thumbnail/80x'
+                          : defaultPersonPng
+                      }
+                      alt=""
+                      style={{
+                        width: '16px',
+                        height: '16px',
+                        borderRadius: '50%',
+                      }}
+                    />
+                    {'执行人: ' + filterObject.executorName}
+                    <CloseOutlined
+                      onClick={() => deleteFilter('executorKey')}
+                      style={{ marginLeft: '6px' }}
+                    />
+                  </div>
+                ) : null}
+              </React.Fragment>
+            ) : null}
+          </React.Fragment>
         </div>
-        {/* <Tooltip title="群聊天">
-        <img
-          src={chatPng}
-          alt=""
-          style={{
-            width: '27px',
-            height: '25px',
-            marginRight: '10px',
-            cursor: 'pointer',
-          }}
-          onClick={() => {
-            goChat();
-          }}
-        />
-      </Tooltip> */}
-        {/* <Dialog
-        visible={vitalityVisible}
-        onClose={() => {
-          setVitalityVisible(false);
-        }}
-        footer={false}
-        // title={'搜索中心'}
-        dialogStyle={{
-          width: 'calc(100% - 330px)',
-          height: 'calc(100% - 20px)',
-          marginLeft: '330px',
-        }}
-      >
-        <Vitality vitalityType={3} vitalityKey={groupKey} />
-      </Dialog> */}
       </div>
-      <Dialog
+      <Modal
         visible={dismissVisible}
-        onClose={() => {
+        onCancel={() => {
           setDismissVisible(false);
         }}
-        onOK={() => {
+        onOk={() => {
           dismissGroup();
         }}
-        title={'解散群组'}
-        dialogStyle={{ width: '400px', height: '200px' }}
+        title={'解散项目'}
       >
-        <div className="dialog-onlyTitle">是否解散该群</div>
-      </Dialog>
-      <Dialog
+        是否解散该项目
+      </Modal>
+      <Modal
         visible={groupSetVisible}
-        onClose={() => {
+        onCancel={() => {
           setGroupSetVisible(false);
         }}
-        onOK={() => {
+        width={750}
+        centered={true}
+        onOk={() => {
           if (groupTabIndex === 0) {
             setGroup();
           } else if (groupTabIndex === 1) {
             saveGroupMember();
           }
-          // setGroupSetVisible(false);
+          setGroupSetVisible(false);
         }}
-        // title={'设置群'}
-        dialogStyle={{
-          width: '850px',
-          height: '700px',
-        }}
-      // showMask={false}
       >
         <div className="groupSet-tab">
           <div
             onClick={() => {
               setGroupTabIndex(0);
-              // saveGroupMember();
+              saveGroupMember();
             }}
             className="groupSet-tab-item"
             style={
               groupTabIndex == 0
                 ? {
-                  borderBottom: '2px solid #17B881',
-                  color: '#17B881',
-                }
+                    borderBottom: '2px solid #17B881',
+                    color: '#17B881',
+                  }
                 : {}
             }
           >
@@ -1083,29 +786,11 @@ const GroupTableHeader: React.FC = (prop) => {
           <div
             onClick={() => {
               setGroupTabIndex(1);
-              // setGroup();
-            }}
-            className="groupSet-tab-item"
-            style={
-              groupTabIndex == 1
-                ? {
-                  borderBottom: '2px solid #17B881',
-                  color: '#17B881',
-                }
-                : {}
-            }
-          >
-            成员
-          </div>
-          {/* <div
-            onClick={() => {
-              setGroupTabIndex(2);
-              saveGroupMember();
               setGroup();
             }}
             className="groupSet-tab-item"
             style={
-              groupTabIndex == 2
+              groupTabIndex == 1
                 ? {
                     borderBottom: '2px solid #17B881',
                     color: '#17B881',
@@ -1113,8 +798,8 @@ const GroupTableHeader: React.FC = (prop) => {
                 : {}
             }
           >
-            子群
-          </div> */}
+            成员
+          </div>
         </div>
         {groupTabIndex === 0 ? (
           <GroupSet
@@ -1146,36 +831,68 @@ const GroupTableHeader: React.FC = (prop) => {
             setOutGroupVisible(true);
           }}
         />
-      </Dialog>
-      <Dialog
+      </Modal>
+      <Modal
         visible={outGroupVisible}
-        onClose={() => {
+        onCancel={() => {
           setOutGroupVisible(false);
         }}
-        onOK={() => {
+        onOk={() => {
           outGroup();
         }}
         title={'退出项目'}
-        dialogStyle={{ width: '400px', height: '200px' }}
       >
-        <div className="dialog-onlyTitle">是否退出该群</div>
-      </Dialog>
-      <Dialog
+        是否退出该项目
+      </Modal>
+      <Modal
         visible={cloneGroupVisible}
-        onClose={() => {
+        onCancel={() => {
           setCloneGroupVisible(false);
         }}
-        onOK={() => {
+        onOk={() => {
           setCloneGroupVisible(false);
           cloneGroup();
         }}
-        title={'克隆群'}
-        dialogStyle={{ width: '400px', height: '200px' }}
+        title={'克隆项目'}
       >
-        <div className="dialog-onlyTitle">
-          是否克隆群:{groupInfo?.groupName}
+        是否克隆项目:{groupInfo?.groupName}
+      </Modal>
+      <Modal
+        visible={shareVisible}
+        onCancel={() => {
+          setShareVisible(false);
+        }}
+        onOk={() => {
+          cloneGroup();
+        }}
+        footer={null}
+        title={'分享项目'}
+      >
+        <div className="groupTable-share">
+          <div className="groupTable-share-title">
+            {user?.profile?.nickName} 邀请加入 {groupInfo?.groupName}：
+            {`${window.location.protocol}//${window.location.host}/home/basic?groupKey=${groupKey}`}
+          </div>
+          <Button
+            type="primary"
+            onClick={() => {
+              shareGroup(
+                `${user?.profile?.nickName} 邀请加入 ${groupInfo?.groupName} 网址：${window.location.protocol}//${window.location.host}/home/basic?groupKey=${groupKey}`
+              );
+            }}
+            style={{ color: '#fff', height: '40px' }}
+          >
+            复制链接
+          </Button>
         </div>
-      </Dialog>
+        <div className="groupTable-code">
+          <Code
+            url={`${window.location.protocol}//${window.location.host}/home/basic?groupKey=${groupKey}`}
+            id={groupKey}
+          />
+          扫码分享
+        </div>
+      </Modal>
     </React.Fragment>
   );
 };

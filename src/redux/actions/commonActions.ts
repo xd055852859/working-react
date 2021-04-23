@@ -13,7 +13,9 @@ export const actionTypes = {
   SET_UNMESSAGEREADNUM: 'SET_UNMESSAGEREADNUM',
   SET_SOCKETOBJ: 'SET_SOCKETOBJ',
   CHANGE_TIMESET_VISIBLE: 'CHANGE_TIMESET_VISIBLE',
-  CHANGE_TASKMEMBER_VISIBLE:'CHANGE_TASKMEMBER_VISIBLE'
+  CHANGE_TASKMEMBER_VISIBLE: 'CHANGE_TASKMEMBER_VISIBLE',
+  SET_FILEINFO: 'SET_FILEINFO',
+  SET_FILEKEY:'SET_FILEKEY'
 };
 
 export function Failed(error: any) {
@@ -48,9 +50,9 @@ export function switchSearch(visible?: boolean) {
 export function setMessage(
   visible: boolean,
   text: string,
-  severity: 'success' | 'info' | 'warning' | 'error' | undefined
+  messageType: 'success' | 'info' | 'warning' | 'error' | undefined
 ) {
-  return { type: actionTypes.SET_MESSAGE, visible, text, severity };
+  return { type: actionTypes.SET_MESSAGE, visible, text, messageType };
 }
 export function setCommonHeaderIndex(headerIndex: number) {
   localStorage.setItem('headerIndex', headerIndex + '');
@@ -124,5 +126,18 @@ export function changeTaskMemberVisible(
     taskMemberVisible,
     taskMemberX,
     taskMemberY,
+  };
+}
+export function setFileInfo(fileInfo: any, fileVisible: boolean) {
+  return {
+    type: actionTypes.SET_FILEINFO,
+    fileInfo,
+    fileVisible,
+  };
+}
+export function setFileKey(fileKey: string) {
+  return {
+    type: actionTypes.SET_FILEKEY,
+    fileKey
   };
 }

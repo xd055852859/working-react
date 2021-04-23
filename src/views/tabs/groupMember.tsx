@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './groupMember.css';
-import { Checkbox, IconButton, Tooltip, Button } from '@material-ui/core';
+import { Checkbox, Tooltip, Button, Input } from 'antd';
+const { Search } = Input;
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
-import { HelpOutlineOutlined } from '@material-ui/icons';
+import { QuestionOutlined } from '@ant-design/icons';
 import { useDispatch } from 'react-redux';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import _ from 'lodash';
@@ -77,14 +78,15 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
   const [pos, setPos] = useState<any>([]);
   const [page, setPage] = React.useState(1);
   const [total, setTotal] = React.useState(0);
-  const roleTypeArr = ['群主', '管理员', '编辑', '作者', '群成员'];
+  const roleTypeArr = ['项目管理', '管理员', '编辑', '作者', '项目成员'];
   const limit = 15;
-  let unDistory = true;
-  // useEffect(() => {
-  //   if (groupKey) {
-  //     dispatch(getGroupMember(groupKey, 4));
-  //   }
-  // }, [groupKey]);
+  let unDistory = useRef<any>(null);
+  unDistory.current = true;
+  useEffect(() => {
+    if (groupKey) {
+      setMemberList([]);
+    }
+  }, [groupKey]);
   useEffect(() => {
     if (memberArray && groupMemberArray && searchInput === '') {
       let newMemberList: any = [];
@@ -113,7 +115,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       getJoinGroupList();
     }
     return () => {
-      unDistory = false;
+      // unDistory.current = false;
     };
   }, [memberArray, groupMemberArray, searchInput]);
   useEffect(() => {
@@ -124,7 +126,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
 
   const getJoinGroupList = async () => {
     let res: any = await api.group.applyJoinGroupList(groupKey);
-    if (unDistory) {
+    if (unDistory.current) {
       if (res.msg === 'OK') {
         setJoinMemberList(res.result);
       } else {
@@ -284,7 +286,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       }
 
       if (memberRes.msg === 'OK') {
-        // dispatch(setMessage(true, '删除群成员成功', 'success'));
+        // dispatch(setMessage(true, '删除项目成员成功', 'success'));
       } else {
         dispatch(setMessage(true, memberRes.msg, 'error'));
       }
@@ -430,33 +432,21 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
           {chooseIndex === 0 ? (
             <React.Fragment>
               <div className="group-member-search">
-                <input
-                  // required
+                <Search
                   className="group-member-input"
-                  type="text"
                   placeholder="搜索"
-                  value={searchInput}
                   onChange={(e) => {
                     setSearchInput(e.target.value);
                     searchPerson(e.target.value);
                   }}
-                  onKeyDown={(e: any) => {
-                    if (e.keyCode === 13) {
+                  value={searchInput}
+                  onSearch={() => {
+                    if (searchInput !== '') {
                       searchMember();
                     }
                   }}
+                  bordered={false}
                 />
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => {
-                    searchMember();
-                  }}
-                  style={{ marginLeft: '10px' }}
-                  className={classes.button}
-                >
-                  搜索
-                </Button>
               </div>
               <div
                 className="group-member-container"
@@ -533,22 +523,18 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
                     </div>
                     <div className="group-member-item-button">
                       <Button
-                        variant="contained"
                         color="primary"
                         onClick={() => {
                           addJoinMember(mainItem, mainIndex);
                         }}
-                        className={classes.addButton}
                         style={{ marginRight: '5px' }}
                       >
                         通过
                       </Button>
                       <Button
-                        variant="contained"
                         onClick={() => {
                           deleteJoinMember(mainItem, mainIndex);
                         }}
-                        className={classes.addButton}
                       >
                         拒绝
                       </Button>
@@ -562,18 +548,18 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
       </div>
       <div className="group-member-team">
         <div className="group-member-title">
-          群权限设置
-          <IconButton
-            color="primary"
-            component="span"
-            onClick={() => {
-              setRoleHelpVisible(true);
-            }}
-          >
-            <Tooltip title="权限说明">
-              <HelpOutlineOutlined />
-            </Tooltip>
-          </IconButton>
+          项目权限设置
+          <Tooltip title="权限说明">
+            <Button
+              ghost
+              shape="circle"
+              icon={<QuestionOutlined />}
+              onClick={(e: any) => {
+                setRoleHelpVisible(true);
+              }}
+              style={{ border: '0px' }}
+            />
+          </Tooltip>
           <DropMenu
             visible={roleHelpVisible}
             dropStyle={{
@@ -592,7 +578,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
               <div>管理员</div>
               <div>
                 <div>1.设置他人为编辑及以下权限</div>
-                <div>2.邀请进群</div>
+                <div>2.邀请进项目</div>
                 <div>3.增删频道</div>
                 <div>4.增删改项目任务</div>
               </div>
@@ -710,7 +696,7 @@ const GroupMember: React.FC<GroupMemberProps> = (props) => {
               {roleTypeArr.map((item: any, index: number) => {
                 return (
                   <React.Fragment key={'role' + index}>
-                    {groupRole === 1 || groupRole < index + 1 ? (
+                    {index > 0 && (groupRole === 1 || groupRole < index + 1) ? (
                       <div
                         onClick={() => {
                           changeRole(index, roleIndex);

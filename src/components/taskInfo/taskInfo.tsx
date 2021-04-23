@@ -1,110 +1,56 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useImperativeHandle,
+  forwardRef,
+} from 'react';
+import './taskInfo.css';
 import { useDispatch } from 'react-redux';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import DateFnsUtils from '@date-io/moment';
-import {
-  createMuiTheme,
-  createStyles,
-  makeStyles,
-  Theme,
-  ThemeProvider,
-} from '@material-ui/core/styles';
-import { red } from '@material-ui/core/colors';
-import {
-  MuiPickersUtilsProvider,
-  KeyboardDatePicker,
-} from '@material-ui/pickers';
-import { Button, TextField } from '@material-ui/core';
-import './taskInfo.css';
+import { Input, Button, DatePicker, Modal, Badge, Tabs } from 'antd';
+const { TabPane } = Tabs;
 import _ from 'lodash';
-import 'moment/locale/zh-cn';
+import api from '../../services/api';
 import moment from 'moment';
 import copy from 'copy-to-clipboard';
-import Comment from '../comment/comment';
-import hourSvg from '../../assets/svg/hour.svg';
-import playPng from '../../assets/img/play.png';
-import stopPng from '../../assets/img/stop.png';
-import unExecutorPng from '../../assets/img/unExecutor.png';
-// import taskFinishPng from '../../assets/img/taskFinish.png';
-import taskFinishPng from '../../assets/svg/finishb.svg';
-import taskUnfinishPng from '../../assets/svg/unfinishb.svg';
-import taskClosePng from '../../assets/img/taskClose.png';
-import ellipsisbPng from '../../assets/img/ellipsisb.png';
-import defaultPersonPng from '../../assets/img/defaultPerson.png';
-import fullscreenSvg from '../../assets/svg/fullscreen.svg';
-import api from '../../services/api';
+
+import { getUploadToken } from '../../redux/actions/authActions';
 import { setMessage } from '../../redux/actions/commonActions';
 import {
   editTask,
   changeTaskInfoVisible,
-  setChooseKey,
   getSelfTask,
   getWorkingTableTask,
   getGroupTask,
   setTaskInfo,
 } from '../../redux/actions/taskActions';
+
+import IconFont from '../../components/common/iconFont';
 import DropMenu from '../common/dropMenu';
-import Dialog from '../common/dialog';
+import TaskMember from '../task/taskMember';
+import Comment from '../comment/comment';
 import TimeSet from '../common/timeSet';
-import Editor from '../common/Editor';
+import Editor from '../common/editor/editor';
 import Loading from '../common/loading';
 import CreateMoreTask from '../createMoreTask/createMoreTask';
 
+import hourSvg from '../../assets/svg/hour.svg';
+import unExecutorPng from '../../assets/img/unExecutor.png';
+import taskFinishPng from '../../assets/svg/finishb.svg';
+import taskUnfinishPng from '../../assets/svg/unfinishb.svg';
+import taskClosePng from '../../assets/img/taskClose.png';
+import ellipsisbPng from '../../assets/img/ellipsisb.png';
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
 interface TaskInfoProps {
   fatherTaskItem?: any;
   onClose?: any;
   type?: string;
+  ref: any;
 }
-// pick a date util library
-moment.locale('zh-cn');
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      width: '142px',
-      margin: '-10px 0px',
-    },
-    input: {
-      width: '80%',
-      color: '#fff',
-      '& .MuiInput-formControl': {
-        marginTop: '0px',
-        borderColor: '#fff',
-      },
-      '& .MuiOutlinedInput-input': {
-        padding: '10px 14px',
-        borderColor: '#fff',
-        // color: '#fff',
-      },
-      '& .MuiInputLabel-formControl': {
-        marginTop: '-10px',
-        // color: '#fff',
-      },
-    },
-    button: {
-      backgroundColor: '#17B881',
-      color: '#fff',
-    },
-    disbutton: {
-      backgroundColor: 'rgba(255,255,255,0.4)',
-    },
-    datePicker: {
-      '& .MuiInput-formControl': {
-        marginLeft: '5px',
-      },
-    },
-  })
-);
-const theme = createMuiTheme({
-  palette: {
-    primary: {
-      main: '#ff1744',
-    },
-  },
-});
-const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
+
+const TaskInfo: React.FC<TaskInfoProps> = React.forwardRef((prop, ref) => {
   const { fatherTaskItem, onClose, type } = prop;
-  const classes = useStyles();
   const dispatch = useDispatch();
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
@@ -141,12 +87,14 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   const [isEdit, setIsEdit] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [buttonLoading, setButtonLoading] = useState(false);
   const [deleteDialogShow, setDeleteDialogShow] = useState(false);
   const [editorDialogShow, setEditorDialogShow] = useState(false);
+  const [commentVisible, setCommentVisible] = useState(false);
 
   const [moveTaskType, setMoveTaskType] = useState('');
   const [urlInput, setUrlInput] = useState('');
-  const [content, setContent] = useState('<p>备注信息:</p>');
+  const [content, setContent] = useState<any>(null);
   const color = [
     '#6FD29A',
     '#21ABE4',
@@ -172,9 +120,12 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     { name: '顶级优先', id: 10 },
   ];
   const taskLimit = 10;
+  const taskInfoRef: React.RefObject<any> = useRef();
   let countRef = useRef<any>(null);
-  let unDistory = true;
+  let unDistory = useRef<any>(null);
+  unDistory.current = true;
   useEffect(() => {
+    dispatch(getUploadToken());
     return () => {
       if (countRef.current) {
         clearInterval(countRef.current);
@@ -190,14 +141,30 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       }
     }
     return () => {
-      unDistory = false;
+      // unDistory.current = false;
     };
   }, [chooseKey, taskInfo]);
 
+  useEffect(() => {
+    return () => {
+      console.log(taskInfoVisible);
+      console.log('taskItem', taskItem);
+      // if (!taskInfoVisible) {
+      // console.log('taskItem',taskItem)
+      // saveTaskInfo();
+      // }
+    };
+  }, [taskItem, taskInfoVisible]);
+
+  useImperativeHandle(ref, () => ({
+    getInfo: () => {
+      saveTaskInfo();
+    },
+  }));
   const getTaskItem = async () => {
     setLoading(true);
     let taskItemRes: any = await api.task.getTaskInfo(chooseKey);
-    if (unDistory) {
+    if (unDistory.current) {
       if (taskItemRes.msg === 'OK') {
         let taskInfo = _.cloneDeep(taskItemRes.result);
         setLoading(false);
@@ -227,12 +194,15 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       (taskInfo.groupRole &&
         taskInfo.groupRole > 0 &&
         taskInfo.groupRole < 4) ||
-      taskInfo.creatorKey === user._key ||
-      taskInfo.executorKey === user._key
+        taskInfo.creatorKey === user._key ||
+        taskInfo.executorKey === user._key
     );
     if (taskInfo.content) {
       setContent(taskInfo.content);
+    } else {
+      setContent('<p>备注信息</p>');
     }
+    console.log('content1', taskInfo.content);
     if (taskInfo.extraData && taskInfo.extraData.url) {
       setUrlInput(taskInfo.extraData.url);
     }
@@ -241,12 +211,15 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     if (!type) {
       setLoading(true);
       let taskItemRes: any = await api.task.getTaskInfo(chooseKey);
-      if (unDistory) {
+      if (unDistory.current) {
         if (taskItemRes.msg === 'OK') {
           setLoading(false);
           taskInfo.content = _.cloneDeep(taskItemRes.result).content;
+          console.log('content2', _.cloneDeep(taskItemRes.result).content);
           if (taskInfo.content) {
             setContent(taskInfo.content);
+          } else {
+            setContent('<p>备注信息</p>');
           }
           setTaskItem(taskInfo);
         } else {
@@ -259,7 +232,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   const getTaskMemberArray = async (groupKey: string) => {
     let taskMemberRes: any = null;
     taskMemberRes = await api.member.getMember(groupKey, 4);
-    if (taskMemberRes.msg === 'OK' && unDistory) {
+    if (taskMemberRes.msg === 'OK' && unDistory.current) {
       setTaskMemberArray(taskMemberRes.result);
     }
   };
@@ -273,7 +246,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       page,
       taskLimit
     );
-    if (unDistory) {
+    if (unDistory.current) {
       if (commentRes.msg === 'OK') {
         newCommentArray.push(...commentRes.result);
         setTaskCommentArray(newCommentArray);
@@ -294,7 +267,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       page,
       taskLimit
     );
-    if (unDistory) {
+    if (unDistory.current) {
       if (historyRes.msg === 'OK') {
         newHistoryArray.push(...historyRes.result);
         setTaskHistoryArray(newHistoryArray);
@@ -305,6 +278,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     }
   };
   const handleDateChange = (date: any, type: string) => {
+    console.log(date);
     if (type === 'start') {
       setStartDate(date);
       changeTaskItem('taskStartDate', date.valueOf());
@@ -356,8 +330,6 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   const changeTaskContent = (value: string) => {
     if (value) {
       setContent(value);
-    } else {
-      setContent('<p>备注信息:</p>');
     }
     changeTaskItem('content', value);
   };
@@ -381,6 +353,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     let newCommentTotal = taskCommentTotal;
     if (commentInput !== '') {
       //保存
+      setButtonLoading(true);
       let saveRes: any = await api.task.addComment(taskItem._key, commentInput);
       if (saveRes.msg === 'OK') {
         dispatch(setMessage(true, '评论成功', 'success'));
@@ -389,7 +362,9 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
         setTaskCommentArray(newCommentArray);
         setTaskCommentTotal(newCommentTotal);
         setCommentInput('');
+        setButtonLoading(false);
       } else {
+        setButtonLoading(false);
         dispatch(setMessage(true, saveRes.msg, 'error'));
       }
     }
@@ -495,9 +470,9 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
     const redirect = `${window.location.protocol}//${window.location.host}`;
     copy(
       redirect +
-      '/home/showPage?shareKey=' +
-      (chooseKey ? chooseKey : taskItem._key) +
-      '&showType=1'
+        '/home/showPage?shareKey=' +
+        (chooseKey ? chooseKey : taskItem._key) +
+        '&showType=1'
     );
     dispatch(setMessage(true, '复制链接任务成功', 'success'));
   };
@@ -546,10 +521,15 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
       }
     }
   };
-  const saveTaskInfo = (type?: number) => {
+  const saveTaskInfo = () => {
+    console.log('type', type, editRole);
     if (!editRole) {
-      dispatch(setMessage(true, '无编辑权限,请提升权限或加入对应群', 'error'));
+      dispatch(
+        setMessage(true, '无编辑权限,请提升权限或加入对应项目', 'error')
+      );
+      return;
     }
+    console.log('taskItem', taskItem);
     let newTaskItem = _.cloneDeep(taskItem);
     if (newTaskItem) {
       if (!newTaskItem.extraData) {
@@ -576,550 +556,416 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
   };
   return (
     // changeTaskInfoVisible
-    <ClickAwayListener
-      onClickAway={() => {
-        if (!isEdit) {
-          saveTaskInfo();
-        }
+    <div
+      className="taskInfo"
+      id="taskInfo"
+      onClick={() => {
+        setCommentVisible(false);
       }}
     >
-      <div className="taskInfo">
-        {loading ? <Loading loadingHeight="90px" loadingWidth="90px" /> : null}
-        {taskItem ? (
-          <React.Fragment>
-            <div className="taskInfo-mainTitle">
-              <div className="taskInfo-mainTitle-left">
-                {taskItem.finishPercent === 0 ? (
-                  <img
-                    src={taskUnfinishPng}
-                    alt=""
-                    className="taskInfo-mainTitle-left-icon"
-                    onClick={() => {
-                      changeTaskItem('finishPercent', 1);
-                    }}
-                  />
-                ) : taskItem.finishPercent === 1 ? (
-                  <img
-                    src={taskFinishPng}
-                    alt=""
-                    className="taskInfo-mainTitle-left-icon"
-                    onClick={() => {
-                      changeTaskItem('finishPercent', 0);
-                      // changeTaskItem('todayTaskTime', 0);
-                    }}
-                  />
-                ) : null}
-
-                <div
-                  className="taskInfo-mainTitle-left-info"
+      {loading ? <Loading loadingHeight="90px" loadingWidth="90px" /> : null}
+      {taskItem ? (
+        <React.Fragment>
+          <div className="taskInfo-mainTitle">
+            <div className="taskInfo-mainTitle-left">
+              {taskItem.finishPercent === 0 ? (
+                <img
+                  src={taskUnfinishPng}
+                  alt=""
+                  className="taskInfo-mainTitle-left-icon"
                   onClick={() => {
-                    setExecutorVisible(true);
+                    changeTaskItem('finishPercent', 1);
                   }}
-                >
-                  <div className="taskInfo-mainTitle-left-avatar">
-                    <img
-                      src={
-                        taskItem.executorAvatar
-                          ? taskItem.executorAvatar +
+                />
+              ) : taskItem.finishPercent === 1 ? (
+                <img
+                  src={taskFinishPng}
+                  alt=""
+                  className="taskInfo-mainTitle-left-icon"
+                  onClick={() => {
+                    changeTaskItem('finishPercent', 0);
+                    // changeTaskItem('todayTaskTime', 0);
+                  }}
+                />
+              ) : null}
+
+              <div
+                className="taskInfo-mainTitle-left-info"
+                onClick={() => {
+                  setExecutorVisible(true);
+                }}
+              >
+                <div className="taskInfo-mainTitle-left-avatar">
+                  <img
+                    src={
+                      taskItem.executorAvatar
+                        ? taskItem.executorAvatar +
                           '?imageMogr2/auto-orient/thumbnail/80x'
-                          : unExecutorPng
-                      }
-                      alt=""
-                    />
-                  </div>
-                  <div>
-                    {taskItem.executorName ? taskItem.executorName : '未分配'}
-                  </div>
-                  <DropMenu
-                    visible={executorVisible}
-                    dropStyle={{
-                      width: '180px',
-                      height: '350px',
-                      top: '60px',
-                      left: '0px',
-                    }}
-                    onClose={() => {
-                      setExecutorVisible(false);
-                    }}
-                    title={'分配任务'}
-                  >
-                    <div className="task-executor-dropMenu-info">
-                      {taskMemberArray.map(
-                        (taskMemberItem: any, taskMemberIndex: number) => {
-                          return (
-                            <div
-                              className="task-executor-dropMenu-container"
-                              key={'taskMember' + taskMemberIndex}
-                              style={{
-                                background:
-                                  taskItem.executorKey === taskMemberItem.userId
-                                    ? '#F0F0F0'
-                                    : '',
-                                justifyContent: 'flex-start',
-                              }}
-                              onClick={() => {
-                                changeExecutor(
-                                  taskMemberItem.userId,
-                                  taskMemberItem.nickName,
-                                  taskMemberItem.avatar
-                                );
-                              }}
-                            >
-                              <div className="task-executor-dropMenu-img">
-                                <img
-                                  src={
-                                    taskMemberItem.avatar
-                                      ? taskMemberItem.avatar +
-                                      '?imageMogr2/auto-orient/thumbnail/80x'
-                                      : defaultPersonPng
-                                  }
-                                  onError={(e: any) => {
-                                    e.target.onerror = null;
-                                    e.target.src = defaultPersonPng;
-                                  }}
-                                />
-                              </div>
-                              <div>{taskMemberItem.nickName}</div>
-                            </div>
-                          );
-                        }
-                      )}
-                    </div>
-                  </DropMenu>
-                </div>
-              </div>
-
-              <div className="taskInfo-mainTitle-right">
-                {taskItem &&
-                (!taskItem.extraData || !taskItem.extraData.auditStatus) &&
-                taskItem.executorKey !== taskItem.creatorKey &&
-                taskItem.creatorKey === user._key ? (
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    size="small"
-                    onClick={() => {
-                      changeAuditStatus(1);
-                    }}
-                  >
-                    申请审核
-                  </Button>
-                ) : null}
-
-                {taskItem.extraData && taskItem.extraData.auditStatus ? (
-                  <React.Fragment>
-                    {taskItem.extraData.auditStatus === 1 &&
-                    taskItem.creatorKey === user._key ? (
-                      <Button variant="outlined" size="small">
-                        待审核
-                      </Button>
-                    ) : null}
-                    {taskItem.extraData.auditStatus === 2 &&
-                    taskItem.creatorKey === user._key ? (
-                      <Button
-                        variant="outlined"
-                        color="primary"
-                        size="small"
-                        style={{ marginRight: '7px' }}
-                      >
-                        已同意
-                      </Button>
-                    ) : null}
-                    {taskItem.extraData.auditStatus === 3 &&
-                    taskItem.creatorKey === user._key ? (
-                      <ThemeProvider theme={theme}>
-                        <Button variant="outlined" color="primary" size="small">
-                          已拒绝
-                        </Button>
-                      </ThemeProvider>
-                    ) : null}
-                    {taskItem.extraData.auditStatus === 1 &&
-                    taskItem.executorKey === user._key &&
-                    taskItem.creatorKey !== user._key ? (
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        size="small"
-                        onClick={() => {
-                          changeAuditStatus(2);
-                        }}
-                        style={{ marginRight: '7px', color: '#fff' }}
-                      >
-                        同意
-                      </Button>
-                    ) : null}
-                    {taskItem.extraData.auditStatus === 1 &&
-                    taskItem.executorKey === user._key &&
-                    taskItem.creatorKey !== user._key ? (
-                      <ThemeProvider theme={theme}>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          size="small"
-                          onClick={() => {
-                            changeAuditStatus(3);
-                          }}
-                        >
-                          拒绝
-                        </Button>
-                      </ThemeProvider>
-                    ) : null}
-                    {(taskItem.extraData.auditStatus === 2 ||
-                      taskItem.extraData.auditStatus === 3) &&
-                    taskItem.executorKey === user._key ? (
-                      <Button
-                        variant="contained"
-                        color="secondary"
-                        size="small"
-                        onClick={() => {
-                          changeAuditStatus(1);
-                        }}
-                      >
-                        重新审核
-                      </Button>
-                    ) : null}
-                  </React.Fragment>
-                ) : null}
-                <div
-                  className="taskInfo-item-suggest"
-                  onClick={() => {
-                    setSuggestVisible(true);
-                  }}
-                  style={{
-                    color: color[taskTypeIndex],
-                    backgroundColor: backgroundColor[taskTypeIndex],
-                  }}
-                >
-                  {taskTypeArr[taskTypeIndex].name}
-                  <DropMenu
-                    visible={suggestVisible}
-                    dropStyle={{ width: '100px', top: '36px', left: '-60px' }}
-                    onClose={() => {
-                      setSuggestVisible(false);
-                    }}
-                  >
-                    {taskTypeArr.map((taskTypeItem, taskTypeIndex) => {
-                      return (
-                        <div
-                          key={'taskType' + taskTypeIndex}
-                          className="taskInfo-item-suggest-item"
-                          style={{
-                            color: color[taskTypeIndex],
-                            backgroundColor: backgroundColor[taskTypeIndex],
-                          }}
-                          onClick={() => {
-                            setTaskTypeIndex(taskTypeIndex);
-                            changeTaskItem('taskType', taskTypeItem.id);
-                            setSuggestVisible(false);
-                          }}
-                        >
-                          {taskTypeItem.name}
-                        </div>
-                      );
-                    })}
-                  </DropMenu>
-                </div>
-                <div
-                  className="taskInfo-mainTitle-right-icon"
-                  onClick={() => {
-                    setEllipsisVisible(true);
-                  }}
-                >
-                  <img
-                    src={ellipsisbPng}
-                    alt="详情"
-                    style={{ width: '12px', height: '2px' }}
-                  />
-                  <DropMenu
-                    visible={ellipsisVisible}
-                    dropStyle={{
-                      width: '120px',
-                      top: '45px',
-                      left: '-88px',
-                    }}
-                    onClose={() => {
-                      setEllipsisVisible(false);
-                    }}
-                  >
-                    <div
-                      className="dropMenu-item"
-                      onClick={() => {
-                        shareTask();
-                      }}
-                    >
-                      分享任务
-                    </div>
-                    <div
-                      className="dropMenu-item"
-                      onClick={() => {
-                        setMoveTaskVisible(true);
-                        setMoveTaskType('复制');
-                      }}
-                    >
-                      复制任务
-                    </div>
-                    <div
-                      className="dropMenu-item"
-                      onClick={() => {
-                        setMoveTaskVisible(true);
-                        setMoveTaskType('移动');
-                      }}
-                    >
-                      移动任务
-                    </div>
-                    <div
-                      className="dropMenu-item"
-                      onClick={() => {
-                        changeTaskItem('finishPercent', 2);
-                      }}
-                    >
-                      {taskItem.finishPercent < 2 ? '归档' : '取消归档'}
-                    </div>
-                    <div
-                      className="dropMenu-item"
-                      onClick={() => {
-                        changeTaskItem(
-                          'importantStatus',
-                          taskItem.importantStatus ? 0 : 1
-                        );
-                      }}
-                    >
-                      {!taskItem.importantStatus ? '设为重要' : '取消重要'}
-                    </div>
-                    {taskItem.groupRole < 3 ? (
-                      <div
-                        className="dropMenu-item"
-                        onClick={() => {
-                          setDeleteDialogShow(true);
-                        }}
-                      >
-                        删除任务
-                      </div>
-                    ) : null}
-                    <CreateMoreTask
-                      visible={moveTaskVisible}
-                      createStyle={{ top: '129px', right: '158px' }}
-                      onClose={() => {
-                        setMoveTaskVisible(false);
-                        setDeleteDialogShow(false);
-                        dispatch(changeTaskInfoVisible(false));
-                      }}
-                      moreTitle={taskItem.title}
-                      moveTaskType={moveTaskType}
-                      taskKey={taskItem._key}
-                      taskItem={taskItem}
-                    />
-                  </DropMenu>
-                </div>
-                <div className="taskInfo-mainTitle-right-icon">
-                  <img
-                    src={taskClosePng}
+                        : unExecutorPng
+                    }
                     alt=""
-                    style={{ width: '12px', height: '12px' }}
-                    onClick={() => {
-                      dispatch(setChooseKey(''));
-                      saveTaskInfo(2);
-                    }}
                   />
                 </div>
+                <div>
+                  {taskItem.executorName ? taskItem.executorName : '未分配'}
+                </div>
+
+                <DropMenu
+                  visible={executorVisible}
+                  dropStyle={{
+                    width: '300px',
+                    height: '500px',
+                    top: '50px',
+                    left: '0px',
+                  }}
+                  onClose={() => {
+                    setExecutorVisible(false);
+                  }}
+                  title={'分配任务'}
+                >
+                  <TaskMember showMemberVisible={true} />
+                </DropMenu>
               </div>
             </div>
-            <div className="taskInfo-container">
-              <div
-                className="taskInfo-title"
-                // onChange={(e: any) => {
-                //   setEditState(true);
-                //   changeTaskItem('title', e.target.value);
-                // }}
-                contentEditable
-                suppressContentEditableWarning
-                // onKeyUp={(e: any) => {
-                //   if (e.target.innerText != taskItem.title) {
-                //     setEditState(true);
-                //   }
-                // }}
-                onBlur={(e: any) => {
-                  if (e.target.innerText != taskItem.title) {
-                    changeTaskItem('title', e.target.innerText);
-                  }
-                  // setEditState(true);
-                }}
-                ref={titleRef}
-              >
-                {taskItem.title}
-              </div>
-              {taskItem.taskEndDate !== 99999999999999 ? (
-                <div className="taskInfo-item">
-                  <div className="taskInfo-item-title">日期 </div>
-                  <div
-                    className="taskInfo-item-info"
-                    style={{ justifyContent: 'flex-start' }}
-                  >
-                    <MuiPickersUtilsProvider utils={DateFnsUtils}>
-                      <KeyboardDatePicker
-                        disableToolbar
-                        variant="inline"
-                        format="yyyy-MM-DD"
-                        margin="normal"
-                        id="date-picker-inline"
-                        // label="开始日期"
-                        value={startDate}
-                        onChange={(date) => {
-                          handleDateChange(date, 'start');
-                        }}
-                        KeyboardButtonProps={{
-                          'aria-label': 'change date',
-                        }}
-                        className={classes.root}
-                      />
-                      <KeyboardDatePicker
-                        disableToolbar
-                        variant="inline"
-                        format="yyyy-MM-DD"
-                        margin="normal"
-                        id="date-picker-inline"
-                        // label="截止日期"
-                        value={endDate}
-                        onChange={(date) => {
-                          handleDateChange(date, 'end');
-                        }}
-                        KeyboardButtonProps={{
-                          'aria-label': 'change date',
-                        }}
-                        className={classes.root}
-                        style={{ margin: '0px 15px' }}
-                      />
-                    </MuiPickersUtilsProvider>
-                    <div
-                      className="taskInfo-item-hour"
+
+            <div className="taskInfo-mainTitle-right">
+              {taskItem &&
+              (!taskItem.extraData || !taskItem.extraData.auditStatus) &&
+              taskItem.executorKey !== taskItem.creatorKey &&
+              taskItem.creatorKey === user._key ? (
+                <Button
+                  type="primary"
+                  size="small"
+                  onClick={() => {
+                    changeAuditStatus(1);
+                  }}
+                >
+                  申请审核
+                </Button>
+              ) : null}
+
+              {taskItem.extraData && taskItem.extraData.auditStatus ? (
+                <React.Fragment>
+                  {taskItem.extraData.auditStatus === 1 &&
+                  taskItem.creatorKey === user._key ? (
+                    <Button size="small">待审核</Button>
+                  ) : null}
+                  {taskItem.extraData.auditStatus === 2 &&
+                  taskItem.creatorKey === user._key ? (
+                    <Button
+                      type="text"
+                      size="small"
+                      style={{ marginRight: '7px' }}
+                    >
+                      已同意
+                    </Button>
+                  ) : null}
+                  {taskItem.extraData.auditStatus === 3 &&
+                  taskItem.creatorKey === user._key ? (
+                    <Button danger size="small" type="text">
+                      已拒绝
+                    </Button>
+                  ) : null}
+                  {taskItem.extraData.auditStatus === 1 &&
+                  taskItem.executorKey === user._key &&
+                  taskItem.creatorKey !== user._key ? (
+                    <Button
+                      color="primary"
+                      size="small"
                       onClick={() => {
-                        setHourVisible(true);
+                        changeAuditStatus(2);
+                      }}
+                      style={{ marginRight: '7px' }}
+                    >
+                      同意
+                    </Button>
+                  ) : null}
+                  {taskItem.extraData.auditStatus === 1 &&
+                  taskItem.executorKey === user._key &&
+                  taskItem.creatorKey !== user._key ? (
+                    <Button
+                      danger
+                      color="primary"
+                      size="small"
+                      onClick={() => {
+                        changeAuditStatus(3);
                       }}
                     >
-                      <img src={hourSvg} alt="" />
-                      {/* {taskItem.hour ? taskItem.hour + ' 小时' : '预计工时'} */}
-                      <DropMenu
-                        visible={hourVisible}
-                        dropStyle={{ top: '36px', left: '-200px' }}
-                        onClose={() => {
-                          setHourVisible(false);
-                        }}
-                        title="预计工时"
-                      >
-                        <TimeSet
-                          timeSetClick={changeTimeSet}
-                          timestate={'hour'}
-                          dayNumber={0}
-                          timeNumber={taskItem.hour}
-                        />
-                      </DropMenu>
-                    </div>
-                  </div>
-                </div>
+                      拒绝
+                    </Button>
+                  ) : null}
+                  {(taskItem.extraData.auditStatus === 2 ||
+                    taskItem.extraData.auditStatus === 3) &&
+                  taskItem.executorKey === user._key ? (
+                    <Button
+                      size="small"
+                      onClick={() => {
+                        changeAuditStatus(1);
+                      }}
+                    >
+                      重新审核
+                    </Button>
+                  ) : null}
+                </React.Fragment>
               ) : null}
-              {/* <div className="taskInfo-item">
-                <div className="taskInfo-item-title">工时</div>
-                <div className="taskInfo-item-info">
+              <div
+                className="taskInfo-item-suggest"
+                onClick={() => {
+                  setSuggestVisible(true);
+                }}
+                style={{
+                  color: color[taskTypeIndex],
+                  backgroundColor: backgroundColor[taskTypeIndex],
+                }}
+              >
+                {taskTypeArr[taskTypeIndex].name}
+                <DropMenu
+                  visible={suggestVisible}
+                  dropStyle={{ width: '100px', top: '36px', left: '-60px' }}
+                  onClose={() => {
+                    setSuggestVisible(false);
+                  }}
+                >
+                  {taskTypeArr.map((taskTypeItem, taskTypeIndex) => {
+                    return (
+                      <div
+                        key={'taskType' + taskTypeIndex}
+                        className="taskInfo-item-suggest-item"
+                        style={{
+                          color: color[taskTypeIndex],
+                          backgroundColor: backgroundColor[taskTypeIndex],
+                        }}
+                        onClick={() => {
+                          setTaskTypeIndex(taskTypeIndex);
+                          changeTaskItem('taskType', taskTypeItem.id);
+                          setSuggestVisible(false);
+                        }}
+                      >
+                        {taskTypeItem.name}
+                      </div>
+                    );
+                  })}
+                </DropMenu>
+              </div>
+              <div
+                className="taskInfo-mainTitle-right-icon"
+                onClick={() => {
+                  setEllipsisVisible(true);
+                }}
+              >
+                <img
+                  src={ellipsisbPng}
+                  alt="详情"
+                  style={{ width: '12px', height: '2px' }}
+                />
+                <DropMenu
+                  visible={ellipsisVisible}
+                  dropStyle={{
+                    width: '120px',
+                    top: '45px',
+                    left: '-88px',
+                  }}
+                  onClose={() => {
+                    setEllipsisVisible(false);
+                  }}
+                >
                   <div
-                    className="taskInfo-item-countdown"
+                    className="dropMenu-item"
                     onClick={() => {
-                      countDownState ? stopCountdown() : playCountdown();
+                      shareTask();
                     }}
                   >
-                    <img src={countDownState ? stopPng : playPng} alt="" />
-                    {formatHour(countDownTime)}
+                    分享任务
                   </div>
-                </div>
-              </div> */}
-              <div className="taskInfo-item">
-                <div className="taskInfo-item-title">链接</div>
-                <input
-                  className="taskInfo-item-input"
-                  value={urlInput}
-                  onChange={(e: any) => {
-                    setUrlInput(e.target.value);
-                    setEditState(true);
+                  <div
+                    className="dropMenu-item"
+                    onClick={() => {
+                      setMoveTaskVisible(true);
+                      setMoveTaskType('复制');
+                    }}
+                  >
+                    复制任务
+                  </div>
+                  <div
+                    className="dropMenu-item"
+                    onClick={() => {
+                      setMoveTaskVisible(true);
+                      setMoveTaskType('移动');
+                    }}
+                  >
+                    移动任务
+                  </div>
+                  <div
+                    className="dropMenu-item"
+                    onClick={() => {
+                      changeTaskItem('finishPercent', 2);
+                    }}
+                  >
+                    {taskItem.finishPercent < 2 ? '归档' : '取消归档'}
+                  </div>
+                  {/* <div
+                    className="dropMenu-item"
+                    onClick={() => {
+                      changeTaskItem(
+                        'importantStatus',
+                        taskItem.importantStatus ? 0 : 1
+                      );
+                    }}
+                  >
+                    {!taskItem.importantStatus ? '设为重要' : '取消重要'}
+                  </div> */}
+                  {(taskItem.groupRole < 3 && taskItem.groupRole > 0) ||
+                  taskItem.creatorKey === user._key ? (
+                    <div
+                      className="dropMenu-item"
+                      onClick={() => {
+                        setDeleteDialogShow(true);
+                      }}
+                    >
+                      删除任务
+                    </div>
+                  ) : null}
+                  <CreateMoreTask
+                    visible={moveTaskVisible}
+                    createStyle={{ top: '129px', right: '158px' }}
+                    onClose={() => {
+                      setMoveTaskVisible(false);
+                      setDeleteDialogShow(false);
+                      dispatch(changeTaskInfoVisible(false));
+                    }}
+                    moreTitle={taskItem.title}
+                    moveTaskType={moveTaskType}
+                    taskKey={taskItem._key}
+                    taskItem={taskItem}
+                  />
+                </DropMenu>
+              </div>
+              <div className="taskInfo-mainTitle-right-icon">
+                <img
+                  src={taskClosePng}
+                  alt=""
+                  style={{ width: '12px', height: '12px' }}
+                  onClick={() => {
+                    saveTaskInfo();
                   }}
-                  placeholder="请输入链接地址"
                 />
               </div>
-              <div className="taskInfo-item" style={{ height: '0px' }}>
-                {/* <div className="taskInfo-item-title">关注</div>
-                <div className="taskInfo-item-follow"></div> */}
-                {/* {!localStorage.getItem('page') ? (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    className="editor-button"
+            </div>
+          </div>
+          <div className="taskInfo-container" ref={taskInfoRef}>
+            <div
+              className="taskInfo-title"
+              // onChange={(e: any) => {
+              //   setEditState(true);
+              //   changeTaskItem('title', e.target.value);
+              // }}
+              contentEditable
+              suppressContentEditableWarning
+              // onKeyUp={(e: any) => {
+              //   if (e.target.innerText != taskItem.title) {
+              //     setEditState(true);
+              //   }
+              // }}
+              onBlur={(e: any) => {
+                if (e.target.innerText != taskItem.title) {
+                  changeTaskItem('title', e.target.innerText);
+                }
+                // setEditState(true);
+              }}
+              ref={titleRef}
+            >
+              {taskItem.title}
+            </div>
+            {taskItem.taskEndDate !== 99999999999999 ? (
+              <div className="taskInfo-item">
+                <div className="taskInfo-item-title">日期 </div>
+                <div
+                  className="taskInfo-item-info"
+                  style={{ justifyContent: 'flex-start' }}
+                >
+                  <DatePicker
+                    value={moment(startDate)}
+                    onChange={(date: any) => {
+                      handleDateChange(date, 'start');
+                    }}
+                    style={{ width: '130px', marginRight: '10px' }}
+                    allowClear={false}
+                  />
+                  <DatePicker
+                    value={moment(endDate)}
+                    onChange={(date: any) => {
+                      handleDateChange(date, 'end');
+                    }}
+                    style={{ width: '130px', marginRight: '10px' }}
+                    allowClear={false}
+                  />
+                  <div
+                    className="taskInfo-item-hour"
                     onClick={() => {
-                      saveTaskInfo(1);
-                      // dispatch(changeTaskInfoVisible(false));
+                      setHourVisible(true);
                     }}
                   >
-                    保存
-                  </Button>
-                ) : null} */}
+                    <img src={hourSvg} alt="" />
+                    {/* {taskItem.hour ? taskItem.hour + ' 小时' : '预计工时'} */}
+                    <DropMenu
+                      visible={hourVisible}
+                      dropStyle={{ top: '36px', left: '-200px' }}
+                      onClose={() => {
+                        setHourVisible(false);
+                      }}
+                      title="预计工时"
+                    >
+                      <TimeSet
+                        timeSetClick={changeTimeSet}
+                        timestate={'hour'}
+                        dayNumber={0}
+                        timeNumber={taskItem.hour}
+                      />
+                    </DropMenu>
+                  </div>
+                </div>
               </div>
-              {window.top.location.href.indexOf('localhost:3000') !== -1 ||
-              window.top.location.href.indexOf('workfly') !== -1 ? (
-                <div className="taskInfo-Editor">
-                  <Editor
-                    // editorHeight={'300px'}
-                    data={content}
-                    onChange={changeTaskContent}
-                    editable={true}
-                    fullType={'small'}
-                    changeIsEdit={(state: boolean) => {
-                      setIsEdit(state);
-                    }}
-                  />
-                  <img
-                    src={fullscreenSvg}
-                    alt=""
-                    className="taskInfo-Editor-img"
-                    onClick={() => {
-                      setEditorDialogShow(true);
-                    }}
-                  />
-                </div>
-              ) : null}
-              <div className="taskInfo-comment">
-                <div className="taskInfo-comment-tabs">
-                  <div
-                    className="taskInfo-comment-tabs-item"
-                    onClick={() => {
-                      setCommentIndex(0);
-                    }}
-                    style={
-                      commentIndex === 0
-                        ? {
-                          borderBottom: '1px solid #17B881',
-                          color: '#17B881',
-                        }
-                        : {}
-                    }
-                  >
-                    评论({taskCommentTotal})
-                  </div>
-                  <div
-                    className="taskInfo-comment-tabs-item"
-                    onClick={() => {
-                      setCommentIndex(1);
-                    }}
-                    style={
-                      commentIndex === 1
-                        ? {
-                          borderBottom: '1px solid #17B881',
-                          color: '#17B881',
-                        }
-                        : {}
-                    }
-                  >
-                    历史({taskHistoryTotal})
-                  </div>
-                </div>
-                {commentIndex === 0 ? (
-                  <React.Fragment>
+            ) : null}
+            <div className="taskInfo-item">
+              <div className="taskInfo-item-title">链接</div>
+              <Input
+                className="taskInfo-item-input"
+                value={urlInput}
+                onChange={(e: any) => {
+                  setUrlInput(e.target.value);
+                  setEditState(true);
+                }}
+                placeholder="请输入链接地址"
+              />
+            </div>
+
+            {content ? (
+              <Editor
+                data={content}
+                height={document.body.offsetHeight - 397}
+                onChange={changeTaskContent}
+                editorKey={taskItem._key}
+              />
+            ) : null}
+            {commentVisible ? (
+              <div
+                className="comment-info"
+                // onClose={() => {
+                //   setCommentVisible(false);
+                // }}
+                style={{
+                  height:
+                    document.body.offsetHeight -
+                    titleRef.current.offsetHeight -
+                    218,
+                  top: titleRef.current.offsetHeight + 140,
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <Tabs defaultActiveKey="1">
+                  <TabPane tab={'评论(' + taskCommentTotal + ')'} key="1">
                     <div
                       className="taskInfo-comment-tab"
                       onScroll={scrollCommentLoading}
@@ -1137,8 +983,37 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                         }
                       )}
                     </div>
-                  </React.Fragment>
-                ) : (
+                    <div className="taskInfo-comment-input">
+                      <Input
+                        placeholder="评论"
+                        onChange={changeInput}
+                        value={commentInput}
+                        onKeyDown={(e: any) => {
+                          if (e.keyCode === 13) {
+                            saveCommentMsg();
+                          }
+                        }}
+                        onFocus={() => {
+                          setIsEdit(true);
+                        }}
+                        onBlur={() => {
+                          setIsEdit(false);
+                        }}
+                      />
+                      {commentInput ? (
+                        <Button
+                          loading={buttonLoading}
+                          type="primary"
+                          onClick={() => {
+                            saveCommentMsg();
+                          }}
+                        >
+                          发布
+                        </Button>
+                      ) : null}
+                    </div>
+                  </TabPane>
+                  <TabPane tab="历史" key="2">
                     <div
                       className="taskInfo-comment-tab"
                       onScroll={scrollHistoryLoading}
@@ -1155,7 +1030,7 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                                   src={
                                     historyItem.etc && historyItem.etc.avatar
                                       ? historyItem.etc.avatar +
-                                      '?imageMogr2/auto-orient/thumbnail/80x'
+                                        '?imageMogr2/auto-orient/thumbnail/80x'
                                       : defaultPersonPng
                                   }
                                   alt=""
@@ -1173,93 +1048,51 @@ const TaskInfo: React.FC<TaskInfoProps> = (prop) => {
                                   {historyItem.log}
                                 </div>
                               </div>
-                              {/* {historyItem.log} */}
                             </div>
                           );
                         }
                       )}
                     </div>
-                  )}
+                  </TabPane>
+                </Tabs>
               </div>
-              <div className="taskInfo-comment-input">
-                <TextField
-                  required
-                  id="outlined-basic"
-                  variant="outlined"
-                  label="评论"
-                  className={classes.input}
-                  onChange={changeInput}
-                  value={commentInput}
-                  onKeyDown={(e: any) => {
-                    if (e.keyCode === 13) {
-                      saveCommentMsg();
-                    }
-                  }}
-                  onFocus={() => {
-                    setIsEdit(true);
-                  }}
-                  onBlur={() => {
-                    setIsEdit(false);
+            ) : null}
+            <div className="comment-button">
+              <Badge
+                count={taskCommentTotal}
+                style={{ backgroundColor: '#1890ff' }}
+                offset={[-6, 6]}
+              >
+                <Button
+                  type="primary"
+                  size="large"
+                  shape="circle"
+                  icon={<IconFont type="icon-pinglun" />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCommentVisible(true);
                   }}
                 />
-                {commentInput ? (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    className={classes.button}
-                    onClick={() => {
-                      saveCommentMsg();
-                    }}
-                  >
-                    发布
-                  </Button>
-                ) : (
-                    <Button
-                      variant="contained"
-                      className={classes.disbutton}
-                      disabled
-                    >
-                      发布
-                    </Button>
-                  )}
-              </div>
-              <Dialog
-                visible={deleteDialogShow}
-                onClose={() => {
-                  setDeleteDialogShow(false);
-                }}
-                onOK={() => {
-                  deleteTask();
-                }}
-                title={'删除任务'}
-                dialogStyle={{ width: '400px', height: '200px' }}
-              >
-                <div className="dialog-onlyTitle">是否删除该任务</div>
-              </Dialog>
-              <Dialog
-                visible={editorDialogShow}
-                onClose={() => {
-                  setEditorDialogShow(false);
-                }}
-                title={'编辑详情'}
-                dialogStyle={{ width: '95%', height: '95%' }}
-                footer={false}
-              >
-                <Editor
-                  editorHeight={document.body.clientHeight * 0.95 - 50 + 'px'}
-                  data={content}
-                  onChange={changeTaskContent}
-                  editable={true}
-                  fullType={'big'}
-                />
-              </Dialog>
+              </Badge>
             </div>
-          </React.Fragment>
-        ) : null}
-      </div>
-    </ClickAwayListener>
+            <Modal
+              visible={deleteDialogShow}
+              onCancel={() => {
+                setDeleteDialogShow(false);
+              }}
+              onOk={() => {
+                deleteTask();
+              }}
+              title={'删除任务'}
+            >
+              是否删除该任务
+            </Modal>
+          </div>
+        </React.Fragment>
+      ) : null}
+    </div>
   );
-};
+});
 TaskInfo.defaultProps = {
   fatherTaskItem: null,
 };

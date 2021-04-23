@@ -1,29 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './createMoreTask.css';
-import { Tooltip } from '@material-ui/core';
-
-import { useTypedSelector } from '../../redux/reducer/RootState';
-import { setMessage } from '../../redux/actions/commonActions';
-import defaultGroupPng from '../../assets/img/defaultGroup.png';
-import defaultPersonPng from '../../assets/img/defaultPerson.png';
-import checkPersonPng from '../../assets/img/checkPerson.png';
-import rightArrowPng from '../../assets/img/rightArrow.png';
-import closePng from '../../assets/img/close.png';
 import { useDispatch } from 'react-redux';
-import {
-  getSelfTask,
-  getWorkingTableTask,
-  getGroupTask,
-} from '../../redux/actions/taskActions';
-import { changeCreateMusic } from '../../redux/actions/authActions';
+import { useTypedSelector } from '../../redux/reducer/RootState';
+import { Tooltip } from 'antd';
+import api from '../../services/api';
+import _ from 'lodash';
+
+import { setMessage } from '../../redux/actions/commonActions';
 import {
   setCommonHeaderIndex,
   setMoveState,
 } from '../../redux/actions/commonActions';
 import { setGroupKey, getGroup } from '../../redux/actions/groupActions';
+
 import Loading from '../common/loading';
-import api from '../../services/api';
-import _ from 'lodash';
+
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
+import rightArrowPng from '../../assets/img/rightArrow.png';
 interface CreateMoreTaskProps {
   visible: boolean;
   moreTitle?: string | undefined;
@@ -79,7 +72,9 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
   const [searchGroupInput, setSearchGroupInput] = useState<any>('');
   const [searchLabelInput, setSearchLabelInput] = useState<any>('');
   const [loading, setLoading] = useState(false);
-  let unDistory = true;
+  const createRef: React.RefObject<any> = useRef();
+  let unDistory = useRef<any>(null);
+  unDistory.current = true;
   useEffect(() => {
     if (visible) {
       setLabelChooseIndex(labelIndex ? labelIndex : 0);
@@ -93,7 +88,7 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
       }
     }
     return () => {
-      unDistory = false;
+      // unDistory.current = false;
     };
   }, [visible]);
   useEffect(() => {
@@ -115,7 +110,7 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
     let newGroupArray: any = [];
     let newLabelAllArray: any = [];
     let groupRes: any = await api.group.getGroup(3, null, 6);
-    if (unDistory) {
+    if (unDistory.current) {
       if (groupRes.msg === 'OK') {
         newGroupArray.push(...groupRes.result);
         groupRes.result.forEach((item: any, index: number) => {
@@ -158,7 +153,7 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
         if (!theme.moveState) {
           dispatch(setMoveState('in'));
         }
-        await api.group.visitGroupOrFriend(2, groupKey);
+        // await api.group.visitGroupOrFriend(2, groupKey);
         dispatch(getGroup(3));
       }
     } else {
@@ -186,7 +181,7 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
         if (!theme.moveState) {
           dispatch(setMoveState('in'));
         }
-        await api.group.visitGroupOrFriend(2, groupAllKey);
+        // await api.group.visitGroupOrFriend(2, groupAllKey);
         dispatch(getGroup(3));
       }
     } else {
@@ -208,6 +203,12 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
     newGroupArray[groupChooseIndex].index = groupChooseIndex;
     changeGroupArray(newGroupArray[groupChooseIndex], newLabelChooseArray);
     setLabelChooseArray([]);
+    localStorage.setItem(
+      'createGroupKey',
+      groupAllArray[groupChooseIndex]._key
+    );
+    localStorage.setItem('createLabelKey', labelItem.labelKey);
+    // console.log(groupAllArray[groupChooseIndex]._key, labelItem.labelKey);
     onClose();
   };
   const searchGroup = (e: any, type: string) => {
@@ -247,6 +248,7 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
             onClick={(e: any) => {
               e.stopPropagation();
             }}
+            ref={createRef}
           >
             {loading ? (
               <Loading loadingWidth="80px" loadingHeight="80px" />
@@ -296,7 +298,7 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
                             })
                               ? {
                                   background: '#F0F0F0',
-                                  color: '#17B881',
+                                  color: '#1890ff',
                                 }
                               : {}
                           }
@@ -306,14 +308,17 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
                               <img
                                 src={
                                   item.groupLogo
-                                    ? item.groupLogo +
-                                      '?imageMogr2/auto-orient/thumbnail/80x'
+                                    ? item.groupLogo
                                     : defaultGroupPng
                                 }
                                 alt=""
                               />
                             </div>
-                            <Tooltip title={item.groupName}>
+                            <Tooltip
+                              title={item.groupName}
+                              getPopupContainer={() => createRef.current}
+                              getTooltipContainer={() => createRef.current}
+                            >
                               <div className="createMoreTask-groupName">
                                 {item.groupName}
                               </div>
@@ -387,11 +392,16 @@ const CreateMoreTask: React.FC<CreateMoreTaskProps> = (props) => {
                                     item.labelName ? item.labelName : 'ToDo'
                                   }
                                 > */}
-                                  <div className="createMoreTask-item-label" style={{width:'100%'}}>
-                                    {item.labelName ? item.labelName : 'ToDo'} ( {item.executorName
+                                <div
+                                  className="createMoreTask-item-label"
+                                  style={{ width: '100%' }}
+                                >
+                                  {item.labelName ? item.labelName : 'ToDo'} ({' '}
+                                  {item.executorName
                                     ? item.executorName
-                                    : '无默认执行人'} )
-                                  </div>
+                                    : '无默认执行人'}{' '}
+                                  )
+                                </div>
                                 {/* </Tooltip> */}
                                 {/* <div
                                   className="createMoreTask-item-name"

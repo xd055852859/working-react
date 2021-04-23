@@ -92,6 +92,7 @@ const DrawEditor: FC<{
 
   const onMessage = useCallback(
     (event: any, data: any) => {
+      console.log(event,data)
       /*  const setLineAnimation = (line: Line, switchStart: boolean = true) => {
         line.animateStart = switchStart ? new Date().getTime() : 0;
         line.animateDotSize = 4;

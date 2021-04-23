@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './tabs.css';
 import { useDispatch } from 'react-redux';
-import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
-import { Button, TextField, Tooltip } from '@material-ui/core';
+import { Button, Input, Dropdown, Modal } from 'antd';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import _ from 'lodash';
 import api from '../../services/api';
+
 import {
   setMessage,
   setCommonHeaderIndex,
@@ -22,60 +21,22 @@ import {
   setGroupKey,
 } from '../../redux/actions/groupActions';
 import { getMember } from '../../redux/actions/memberActions';
+
+import ClickOutSide from '../../components/common/clickOutside';
 import Contact from '../contact/contact';
-import Dialog from '../../components/common/dialog';
 import GroupCreate from './groupCreate';
 import DropMenu from '../../components/common/dropMenu';
 import Loading from '../../components/common/loading';
+
 import searchPng from '../../assets/img/search.png';
-import searchbSvg from '../../assets/svg/searchb.svg';
 import addPng from '../../assets/img/contact-add.png';
 import downArrowbPng from '../../assets/img/downArrowb.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
-import contactTree from '../../assets/svg/contactTree.svg';
-import listSvg from '../../assets/svg/list.svg';
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    input: {
-      width: '450px',
-      marginRight: '10px',
-
-      '& .MuiInput-formControl': {
-        marginTop: '0px',
-      },
-      '& .MuiOutlinedInput-input': {
-        padding: '10px 14px',
-      },
-      '& .MuiInputLabel-formControl': {
-        marginTop: '-10px',
-      },
-    },
-    button: {
-      backgroundColor: '#17B881',
-      padding: '6 26px',
-      color: '#fff',
-    },
-    addInput: {
-      width: '100%',
-      marginRight: '10px',
-
-      '& .MuiInput-formControl': {
-        marginTop: '0px',
-      },
-      '& .MuiOutlinedInput-input': {
-        padding: '10px 14px',
-      },
-      '& .MuiInputLabel-formControl': {
-        marginTop: '-10px',
-      },
-    },
-  })
-);
+const { Search } = Input;
 export interface HomeTabProps {}
 const HomeTab: React.FC<HomeTabProps> = (props) => {
-  const classes = useStyles();
   const dispatch = useDispatch();
   // const classes = useStyles();
   const user = useTypedSelector((state) => state.auth.user);
@@ -93,9 +54,8 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   const [contactIndex, setContactIndex] = React.useState(0);
   const [searchVisible, setSearchVisible] = React.useState(false);
   const [searchAllVisible, setSearchAllVisible] = React.useState(false);
-  const [searchInputState, setSearchInputState] = React.useState('');
-  // const [memberSortVisible, setMemberSortVisible] = React.useState(false);
-  // const [groupSortVisible, setGroupSortVisible] = React.useState(false);
+  const [searchInputVisible, setSearchInputVisible] = React.useState(false);
+
   const [addGroupVisible, setAddGroupVisible] = React.useState(false);
   const [searchList, setSearchList] = React.useState<any>([]);
   const [mainSearchList, setMainSearchList] = React.useState<any>([]);
@@ -109,8 +69,8 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   const [inviteVisible, setInviteVisible] = React.useState(false);
   const [page, setPage] = React.useState(1);
   const [total, setTotal] = React.useState(0);
-  const [clientHeight, setClientHeight] = useState(0);
   const [loading, setLoading] = useState(false);
+
   const tabsRef: React.RefObject<any> = useRef();
   const limit = 30;
   useEffect(() => {
@@ -119,35 +79,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       setSearchVisible(false);
     }
   }, [searchInput, contactIndex]);
-  useEffect(() => {
-    if (tabsRef.current) {
-      let clientHeight = tabsRef.current.clientHeight;
-      setClientHeight(clientHeight);
-    }
-  }, [tabsRef.current]);
-  // useEffect(() => {
-  //   if (searchInput) {
-  //     let newMainSearchList = [];
-  //     if (contactIndex === 1) {
-  //       newMainSearchList = memberArray.filter(
-  //         (memberItem: any, memberIndex: number) => {
-  //           if (memberItem.nickName.indexOf(searchInput) != -1) {
-  //             return memberItem;
-  //           }
-  //         }
-  //       );
-  //     } else if (contactIndex === 0) {
-  //       newMainSearchList = groupArray.filter(
-  //         (groupItem: any, groupIndex: number) => {
-  //           if (groupItem.groupName.indexOf(searchInput) != -1) {
-  //             return groupItem;
-  //           }
-  //         }
-  //       );
-  //     }
-  //     setMainSearchList(newMainSearchList);
-  //   }
-  // }, [memberArray, groupArray]);
+
   const changeInput = (e: any) => {
     setSearchInput(e.target.value);
     searchMsg(e.target.value);
@@ -277,18 +209,6 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       dispatch(setMessage(true, memberRes.msg, 'error'));
     }
   };
-  const outGroup = async (groupKey: string, searchIndex: number) => {
-    let newMainSearchList = _.cloneDeep(mainSearchList);
-    let memberRes: any = await api.group.outGroup(groupKey);
-    if (memberRes.msg === 'OK') {
-      dispatch(setMessage(true, '退出项目成功', 'success'));
-      newMainSearchList.splice(searchIndex, 1);
-      setMainSearchList(newMainSearchList);
-      dispatch(getGroup(3));
-    } else {
-      dispatch(setMessage(true, memberRes.msg, 'error'));
-    }
-  };
   const joinGroup = async (
     groupKey: string,
     searchIndex: number,
@@ -331,7 +251,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
   const applyJoinGroup = async (groupKey: string) => {
     let memberRes: any = await api.group.applyJoinGroup(groupKey);
     if (memberRes.msg === 'OK') {
-      dispatch(setMessage(true, '申请加群成功', 'success'));
+      dispatch(setMessage(true, '申请加项目成功', 'success'));
       setInviteVisible(false);
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
@@ -344,7 +264,7 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
       passwordInput
     );
     if (memberRes.msg === 'OK') {
-      dispatch(setMessage(true, '口令加群成功', 'success'));
+      dispatch(setMessage(true, '口令加项目成功', 'success'));
       newSearchList.splice(searchIndex, 1);
       setSearchList(newSearchList);
       dispatch(getGroup(3));
@@ -368,18 +288,6 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     }
   };
 
-  const contactSort = (sortType: number) => {
-    // let newTheme = _.cloneDeep(theme);
-    // if (contactIndex === 0) {
-    //   dispatch(getGroup(3, null, sortType));
-    //   newTheme.groupSortType = sortType;
-    //   dispatch(setTheme(newTheme));
-    // } else if (contactIndex === 1) {
-    //   dispatch(getMember(mainGroupKey, sortType));
-    //   newTheme.personSortType = sortType;
-    //   dispatch(setTheme(newTheme));
-    // }
-  };
   const toTargetGroup = async (groupKey: string) => {
     dispatch(setGroupKey(groupKey));
     dispatch(getGroupInfo(groupKey));
@@ -389,10 +297,9 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     }
     await api.group.visitGroupOrFriend(2, groupKey);
     dispatch(getGroup(3));
+    setSearchInputVisible(false);
   };
   const toTargetUser = async (targetUserKey: string) => {
-    // dispatch(setTargetUserKey(targetUserKey));
-    // dispatch(userKeyToGroupKey(targetUserKey));
     dispatch(getTargetUserInfo(targetUserKey));
     dispatch(setCommonHeaderIndex(2));
     if (!theme.moveState) {
@@ -400,7 +307,166 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
     }
     await api.group.visitGroupOrFriend(1, targetUserKey);
     dispatch(getMember(mainGroupKey));
+    setSearchInputVisible(false);
   };
+
+  const searchContainer = (
+    <div className="search-container">
+      {mainSearchList.map((mainSearchItem: any, mainSearchIndex: number) => {
+        let avatar =
+          contactIndex === 0
+            ? mainSearchItem.groupLogo
+              ? mainSearchItem.groupLogo
+              : defaultGroupPng
+            : mainSearchItem.avatar
+            ? mainSearchItem.avatar + '?imageMogr2/auto-orient/thumbnail/80x'
+            : defaultPersonPng;
+        let name =
+          contactIndex === 0
+            ? mainSearchItem.groupName
+            : mainSearchItem.nickName;
+        let key =
+          contactIndex === 0 ? mainSearchItem._key : mainSearchItem.userId;
+        return (
+          <div
+            className="personMember-item"
+            key={'mainSearch' + mainSearchIndex}
+            onClick={() => {
+              contactIndex ? toTargetUser(key) : toTargetGroup(key);
+            }}
+          >
+            <div className="personMember-item-title">
+              <div
+                className="personMember-item-avatar"
+                style={{ borderRadius: contactIndex ? '50%' : '5px' }}
+              >
+                <img src={avatar} alt="" />
+              </div>
+              <div className="personMember-item-name">{name}</div>
+            </div>
+          </div>
+        );
+      })}
+      {mainSearchList.length > 0 ? (
+        <hr
+          style={{
+            background: '#F0F0F0',
+            margin: '5px 0px',
+          }}
+        />
+      ) : null}
+      {!searchAllVisible ? (
+        <div
+          className="search-all-icon"
+          onClick={() => {
+            setSearchAllVisible(true);
+            contactIndex ? getSearchPerson(page) : getSearchGroup(page);
+          }}
+          style={{ cursor: 'pointer' }}
+        >
+          全平台搜索
+          <img
+            src={downArrowbPng}
+            alt=""
+            style={{ width: '11px', height: '7px', marginRight: '5px' }}
+          />
+        </div>
+      ) : (
+        <div className="personMember">
+          <div
+            className="personMember-container"
+            onScroll={scrollSearchLoading}
+          >
+            {loading ? (
+              <Loading loadingWidth="50px" loadingHeight="50px" />
+            ) : null}
+            {searchList.map((searchItem: any, searchIndex: number) => {
+              let name = contactIndex
+                ? searchItem.nickName
+                : searchItem.groupName;
+              let avatar = contactIndex
+                ? searchItem.avatar
+                  ? searchItem.avatar
+                  : defaultPersonPng
+                : searchItem.groupLogo
+                ? searchItem.groupLogo
+                : defaultGroupPng;
+              let key = contactIndex ? searchItem.userId : searchItem._key;
+              return (
+                <React.Fragment key={'search' + searchIndex}>
+                  {(contactIndex === 1 && !searchItem.isMyMainGroupMember) ||
+                  (contactIndex === 0 && !searchItem.isGroupMember) ? (
+                    <div className="personMember-item">
+                      <div className="personMember-item-title">
+                        <div
+                          className="personMember-item-avatar"
+                          style={{ borderRadius: contactIndex ? '50%' : '5px' }}
+                        >
+                          <img src={avatar} alt="" />
+                        </div>
+                        <div className="personMember-item-name">{name}</div>
+                      </div>
+                      {contactIndex ? (
+                        <div
+                          className="personMember-item-button"
+                          onClick={
+                            () => {
+                              addMember(searchItem, searchIndex);
+                            }
+                            // addMember(item)
+                          }
+                        >
+                          <div>加为好友</div>
+                        </div>
+                      ) : (
+                        <div
+                          className="personMember-item-button"
+                          onClick={
+                            () => {
+                              joinGroup(key, searchIndex, searchItem);
+                            }
+                            // addMember(item)
+                          }
+                        >
+                          <div>加入项目</div>
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+                </React.Fragment>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const searchMenu = (
+    <ClickOutSide
+      onClickOutside={() => {
+        setSearchInputVisible(false);
+        setSearchInput('');
+      }}
+    >
+      <div className="search-input-container">
+        <Search
+          className="search-input"
+          placeholder={contactIndex === 0 ? '输入项目关键字…' : '输入用户名…'}
+          onChange={changeInput}
+          value={searchInput}
+          onSearch={() => {
+            if (searchInput !== '') {
+              searchMsg();
+              setSearchVisible(true);
+            }
+          }}
+          bordered={false}
+        />
+        {searchVisible ? searchContainer : null}
+      </div>
+    </ClickOutSide>
+  );
   return (
     <div
       className="tabs"
@@ -411,493 +477,167 @@ const HomeTab: React.FC<HomeTabProps> = (props) => {
             ? 'calc(100% - 260px)'
             : 'calc(100% - 210px)',
       }}
+      id="tab"
     >
-      <ClickAwayListener
-        onClickAway={() => {
-          if (searchInputState === 'out') {
-            setSearchInputState('in');
+      <div className="tabs-tab-nav">
+        <div
+          onClick={() => {
+            setContactIndex(0);
+            setSearchList([]);
+          }}
+          style={
+            contactIndex === 0
+              ? { background: 'rgba(255, 255, 255, 0.34)' }
+              : {}
           }
-          setSearchInput('');
-          setSearchAllVisible(false);
-        }}
-      >
-        <div className="tabs-tab-nav">
+          className="tabs-tab-nav-item"
+        >
+          项目
+        </div>
+        {mainEnterpriseGroup?.mainEnterpriseGroupKey &&
+        localStorage.getItem('mainEnterpriseGroupKey') !== 'out' ? (
           <div
             onClick={() => {
-              setContactIndex(0);
-              setSearchList([]);
+              setContactIndex(4);
             }}
             style={
-              contactIndex === 0
+              contactIndex === 4
                 ? { background: 'rgba(255, 255, 255, 0.34)' }
                 : {}
             }
             className="tabs-tab-nav-item"
           >
-            项目
-            {/* ({' '}
-            {mainEnterpriseGroup.mainEnterpriseGroupKey
-              ? groupArray &&
-                _.filter(groupArray, {
-                  enterpriseGroupKey:
-                    mainEnterpriseGroup.mainEnterpriseGroupKey,
-                }).length > 0
-                ? _.filter(groupArray, {
-                    enterpriseGroupKey:
-                      mainEnterpriseGroup.mainEnterpriseGroupKey,
-                  }).length + 1
-                : 1
-              : groupArray && groupArray.length > 0
-              ? groupArray.length
-              : 0}{' '}
-            ) */}
+            项目树
           </div>
+        ) : null}
+        <div
+          onClick={() => {
+            setContactIndex(1);
+          }}
+          style={
+            contactIndex === 1
+              ? { background: 'rgba(255, 255, 255, 0.34)' }
+              : {}
+          }
+          className="tabs-tab-nav-item"
+        >
+          队友
+        </div>
+        {mainEnterpriseGroup?.mainEnterpriseGroupKey &&
+        localStorage.getItem('mainEnterpriseGroupKey') !== 'out' ? (
           <div
             onClick={() => {
-              setContactIndex(1);
+              setContactIndex(3);
             }}
             style={
-              contactIndex === 1
+              contactIndex === 3
                 ? { background: 'rgba(255, 255, 255, 0.34)' }
                 : {}
             }
             className="tabs-tab-nav-item"
           >
-            协作
-            {/* ({' '} */}
-            {/* {memberArray && memberArray.length > 0 ? memberArray.length : 0} ) */}
+            组织树
           </div>
-          {mainEnterpriseGroup?.mainEnterpriseGroupKey ? (
-            <div
-              onClick={() => {
-                setContactIndex(3);
-              }}
-              style={
-                contactIndex === 3
-                  ? { background: 'rgba(255, 255, 255, 0.34)' }
-                  : {}
-              }
-              className="tabs-tab-nav-item"
-            >
-              组织树
-              {/* ({' '}
-              {companyMemberArray && companyMemberArray.length > 0
-                ? companyMemberArray.length
-                : 0}{' '}
-              ) */}
-            </div>
-          ) : null}
+        ) : null}
+        <Dropdown
+          overlay={searchMenu}
+          placement="bottomRight"
+          trigger={['click']}
+          onVisibleChange={() => {
+            setSearchInputVisible(true);
+          }}
+          visible={searchInputVisible}
+        >
+          <img src={searchPng} alt="" className="search-icon" />
+        </Dropdown>
+        {contactIndex === 0 ? (
           <img
-            src={searchPng}
+            src={addPng}
             alt=""
-            className="search-icon"
+            className="add-icon"
             onClick={() => {
-              // setSearchVisible(true);
-              // setSearchList([]);
-              setSearchInputState('out');
+              setAddGroupVisible(true);
             }}
           />
+        ) : null}
+        <DropMenu
+          visible={addGroupVisible}
+          onClose={() => {
+            setAddGroupVisible(false);
+          }}
+          dropStyle={{
+            width: 'calc(100% - 20px)',
+            // height: '255px',
+            top: '40px',
+            left: '10px',
+            color: '#333',
+            zIndex: '10',
+            borderRadius: '8px',
+          }}
+          title={'新建项目'}
+        >
+          <GroupCreate
+            // onClose={() => {
+            //   setAddGroupVisible(false);
+            // }}
+          />
+        </DropMenu>
+        <Modal
+          title="申请加入项目"
+          visible={inviteVisible}
+          footer={null}
+          onCancel={() => {
+            setInviteVisible(false);
+          }}
+        >
+          <div className="invite-container">
+            {isHasPassword ? (
+              <div style={{ width: '100%;' }}>
+                {question ? <div>{question} :</div> : null}
 
-          <div
-            className="search-input-container"
-            style={
-              searchInputState === 'in'
-                ? {
-                    animation: 'searchInputIn 500ms',
-                    // animationFillMode: 'forwards',
-                    width: '0px',
-                    right: '10px',
-                    height: '18px',
-                  }
-                : searchInputState === 'out'
-                ? {
-                    animation: 'searchInputOut 500ms',
-                    // animationFillMode: 'forwards',
+                <Input
+                  placeholder="口令"
+                  style={{
+                    marginTop: question ? '15px' : '5px',
                     width: '100%',
-                    right: '0px',
-                    height: '100%',
-                  }
-                : { width: '0px', opacity: 0, right: '10px', height: '18px' }
-            }
-          >
-            <input
-              type="text"
-              className="search-input"
-              placeholder={
-                contactIndex === 0 ? '输入项目关键字…' : '输入用户名…'
-              }
-              onChange={changeInput}
-              value={searchInput}
-              onKeyDown={(e: any) => {
-                if (e.keyCode === 13) {
-                  if (searchInput !== '') {
-                    searchMsg();
-                    setSearchVisible(true);
-                  }
-                }
-              }}
-            />
+                  }}
+                  onChange={changePasswordInput}
+                  value={passwordInput}
+                />
+              </div>
+            ) : null}
             <div
-              className="search-icon-container"
-              onClick={() => {
-                if (searchInput !== '') {
-                  searchMsg();
-                  setSearchVisible(true);
-                }
-              }}
+              className="invite-button"
+              style={
+                isHasPassword
+                  ? { justifyContent: 'space-between' }
+                  : { justifyContent: 'center' }
+              }
             >
-              <img
-                src={searchbSvg}
-                alt=""
-                style={{
-                  width: '18px',
-                  height: '18px',
-                }}
-              />
+              {isHasPassword ? (
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    passwordJoinGroup(searchItem._key);
+                  }}
+                >
+                  口令加项目
+                </Button>
+              ) : null}
+              {joinType == 1 ? (
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    applyJoinGroup(searchItem._key);
+                  }}
+                >
+                  申请加项目
+                </Button>
+              ) : null}
             </div>
           </div>
-
-          {/* <img
-          src={sortPng}
-          alt=""
-          className="sort-icon"
-          onClick={() => {
-            contactIndex === 1
-              ? setMemberSortVisible(true)
-              : setGroupSortVisible(true);
-          }}
-        /> */}
-          {contactIndex === 0 ? (
-            <img
-              src={addPng}
-              alt=""
-              className="add-icon"
-              onClick={() => {
-                setAddGroupVisible(true);
-              }}
-            />
-          ) : null}
-          {/* {contactIndex === 1 ? (
-            <img
-              src={addPersonPng}
-              alt=""
-              className="add-icon"
-              onClick={() => {
-                setSearchVisible(true);
-                setSearchList([]);
-              }}
-            />
-          ) : null} 
-          <DropMenu
-            visible={memberSortVisible || groupSortVisible}
-            dropStyle={{
-              width: '80px',
-              height: '90px',
-              top: '30px',
-              left: '230px',
-              color: '#333',
-            }}
-            onClose={() => {
-              contactIndex === 1
-                ? setMemberSortVisible(false)
-                : setGroupSortVisible(false);
-            }}
-          >
-            <div className="tabs-sort-container">
-              <div
-                className="tabs-sort-item"
-                onClick={() => {
-                  contactSort(1);
-                }}
-              >
-                访问排序
-              </div>
-              <div
-                className="tabs-sort-item"
-                onClick={() => {
-                  contactSort(2);
-                }}
-              >
-                关注排序
-              </div>
-              <div
-                className="tabs-sort-item"
-                onClick={() => {
-                  contactSort(3);
-                }}
-              >
-                活力值排序
-              </div>
-            </div>
-          </DropMenu>*/}
-          <DropMenu
-            visible={searchVisible}
-            onClose={() => {
-              setSearchVisible(false);
-            }}
-            dropStyle={{
-              width: '100%',
-              maxHeight: clientHeight - 38 + 'px',
-              top: '36px',
-              left: '0px',
-              color: '#333',
-              zIndex: '10',
-              borderRadius: '8px',
-              overflow: 'auto',
-            }}
-          >
-            <div className="search-container">
-              {mainSearchList.map(
-                (mainSearchItem: any, mainSearchIndex: number) => {
-                  let avatar =
-                    contactIndex === 0
-                      ? mainSearchItem.groupLogo
-                        ? mainSearchItem.groupLogo +
-                          '?imageMogr2/auto-orient/thumbnail/80x'
-                        : defaultGroupPng
-                      : mainSearchItem.avatar
-                      ? mainSearchItem.avatar +
-                        '?imageMogr2/auto-orient/thumbnail/80x'
-                      : defaultPersonPng;
-                  let name =
-                    contactIndex === 0
-                      ? mainSearchItem.groupName
-                      : mainSearchItem.nickName;
-                  let key =
-                    contactIndex === 0
-                      ? mainSearchItem._key
-                      : mainSearchItem.userId;
-                  return (
-                    <div
-                      className="personMember-item"
-                      key={'mainSearch' + mainSearchIndex}
-                      onClick={() => {
-                        contactIndex ? toTargetUser(key) : toTargetGroup(key);
-                      }}
-                    >
-                      <div className="personMember-item-title">
-                        <div className="personMember-item-avatar">
-                          <img src={avatar} alt="" />
-                        </div>
-                        <div className="personMember-item-name">{name}</div>
-                      </div>
-                      {
-                        contactIndex ? (
-                          <div
-                            className="personMember-item-button"
-                            onClick={
-                              (e: any) => {
-                                deleteMember(mainSearchItem, mainSearchIndex);
-                                e.stopPropagation();
-                              }
-                              // addMember(item)
-                            }
-                          >
-                            <div>删除好友</div>
-                          </div>
-                        ) : null
-                        // (
-                        //   <div
-                        //     className="personMember-item-button"
-                        //     onClick={
-                        //       (e: any) => {
-                        //         e.stopPropagation();
-                        //         outGroup(key, searchIndex);
-                        //       }
-                        //       // addMember(item)
-                        //     }
-                        //   >
-                        //     <div>退出项目</div>
-                        //   </div>
-                        // )
-                      }
-                    </div>
-                  );
-                }
-              )}
-              {mainSearchList.length > 0 ? (
-                <hr
-                  style={{
-                    background: '#F0F0F0',
-                    margin: '5px 0px',
-                  }}
-                />
-              ) : null}
-              {!searchAllVisible ? (
-                <div
-                  className="search-all-icon"
-                  onClick={() => {
-                    setSearchAllVisible(true);
-                    contactIndex ? getSearchPerson(page) : getSearchGroup(page);
-                  }}
-                  style={{ cursor: 'pointer' }}
-                >
-                  全平台搜索
-                  <img
-                    src={downArrowbPng}
-                    alt=""
-                    style={{ width: '11px', height: '7px', marginRight: '5px' }}
-                  />
-                </div>
-              ) : (
-                <div className="personMember">
-                  <div
-                    className="personMember-container"
-                    onScroll={scrollSearchLoading}
-                  >
-                    {loading ? (
-                      <Loading loadingWidth="50px" loadingHeight="50px" />
-                    ) : null}
-                    {searchList.map((searchItem: any, searchIndex: number) => {
-                      let name = contactIndex
-                        ? searchItem.nickName
-                        : searchItem.groupName;
-                      let avatar = contactIndex
-                        ? searchItem.avatar
-                          ? searchItem.avatar
-                          : defaultPersonPng
-                        : searchItem.groupLogo
-                        ? searchItem.groupLogo
-                        : defaultGroupPng;
-                      let key = contactIndex
-                        ? searchItem.userId
-                        : searchItem._key;
-                      return (
-                        <React.Fragment key={'search' + searchIndex}>
-                          {(contactIndex === 1 &&
-                            !searchItem.isMyMainGroupMember) ||
-                          (contactIndex === 0 && !searchItem.isGroupMember) ? (
-                            <div className="personMember-item">
-                              <div className="personMember-item-title">
-                                <div className="personMember-item-avatar">
-                                  <img src={avatar} alt="" />
-                                </div>
-                                <div className="personMember-item-name">
-                                  {name}
-                                </div>
-                              </div>
-                              {contactIndex ? (
-                                <div
-                                  className="personMember-item-button"
-                                  onClick={
-                                    () => {
-                                      addMember(searchItem, searchIndex);
-                                    }
-                                    // addMember(item)
-                                  }
-                                >
-                                  <div>加为好友</div>
-                                </div>
-                              ) : (
-                                <div
-                                  className="personMember-item-button"
-                                  onClick={
-                                    () => {
-                                      joinGroup(key, searchIndex, searchItem);
-                                    }
-                                    // addMember(item)
-                                  }
-                                >
-                                  <div>加入项目</div>
-                                </div>
-                              )}
-                            </div>
-                          ) : null}
-                        </React.Fragment>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          </DropMenu>
-          <DropMenu
-            visible={addGroupVisible}
-            onClose={() => {
-              setAddGroupVisible(false);
-            }}
-            dropStyle={{
-              width: 'calc(100% - 20px)',
-              // height: '255px',
-              top: '40px',
-              left: '10px',
-              color: '#333',
-              zIndex: '10',
-              borderRadius: '8px',
-            }}
-            title={'新建项目'}
-          >
-            <GroupCreate />
-          </DropMenu>
-          <Dialog
-            visible={inviteVisible}
-            onClose={() => {
-              setInviteVisible(false);
-            }}
-            title={'申请加群'}
-            dialogStyle={{
-              width: '400px',
-              height: question ? '300px' : isHasPassword ? '250px' : '200px',
-            }}
-            footer={false}
-          >
-            <div className="invite-container">
-              {isHasPassword ? (
-                <div style={{ width: '100%;' }}>
-                  {question ? <div>{question} :</div> : null}
-                  <TextField
-                    required
-                    id="outlined-basic"
-                    variant="outlined"
-                    label="口令"
-                    className={classes.addInput}
-                    onChange={changePasswordInput}
-                    value={passwordInput}
-                    style={
-                      question
-                        ? { marginTop: '15px', width: '100%' }
-                        : { width: '100%' }
-                    }
-                  />
-                </div>
-              ) : null}
-              <div
-                className="invite-button"
-                style={
-                  isHasPassword
-                    ? { justifyContent: 'space-between' }
-                    : { justifyContent: 'center' }
-                }
-              >
-                {isHasPassword ? (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    className={classes.button}
-                    onClick={() => {
-                      passwordJoinGroup(searchItem._key);
-                    }}
-                  >
-                    口令加群
-                  </Button>
-                ) : null}
-                {joinType == 1 ? (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    className={classes.button}
-                    onClick={() => {
-                      applyJoinGroup(searchItem._key);
-                    }}
-                  >
-                    申请加群
-                  </Button>
-                ) : null}
-              </div>
-            </div>
-          </Dialog>
-        </div>
-      </ClickAwayListener>
+        </Modal>
+      </div>
       <Contact contactIndex={contactIndex} />
     </div>
   );

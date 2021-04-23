@@ -46,6 +46,7 @@
   margin-bottom: 6px;
   display: flex;
   align-items: center;
+  padding: 0px 12px;
 }
 .filter-menu-info {
   height: 40px;
@@ -70,4 +71,5 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   line-height: 40px;
+  margin-left: 8px;
 }

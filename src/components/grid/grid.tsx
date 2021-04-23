@@ -1,16 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
+import './grid.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
-import { setMessage } from '../../redux/actions/commonActions';
-import GridTree from './gridTree';
+import { Tooltip } from 'antd';
 import _ from 'lodash';
 import moment from 'moment';
-import Loading from '../common/loading';
-import './grid.css';
 import api from '../../services/api';
-// import format from '../../components/common/format';
+
+import { setMessage } from '../../redux/actions/commonActions';
+
+import GridTree from './gridTree';
+import Loading from '../common/loading';
+
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
-import Tooltip from '../common/tooltip';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 interface GridProps {
   gridState: boolean;
@@ -24,6 +26,7 @@ const Grid: React.FC<GridProps> = (prop) => {
   const groupMemberArray = useTypedSelector(
     (state) => state.member.groupMemberArray
   );
+  const taskInfo = useTypedSelector((state) => state.task.taskInfo);
   const targetUserKey = useTypedSelector((state) => state.auth.targetUserKey);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
@@ -48,9 +51,26 @@ const Grid: React.FC<GridProps> = (prop) => {
   const labelRef: React.RefObject<any> = useRef();
   const avatarRef: React.RefObject<any> = useRef();
 
-  let unDistory = true;
+  let unDistory = useRef<any>(null);
+  unDistory.current = true;
+  // useEffect(() => {
+  //   return () => {
+  //     unDistory.current = false;
+  //   };
+  // }, []);
+  useEffect(() => {
+    if (
+      (headerIndex === 3 && groupKey) ||
+      (headerIndex === 2 && targetUserKey)
+    ) {
+      setAllGridGroupArray(null);
+      setAllGridTaskArray(null);
+      setAllGridChildArray(null);
+    }
+  }, [targetUserKey, groupKey]);
   useEffect(() => {
     if (headerIndex === 3 && groupInfo && labelArray && taskArray) {
+      console.log('???????????????', taskArray);
       let groupArray: any = _.cloneDeep([groupInfo]);
       groupArray[0].labelArray = _.cloneDeep(labelArray);
       let cardArray: any = _.cloneDeep([taskArray]).map((item: any) => {
@@ -66,14 +86,13 @@ const Grid: React.FC<GridProps> = (prop) => {
       getGridData();
     }
     return () => {
-      unDistory = false;
+      // // unDistory.current = false;
     };
   }, [
     headerIndex,
     groupInfo,
     labelArray,
     taskArray,
-    filterObject,
     groupMemberArray,
     memberArray,
   ]);
@@ -92,10 +111,9 @@ const Grid: React.FC<GridProps> = (prop) => {
             : avatarRef.current.offsetWidth + 'px'
           : '0px'
         : '25px';
-      // console.log(avatarRef.current);
       setAvatarWidth(clientWidth);
     }
-  }, [avatarRef.current,gridState]);
+  }, []);
 
   useEffect(() => {
     if (allGridTaskArray) {
@@ -105,7 +123,25 @@ const Grid: React.FC<GridProps> = (prop) => {
       );
     }
   }, [allGridTaskArray]);
-
+  // useEffect(() => {
+  //   // 用户已登录
+  //   if (taskInfo && allGridTaskArray) {
+  //     let newAllGridTaskArray: any = _.cloneDeep(allGridTaskArray);
+  //     newAllGridTaskArray = newAllGridTaskArray.map((item: any) => {
+  //       item = item.map((taskItem: any) => {
+  //         if (taskItem._key === taskInfo._key) {
+  //           console.log(taskInfo);
+  //           console.log(taskItem);
+  //           return _.cloneDeep(taskInfo);
+  //         } else {
+  //           return taskItem;
+  //         }
+  //       });
+  //       return item;
+  //     });
+  //     setAllGridTaskArray(newAllGridTaskArray);
+  //   }
+  // }, [taskInfo]);
   const getGridData = async () => {
     let obj: any = {
       type1: headerIndex,
@@ -121,7 +157,7 @@ const Grid: React.FC<GridProps> = (prop) => {
     }
     // setLoading(true);
     let gridRes: any = await api.task.allGridGroupTask(obj);
-    if (unDistory) {
+    if (unDistory.current) {
       if (gridRes.msg === 'OK') {
         // setLoading(false);
         let gridObj: any = _.cloneDeep(gridRes.result);
@@ -169,6 +205,8 @@ const Grid: React.FC<GridProps> = (prop) => {
         setAllGridChildArray(newAllGridChildArray);
         formatData();
         setLoading(false);
+        console.log(newAllGridGroupArray);
+        console.log(newAllGridTaskArray);
       } else {
         dispatch(setMessage(true, gridRes.msg, 'error'));
       }
@@ -395,7 +433,7 @@ const Grid: React.FC<GridProps> = (prop) => {
     setTaskNavDay(newTaskNavDay);
   };
   const getItem = (item: any) => {
-    let dom = [];
+    let dom: any = [];
     for (let groupIndex in item) {
       let groupItem: any = item[groupIndex];
       dom.push(
@@ -458,7 +496,7 @@ const Grid: React.FC<GridProps> = (prop) => {
     }
     return dom;
   };
-
+  console.log('??????', taskNavDate);
   return (
     <div className="grid">
       {loading ? <Loading /> : null}
@@ -488,7 +526,6 @@ const Grid: React.FC<GridProps> = (prop) => {
                         height: avatarWidth,
                         textAlign: 'center',
                         lineHeight: avatarWidth,
-                        zIndex: 2,
                       }}
                     >
                       {taskNavDay[dateIndex].allTaskNum > 0
@@ -534,7 +571,6 @@ const Grid: React.FC<GridProps> = (prop) => {
                             ? '1px solid transparent'
                             : '0px',
                       }}
-                      ref={avatarRef}
                     >
                       {/* <div slot="title">{dateItem.nickName}</div> */}
                       <img
@@ -549,6 +585,7 @@ const Grid: React.FC<GridProps> = (prop) => {
                           e.target.onerror = null;
                           e.target.src = defaultPersonPng;
                         }}
+                        ref={avatarRef}
                       />
                     </div>
                   </Tooltip>
@@ -580,8 +617,7 @@ const Grid: React.FC<GridProps> = (prop) => {
                             <img
                               src={
                                 item.groupObj.groupLogo
-                                  ? item.groupObj.groupLogo +
-                                    '?imageMogr2/auto-orient/thumbnail/80x'
+                                  ? item.groupObj.groupLogo
                                   : defaultGroupPng
                               }
                               alt=""

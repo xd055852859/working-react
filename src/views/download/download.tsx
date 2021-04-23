@@ -7,7 +7,7 @@ import moment from 'moment';
 import _ from 'lodash';
 import api from '../../services/api';
 import { setMessage } from '../../redux/actions/commonActions';
-// import lozad from './lozad.min.js';
+import Code from '../../components/qrCode/qrCode';
 //@ts-ignore
 // import QRCode from './qrcode.min.js';
 interface DownloadProps {}
@@ -54,23 +54,7 @@ const Download: React.FC<DownloadProps> = (props) => {
   ];
   useEffect(() => {
     getVersion();
-    // const observer = lozad();
-    // observer.observe();
-    initDownload(0, 'https://itunes.apple.com/cn/app/id1516401175?ls=1&mt=8');
   }, []);
-
-  const initDownload = (i: any, u: any) => {
-    let newDownload = _.cloneDeep(download);
-    newDownload[i]['u'] = u;
-    qrcode('qrcode' + i, u);
-    setDownload(newDownload);
-  };
-  // const isMac=()=> {
-  //     return /macintosh|mac os x/i.test(navigator.userAgent);
-  // }
-  // const isWindows=()=> {
-  //     return /windows|win32|win64/i.test(navigator.userAgent);
-  // }
   const getVersion = async () => {
     let newDownload = _.cloneDeep(download);
     let versionRes: any = await api.common.getVersion(7);
@@ -79,24 +63,11 @@ const Download: React.FC<DownloadProps> = (props) => {
         'https://workingversion.qingtime.cn/Working_QingTime_' +
         versionRes.result.versionName +
         '.apk';
-      qrcode('qrcode1', 'https://workingdownload.qingtime.cn');
-      // this.initDownload(1,"https://workingversion.qingtime.cn/Working_QingTime_"+responseText.result.versionName+".apk");
+      console.log(newDownload);
       setDownload(newDownload);
     } else {
       dispatch(setMessage(true, versionRes.msg, 'error'));
     }
-  };
-  const qrcode = (id: string, url: string) => {
-    //@ts-ignore
-    // let qrcode: any = new QRCode(id, {
-    //   text: url,
-    //   width: 100,
-    //   height: 100,
-    //   colorDark: '#000000',
-    //   colorLight: '#ffffff',
-    //   //@ts-ignore
-    //   correctLevel: QRCode.CorrectLevel.H,
-    // });
   };
   return (
     <div id="adai">
@@ -121,19 +92,23 @@ const Download: React.FC<DownloadProps> = (props) => {
         <div className="home_box">
           <img src={require('./img/working.png')} alt="logo_t" />
           <div className="icon_wrap">
-            {download.map((item: any, index: number) => {
-              return (
-                <a key={'icon' + index} href={item.u} target="_blank">
-                  <img
-                    className="phone_icon"
-                    src={require('./img/iphone' + index + '.svg')}
-                    alt=""
-                  />
-                  <p>{item.t}</p>
-                  <div className="qrcode" id={'qrcode' + index}></div>
-                </a>
-              );
-            })}
+            {download[1].u
+              ? download.map((item: any, index: number) => {
+                  return (
+                    <a key={'icon' + index} href={item.u} target="_blank">
+                      <img
+                        className="phone_icon"
+                        src={require('./img/iphone' + index + '.svg')}
+                        alt=""
+                      />
+                      <p>{item.t}</p>
+                      <div className="qrcode" id={'qrcode' + index}>
+                        <Code url={item.u} id={item.t} />
+                      </div>
+                    </a>
+                  );
+                })
+              : null}
           </div>
         </div>
         <p className="copy_right">

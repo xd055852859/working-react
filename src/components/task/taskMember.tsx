@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import './task.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
-import { editTask, setTaskInfo } from '../../redux/actions/taskActions';
 import api from '../../services/api';
 import _ from 'lodash';
+import { editTask, setTaskInfo } from '../../redux/actions/taskActions';
+
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import checkPersonPng from '../../assets/img/checkPerson.png';
 import eyeSvg from '../../assets/svg/eye.svg';
@@ -30,7 +31,7 @@ const TaskMember: React.FC<TaskMemberProps> = (props) => {
   const [followIndex, setFollowIndex] = useState<any>(null);
   const [searchInput, setSearchInput] = useState<any>('');
 
-  let unDistory = true;
+let unDistory = useRef<any>(null);   unDistory.current=true;
   useEffect(() => {
     // 用户已登录
     if (targetGroupKey) {
@@ -39,7 +40,7 @@ const TaskMember: React.FC<TaskMemberProps> = (props) => {
       getTaskMemberArray(taskInfo.groupKey);
     }
     return () => {
-      unDistory = false;
+      // unDistory.current = false;
     };
   }, [targetGroupKey, taskInfo]);
   useEffect(() => {
@@ -53,7 +54,7 @@ const TaskMember: React.FC<TaskMemberProps> = (props) => {
   const getTaskMemberArray = async (groupKey: string) => {
     let taskMemberRes: any = null;
     taskMemberRes = await api.member.getMember(groupKey, 4);
-    if (unDistory) {
+    if (unDistory.current) {
       if (taskMemberRes.msg === 'OK') {
         setTaskMemberArray(taskMemberRes.result);
         setSearchMemberArray(taskMemberRes.result);

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './calendar.css';
 import { Checkbox } from '@material-ui/core';
-import CalendarItem from './calendarItem';
 import CalendarInfo from './calendarInfo';
-import { Button, ClickAwayListener } from '@material-ui/core';
+import { Modal, Button } from 'antd';
+import { ClickAwayListener } from '@material-ui/core';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
@@ -102,7 +102,13 @@ const Calendar: React.FC<CalendarProps> = (props) => {
     '#DA4949',
   ];
   const calendarRef: React.RefObject<any> = useRef();
-  let unDistory = true;
+  let unDistory = useRef<any>(null);
+  unDistory.current = true;
+  useEffect(() => {
+    return () => {
+      // unDistory.current = false;
+    };
+  }, []);
   useEffect(() => {
     let newCalendarGroupArray: any = [];
     if (groupArray) {
@@ -125,9 +131,6 @@ const Calendar: React.FC<CalendarProps> = (props) => {
     if (calendarGroupKey) {
       getData(calendarStartTime, calendarEndTime);
     }
-    return () => {
-      unDistory = false;
-    };
   }, [calendarGroupKey]);
   useEffect(() => {
     if (calendarObj && JSON.stringify(calendarObj) !== '{}') {
@@ -168,7 +171,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
       startTime,
       endTime
     );
-    if (unDistory) {
+    if (unDistory.current) {
       if (res.msg == 'OK') {
         let newCalendarObj = _.cloneDeep(calendarObj);
         newCalendarObj.arr = res.result.getNoCircleScheduleList;
@@ -283,6 +286,12 @@ const Calendar: React.FC<CalendarProps> = (props) => {
           taskItem.taskEndDate >= dateItem.startTime &&
           taskItem.taskEndDate <= dateItem.endTime
         ) {
+          if (taskItem.taskEndDate == moment().valueOf()) {
+            taskItem.calendarType = '今日';
+          } else {
+            taskItem.calendarType = '过去';
+          }
+          taskItem.repeatType = false;
           newTaskList[dateIndex].push(taskItem);
         }
       });
@@ -305,6 +314,8 @@ const Calendar: React.FC<CalendarProps> = (props) => {
           dateItem.endTime <= taskItem.endDay &&
           findIndex === -1
         ) {
+          taskItem.calendarType = '未来';
+          taskItem.repeatType = true;
           newTaskList[dateIndex].push(taskItem);
         }
       });
@@ -339,6 +350,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
       //   'taskEndDate',
       // ]);
     });
+    console.log('newTaskList', newTaskList);
     setMonthTaskList(newTaskList);
     setCalendarDate(strDate);
   };
@@ -470,94 +482,112 @@ const Calendar: React.FC<CalendarProps> = (props) => {
   const saveCalendar = async () => {
     let newCalendar = _.cloneDeep(calendar);
     let newTaskList = _.cloneDeep(taskList);
-    if (newCalendar && !newCalendar.title) {
-      dispatch(setMessage(true, '请输入日程标题', 'error'));
-      return;
-    }
-    if (newCalendar.groupKeyArray && newCalendar.groupKeyArray.length === 0) {
-      newCalendar.groupKeyArray = [mainGroupKey];
-    }
-    if (calendarType === '新建') {
-      if (
-        newCalendar.startDay === newCalendar.endDay &&
-        newCalendar.repeatCircle
-      ) {
-        dispatch(setMessage(true, '循环日程请选择正确的结束时间', 'error'));
+    if (newCalendar) {
+      if (!newCalendar.title) {
+        dispatch(setMessage(true, '请输入日程标题', 'error'));
         return;
       }
-      let calendarRes: any = await api.task.createSchedule(newCalendar);
-      if (calendarRes.msg === 'OK') {
-        dispatch(setMessage(true, '创建日程成功', 'success'));
-        getData(calendarStartTime, calendarEndTime);
-        setInfoVisible(false);
-      } else {
-        dispatch(setMessage(true, calendarRes.msg, 'error'));
+      console.log(newCalendar);
+      if (newCalendar.groupKeyArray && newCalendar.groupKeyArray.length === 0) {
+        newCalendar.groupKeyArray = [mainGroupKey];
+      } else if (newCalendar.groupKeyArray.indexOf(mainGroupKey) === -1) {
+        newCalendar.groupKeyArray.push(mainGroupKey);
       }
-    } else if (calendarType === '编辑') {
-      if (isEdit) {
-        let obj: any = {
-          repeatCircle: newCalendar.repeatCircle,
-          circleData: newCalendar.circleData,
-          title: newCalendar.title,
-          groupKey: newCalendar.groupKey,
-          content: '',
-          icon: '',
-          taskType: newCalendar.taskType,
-        };
+      if (calendarType === '新建') {
         if (
-          moment().startOf('day').valueOf() === futureTime ||
-          newCalendar.taskEndDate < moment().startOf('day').valueOf()
+          newCalendar.startDay === newCalendar.endDay &&
+          newCalendar.repeatCircle
         ) {
-          //今天
-          obj.type1 = 1;
-          obj.type2 = newCalendar.calendarEditType === 2 ? 2 : 1;
-        } else if (moment().endOf('day').valueOf() < futureTime) {
-          //未来
-          obj.type1 = 2;
-          obj.type2 =
-            !newCalendar.type || newCalendar.calendarEditType === 2
-              ? // ? newCalendar.type === 8
-                //   ? 2
-                //   : 3
-                2
-              : 1;
-          obj.futureTime = futureTime;
+          dispatch(setMessage(true, '循环日程请选择正确的结束时间', 'error'));
+          return;
         }
-        if (newCalendar.type === 8) {
-          obj.taskKey = newCalendar._key;
-          obj.eventKey = newCalendar.origionalKey;
-          obj.taskEndDate = newCalendar.taskEndDate;
-        } else {
-          obj.eventKey = newCalendar._key;
-        }
-        let calendarRes: any = await api.task.changeCircleSchedule(obj);
+        let calendarRes: any = await api.task.createSchedule(newCalendar);
         if (calendarRes.msg === 'OK') {
-          dispatch(setMessage(true, '编辑日程成功', 'success'));
+          dispatch(setMessage(true, '创建日程成功', 'success'));
           getData(calendarStartTime, calendarEndTime);
           setInfoVisible(false);
+          setCalendar(null);
         } else {
           dispatch(setMessage(true, calendarRes.msg, 'error'));
         }
-      } else if (followEdit) {
-        let obj: any = { followUKeyArray: followList };
-        if (newCalendar.origionalKey && newCalendar.calendarEditType === 2) {
-          obj.eventKey = newCalendar.origionalKey;
-        } else if (!newCalendar.type) {
-          obj.eventKey = newCalendar._key;
+      } else if (calendarType === '编辑') {
+        if (isEdit) {
+          let obj: any = {
+            repeatCircle: newCalendar.repeatCircle,
+            circleData: newCalendar.circleData,
+            title: newCalendar.title,
+            groupKey: newCalendar.groupKey,
+            content: '',
+            icon: '',
+            taskType: newCalendar.taskType,
+          };
+          if (newCalendar.calendarType === '未来') {
+            //未来
+            obj.type1 = 2;
+            obj.type2 = 2;
+            obj.futureTime = futureTime;
+            obj.eventKey = newCalendar._key;
+          } else {
+            let calendarIndex = _.findIndex(calendarObj.arr, {
+              _key: newCalendar._key,
+            });
+            // console.log(calendarObj.arr[calendarIndex])
+            if (!calendarObj.arr[calendarIndex].origionalKey) {
+              dispatch(
+                editTask(
+                  {
+                    key: newCalendar._key,
+                    ...newCalendar,
+                  },
+                  0
+                )
+              );
+              dispatch(setMessage(true, '编辑日程成功', 'success'));
+              getData(calendarStartTime, calendarEndTime);
+              setInfoVisible(false);
+              // setCalendar(null);
+              return;
+            }
+            obj.taskKey = newCalendar._key;
+            obj.eventKey = calendarObj.arr[calendarIndex].origionalKey
+              ? calendarObj.arr[calendarIndex].origionalKey
+              : '';
+            obj.taskEndDate = newCalendar.taskEndDate;
+            obj.type1 = 1;
+            obj.type2 = 1;
+          }
+          let calendarRes: any = await api.task.changeCircleSchedule(obj);
+          if (calendarRes.msg === 'OK') {
+            dispatch(setMessage(true, '编辑日程成功', 'success'));
+            getData(calendarStartTime, calendarEndTime);
+            setInfoVisible(false);
+            setCalendar(null);
+          } else {
+            dispatch(setMessage(true, calendarRes.msg, 'error'));
+          }
+        } else if (followEdit) {
+          let obj: any = { followUKeyArray: followList };
+          if (newCalendar.origionalKey && newCalendar.calendarEditType === 2) {
+            obj.eventKey = newCalendar.origionalKey;
+          } else if (!newCalendar.type) {
+            obj.eventKey = newCalendar._key;
+          } else {
+            obj.cardKey = newCalendar._key;
+          }
+          let followRes: any = await api.task.setEventFollowUser(obj);
+          if (followRes.msg === 'OK') {
+            console.log(followRes);
+            dispatch(setMessage(true, '编辑日程成功', 'success'));
+            setInfoVisible(false);
+          } else {
+            dispatch(setMessage(true, followRes.msg, 'error'));
+          }
         } else {
-          obj.cardKey = newCalendar._key;
-        }
-        let followRes: any = await api.task.setEventFollowUser(obj);
-        if (followRes.msg === 'OK') {
-          console.log(followRes);
-          dispatch(setMessage(true, '编辑日程成功', 'success'));
           setInfoVisible(false);
-        } else {
-          dispatch(setMessage(true, followRes.msg, 'error'));
         }
-      } else {
-        setInfoVisible(false);
       }
+    } else {
+      dispatch(setMessage(true, '请输入日程内容', 'error'));
     }
   };
   return (
@@ -565,87 +595,92 @@ const Calendar: React.FC<CalendarProps> = (props) => {
       {/* targetGroupKey || moveState === 'in' ? '100%' : 'calc(100% - 320px)', */}
       {loading ? <Loading /> : null}
       {!targetGroupKey ? (
-        <React.Fragment>
-          <CalendarHeader />
-          <div
-            className="calendar-name"
-            onClick={() => {
-              setGroupVisible(true);
-            }}
-          >
-            <div className="calendar-logo" style={{ borderRadius: '5px' }}>
-              <img
-                src={
-                  calendarGroupArray &&
-                  calendarGroupArray[calendarGroupIndex].groupLogo
-                    ? calendarGroupArray[calendarGroupIndex].groupLogo +
-                      '?imageMogr2/auto-orient/thumbnail/80x'
-                    : defaultGroupPng
-                }
-                alt=""
-              />
-            </div>
-            <div className="calendar-name-title">
-              {calendarGroupArray &&
-                calendarGroupArray[calendarGroupIndex].groupName}
-            </div>
-            <img
-              src={downArrowPng}
-              alt=""
-              className="calendar-name-title-logo"
-            />
-            <DropMenu
-              visible={groupVisible}
-              dropStyle={{
-                width: '300px',
-                height: '500px',
-                top: '55px',
-                left: '0px',
-                color: '#333',
-                overflow: 'visible',
+        <CalendarHeader
+          slot={
+            <div
+              className="calendar-name"
+              onClick={() => {
+                setGroupVisible(true);
               }}
-              onClose={() => {
-                setGroupVisible(false);
-              }}
-              title={'日程列表'}
             >
-              <ClickAwayListener
-                onClickAway={() => {
+              <div className="calendar-logo">
+                <img
+                  src={
+                    calendarGroupArray &&
+                    calendarGroupArray[calendarGroupIndex].groupLogo
+                      ? calendarGroupArray[calendarGroupIndex].groupLogo
+                      : defaultGroupPng
+                  }
+                  alt=""
+                />
+              </div>
+              <div className="calendar-name-title">
+                {calendarGroupArray &&
+                  calendarGroupArray[calendarGroupIndex].groupName}
+              </div>
+              <img
+                src={downArrowPng}
+                alt=""
+                className="calendar-name-title-logo"
+              />
+              <DropMenu
+                visible={groupVisible}
+                dropStyle={{
+                  width: '300px',
+                  height: '500px',
+                  top: '55px',
+                  left: '0px',
+                  color: '#333',
+                  overflow: 'visible',
+                }}
+                onClose={() => {
                   setGroupVisible(false);
                 }}
+                title={'日程列表'}
               >
-                <React.Fragment>
-                  {calendarGroupArray
-                    ? calendarGroupArray.map(
-                        (
-                          calendarGroupItem: any,
-                          calendarGroupIndex: number
-                        ) => {
-                          return (
-                            <div
-                              className="calendar-dropmenu-name"
-                              onClick={() => {
-                                setCalendarGroupIndex(calendarGroupIndex);
-                                setCalendarGroupKey(calendarGroupItem._key);
-                              }}
-                              key={'group' + calendarGroupIndex}
-                            >
-                              <div className="calendar-logo">
-                                <img src={calendarGroupItem.groupLogo} alt="" />
+                <ClickAwayListener
+                  onClickAway={() => {
+                    setGroupVisible(false);
+                  }}
+                >
+                  <React.Fragment>
+                    {calendarGroupArray
+                      ? calendarGroupArray.map(
+                          (
+                            calendarGroupItem: any,
+                            calendarGroupIndex: number
+                          ) => {
+                            return (
+                              <div
+                                className="calendar-dropmenu-name"
+                                onClick={() => {
+                                  setCalendarGroupIndex(calendarGroupIndex);
+                                  setCalendarGroupKey(calendarGroupItem._key);
+                                }}
+                                key={'group' + calendarGroupIndex}
+                              >
+                                <div className="calendar-logo">
+                                  <img
+                                    src={calendarGroupItem.groupLogo  ? calendarGroupItem.groupLogo +
+                                      '?imageMogr2/auto-orient/thumbnail/80x'
+                                    : defaultGroupPng}
+                                    alt=""
+                                  />
+                                </div>
+                                <div className="calendar-name-title">
+                                  {calendarGroupItem.groupName}
+                                </div>
                               </div>
-                              <div className="calendar-name-title">
-                                {calendarGroupItem.groupName}
-                              </div>
-                            </div>
-                          );
-                        }
-                      )
-                    : null}
-                </React.Fragment>
-              </ClickAwayListener>
-            </DropMenu>
-          </div>
-        </React.Fragment>
+                            );
+                          }
+                        )
+                      : null}
+                  </React.Fragment>
+                </ClickAwayListener>
+              </DropMenu>
+            </div>
+          }
+        />
       ) : null}
       <div
         className="calendar-container"
@@ -668,14 +703,12 @@ const Calendar: React.FC<CalendarProps> = (props) => {
             }}
           />
           <Button
-            variant="contained"
-            color="primary"
+            type="primary"
             onClick={() => {
               setInfoVisible(true);
               setCalendar(null);
               setCalendarType('新建');
             }}
-            style={{ color: '#fff' }}
           >
             创建日程
           </Button>
@@ -763,7 +796,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
                           // style={getItemStyle(snapshot.isDragging, provided.draggableProps.style)}
                           style={{
                             borderLeft:
-                              '2px solid ' + calendarColor[taskItem.taskType],
+                              '4px solid ' + calendarColor[taskItem.taskType],
                             textDecoration:
                               taskItem.finishPercent === 2
                                 ? 'line-through'
@@ -808,7 +841,7 @@ const Calendar: React.FC<CalendarProps> = (props) => {
           })}
         </div>
       </div>
-      <CalendarItem
+      {/* <CalendarItem
         visible={itemVisible}
         onClose={() => {
           setItemVisible(false);
@@ -822,18 +855,20 @@ const Calendar: React.FC<CalendarProps> = (props) => {
         calendarStartTime={calendarStartTime}
         calendarEndTime={calendarEndTime}
         taskItem={taskItem}
-      />
-      <Dialog
+      /> */}
+      <Modal
         visible={infoVisible}
-        onClose={() => {
+        onCancel={() => {
           setInfoVisible(false);
+          setCalendar(null);
         }}
-        onOK={() => {
+        onOk={() => {
           // deleteTask();
           saveCalendar();
         }}
         title={calendarType + '日程'}
-        dialogStyle={{ width: '400px', height: '90%' }}
+        centered={true}
+        destroyOnClose={true}
       >
         <CalendarInfo
           setCalendar={setCalendar}
@@ -842,9 +877,6 @@ const Calendar: React.FC<CalendarProps> = (props) => {
           calendarColor={calendarColor}
           getData={getData}
           calendarType={calendarType}
-          onClose={() => {
-            setInfoVisible(false);
-          }}
           targetGroupKey={targetGroupKey ? targetGroupKey : mainGroupKey}
           changeEdit={(isEdit: boolean) => {
             setIsEdit(isEdit);
@@ -852,8 +884,12 @@ const Calendar: React.FC<CalendarProps> = (props) => {
           changeFollowEdit={(followEdit: boolean) => {
             setFollowEdit(followEdit);
           }}
+          onClose={() => {
+            setInfoVisible(false);
+            setCalendar(null);
+          }}
         />
-      </Dialog>
+      </Modal>
     </div>
   );
 };

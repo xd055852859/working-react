@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './headerSet.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-import { useHistory } from 'react-router-dom';
-import {
-  TextField,
-  Button,
-  Checkbox,
-  ClickAwayListener,
-  Badge,
-  Tooltip,
-} from '@material-ui/core';
-import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
-import { useDispatch } from 'react-redux';
+import { Input, Checkbox, Tooltip, Badge, Drawer, Tabs } from 'antd';
 
-import Dialog from '../common/dialog';
+import { useHistory } from 'react-router-dom';
+const { Search } = Input;
+import { useDispatch } from 'react-redux';
+import _ from 'lodash';
+import api from '../../services/api';
+
+import {
+  setMessage,
+  setUnMessageNum,
+  setChatState,
+} from '../../redux/actions/commonActions';
 
 import ClockIn from '../clockIn/clockIn';
 import MessageBoard from '../../views/board/messageBoard';
@@ -21,95 +21,44 @@ import Chat from '../../views/chat/chat';
 import Task from '../task/task';
 import HeaderCreate from './headerCreate';
 import HeaderContent from './headerContent';
-import HeaderMessage from './headerMessage';
 
-import { setTheme } from '../../redux/actions/authActions';
-
-import {
-  setMessage,
-  setUnMessageNum,
-  setChatState,
-  setSocketObj,
-  setShowChatState,
-} from '../../redux/actions/commonActions';
-
-import clockInPng from '../../assets/img/clockIn.png';
 import searchPng from '../../assets/img/headerSearch.png';
 import addPng from '../../assets/img/taskAdd.png';
 import messagePng from '../../assets/img/headerMessage.png';
 import chatPng from '../../assets/img/headerChat.png';
-import downArrowbPng from '../../assets/img/downArrowb.png';
-import defaultGroupPng from '../../assets/img/defaultGroup.png';
-
-import _ from 'lodash';
-import api from '../../services/api';
-import moment from 'moment';
+import clockInPng from '../../assets/img/clockIn.png';
+import helpSvg from '../../assets/svg/help.svg';
 interface HeaderSetProps {}
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    button: {
-      backgroundColor: '#17B881',
-      padding: '6 16px',
-      color: '#fff',
-    },
-    input: {
-      width: 'calc(100% - 115px)',
-      marginRight: '10px',
-      minWidth: '200px',
-      '& .MuiInput-formControl': {
-        marginTop: '0px',
-      },
-      '& .MuiOutlinedInput-input': {
-        padding: '10px 14px',
-      },
-      '& .MuiInputLabel-formControl': {
-        marginTop: '-10px',
-      },
-    },
-    badgeRoot: {
-      width: '45px',
-      height: '40px',
-      marginRight: '5px',
-    },
-  })
-);
+
 const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
   const dispatch = useDispatch();
-  const history = useHistory();
-  const classes = useStyles();
-  const theme = useTypedSelector((state) => state.auth.theme);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const unChatNum = useTypedSelector((state) => state.common.unChatNum);
   const unMessageNum = useTypedSelector((state) => state.common.unMessageNum);
-  const socket = useTypedSelector((state) => state.auth.socket);
-  const showChatState = useTypedSelector((state) => state.common.showChatState);
   const user = useTypedSelector((state) => state.auth.user);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const chatState = useTypedSelector((state) => state.common.chatState);
   const [contentSetVisilble, setContentSetVisilble] = useState(false);
-
-  const [clockInVisible, setClockInVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);
   const [messageVisible, setMessageVisible] = useState(false);
+  const [clockVisible, setClockVisible] = useState(false);
   const [addVisible, setAddVisible] = useState(false);
   const [avatarShow, setAvatarShow] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
-  const [chatType, setChatType] = useState<any>(null);
-
   const [searchTaskList, setSearchTaskList] = useState<any>([]);
-
   const [avatar, setAvatar] = useState<any>(null);
-
   const [searchCheck, setSearchCheck] = useState(false);
   const [groupCheck, setGroupCheck] = useState(false);
   const [meCheck, setMeCheck] = useState(false);
   const [clientWidth, setClientWidth] = useState(0);
   let timer1Ref = useRef<any>(null);
   let timer2Ref = useRef<any>(null);
+  const childRef = useRef<any>();
+  const setRef: React.RefObject<any> = useRef();
 
-  const limit = 10;
+  const limit = 20;
   useEffect(() => {
     let width: any =
       window.innerWidth ||
@@ -136,50 +85,12 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     setSearchInput('');
   }, [groupKey, headerIndex]);
 
-  // useEffect(() => {
-  //   if (finishPos) {
-  //     if(!timer1Ref.current){
-  //     timer1Ref.current = setTimeout(() => {
-  //       setAvatarShow(true);
-  //       clearTimeout(timer1Ref.current);
-  //     }, 2000);
-  //   }
-  //   if(!timer2Ref.current){
-  //     timer2Ref.current = setTimeout(() => {
-  //       setAvatarShow(false);
-  //       clearTimeout(timer2Ref.current);
-  //     }, 4000);
-  //   }
-  // }, [finishPos]);
-  // useEffect(() => {
-  //   if (addVisible && groupArray && groupArray.length > 0) {
-  //     getLabelArray(groupArray[0]._key);
-  //   }
-  // }, [groupArray, addVisible]);
   useEffect(() => {
     if (searchInput == '') {
       setSearchTaskList([]);
       setPage(1);
     }
   }, [searchInput]);
-  // const getPng = async () => {
-  //   let newImgBigArr2: any = [];
-  //   let res: any = await api.auth.getWallPapers(1);
-  //   if (res.msg === 'OK') {
-  //     res.data.forEach((item: any) => {
-  //       newImgBigArr2.push(decodeURI(item.url));
-  //     });
-  //     setImgBigArr2(newImgBigArr2);
-  //   } else {
-  //     dispatch(setMessage(true, res.msg, 'error'));
-  //   }
-  // };
-
-  const changeBoard = (type: string) => {
-    let newTheme = _.cloneDeep(theme);
-    newTheme[type] = newTheme[type] ? false : true;
-    dispatch(setTheme(newTheme));
-  };
 
   const searchTask = () => {
     if (searchInput !== '') {
@@ -214,6 +125,9 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     }
     if (meCheck) {
       obj.searchType = 2;
+    }
+    if (groupCheck && meCheck) {
+      obj.searchType = 4;
     }
     let res: any = await api.task.getCardSearch(obj);
     if (res.msg === 'OK') {
@@ -250,242 +164,195 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
     setClientWidth(width);
   }, 500);
   return (
-    <React.Fragment>
+    <div
+      ref={setRef}
+      style={{ position: 'fixed', top: '0px', right: '10px', zIndex: 5 }}
+    >
       <div className="contentHeader-set">
-        {clientWidth > 1190 ? (
-          <React.Fragment>
-            <Tooltip title="新建任务">
-              <img
-                src={addPng}
-                alt=""
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  marginRight: '5px',
-                  cursor: 'pointer',
-                  position: 'relative',
-                }}
-                onClick={() => {
-                  setAddVisible(true);
-                }}
-              />
-            </Tooltip>
-            <Tooltip title="搜索中心">
-              <img
-                src={searchPng}
-                alt=""
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  marginRight: '8px',
-                  cursor: 'pointer',
-                }}
-                onClick={() => {
-                  setSearchVisible(true);
-                }}
-              />
-            </Tooltip>
-            <Tooltip title="打卡中心">
-              <img
-                src={clockInPng}
-                alt=""
-                style={{
-                  width: '40px',
-                  height: '40px',
-                  marginRight: '8px',
-                  cursor: 'pointer',
-                }}
-                onClick={() => {
-                  setClockInVisible(true);
-                }}
-              />
-            </Tooltip>
-            {headerIndex !== 0 ? (
-              <Tooltip title="消息中心">
-                <Badge
-                  badgeContent={unMessageNum}
-                  color="error"
-                  overlap="circle"
-                >
-                  <img
-                    src={messagePng}
-                    alt=""
-                    style={{
-                      width: '40px',
-                      height: '40px',
-                      marginRight: '8px',
-                      cursor: 'pointer',
-                    }}
-                    onClick={() => {
-                      setMessageVisible(true);
-                      dispatch(setUnMessageNum(0));
-                      // dispatch(setSocketObj(null));
-                    }}
-                  />
-                </Badge>
-              </Tooltip>
-            ) : null}
-            <ClickAwayListener
-              onClickAway={() => {
-                dispatch(setChatState(false));
+        <React.Fragment>
+          <Tooltip title="新建任务" getPopupContainer={() => setRef.current}>
+            <img
+              src={addPng}
+              alt=""
+              style={{
+                width: '40px',
+                height: '40px',
+                marginRight: '5px',
+                cursor: 'pointer',
+                position: 'relative',
               }}
-            >
-              <React.Fragment>
-                <Tooltip title="聊天中心">
-                  <Badge
-                    badgeContent={unChatNum ? unChatNum : 0}
-                    color="error"
-                    overlap="circle"
-                    // style={{ marginLeft: '-3px', marginRight: '16px' }}
-                  >
-                    <img
-                      src={chatPng}
-                      alt=""
-                      style={{
-                        width: '40px',
-                        height: '40px',
-                        marginRight: '8px',
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => {
-                        dispatch(setShowChatState(true));
-                        dispatch(setChatState(!chatState));
-                        setChatType('header');
-                      }}
-                    />
-                  </Badge>
-                </Tooltip>
-                {showChatState ? <Chat chatType={chatType} /> : null}
-              </React.Fragment>
-            </ClickAwayListener>
-          </React.Fragment>
-        ) : null}
-        <Tooltip title="用户中心">
+              onClick={() => {
+                setAddVisible(true);
+              }}
+            />
+          </Tooltip>
+          <Tooltip title="搜索中心" getPopupContainer={() => setRef.current}>
+            <img
+              src={searchPng}
+              alt=""
+              style={{
+                width: '40px',
+                height: '40px',
+                marginRight: '8px',
+                cursor: 'pointer',
+              }}
+              onClick={() => {
+                setSearchVisible(true);
+              }}
+            />
+          </Tooltip>
+
+          <Tooltip title="消息中心" getPopupContainer={() => setRef.current}>
+            <Badge count={unMessageNum} offset={[-10, 5]}>
+              <img
+                src={messagePng}
+                alt=""
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  marginRight: '8px',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  setMessageVisible(true);
+                  dispatch(setUnMessageNum(0));
+                  // dispatch(setSocketObj(null));
+                }}
+              />
+            </Badge>
+          </Tooltip>
+          <Tooltip title="聊天中心" getPopupContainer={() => setRef.current}>
+            <Badge count={unChatNum ? unChatNum : 0} offset={[-10, 5]}>
+              <img
+                src={chatPng}
+                alt=""
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  marginRight: '8px',
+                  cursor: 'pointer',
+                }}
+                onClick={() => {
+                  dispatch(setChatState(!chatState));
+                }}
+              />
+            </Badge>
+          </Tooltip>
+          <Tooltip title="打卡中心" getPopupContainer={() => setRef.current}>
+            <img
+              src={clockInPng}
+              alt=""
+              style={{
+                width: '40px',
+                height: '40px',
+                marginRight: '8px',
+                cursor: 'pointer',
+              }}
+              onClick={() => {
+                setClockVisible(true);
+              }}
+            />
+          </Tooltip>
+        </React.Fragment>
+        {/* <Tooltip title="用户中心"> */}
+        <div
+          className="contentHeader-avatar-info"
+          onClick={() => {
+            setContentSetVisilble(true);
+            setAvatarShow(true);
+          }}
+        >
           <div
-            className="contentHeader-avatar-info"
-            onClick={() => {
-              setContentSetVisilble(true);
-              setAvatarShow(true);
-            }}
+            className="contentHeader-avatar"
+            style={
+              avatarShow
+                ? {
+                    animation: 'avatarSmall 500ms',
+                    // animationFillMode: 'forwards',
+                    width: '30px',
+                    height: '30px',
+                  }
+                : {
+                    animation: 'avatarBig 500ms',
+                    // animationFillMode: 'forwards',
+                    width: '40px',
+                    height: '40px',
+                  }
+            }
           >
-            <div
-              className="contentHeader-avatar"
-              style={
-                avatarShow
-                  ? {
-                      animation: 'avatarSmall 500ms',
-                      // animationFillMode: 'forwards',
-                      width: '30px',
-                      height: '30px',
-                    }
-                  : {
-                      animation: 'avatarBig 500ms',
-                      // animationFillMode: 'forwards',
-                      width: '40px',
-                      height: '40px',
-                    }
-              }
-            >
-              <img src={avatar} alt="" />
-            </div>
-            <div className="contentHeader-avatar-bg"></div>
+            <img src={avatar} alt="" />
           </div>
-        </Tooltip>
+          <div className="contentHeader-avatar-bg"></div>
+        </div>
+        {/* </Tooltip> */}
       </div>
 
-      <ClockIn
-        visible={clockInVisible}
-        onClose={() => {
-          setClockInVisible(false);
-        }}
-      />
-      <HeaderCreate
+      <Drawer
         visible={addVisible}
         onClose={() => {
           setAddVisible(false);
         }}
-        createStyle={{
-          position: 'fixed',
-          top: '65px',
-          right: '0px',
-          width: '430px',
-          height: 'calc(100% - 70px)',
-          overflow: 'auto',
-          padding: '0px 15px',
+        width={430}
+        bodyStyle={{
+          padding: '10px',
+          boxSizing: 'border-box',
         }}
-        showList={true}
-      />
-
-      <Dialog
+        headerStyle={{
+          padding: '10px',
+          boxSizing: 'border-box',
+        }}
+        destroyOnClose={true}
+        getContainer={() => setRef.current}
+        title={'新建任务'}
+      >
+        <HeaderCreate
+          createType={'local'}
+          onClose={() => {
+            setAddVisible(false);
+          }}
+          visible={addVisible}
+        />
+      </Drawer>
+      <Drawer
         visible={searchVisible}
         onClose={() => {
           setSearchVisible(false);
         }}
-        footer={false}
-        title={'搜索中心'}
-        dialogStyle={{
-          position: 'fixed',
-          top: '65px',
-          right: '0px',
-          width: '430px',
-          height: searchTaskList.length > 0 ? 'calc(100% - 70px)' : '175px',
-          overflow: 'auto',
+        width={430}
+        bodyStyle={{
+          padding: '10px',
+          boxSizing: 'border-box',
         }}
-        showMask={false}
+        headerStyle={{
+          padding: '10px',
+          boxSizing: 'border-box',
+        }}
+        destroyOnClose={true}
+        getContainer={() => setRef.current}
+        title={'搜索任务'}
+        push={false}
       >
-        <div className="headerSet-search-title">
-          <TextField
-            // required
-            id="outlined-basic"
-            variant="outlined"
-            label="搜索"
-            className={classes.input}
-            style={{ width: '70%' }}
-            value={searchInput}
-            autoComplete="off"
-            onChange={(e) => {
-              setSearchInput(e.target.value);
-            }}
-            onKeyDown={(e: any) => {
-              if (e.keyCode === 13) {
-                searchTask();
-              }
-            }}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={() => {
-              searchTask();
-            }}
-            style={{ marginLeft: '10px' }}
-            className={classes.button}
-          >
-            搜索
-          </Button>
-        </div>
-        <div>
+        <Search
+          placeholder="请输入搜索内容"
+          value={searchInput}
+          autoComplete="off"
+          onChange={(e) => {
+            setSearchInput(e.target.value);
+          }}
+          onSearch={() => searchTask()}
+          allowClear
+        />
+        <div style={{ marginTop: '15px' }}>
           <Checkbox
             checked={meCheck}
             onChange={(e: any) => {
               setMeCheck(e.target.checked);
-              if (e.target.checked) {
-                setGroupCheck(false);
-              }
-
-              getTaskSearch(
-                1,
-                searchCheck,
-                !e.target.checked,
-                e.target.checked
-              );
+              getTaskSearch(1, searchCheck, groupCheck, e.target.checked);
               setPage(1);
             }}
-            color="primary"
-          />
-          与我有关
-        </div>
-        <div>
+          >
+            与我有关
+          </Checkbox>
           <Checkbox
             checked={searchCheck}
             onChange={(e: any) => {
@@ -493,33 +360,22 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
               getTaskSearch(1, e.target.checked, groupCheck, meCheck);
               setPage(1);
             }}
-            color="primary"
-          />
-          已归档任务
-        </div>
-        {headerIndex == 3 ? (
-          <div>
+          >
+            已归档任务
+          </Checkbox>
+          {headerIndex == 3 ? (
             <Checkbox
               checked={groupCheck}
               onChange={(e: any) => {
                 setGroupCheck(e.target.checked);
-                if (e.target.checked) {
-                  setMeCheck(false);
-                }
-                getTaskSearch(
-                  1,
-                  searchCheck,
-                  e.target.checked,
-                  !e.target.checked
-                );
+                getTaskSearch(1, searchCheck, e.target.checked, meCheck);
                 setPage(1);
               }}
-              color="primary"
-            />
-            当前项目下搜索
-          </div>
-        ) : null}
-
+            >
+              当前项目下搜索
+            </Checkbox>
+          ) : null}
+        </div>
         {searchTaskList.length > 0 ? (
           <div className="headerSet-search-info" onScroll={scrollSearchLoading}>
             {searchTaskList.map((taskItem: any, taskIndex: number) => {
@@ -533,48 +389,77 @@ const HeaderSet: React.FC<HeaderSetProps> = (prop) => {
             })}
           </div>
         ) : null}
-      </Dialog>
-      {/* <HeaderMessage
+      </Drawer>
+      <Drawer
         visible={messageVisible}
         onClose={() => {
           setMessageVisible(false);
         }}
-        messageStyle={{
-          position: 'fixed',
-          top: '65px',
-          right: '0px',
-          width: '430px',
-          height: 'calc(100% - 70px)',
-          overflow: 'auto',
+        width={430}
+        bodyStyle={{
+          padding: '0px 10px',
+          boxSizing: 'border-box',
         }}
-      /> */}
-      <Dialog
-        visible={messageVisible}
-        onClose={() => {
-          setMessageVisible(false);
+        headerStyle={{
+          padding: '10px',
+          boxSizing: 'border-box',
         }}
-        footer={false}
+        destroyOnClose={true}
+        getContainer={() => setRef.current}
         title={'消息中心'}
-        dialogStyle={{
-          position: 'fixed',
-          top: '65px',
-          right: '0px',
-          width: '430px',
-          height: 'calc(100% - 70px)',
-          overflow: 'auto',
-        }}
-        showMask={false}
+        push={false}
       >
         <MessageBoard type={'header'} />
-      </Dialog>
-      <HeaderContent
+      </Drawer>
+      <Drawer
+        visible={clockVisible}
+        onClose={() => {
+          if (childRef?.current) {
+            //@ts-ignore
+            childRef.current.saveClockIn();
+          }
+          setClockVisible(false);
+        }}
+        width={280}
+        bodyStyle={{
+          padding: '10px',
+          boxSizing: 'border-box',
+        }}
+        destroyOnClose={true}
+        headerStyle={{
+          padding: '10px',
+          boxSizing: 'border-box',
+        }}
+        title={'打卡'}
+      >
+        <ClockIn ref={childRef} />
+      </Drawer>
+      <Drawer
         visible={contentSetVisilble}
         onClose={() => {
           setContentSetVisilble(false);
           setAvatarShow(false);
+          // if (childRef?.current) {
+          //   //@ts-ignore
+          //   childRef.current.getInfo();
+          // }
         }}
-      />
-    </React.Fragment>
+        width={280}
+        bodyStyle={{
+          padding: '0px',
+          boxSizing: 'border-box',
+        }}
+        headerStyle={{
+          display: 'none',
+        }}
+        destroyOnClose={true}
+        getContainer={() => setRef.current}
+        push={false}
+      >
+        <HeaderContent />
+      </Drawer>
+      <Chat />
+    </div>
   );
 };
 export default HeaderSet;

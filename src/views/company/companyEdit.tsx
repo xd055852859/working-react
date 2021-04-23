@@ -1,68 +1,49 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './companyEdit.css';
+import 'cropperjs/dist/cropper.css';
 import { useDispatch } from 'react-redux';
-import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
-import DateFnsUtils from '@date-io/moment';
-import {
-  MuiPickersUtilsProvider,
-  KeyboardDatePicker,
-} from '@material-ui/pickers';
+import { Input, Radio, DatePicker, Modal, Badge, Button, Tooltip } from 'antd';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-import { getUserInfo, setTargetUserKey } from '../../redux/actions/authActions';
-import { setMessage } from '../../redux/actions/commonActions';
-import {
-  TextField,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-} from '@material-ui/core';
 import moment from 'moment';
 import _ from 'lodash';
-import uploadFile from '../../components/common/upload';
-import Dialog from '../../components/common/dialog';
 import Cropper from 'react-cropper';
-import 'cropperjs/dist/cropper.css';
+import api from '../../services/api';
+
+import { setMessage } from '../../redux/actions/commonActions';
+
+import uploadFile from '../../components/common/upload';
+import IconFont from '../../components/common/iconFont';
+
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 interface CompanyEditProps {
   targetUser: any;
   setTargetUser: any;
+  setChangeState: Function;
+  clearState: boolean;
+  rows?: any;
+  setRows?: any;
+  personIndex?: Number;
+  setUserVisible?: any;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      margin: '-10px 0px',
-    },
-    button: {
-      backgroundColor: '#17B881',
-      padding: '6 16px',
-      color: '#fff',
-    },
-    input: {
-      width: 'calc(100% - 115px)',
-      marginRight: '10px',
-      minWidth: '200px',
-      '& .MuiInput-formControl': {
-        marginTop: '0px',
-      },
-      '& .MuiOutlinedInput-input': {
-        padding: '10px 14px',
-      },
-      '& .MuiInputLabel-formControl': {
-        marginTop: '-10px',
-      },
-    },
-  })
-);
 const CompanyEdit: React.FC<CompanyEditProps> = (props) => {
-  const { targetUser, setTargetUser } = props;
+  const {
+    targetUser,
+    setTargetUser,
+    setChangeState,
+    clearState,
+    rows,
+    setRows,
+    personIndex,
+    setUserVisible,
+  } = props;
   const dispatch = useDispatch();
-  const classes = useStyles();
   const uploadToken = useTypedSelector((state) => state.auth.uploadToken);
+  const groupRole = useTypedSelector((state) => state.group.groupRole);
+  const groupKey = useTypedSelector((state) => state.group.groupKey);
   const [targetUserInfo, setTargetUserInfo] = useState<any>(null);
   const [avatar, setAvatar] = useState<any>(defaultPersonPng);
   const [upImg, setUpImg] = useState<any>(null);
-  const [cropper, setCropper] = useState<any>(null);
   const [photoVisible, setPhotoVisible] = useState<any>(false);
   const [trueName, setTrueName] = useState('');
   const [nickName, setNickName] = useState('');
@@ -80,9 +61,7 @@ const CompanyEdit: React.FC<CompanyEditProps> = (props) => {
   const [department3, setDepartment3] = useState('');
   const [department4, setDepartment4] = useState('');
   const [department5, setDepartment5] = useState('');
-  // onChange(date, dateString) {
-  //   this.birthday = date;
-  // },
+  const [deleteDialogShow, setDeleteDialogShow] = useState(false);
   const cropperRef = useRef<HTMLImageElement>(null);
 
   useEffect(() => {
@@ -90,8 +69,10 @@ const CompanyEdit: React.FC<CompanyEditProps> = (props) => {
       setAvatar(targetUser.avatar ? targetUser.avatar : defaultPersonPng);
       setTrueName(targetUser.trueName ? targetUser.trueName : '');
       setNickName(targetUser.nickName ? targetUser.nickName : '');
-      setGender(targetUser.gender ? targetUser.gender + '' : '0');
-      setBirthday(moment(targetUser.birthday).format('YYYY-MM-DD'));
+      setGender(
+        targetUser.gender == '男' || targetUser.gender == '0' ? '0' : '1'
+      );
+      setBirthday(moment(targetUser.birthday));
       setEmail(targetUser.email ? targetUser.email : '');
       setAddress(targetUser.address ? targetUser.address : '');
       setEmergencyContact(
@@ -125,7 +106,47 @@ const CompanyEdit: React.FC<CompanyEditProps> = (props) => {
         avatar: defaultPersonPng,
       });
     }
-  }, [targetUser]);
+  }, []);
+  useEffect(() => {
+    if (clearState) {
+      setAvatar(defaultPersonPng);
+      setTrueName('');
+      setNickName('');
+      setGender('0');
+      setBirthday(moment());
+      setEmail('');
+      setMobile('');
+      setAddress('');
+      setEmergencyContact('');
+      setEmergencyContactTel('');
+      setLunarBirthday('');
+      setPost('');
+      setDepartment1('');
+      setDepartment2('');
+      setDepartment3('');
+      setDepartment4('');
+      setDepartment5('');
+      setTargetUserInfo({
+        department1: '',
+        department2: '',
+        department3: '',
+        department4: '',
+        department5: '',
+        nickName: '',
+        mobileArea: '+86',
+        mobile: '',
+        post: '',
+        email: '',
+        lunarBirthday: '',
+        emergencyContact: '',
+        emergencyContactTel: '',
+        address: '',
+        gender: '0',
+        birthday: moment().valueOf(),
+        avatar: defaultPersonPng,
+      });
+    }
+  }, [clearState]);
   const uploadImg = () => {
     let mimeType = ['image/png', 'image/jpeg'];
     const imageElement: any = cropperRef?.current;
@@ -153,12 +174,10 @@ const CompanyEdit: React.FC<CompanyEditProps> = (props) => {
     );
   };
   const handleDateChange = (date: any) => {
+    console.log(date);
     setBirthday(date);
     changeTargetUser(date, 'birthday');
   };
-  // toContact() {
-  //   this.$router.push("/").catch((data) => {});
-  // },
   const dataURLtoFile = (dataurl: string, filename = 'file') => {
     let arr: any = dataurl.split(',');
     let mime = arr[0].match(/:(.*?);/)[1];
@@ -183,15 +202,34 @@ const CompanyEdit: React.FC<CompanyEditProps> = (props) => {
     fileReader.readAsDataURL(e.target.files[0]);
   };
   const changeTargetUser = (value: any, type: string) => {
+    setChangeState(true);
     let newTargetUser: any = _.cloneDeep(targetUserInfo);
+    console.log(newTargetUser);
     newTargetUser[type] = value;
+    setTargetUserInfo(newTargetUser);
     setTargetUser(newTargetUser);
+  };
+  const deletePerson = async () => {
+    setDeleteDialogShow(false);
+    let newRow: any = _.cloneDeep(rows);
+    let deletePersonRes: any = await api.company.deletePerson(
+      targetUser.userId,
+      groupKey
+    );
+    if (deletePersonRes.msg === 'OK') {
+      dispatch(setMessage(true, '删除人员成功', 'success'));
+      newRow.splice(personIndex, 1);
+      setRows(newRow);
+      setUserVisible(false);
+    } else {
+      dispatch(setMessage(true, deletePersonRes.msg, 'error'));
+    }
   };
   return (
     <div className="companyEdit-home-content">
       {targetUser && targetUser._key ? (
         <div className="companyEdit-home-avatar">
-          <div className="companyEdit-title">头像</div>
+          <div className="companyEdit-input-title">头像</div>
           <div className="companyEdit-home-avatar-img">
             <input
               type="file"
@@ -205,303 +243,253 @@ const CompanyEdit: React.FC<CompanyEditProps> = (props) => {
       ) : null}
 
       <div className="companyEdit-input">
-        <TextField
-          // required
-          id="outlined-basic"
-          variant="outlined"
-          label="昵称"
-          className={classes.input}
-          style={{ width: '100%' }}
+        <div className="companyEdit-input-title">
+          <Badge dot offset={[10, 0]}>
+            <span style={{ fontSize: '12px' }}>昵称</span>
+          </Badge>
+        </div>
+
+        <Input
           value={nickName}
           onChange={(e: any) => {
             setNickName(e.target.value);
             changeTargetUser(e.target.value, 'nickName');
           }}
+          style={{ width: 'calc(100% - 85px)' }}
+          allowClear={true}
         />
       </div>
       {!targetUser || !targetUser._key ? (
         <React.Fragment>
           <div className="companyEdit-input">
-            <TextField
-              // required
-              id="outlined-basic"
-              variant="outlined"
-              label="部门1"
-              className={classes.input}
-              style={{ width: '100%' }}
+            <div className="companyEdit-input-title">部门1</div>
+            <Input
               value={department1}
               onChange={(e: any) => {
                 setDepartment1(e.target.value);
                 changeTargetUser(e.target.value, 'department1');
               }}
+              style={{ width: 'calc(100% - 85px)' }}
+              allowClear={true}
             />
           </div>
           {department1 ? (
             <div className="companyEdit-input">
-              <TextField
-                // required
-                id="outlined-basic"
-                variant="outlined"
-                label="部门2"
-                className={classes.input}
-                style={{ width: '100%' }}
+              <div className="companyEdit-input-title">部门2</div>
+              <Input
                 value={department2}
                 onChange={(e: any) => {
                   setDepartment2(e.target.value);
                   changeTargetUser(e.target.value, 'department2');
                 }}
+                style={{ width: 'calc(100% - 85px)' }}
+                allowClear={true}
               />
             </div>
           ) : null}
           {department2 ? (
             <div className="companyEdit-input">
-              <TextField
-                // required
-                id="outlined-basic"
-                variant="outlined"
-                label="部门3"
-                className={classes.input}
-                style={{ width: '100%' }}
+              <div className="companyEdit-input-title">部门3</div>
+              <Input
                 value={department3}
                 onChange={(e: any) => {
                   setDepartment3(e.target.value);
                   changeTargetUser(e.target.value, 'department3');
                 }}
+                style={{ width: 'calc(100% - 85px)' }}
+                allowClear={true}
               />
             </div>
           ) : null}
           {department3 ? (
             <div className="companyEdit-input">
-              <TextField
-                // required
-                id="outlined-basic"
-                variant="outlined"
-                label="部门4"
-                className={classes.input}
-                style={{ width: '100%' }}
+              <div className="companyEdit-input-title">部门4</div>
+              <Input
                 value={department4}
                 onChange={(e: any) => {
                   setDepartment4(e.target.value);
                   changeTargetUser(e.target.value, 'department4');
                 }}
+                style={{ width: 'calc(100% - 85px)' }}
+                allowClear={true}
               />
             </div>
           ) : null}
           {department4 ? (
             <div className="companyEdit-input">
-              <TextField
-                // required
-                id="outlined-basic"
-                variant="outlined"
-                label="部门5"
-                className={classes.input}
-                style={{ width: '100%' }}
+              <div className="companyEdit-input-title">部门5</div>
+              <Input
                 value={department5}
                 onChange={(e: any) => {
                   setDepartment5(e.target.value);
                   changeTargetUser(e.target.value, 'department5');
                 }}
+                style={{ width: 'calc(100% - 85px)' }}
+                allowClear={true}
               />
             </div>
           ) : null}
           <div className="companyEdit-input">
-            <TextField
-              // required
-              id="outlined-basic"
-              variant="outlined"
-              label="职位"
-              className={classes.input}
-              style={{ width: '100%' }}
+            <div className="companyEdit-input-title">职位</div>
+            <Input
               value={post}
               onChange={(e: any) => {
                 setPost(e.target.value);
                 changeTargetUser(e.target.value, 'post');
               }}
+              style={{ width: 'calc(100% - 85px)' }}
+              allowClear={true}
             />
           </div>
         </React.Fragment>
       ) : null}
       <div className="companyEdit-input">
-        <RadioGroup
-          aria-label="gender"
-          value={gender}
+        <div className="companyEdit-input-title">性别</div>
+        <Radio.Group
           onChange={(e: any) => {
             console.log(e.target.value);
             setGender(e.target.value);
             changeTargetUser(parseInt(e.target.value), 'gender');
           }}
-          row
+          value={gender + ''}
         >
-          <FormControlLabel
-            value={'0'}
-            control={<Radio />}
-            label={'男'}
-            key={'radio1'}
-            style={{ height: '40px' }}
-          />
-          <FormControlLabel
-            value={'1'}
-            control={<Radio />}
-            label={'女'}
-            key={'radio2'}
-            style={{ height: '40px' }}
-          />
-        </RadioGroup>
+          <Radio value="0">男</Radio>
+          <Radio value="1">女</Radio>
+        </Radio.Group>
       </div>
       <div className="companyEdit-input">
-        <TextField
-          // required
-          id="outlined-basic"
-          variant="outlined"
-          label="电子邮箱"
-          className={classes.input}
-          style={{ width: '100%' }}
+        <div className="companyEdit-input-title">
+          <Badge dot offset={[10, 0]}>
+            <span style={{ fontSize: '12px' }}>电子邮箱</span>
+          </Badge>
+        </div>
+        <Input
           value={email}
           onChange={(e: any) => {
             setEmail(e.target.value);
             changeTargetUser(e.target.value, 'email');
           }}
+          style={{ width: 'calc(100% - 85px)' }}
+          allowClear={true}
         />
       </div>
-      {/* <div className="companyEdit-input">
-        <TextField
-          // required
-          id="outlined-basic"
-          variant="outlined"
-          label="姓名"
-          className={classes.input}
-          style={{ width: '100%' }}
-          value={trueName}
-          onChange={(e: any) => {
-            setTrueName(e.target.value);
-            changeTargetUser(e.target.value, 'trueName');
-          }}
-        />
-      </div> */}
       <div className="companyEdit-input">
         {/* <div className="user-title">生日</div> */}
-        <MuiPickersUtilsProvider utils={DateFnsUtils}>
-          <KeyboardDatePicker
-            disableToolbar
-            variant="inline"
-            format="yyyy-MM-DD"
-            margin="normal"
-            id="date-picker-inline"
-            label="生日"
-            value={birthday}
-            onChange={handleDateChange}
-            KeyboardButtonProps={{
-              'aria-label': 'change date',
-            }}
-            className={classes.root}
-            style={{ width: '100%' }}
-          />
-        </MuiPickersUtilsProvider>
+        <div className="companyEdit-input-title">生日</div>
+        <DatePicker value={birthday} onChange={handleDateChange} />
       </div>
+      {!targetUser || !targetUser._key ? (
+        <div className="companyEdit-input">
+          <div className="companyEdit-input-title">
+            <Badge dot offset={[10, 0]}>
+              <span style={{ fontSize: '12px' }}>手机</span>
+            </Badge>
+          </div>
+          <Input
+            value={mobile}
+            onChange={(e: any) => {
+              setMobile(e.target.value);
+              changeTargetUser(e.target.value, 'mobile');
+            }}
+            style={{ width: 'calc(100% - 85px)' }}
+            allowClear={true}
+          />
+        </div>
+      ) : null}
       <div className="companyEdit-input">
-        {/* <TextField
-          // required
-          id="outlined-basic"
-          variant="outlined"
-          label="手机"
-          className={classes.input}
-          style={{ width: '100%' }}
-          value={mobile}
-          onChange={(e: any) => {
-            setMobile(e.target.value);
-            changeTargetUser(e.target.value, 'mobile');
-          }}
-        /> */}
-        <TextField
-          // required
-          id="outlined-basic"
-          variant="outlined"
-          label="地址"
-          className={classes.input}
-          style={{ width: '100%' }}
+        <div className="companyEdit-input-title">地址</div>
+        <Input
           value={address}
           onChange={(e: any) => {
             setAddress(e.target.value);
             changeTargetUser(e.target.value, 'address');
           }}
+          style={{ width: 'calc(100% - 85px)' }}
+          allowClear={true}
         />
       </div>
       <div className="companyEdit-input">
-        <TextField
-          // required
-          id="outlined-basic"
-          variant="outlined"
-          label="农历生日"
-          className={classes.input}
-          style={{ width: '100%' }}
+        <div className="companyEdit-input-title">农历生日</div>
+        <Input
           value={lunarBirthday}
           onChange={(e: any) => {
             setLunarBirthday(e.target.value);
             changeTargetUser(e.target.value, 'lunarBirthday');
           }}
+          style={{ width: 'calc(100% - 85px)' }}
+          allowClear={true}
         />
       </div>
       <div className="companyEdit-input">
-        <TextField
-          // required
-          id="outlined-basic"
-          variant="outlined"
-          label="紧急联系人"
-          className={classes.input}
-          style={{ width: '100%' }}
+        <div className="companyEdit-input-title">紧急联系人</div>
+        <Input
           value={emergencyContact}
           onChange={(e: any) => {
             setEmergencyContact(e.target.value);
             changeTargetUser(e.target.value, 'emergencyContact');
           }}
+          style={{ width: 'calc(100% - 85px)' }}
+          allowClear={true}
         />
       </div>
       <div className="companyEdit-input">
-        <TextField
-          // required
-          id="outlined-basic"
-          variant="outlined"
-          label="紧急联系人电话"
-          className={classes.input}
-          style={{ width: '100%' }}
+        <div className="companyEdit-input-title">紧急电话</div>
+        <Input
           value={emergencyContactTel}
           onChange={(e: any) => {
             setEmergencyContactTel(e.target.value);
             changeTargetUser(e.target.value, 'emergencyContactTel');
           }}
+          style={{ width: 'calc(100% - 85px)' }}
+          allowClear={true}
         />
       </div>
-      <Dialog
+      {targetUser?._key && groupRole && groupRole < targetUser?.role ? (
+        <Tooltip title={'移除成员'}>
+          <Button
+            onClick={() => {
+              setDeleteDialogShow(true);
+            }}
+            type="primary"
+            ghost
+            shape="circle"
+            icon={<IconFont type="icon-tiren" style={{ fontSize: '25px' }} />}
+            style={{ border: '0px' }}
+            className="companyEdit-delete-button"
+          />
+        </Tooltip>
+      ) : null}
+      <Modal
         visible={photoVisible}
-        onClose={() => {
+        onCancel={() => {
           setPhotoVisible(false);
         }}
-        onOK={() => {
+        onOk={() => {
           uploadImg();
           setPhotoVisible(false);
         }}
         title={'选择图片'}
-        dialogStyle={{
-          // position: 'fixed',
-          // top: '65px',
-          // right: '10px',
-          width: '600px',
-          height: '700px',
-          // maxHeight: 'calc(100% - 66px)',
-          // overflow: 'auto',
-        }}
-        // showMask={false}
       >
         <Cropper
           style={{ width: '100%', height: '95%' }}
-          // preview=".uploadCrop"
           guides={true}
           src={upImg}
           ref={cropperRef}
-          // aspectRatio={16 / 9}
           preview=".img-preview"
         />
-      </Dialog>
+      </Modal>
+      <Modal
+        visible={deleteDialogShow}
+        onCancel={() => {
+          setDeleteDialogShow(false);
+        }}
+        onOk={() => {
+          deletePerson();
+        }}
+        title={'删除人员'}
+      >
+        是否将该人员从所有项目和组织中删除
+      </Modal>
     </div>
   );
 };

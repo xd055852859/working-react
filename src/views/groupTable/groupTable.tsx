@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
+import './groupTable.css';
 import { useDispatch } from 'react-redux';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-import './groupTable.css';
+
 import { getGroupTask } from '../../redux/actions/taskActions';
 import {
   getGroupMember,
@@ -9,7 +10,7 @@ import {
 } from '../../redux/actions/memberActions';
 import { changeStartId, getGroupInfo } from '../../redux/actions/groupActions';
 import { getTheme } from '../../redux/actions/authActions';
-// import api from '../../services/api';
+
 import GroupTableHeader from './groupTableHeader';
 import GroupTableGroup from './groupTableGroup';
 import GroupTableData from './groupTableData';
@@ -34,10 +35,6 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
   );
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
-  const moveState = useTypedSelector((state) => state.common.moveState);
-  const groupMemberItem = useTypedSelector(
-    (state) => state.member.groupMemberItem
-  );
   useEffect(() => {
     if (groupKey) {
       dispatch(getGroupMember(groupKey, 4));
@@ -46,37 +43,22 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
       dispatch(getTheme());
     }
   }, [groupKey]);
-  useEffect(() => {
-    if (user && user._key && groupKey && taskArray) {
-      dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
-    }
-  }, [filterObject]);
+  // useEffect(() => {
+  //   if (user && user._key && groupKey && taskArray) {
+  //     dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
+  //   }
+  // }, [filterObject]);
   useEffect(() => {
     if (groupInfo && groupInfo.taskTreeRootCardKey) {
       dispatch(changeStartId(groupInfo.taskTreeRootCardKey));
     }
   }, [groupInfo]);
   useEffect(() => {
-    if (groupKey && memberHeaderIndex !== 11) {
-      // if (!groupMemberItem.config.headerIndex) {
-      //   groupMemberItem.config.headerIndex = 0;
-      // }
-      // dispatch(setHeaderIndex(groupMemberItem.config.headerIndex));
-      dispatch(setHeaderIndex(0));
-    }
+    dispatch(setHeaderIndex(0));
   }, [headerIndex]);
 
   return (
-    <div
-      className="groupTable"
-      // style={
-      //   moveState === 'in'
-      //     ? { animation: 'contentmoveIn 50ms', width: '100%' }
-      //     : moveState === 'out'
-      //     ? { animation: 'contentmoveOut 50ms', width: 'calc(100% - 320px)' }
-      //     : {}
-      // }
-    >
+    <div className="groupTable">
       <GroupTableHeader />
       <div
         className="groupTableContent"
@@ -85,16 +67,16 @@ const GroupTable: React.FC<GroupTableProps> = (prop) => {
         {memberHeaderIndex === 0 ? <GroupTableGroup /> : null}
         {memberHeaderIndex === 1 ? <Grid gridState={true} /> : null}
         {memberHeaderIndex === 2 ? <Grid gridState={false} /> : null}
-        {memberHeaderIndex === 3 ? <WorkingCalendar /> : null}
-
-        {memberHeaderIndex === 7 ? <WorkingReport /> : null}
-        {memberHeaderIndex === 8 ? <GroupTableData /> : null}
-        {memberHeaderIndex === 9 ? <GroupTableDocument /> : null}
-        {memberHeaderIndex === 10 ? (
+        {memberHeaderIndex === 3 ? (
+          <GroupTableTree groupKey={groupKey} />
+        ) : null}
+        {memberHeaderIndex === 4 ? <WorkingReport /> : null}
+        {memberHeaderIndex === 5 ? <GroupTableData /> : null}
+        {memberHeaderIndex === 6 ? (
           <Vitality vitalityType={headerIndex} vitalityKey={groupKey} />
         ) : null}
-        {memberHeaderIndex === 11 ? <GroupTableTree /> : null}
-        {memberHeaderIndex === 12 ? (
+
+        {memberHeaderIndex === 7 ? (
           <Calendar targetGroupKey={groupKey} />
         ) : null}
       </div>

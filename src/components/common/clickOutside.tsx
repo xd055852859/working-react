@@ -14,9 +14,8 @@ const ClickOutside: React.FC<Props> = (props) => {
     if (e.type === 'touchend') setisTouch(true);
     if (e.type === 'click' && isTouch) return;
 
-    // const el: any = containerRef.current;
-    // if (el && !el.contains(e.target)) 
-    onClickOutside();
+    const el: any = containerRef.current;
+    if (el && !el.contains(e.target)) onClickOutside();
   }
 
   useEffect(() => {
@@ -36,7 +35,8 @@ const ClickOutside: React.FC<Props> = (props) => {
   return (
     <div
       ref={containerRef}
-      style={{ ...{ width: 'fit-content' }, ...propsStyle }}
+      // style={{ ...{ width: 'fit-content' }, ...propsStyle }}
+      style={{ ...propsStyle }}
     >
       {children}
     </div>

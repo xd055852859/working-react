@@ -2,7 +2,7 @@ import { actionTypes as commonActionTypes } from '../actions/commonActions';
 interface Message {
   visible: boolean;
   text: string;
-  severity: 'success' | 'info' | 'warning' | 'error' | undefined;
+  messageType: 'success' | 'info' | 'warning' | 'error' | undefined;
 }
 
 export interface Common {
@@ -24,6 +24,9 @@ export interface Common {
   taskMemberVisible: boolean;
   taskMemberX: number;
   taskMemberY: number;
+  fileInfo: any;
+  fileKey: string;
+  fileVisible: boolean;
 }
 
 const defaultState: Common = {
@@ -34,7 +37,7 @@ const defaultState: Common = {
   message: {
     visible: false,
     text: '',
-    severity: undefined,
+    messageType: undefined,
   },
   // headerIndex: 3,
   headerIndex: null,
@@ -50,6 +53,9 @@ const defaultState: Common = {
   taskMemberVisible: false,
   taskMemberX: 0,
   taskMemberY: 0,
+  fileInfo: null,
+  fileKey: '',
+  fileVisible: false,
 };
 
 export const common = (state = defaultState, action: any) => {
@@ -96,7 +102,9 @@ export const common = (state = defaultState, action: any) => {
         message: {
           visible: action.visible,
           text: action.text,
-          severity: action.severity ? action.severity : state.message.severity,
+          messageType: action.messageType
+            ? action.messageType
+            : state.message.messageType,
         },
       };
     case commonActionTypes.SET_HEADERINDEX:
@@ -153,6 +161,18 @@ export const common = (state = defaultState, action: any) => {
         taskMemberX: action.taskMemberX,
         taskMemberY: action.taskMemberY,
       };
+    case commonActionTypes.SET_FILEINFO:
+      return {
+        ...state,
+        fileInfo: action.fileInfo,
+        fileVisible: action.fileVisible,
+      };
+    case commonActionTypes.SET_FILEKEY:
+      return {
+        ...state,
+        fileKey: action.fileKey,
+      };
+
     default:
       return state;
   }

@@ -1,9 +1,9 @@
 .file-button {
+  width: 124px;
+  height: 32px;
   position: absolute;
   top: 0px;
-  bottom: 0px;
   left: 0px;
-  right: 0px;
   z-index: 2;
   opacity: 0;
   outline: none;
@@ -76,4 +76,8 @@
 }
 .MuiTableCell-sizeSmall {
   padding: 6px !important;
+}
+.companyPerson-option {
+  height: 35px;
+  width: 100%;
 }

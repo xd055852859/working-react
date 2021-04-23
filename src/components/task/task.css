@@ -291,7 +291,7 @@ input {
   background-color: transparent;
 }
 .taskItem textarea:focus {
-  border: 1px solid #17b881;
+  border: 1px solid #1890ff;
   outline: 0px;
 }
 .taskItem textarea::-webkit-scrollbar {
@@ -395,7 +395,7 @@ input {
 }
 
 .field-textarea:focus {
-  outline: 1px solid #17b881;
+  outline: 1px solid #1890ff;
 }
 
 .taskItem-path-container {

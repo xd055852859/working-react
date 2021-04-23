@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import './groupModel.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
@@ -9,7 +9,6 @@ import api from '../../services/api';
 
 import { setMessage } from '../../redux/actions/commonActions';
 
-import Editor from '../../components/common/Editor';
 import unfinishbPng from '../../assets/img/unfinishb.png';
 import leftArrowPng from '../../assets/img/leftArrow.png';
 import modelDefaultPng from '../../assets/img/modelDefault.png';
@@ -52,11 +51,11 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
     'rgba(179,152,152,0.3)',
     'rgba(242,237,166,0.3)',
   ];
-  let unDistory = true;
+let unDistory = useRef<any>(null);   unDistory.current=true;
   useEffect(() => {
     getModelType();
     return () => {
-      unDistory = false;
+      // unDistory.current = false;
     };
   }, []);
   useEffect(() => {
@@ -67,7 +66,7 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
 
   const getModelType = async () => {
     let res: any = await api.group.getTemplateTypeList();
-    if (unDistory) {
+    if (unDistory.current) {
       if (res.msg === 'OK') {
         res.result.unshift('全部');
         setModelTypeArr(res.result);
@@ -148,7 +147,7 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
               className="groupModel-left-item"
               style={
                 modelIndex === index
-                  ? { background: '#ffffff', color: '#17b881' }
+                  ? { background: '#ffffff', color: '#1890ff' }
                   : {}
               }
               key={'modelTypeArr' + index}
@@ -343,11 +342,14 @@ const GroupModel: React.FC<GroupModelProps> = (props) => {
                   }
                 )}
               </div>
-              <Editor
-                // editorHeight={'300px'}
-                data={modelInfo.description}
-                editable={false}
-              />
+
+              <div
+                dangerouslySetInnerHTML={{ __html: modelInfo.description }}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                }}
+              ></div>
             </div>
           </div>
         )}

@@ -1,16 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation, useHistory } from 'react-router-dom';
+import React, { useEffect } from 'react';
 import './company.css';
+import { useHistory } from 'react-router-dom';
 import Loadable from 'react-loadable';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-import {
-  setMessage,
-  setCommonHeaderIndex,
-} from '../../redux/actions/commonActions';
-import { useDispatch } from 'react-redux';
-import { Route, Switch, Link } from 'react-router-dom';
-import { Collapse, List, ListItem, Button } from '@material-ui/core';
-import { ExpandLess, ExpandMore } from '@material-ui/icons';
+import { Route, Switch } from 'react-router-dom';
+import { Menu, Tooltip, Button } from 'antd';
+const { SubMenu } = Menu;
+import { PoweroffOutlined } from '@ant-design/icons';
 
 import companyIcon1 from '../../assets/svg/companyIcon1.svg';
 import companyIcon2 from '../../assets/svg/companyIcon2.svg';
@@ -19,8 +15,8 @@ import companyIcon4 from '../../assets/svg/companyIcon4.svg';
 import companyIcon5 from '../../assets/svg/companyIcon5.svg';
 import companyRole1 from '../../assets/svg/companyRole1.svg';
 import companyRole2 from '../../assets/svg/companyRole2.svg';
-
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
+
 const CompanyPerson = Loadable({
   loader: () => import('./companyPerson'),
   loading: () => null,
@@ -41,17 +37,12 @@ interface CompanyProps {}
 
 const Company: React.FC<CompanyProps> = (props) => {
   const {} = props;
-  const dispatch = useDispatch();
   const history = useHistory();
-  const [linkIndex, setLinkIndex] = useState(0);
-  const [firstOpen, setFirstOpen] = useState(false);
-  const [secondOpen, setSecondOpen] = useState(false);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   useEffect(() => {
     history.push('/home/company/companyPerson');
   }, []);
-  const handleClick = (index: number, url: string) => {
-    setLinkIndex(index);
+  const handleClick = (url: string) => {
     history.push(url);
   };
   return (
@@ -61,7 +52,7 @@ const Company: React.FC<CompanyProps> = (props) => {
           <img
             src={
               groupInfo && groupInfo.groupLogo
-                ? groupInfo.groupLogo + '?imageMogr2/auto-orient/thumbnail/300x'
+                ? groupInfo.groupLogo
                 : defaultGroupPng
             }
             alt=""
@@ -70,175 +61,128 @@ const Company: React.FC<CompanyProps> = (props) => {
         <div className="company-menu-name toLong">
           {groupInfo && groupInfo.groupName}
         </div>
-        {/* <div> 企业中心</Link></div> */}
-        <div
-          className="company-menu-link"
-          onClick={() => {
-            setFirstOpen(false);
-            setSecondOpen(false);
-            handleClick(0, '/home/company/companyPerson');
-          }}
-          // style={
-          //   linkIndex === 0
-          //     ? {
-          //         background: '#37373C',
-          //       }
-          //     : {}
-          // }
+        <Menu
+          defaultSelectedKeys={['1']}
+          defaultOpenKeys={['sub1']}
+          mode="inline"
+          theme="dark"
         >
-          <img
-            src={companyIcon1}
-            alt=""
-            style={{ width: '15px', height: '17px', marginRight: '10px' }}
-          />
-          人员管理
-        </div>
-        <ListItem
-          button
-          onClick={() => {
-            setFirstOpen(!firstOpen);
-            setSecondOpen(false);
-            handleClick(1, '/home/company/companyDepartment/1');
-          }}
-          className="company-menu-link"
-        >
-          <img
-            src={companyIcon2}
-            alt=""
-            style={{ width: '20px', height: '14px', marginRight: '5px' }}
-          />
-          组织管理
-          <div className="company-menu-link-icon">
-            {firstOpen ? <ExpandLess /> : <ExpandMore />}
-          </div>
-        </ListItem>
-        <Collapse in={firstOpen} timeout="auto" unmountOnExit>
-          <List
-            component="div"
-            disablePadding
+          <Menu.Item
+            key="1"
+            icon={
+              <img
+                src={companyIcon1}
+                alt=""
+                style={{ width: '15px', height: '17px', marginRight: '10px' }}
+              />
+            }
+            onClick={() => {
+              handleClick('/home/company/companyPerson');
+            }}
           >
-            {/* <ListItem
-              button
-              className="company-submenu"
+            人员管理
+          </Menu.Item>
+          <SubMenu
+            key="sub1"
+            icon={
+              <img
+                src={companyIcon2}
+                alt=""
+                style={{ width: '20px', height: '14px', marginRight: '5px' }}
+              />
+            }
+            title="组织管理"
+            onTitleClick={() => {
+              handleClick('/home/company/companyDepartment/1');
+            }}
+          >
+            <Menu.Item
+              key="2"
               onClick={() => {
-                handleClick(1, '/home/company/companyDepartment/1');
+                handleClick('/home/company/companyDepartment/2');
               }}
-              style={linkIndex === 1 ? { color: '#17B881' } : {}}
-            >
-              组织结构
-            </ListItem> */}
-            <ListItem
-              button
-              className="company-submenu"
-              onClick={() => {
-                handleClick(2, '/home/company/companyDepartment/2');
-              }}
-              style={linkIndex === 2 ? { color: '#17B881' } : {}}
             >
               组织成员
-            </ListItem>
-            <ListItem
-              button
-              className="company-submenu"
+            </Menu.Item>
+            <Menu.Item
+              key="3"
               onClick={() => {
-                handleClick(3, '/home/company/companyDepartment/3');
+                handleClick('/home/company/companyDepartment/3');
               }}
-              style={linkIndex === 3 ? { color: '#17B881' } : {}}
             >
               组织项目
-            </ListItem>
-            {/* <ListItem
-              button
-              className="company-submenu"
+            </Menu.Item>
+          </SubMenu>
+          <SubMenu
+            key="sub2"
+            icon={
+              <img
+                src={companyIcon3}
+                alt=""
+                style={{ width: '16px', height: '16px', marginRight: '9px' }}
+              />
+            }
+            title="授权管理"
+            onTitleClick={() => {
+              handleClick('/home/company/companyGroup/7');
+            }}
+          >
+            <Menu.Item
+              key="4"
+              icon={
+                <img
+                  src={companyRole1}
+                  alt=""
+                  style={{ width: '16px', height: '16px', marginRight: '9px' }}
+                />
+              }
               onClick={() => {
-                handleClick(2, '/home/company/companyMember');
+                handleClick('/home/company/companyGroup/7');
               }}
-              style={linkIndex === 2 ? { color: '#17B881' } : {}}
             >
-              组织成员项目矩阵
-            </ListItem> */}
-          </List>
-        </Collapse>
-        <ListItem
-          button
-          onClick={() => {
-            setFirstOpen(false);
-            setSecondOpen(!secondOpen);
-            handleClick(4, '/home/company/companyGroup/2');
-            // handleClick(1, '');
-          }}
-          className="company-menu-link"
-        >
-          <img
-            src={companyIcon3}
-            alt=""
-            style={{ width: '16px', height: '16px', marginRight: '9px' }}
-          />
-          授权管理
-          <div className="company-menu-link-icon">
-            {secondOpen ? <ExpandLess /> : <ExpandMore />}
-          </div>
-        </ListItem>
-        <Collapse in={secondOpen} timeout="auto" unmountOnExit>
-          <ListItem
-            button
-            className="company-submenu"
+              人员授权
+            </Menu.Item>
+            <Menu.Item
+              key="5"
+              icon={
+                <img
+                  src={companyRole2}
+                  alt=""
+                  style={{ width: '16px', height: '16px', marginRight: '9px' }}
+                />
+              }
+              onClick={() => {
+                handleClick('/home/company/companyGroup/8');
+              }}
+            >
+              项目授权
+            </Menu.Item>
+          </SubMenu>
+          {/* <Menu.Item
+            key="6"
+            icon={
+              <img
+                src={companyIcon4}
+                alt=""
+                style={{ width: '15px', height: '17px', marginRight: '10px' }}
+              />
+            }
             onClick={() => {
-              handleClick(4, '/home/company/companyGroup/2');
+              handleClick('/home/company/companyAccount');
             }}
-            style={linkIndex === 4 ? { color: '#17B881' } : {}}
           >
-            <img
-              src={companyRole1}
-              alt=""
-              style={{ width: '16px', height: '16px', marginRight: '9px' }}
-            />
-            人员授权
-          </ListItem>
-          <ListItem
-            button
-            className="company-submenu"
-            onClick={() => {
-              handleClick(5, '/home/company/companyGroup/3');
-            }}
-            style={linkIndex === 5 ? { color: '#17B881' } : {}}
-          >
-            <img
-              src={companyRole2}
-              alt=""
-              style={{ width: '16px', height: '16px', marginRight: '9px' }}
-            />
-            项目授权
-          </ListItem>
-        </Collapse>
+            企业账户
+          </Menu.Item> */}
+        </Menu>
         <div
-          className="company-menu-link"
+          className="company-menu-logout"
           onClick={() => {
-            setFirstOpen(false);
-            setSecondOpen(false);
-            handleClick(6, '/home/company/companyAccount');
-          }}
-        >
-          <img
-            src={companyIcon4}
-            alt=""
-            style={{ width: '15px', height: '17px', marginRight: '10px' }}
-          />
-          企业账户
-        </div>
-        <div
-          className="company-menu-link"
-          onClick={() => {
-            dispatch(setCommonHeaderIndex(3));
             history.push('/home/basic/groupTable');
           }}
         >
-          <img
-            src={companyIcon5}
-            alt=""
-            style={{ width: '15px', height: '17px', marginRight: '10px' }}
-          />
-          退出中台
+          <Tooltip title="退出">
+            <Button shape="circle" icon={<PoweroffOutlined />} size="large" />
+          </Tooltip>
         </div>
       </div>
       <div className="company-container">

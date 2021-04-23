@@ -88,6 +88,7 @@
   display: flex;
   align-items: center;
   color: #8091a0;
+  margin-top: 10px;
 }
 .messageBoard-item-task img {
   width: 20px;
@@ -99,7 +100,7 @@
   width: 70px;
   height: 28px;
   position: absolute;
-  top: 50px;
+  bottom: 15px;
   right: 5px;
   z-index: 2;
   padding: 0px 5px;
@@ -111,7 +112,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #17b881;
+  background-color: #1890ff;
   border-radius: 5px;
 }
 .messageBoard-item-taskTime {
@@ -143,6 +144,24 @@
   height: 100%;
   display: flex;
   align-items: center;
+}
+.messageBoard-filter-title {
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: #1890ff;
+  margin-right: 15px;
+  cursor: pointer;
+}
+.messageBoard-filter-container > div {
+  height: 27px;
+  text-align: center;
+  cursor: pointer;
+}
+.messageBoard-filter-container > div:hover {
+  background-color: #f0f0f0;
 }
 @keyframes changeSmall {
   from {

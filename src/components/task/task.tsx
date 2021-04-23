@@ -1,21 +1,12 @@
-import React, { useState, useEffect, useRef, MouseEvent } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-import { Button, Tooltip } from '@material-ui/core';
+import { Button, Tooltip, Input } from 'antd';
+const { TextArea } = Input;
+import './task.css';
 import TextareaAutosize from '@material-ui/core/TextareaAutosize';
 import { useDispatch } from 'react-redux';
-import {
-  createMuiTheme,
-  createStyles,
-  makeStyles,
-  Theme,
-  ThemeProvider,
-} from '@material-ui/core/styles';
-import {
-  changeMusic,
-  changeunMusic,
-  changeMove,
-  changeCreateMusic,
-} from '../../redux/actions/authActions';
+import { createMuiTheme, ThemeProvider } from '@material-ui/core/styles';
+import { changeMusic, changeMove } from '../../redux/actions/authActions';
 import {
   setTaskKey,
   editTask,
@@ -35,7 +26,7 @@ import {
 import { changeStartId } from '../../redux/actions/groupActions';
 import moment from 'moment';
 import _ from 'lodash';
-import './task.css';
+
 import api from '../../services/api';
 import DropMenu from '../common/dropMenu';
 import TimeIcon from '../common/timeIcon';
@@ -68,7 +59,6 @@ interface TaskProps {
   myState?: boolean;
   createTime?: string;
   reportState?: boolean;
-  outSide?: boolean;
 }
 const buttonTheme = createMuiTheme({
   palette: {
@@ -80,27 +70,22 @@ const buttonTheme = createMuiTheme({
 const Task: React.FC<TaskProps> = (props) => {
   const {
     taskItem,
-    changeTask,
     taskIndex,
-    taskInfoIndex,
     showGroupName,
     bottomtype,
-    timeSetStatus,
     myState,
     createTime,
     reportState,
-    outSide,
+    changeTask,
   } = props;
   const taskKey = useTypedSelector((state) => state.task.taskKey);
-  // const addKey = useTypedSelector((state) => state.task.addKey);
   const user = useTypedSelector((state) => state.auth.user);
   const theme = useTypedSelector((state) => state.auth.theme);
-  const timeSetVisible = useTypedSelector(
-    (state) => state.common.timeSetVisible
-  );
   const taskInfo = useTypedSelector((state) => state.task.taskInfo);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
-  const targetUserKey = useTypedSelector((state) => state.auth.targetUserKey);
+  const workingTaskArray = useTypedSelector(
+    (state) => state.task.workingTaskArray
+  );
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const memberHeaderIndex = useTypedSelector(
     (state) => state.member.memberHeaderIndex
@@ -114,7 +99,7 @@ const Task: React.FC<TaskProps> = (props) => {
   const [taskDetail, setTaskDetail] = useState<any>(null);
   const [taskTitle, setTaskTitle] = useState('');
   // const [deleteDialogShow, setDeleteDialogShow] = useState(false);
-  const [taskInfoDialogShow, setTaskInfoDialogShow] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [addTaskVisible, setAddTaskVisible] = useState(false);
   const [addInput, setAddInput] = useState('');
   const [avatarShow, setAvatarShow] = useState<any>(null);
@@ -122,6 +107,8 @@ const Task: React.FC<TaskProps> = (props) => {
   const [avatarKey, setAvatarKey] = useState<any>(null);
 
   const titleRef: React.RefObject<any> = useRef();
+  const taskRef: React.RefObject<any> = useRef();
+
   const color = [
     '#6FD29A',
     '#21ABE4',
@@ -150,159 +137,12 @@ const Task: React.FC<TaskProps> = (props) => {
   // useEffect(() => {
   //   setTaskDetail(null);
   // }, [headerIndex, targetUserKey, groupKey]);
-  useEffect(() => {
-    // 用户已登录
-    if (taskItem) {
-      editTargetTask(taskItem);
-    }
-  }, [taskItem]);
-  useEffect(() => {
-    // 用户已登录
-    if (taskInfo && taskDetail && taskInfo._key === taskDetail._key) {
-      editTargetTask(taskInfo);
-    }
-  }, [taskInfo]);
-
   // useEffect(() => {
-  //   if (titleRef.current && taskKey === taskDetail._key && editRole) {
-  // if (titleRef.current.setSelectionRange) {
-  //   titleRef.current.setSelectionRange(
-  //     titleRef.current.value.length,
-  //     titleRef.current.value.length
-  //   );
-  // } else {
-  //   let range = titleRef.current.createTextRange();
-  //   range.moveStart('character', titleRef.current.value.length);
-  //   range.moveEnd('character', titleRef.current.value.length);
-  //   range.select();
-  // }
-  // let range = document.createRange();
-  // range.selectNodeContents(titleRef.current);
-  // range.collapse(false);
-  // let sel: any = window.getSelection();
-  // sel.removeAllRanges();
-  // sel.addRange(range);
-  // }
-  // dispatch(setChooseKey('0'));
-  // }, [taskKey]);
-
-  const chooseTask = (e: React.MouseEvent) => {
-    dispatch(setTaskKey(taskItem._key));
-    dispatch(setTaskInfo(taskDetail));
-  };
-  const changeFinishPercent = (finishPercent: number, e?: any) => {
-    let newTaskDetail = _.cloneDeep(taskDetail);
-    // taskDetail.finishPercent = finishPercent !== 0 ? 0 : 1;
-    newTaskDetail.finishPercent = finishPercent;
-    if (newTaskDetail.finishPercent === 1) {
-      // newTaskDetail.todayTaskTime = moment().valueOf();
-      newTaskDetail.taskEndDate = moment().valueOf();
-      dispatch(changeMusic(true));
-      if (e) {
-        dispatch(changeMove([e.pageX, e.pageY]));
-      }
-    } else if (newTaskDetail.finishPercent === 0) {
-      dispatch(changeunMusic(true));
-    }
-    setNewDetail(newTaskDetail, {
-      finishPercent: finishPercent,
-      taskEndDate: newTaskDetail.taskEndDate,
-    });
-  };
-  const changeTitle = (title: string) => {
-    let newTaskDetail = _.cloneDeep(taskDetail);
-    newTaskDetail.title = title;
-    setTaskDetail(newTaskDetail);
-  };
-
-  const changeImportant = (importantStatus: number) => {
-    let newTaskDetail = _.cloneDeep(taskDetail);
-    newTaskDetail.importantStatus = importantStatus;
-    setNewDetail(newTaskDetail, { importantStatus: importantStatus });
-  };
-  const changeTaskType = (taskType: number) => {
-    let newTaskDetail = _.cloneDeep(taskDetail);
-    newTaskDetail.taskType = taskType;
-    setNewDetail(newTaskDetail, { taskType: taskType });
-  };
-  const chooseExecutor = (e: React.MouseEvent) => {
-    if (editRole) {
-      dispatch(changeTaskMemberVisible(true, e.clientX, e.clientY));
-    }
-  };
-
-  const changeTime = (e: any) => {
-    if (editRole) {
-      dispatch(changeTimeSetVisible(true, e.clientX, e.clientY));
-    }
-  };
-
-  const setNewDetail = (taskDetail: any, obj: any) => {
-    if (editRole) {
-      // setEditState(true);
-      obj._key = taskDetail._key;
-      for (let key in obj) {
-        taskDetail[key] = _.cloneDeep(obj[key]);
-      }
-      dispatch(
-        editTask(
-          {
-            key: taskDetail._key,
-            ...obj,
-          },
-          headerIndex
-        )
-      );
-      dispatch(setTaskInfo(_.cloneDeep(taskDetail)));
-      setTaskDetail(_.cloneDeep(taskDetail));
-    }
-  };
-  const plusTask = async () => {
-    let newTaskDetail = _.cloneDeep(taskDetail);
-    let addTaskRes: any = await api.task.addTask({
-      groupKey: newTaskDetail.groupKey,
-      groupRole: newTaskDetail.groupRole,
-      labelKey: newTaskDetail.labelKey,
-      executorKey: newTaskDetail.executorKey,
-      taskType: newTaskDetail.taskType,
-      title: '',
-      cardIndex: taskIndex ? taskIndex + 1 : 0,
-    });
-    if (addTaskRes.msg === 'OK') {
-      await api.task.editTask({
-        key: newTaskDetail._key,
-        ...newTaskDetail,
-      });
-      setTaskInfo(newTaskDetail);
-      setAddTaskVisible(false);
-      setAddInput('');
-      // setChooseKey(addTaskRes.result._key);
-      setTaskKey(addTaskRes.result._key);
-      dispatch(changeCreateMusic(true));
-      dispatch(setMessage(true, '新增成功', 'success'));
-
-      if (headerIndex == 3) {
-        dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
-      } else if (headerIndex == 0) {
-        dispatch(
-          getSelfTask(
-            1,
-            user._key,
-            '[0, 1]',
-            1,
-            moment().add(1, 'days').startOf('day').valueOf(),
-            1
-          )
-        );
-      } else {
-        dispatch(
-          getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10], theme.fileDay)
-        );
-      }
-    } else {
-      dispatch(setMessage(true, addTaskRes.msg, 'error'));
-    }
-  };
+  //   // 用户已登录
+  //   if (taskItem) {
+  //     editTargetTask(taskItem);
+  //   }
+  // }, [workingTaskArray]);
   const editTargetTask = (newTaskItem: any, type?: number) => {
     let [time, endTime, taskDayColor, endState, editRole]: any = [
       0,
@@ -353,6 +193,177 @@ const Task: React.FC<TaskProps> = (props) => {
     setTaskTitle(newTaskItem.title);
     setTaskDetail(newTaskItem);
   };
+  useMemo(() => {
+    // 用户已登录
+    if (taskItem) {
+      editTargetTask(taskItem);
+    }
+  }, []);
+  useMemo(() => {
+    // 用户已登录
+    if (taskItem && taskDetail && taskItem._key !== taskDetail._key) {
+      editTargetTask(taskItem);
+    }
+  }, [taskItem]);
+  useMemo(() => {
+    // 用户已登录
+    if (taskInfo && taskDetail && taskInfo._key === taskDetail._key) {
+      editTargetTask(taskInfo);
+    }
+  }, [taskInfo]);
+
+  // useEffect(() => {
+  //   if (titleRef.current && taskKey === taskDetail._key && editRole) {
+  // if (titleRef.current.setSelectionRange) {
+  //   titleRef.current.setSelectionRange(
+  //     titleRef.current.value.length,
+  //     titleRef.current.value.length
+  //   );
+  // } else {
+  //   let range = titleRef.current.createTextRange();
+  //   range.moveStart('character', titleRef.current.value.length);
+  //   range.moveEnd('character', titleRef.current.value.length);
+  //   range.select();
+  // }
+  // let range = document.createRange();
+  // range.selectNodeContents(titleRef.current);
+  // range.collapse(false);
+  // let sel: any = window.getSelection();
+  // sel.removeAllRanges();
+  // sel.addRange(range);
+  // }
+  // dispatch(setChooseKey('0'));
+  // }, [taskKey]);
+
+  const chooseTask = (e: React.MouseEvent) => {
+    dispatch(setTaskKey(taskItem._key));
+    dispatch(setTaskInfo(taskDetail));
+  };
+  const changeFinishPercent = (finishPercent: number, e?: any) => {
+    let newTaskDetail = _.cloneDeep(taskDetail);
+    let obj: any = {};
+    // taskDetail.finishPercent = finishPercent !== 0 ? 0 : 1;
+    newTaskDetail.finishPercent = finishPercent;
+    if (newTaskDetail.finishPercent === 1) {
+      // newTaskDetail.todayTaskTime = moment().valueOf();
+      console.log(newTaskDetail.taskEndDate, moment().endOf('day').valueOf());
+      if (
+        newTaskDetail.taskEndDate > moment().endOf('day').valueOf() ||
+        newTaskDetail.taskEndDate < moment().startOf('day').valueOf()
+      ) {
+        newTaskDetail.taskEndDate = moment().endOf('day').valueOf();
+        obj.taskEndDate = newTaskDetail.taskEndDate;
+      }
+      dispatch(changeMusic(1));
+      if (e) {
+        dispatch(changeMove([e.clientX, e.clientY]));
+      }
+    } else if (newTaskDetail.finishPercent === 0) {
+      dispatch(changeMusic(3));
+    }
+    obj.finishPercent = finishPercent;
+    setNewDetail(newTaskDetail, obj);
+  };
+  const changeTitle = (title: string) => {
+    let newTaskDetail = _.cloneDeep(taskDetail);
+    newTaskDetail.title = title;
+    setTaskDetail(newTaskDetail);
+  };
+
+  const changeImportant = (importantStatus: number) => {
+    let newTaskDetail = _.cloneDeep(taskDetail);
+    newTaskDetail.importantStatus = importantStatus;
+    setNewDetail(newTaskDetail, { importantStatus: importantStatus });
+  };
+  const changeTaskType = (taskType: number) => {
+    let newTaskDetail = _.cloneDeep(taskDetail);
+    newTaskDetail.taskType = taskType;
+    setNewDetail(newTaskDetail, { taskType: taskType });
+  };
+  const chooseExecutor = (e: React.MouseEvent) => {
+    if (editRole) {
+      dispatch(changeTaskMemberVisible(true, e.clientX, e.clientY));
+    }
+  };
+
+  const changeTime = (e: any) => {
+    if (editRole) {
+      dispatch(changeTimeSetVisible(true, e.clientX, e.clientY));
+    }
+  };
+
+  const setNewDetail = (taskDetail: any, obj: any) => {
+    if (editRole) {
+      // setEditState(true);
+      obj._key = taskDetail._key;
+      for (let key in obj) {
+        taskDetail[key] = _.cloneDeep(obj[key]);
+      }
+      dispatch(
+        editTask(
+          {
+            key: taskDetail._key,
+            ...obj,
+          },
+          headerIndex
+        )
+      );
+      dispatch(setTaskInfo(_.cloneDeep(taskDetail)));
+      setTaskDetail(_.cloneDeep(taskDetail));
+      if (changeTask) {
+        changeTask(_.cloneDeep(taskDetail));
+      }
+    }
+  };
+  const plusTask = async () => {
+    let newTaskDetail = _.cloneDeep(taskDetail);
+    setLoading(true);
+    let addTaskRes: any = await api.task.addTask({
+      groupKey: newTaskDetail.groupKey,
+      groupRole: newTaskDetail.groupRole,
+      labelKey: newTaskDetail.labelKey,
+      executorKey: newTaskDetail.executorKey,
+      taskType: newTaskDetail.taskType,
+      title: addInput,
+      cardIndex: taskIndex ? taskIndex + 1 : 0,
+    });
+    if (addTaskRes.msg === 'OK') {
+      await api.task.editTask({
+        key: newTaskDetail._key,
+        ...newTaskDetail,
+      });
+      setTaskInfo(newTaskDetail);
+      setAddTaskVisible(false);
+      setAddInput('');
+      // setChooseKey(addTaskRes.result._key);
+      setTaskKey(addTaskRes.result._key);
+      dispatch(changeMusic(5));
+      dispatch(setMessage(true, '新增成功', 'success'));
+
+      if (headerIndex == 3) {
+        dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
+      } else if (headerIndex == 0) {
+        dispatch(
+          getSelfTask(
+            1,
+            user._key,
+            '[0, 1]',
+            1,
+            moment().add(1, 'days').startOf('day').valueOf(),
+            1
+          )
+        );
+      } else {
+        dispatch(
+          getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10], theme.fileDay)
+        );
+      }
+    } else {
+      dispatch(setMessage(true, addTaskRes.msg, 'error'));
+    }
+    setLoading(false);
+  };
+
   return (
     <React.Fragment>
       {taskDetail ? (
@@ -386,14 +397,15 @@ const Task: React.FC<TaskProps> = (props) => {
               }}
               // onKeyDown={taskKeyDown}
               style={{
-                background: bottomtype
-                  ? 'transparent'
-                  : taskDetail.finishPercent === 0 ||
-                    taskDetail.finishPercent === 10
-                  ? taskDetail.taskEndDate > moment().endOf('day').valueOf()
-                    ? 'rgb(255,255,255,0.95)'
-                    : 'rgb(255,255,255)'
-                  : 'rgb(229,231,234,0.9)',
+                background:
+                  bottomtype === 'grid'
+                    ? 'transparent'
+                    : taskDetail.finishPercent === 0 ||
+                      taskDetail.finishPercent === 10
+                    ? taskDetail.taskEndDate > moment().endOf('day').valueOf()
+                      ? 'rgb(255,255,255,0.95)'
+                      : 'rgb(255,255,255)'
+                    : 'rgb(229,231,234,0.9)',
                 // opacity:
                 //   taskDetail.finishPercent === 0 ||
                 //   taskDetail.finishPercent === 10
@@ -403,7 +415,8 @@ const Task: React.FC<TaskProps> = (props) => {
                   !bottomtype && taskItem._key === taskKey
                     ? '0 0 7px 0 rgba(0, 0, 0, 0.26)'
                     : '',
-                border: createTime ? '1px solid #efefef' : '0px',
+                // border: createTime ? '1px solid #efefef' : '0px',
+                border: '1px solid #efefef',
               }}
             >
               <React.Fragment>
@@ -417,8 +430,7 @@ const Task: React.FC<TaskProps> = (props) => {
                         <img
                           src={
                             taskDetail.groupLogo
-                              ? taskDetail.groupLogo +
-                                '?imageMogr2/auto-orient/thumbnail/80x'
+                              ? taskDetail.groupLogo
                               : defaultGroupPng
                           }
                         />
@@ -497,14 +509,17 @@ const Task: React.FC<TaskProps> = (props) => {
                       }
                     }}
                   >
-                    <Tooltip title="设置完成度">
+                    <Tooltip
+                      title="设置完成度"
+                      getPopupContainer={() => taskRef.current}
+                    >
                       <img
                         src={
                           taskDetail.finishPercent === 0
-                            ? bottomtype
+                            ? bottomtype === 'grid'
                               ? unfinishPng
                               : unfinishbPng
-                            : bottomtype
+                            : bottomtype === 'grid'
                             ? finishPng
                             : finishbPng
                         }
@@ -515,7 +530,10 @@ const Task: React.FC<TaskProps> = (props) => {
                 <div className="taskItem-container">
                   <div className="taskItem-info">
                     {!myState ? (
-                      <Tooltip title="设置工时">
+                      <Tooltip
+                        title="设置工时"
+                        getPopupContainer={() => taskRef.current}
+                      >
                         <React.Fragment>
                           <TimeIcon
                             timeHour={taskDetail.hour}
@@ -527,7 +545,10 @@ const Task: React.FC<TaskProps> = (props) => {
                       </Tooltip>
                     ) : null}
                     {bottomtype === 'grid' ? (
-                      <Tooltip title="设置执行人">
+                      <Tooltip
+                        title="设置执行人"
+                        getPopupContainer={() => taskRef.current}
+                      >
                         <div
                           className="taskItem-img"
                           onMouseEnter={() => {
@@ -557,6 +578,7 @@ const Task: React.FC<TaskProps> = (props) => {
                                   // animationFillMode: 'forwards',
                                   width: '18px',
                                   height: '18px',
+                                  marginTop: '5px',
                                 }
                           }
                         >
@@ -573,19 +595,19 @@ const Task: React.FC<TaskProps> = (props) => {
                       </Tooltip>
                     ) : null}
                     <div className="taskItem-title">
-                      <TextareaAutosize
-                        rowsMin={1}
-                        aria-label="maximum height"
+                      <TextArea
+                        autoSize={{ minRows: 1 }}
                         placeholder="请输入任务名"
                         style={{
                           width: '100%',
                           minHeight: '28px',
-                          backgroundColor: bottomtype ? 'transparent' : '',
-                          color: bottomtype
-                            ? '#fff'
-                            : taskDetail.finishPercent === 0
-                            ? '#333'
-                            : '#8091a0',
+                          backgroundColor: 'transparent',
+                          color:
+                            bottomtype === 'grid'
+                              ? '#fff'
+                              : taskDetail.finishPercent === 0
+                              ? '#333'
+                              : '#8091a0',
                           textDecoration:
                             taskDetail.finishPercent === 2
                               ? 'line-through #333 solid'
@@ -620,35 +642,62 @@ const Task: React.FC<TaskProps> = (props) => {
                             return false;
                           }
                         }}
-                        disabled={!editRole || taskKey !== taskDetail._key}
+                        // disabled={!editRole || taskKey !== taskDetail._key}
                       />
+                      {/* <TextareaAutosize
+                        rowsMin={1}
+                        aria-label="maximum height"
+                        placeholder="请输入任务名"
+                        value={taskTitle}
+                        ref={titleRef}
+                        onChange={(e) => {
+                          if (e.target.value !== taskTitle) {
+                            changeTitle(e.target.value);
+                            setTaskTitle(e.target.value);
+                          }
+                        }}
+                        onKeyDown={(e: any) => {
+                          if (e.keyCode === 13) {
+                            let newTaskItem = _.cloneDeep(taskItem);
+                            let newTaskDetail = _.cloneDeep(taskDetail);
+                            newTaskDetail.title = e.target.value;
+                            if (newTaskItem.title !== e.target.value) {
+                              dispatch(
+                                editTask(
+                                  {
+                                    key: newTaskDetail._key,
+                                    title: e.target.value,
+                                  },
+                                  headerIndex
+                                )
+                              );
+                              setTaskInfo(newTaskDetail);
+                            }
+                            e.preventDefault(); // 阻止浏览器默认换行操作
+                            return false;
+                          }
+                        }}
+                        disabled={!editRole || taskKey !== taskDetail._key}
+                      /> */}
                     </div>
                   </div>
                   {(taskItem.creatorKey === user._key ||
                     taskItem.executorKey === user._key) &&
                   taskItem?.extraData?.auditStatus ? (
-                    <div  className="taskItem-auditStatus">
+                    <div className="taskItem-auditStatus">
                       {taskItem.extraData.auditStatus === 1 ? (
-                        <Button variant="outlined" size="small">
+                        <Button type="text" size="small">
                           待审核
                         </Button>
                       ) : null}
                       {taskItem.extraData.auditStatus === 2 ? (
-                        <Button
-                          variant="outlined"
-                          color="primary"
-                          size="small"                       
-                        >
+                        <Button type="text" size="small">
                           审核已通过
                         </Button>
                       ) : null}
                       {taskItem.extraData.auditStatus === 3 ? (
                         <ThemeProvider theme={buttonTheme}>
-                          <Button
-                            variant="outlined"
-                            color="primary"
-                            size="small"
-                          >
+                          <Button danger type="text" size="small">
                             审核已拒绝
                           </Button>
                         </ThemeProvider>
@@ -679,7 +728,7 @@ const Task: React.FC<TaskProps> = (props) => {
                       <div
                         className="taskItem-path"
                         style={{
-                          color: bottomtype ? '#fff' : '#A1ACB7',
+                          color: bottomtype === 'grid' ? '#fff' : '#A1ACB7',
                         }}
                       >
                         {taskDetail.path1.map(
@@ -691,7 +740,7 @@ const Task: React.FC<TaskProps> = (props) => {
                                     onClick={() => {
                                       if (headerIndex === 3) {
                                         dispatch(changeStartId(pathItem._key));
-                                        dispatch(setHeaderIndex(11));
+                                        dispatch(setHeaderIndex(3));
                                       }
                                     }}
                                   >
@@ -707,7 +756,7 @@ const Task: React.FC<TaskProps> = (props) => {
                       </div>
                     </div>
                   ) : null}
-                  {!bottomtype && !myState ? (
+                  {(!bottomtype || bottomtype === 'create') && !myState ? (
                     <div className="taskItem-footer">
                       <div className="taskItem-footer-left">
                         {reportState && headerIndex === 1 ? (
@@ -843,7 +892,6 @@ const Task: React.FC<TaskProps> = (props) => {
                           </div>
                         </div>
                       </div>
-
                       <div className="taskItem-icon-group">
                         {editRole &&
                         headerIndex === 3 &&
@@ -854,7 +902,10 @@ const Task: React.FC<TaskProps> = (props) => {
                               setAddTaskVisible(true);
                             }}
                           >
-                            <Tooltip title="添加任务">
+                            <Tooltip
+                              title="添加任务"
+                              getPopupContainer={() => taskRef.current}
+                            >
                               <img
                                 src={taskAddPng}
                                 alt=""
@@ -863,12 +914,15 @@ const Task: React.FC<TaskProps> = (props) => {
                             </Tooltip>
                           </div>
                         ) : null}
-                        {taskDetail.importantStatus ? (
+                        {/* {taskDetail.importantStatus ? (
                           <div
                             className="taskItem-check-icon"
                             style={{ display: 'flex' }}
                           >
-                            <Tooltip title="重要">
+                            <Tooltip
+                              title="重要"
+                              getPopupContainer={() => taskRef.current}
+                            >
                               <img
                                 src={importantPng}
                                 alt="重要"
@@ -882,7 +936,10 @@ const Task: React.FC<TaskProps> = (props) => {
                           </div>
                         ) : (
                           <div className="taskItem-check-icon">
-                            <Tooltip title="重要">
+                            <Tooltip
+                              title="重要"
+                              getPopupContainer={() => taskRef.current}
+                            >
                               <img
                                 src={unimportantPng}
                                 alt="不重要"
@@ -894,7 +951,7 @@ const Task: React.FC<TaskProps> = (props) => {
                               />
                             </Tooltip>
                           </div>
-                        )}
+                        )} */}
                         {taskDetail.extraData && taskDetail.extraData.url ? (
                           <div
                             className="taskItem-check-icon"
@@ -903,7 +960,10 @@ const Task: React.FC<TaskProps> = (props) => {
                               window.open(taskDetail.extraData.url);
                             }}
                           >
-                            <Tooltip title="跳转链接">
+                            <Tooltip
+                              title="跳转链接"
+                              getPopupContainer={() => taskRef.current}
+                            >
                               <img
                                 src={urlSvg}
                                 alt=""
@@ -927,20 +987,17 @@ const Task: React.FC<TaskProps> = (props) => {
                           ) : null} */}
 
                         {editRole ? (
-                          <Tooltip title="任务详情">
+                          <Tooltip
+                            title="任务详情"
+                            getPopupContainer={() => taskRef.current}
+                          >
                             <div
                               className="taskItem-detail"
                               style={
                                 taskDetail.hasContent ? { opacity: '1' } : {}
                               }
                               onClick={() => {
-                                // if (outSide) {
                                 dispatch(changeTaskInfoVisible(true));
-                                // } else {
-                                //   setTaskInfoDialogShow(true);
-                                // }
-
-                                // dispatch(setTaskInfo(taskDetail));
                                 dispatch(setChooseKey(taskDetail._key));
                               }}
                             >
@@ -977,33 +1034,27 @@ const Task: React.FC<TaskProps> = (props) => {
                 </div>
                 <div className="taskItem-plus-button">
                   <Button
+                    ghost
                     onClick={() => {
                       setAddTaskVisible(false);
                       setAddInput('');
                     }}
+                    style={{ border: '0px' }}
                   >
                     取消
                   </Button>
-                  {addInput ? (
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={() => {
-                        plusTask();
-                      }}
-                      style={{ marginLeft: '10px', color: '#fff' }}
-                    >
-                      确定
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="contained"
-                      disabled
-                      style={{ marginLeft: '10px', color: '#fff' }}
-                    >
-                      确定
-                    </Button>
-                  )}
+                  <Button
+                    loading={loading}
+                    type="primary"
+                    onClick={() => {
+                      plusTask();
+                    }}
+                    style={{
+                      marginLeft: '10px',
+                    }}
+                  >
+                    确定
+                  </Button>
                 </div>
               </div>
             ) : null}

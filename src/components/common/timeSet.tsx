@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { useTypedSelector } from '../../redux/reducer/RootState';
 import './timeSet.css';
+import { useTypedSelector } from '../../redux/reducer/RootState';
 import moment from 'moment';
+moment.locale('zh-cn');
+import 'moment/locale/zh-cn';
+import _ from 'lodash';
 import { useDispatch } from 'react-redux';
+import { Button } from 'antd';
+
+import { editTask, setTaskInfo } from '../../redux/actions/taskActions';
+import { setMessage } from '../../redux/actions/commonActions';
+
 import timeSet1Svg from '../../assets/svg/timeSet1.svg';
 import timeSet2Svg from '../../assets/svg/timeSet2.svg';
 import timeSet3Svg from '../../assets/svg/timeSet3.svg';
@@ -10,11 +18,10 @@ import timeSet4Svg from '../../assets/svg/timeSet4.svg';
 import timeSet5Svg from '../../assets/svg/timeSet5.svg';
 import timeSet6Svg from '../../assets/svg/timeSet6.svg';
 import clockSvg from '../../assets/svg/clock.svg';
-import { Button } from '@material-ui/core';
-import { editTask, setTaskInfo } from '../../redux/actions/taskActions';
-import { setMessage } from '../../redux/actions/commonActions';
+
 import DropMenu from '../common/dropMenu';
-import _ from 'lodash';
+import { userInfo } from 'os';
+
 interface timeSetProp {
   timeSetClick?: any;
   dayNumber?: number;
@@ -40,6 +47,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
     targetNode,
   } = prop;
   const dispatch = useDispatch();
+  const user = useTypedSelector((state) => state.auth.user);
   const taskInfo = useTypedSelector((state) => state.task.taskInfo);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const theme = useTypedSelector((state) => state.auth.theme);
@@ -105,9 +113,9 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
     changeDateIndex(timeDateType);
   }, [newDayNumber]);
   const mouthDate = () => {
-    let timeDate = [];
-    let timeWeek = [];
-    let timeMonth = [];
+    let timeDate: any = [];
+    let timeWeek: any = [];
+    let timeMonth: any = [];
 
     // const weekString = [
     //   "星期一",
@@ -119,15 +127,18 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
     //   "星期日",
     // ];
     for (let i = 0; i < 28; i += 1) {
-      timeMonth.push(moment().add(i, 'days').date());
+      let targetDate = _.cloneDeep(moment().add(i, 'days'));
+      timeMonth.push(targetDate.date());
       // weeks[i] = weekString[
       //   this.$moment("2020-03-05")
       //     .add(i, "days")
       //     .weekday()
       // ];
-      timeWeek.push(moment().add(i, 'days').weekday());
+
+      timeWeek.push(targetDate.weekday());
       timeDate.push(i + 1);
     }
+
     setTimeDate(timeDate);
     setTimeWeek(timeWeek);
     setTimeMonth(timeMonth);
@@ -163,6 +174,15 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
     let newTaskItem: any = {};
     let newTaskInfo: any = _.cloneDeep(taskInfo);
     if (type === 'finishPercent') {
+      if (
+        moment(newTaskInfo.taskEndDate)
+          .endOf('day')
+          .diff(moment().endOf('day'), 'days') > -7 &&
+        newTaskInfo.creatorKey !== user._key
+      ) {
+        dispatch(setMessage(true, '非创建者7天内不能归档', 'error'));
+        return;
+      }
       newTaskItem.finishPercent = value;
       newTaskInfo.finishPercent = value;
       if (newTaskItem.finishPercent === 1) {
@@ -376,8 +396,8 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                 className="timeSet-freeTime"
               />
               <Button
-                variant="contained"
-                color="primary"
+                type="primary"
+                size="small"
                 onClick={() => {
                   if (isNaN(parseFloat(freeTimeInput))) {
                     dispatch(setMessage(true, '请输入数字', 'error'));
@@ -449,7 +469,12 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
         <React.Fragment>
           {!viewStyle ? (
             <div className="timeSet-title">
-              到期时间<span>{moment(newEndDate).format('YYYY-MM-DD')}</span>
+              到期时间
+              <span>
+                {newEndDate === 99999999999999
+                  ? '无限期'
+                  : moment(newEndDate).format('YYYY-MM-DD')}
+              </span>
             </div>
           ) : null}
           <div
@@ -537,7 +562,7 @@ const TimeSet: React.FC<timeSetProp> = (prop) => {
                       marginBottom: viewStyle !== 'horizontal' ? '5px' : '1px',
                       marginRight:
                         // !viewStyle ?
-                        '2px',
+                        '1px',
                       // : '1px',
                     }}
                   >

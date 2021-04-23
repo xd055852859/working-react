@@ -6,9 +6,31 @@
   color: #fff;
   display: flex;
   align-items: center;
-  padding: 0px 27px;
+  padding-right: 30px;
+  margin-left: 30px;
   box-sizing: border-box;
-  z-index: 20;
+  z-index: 5;
+}
+.workingTableHeader-tag,
+.workingTableHeader-smalltag {
+  height: 25px;
+  color: #fff;
+  border-radius: 24px;
+  background-color: rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0px 15px;
+  margin-right: 8px;
+  cursor: pointer;
+}
+.workingTableHeader-smalltag {
+  height: 22px;
+  font-size: 12px;
+}
+.workingTableHeader-tag > img,
+.workingTableHeader-smalltag > img {
+  margin-right: 6px;
 }
 
 .workingTableHeader-logo,
@@ -111,8 +133,19 @@
 }
 .viewTableHeader-tab {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+}
+.viewTableHeader-tab .ant-menu-submenu-title {
+  display: flex !important;
+  align-items: center !important;
+}
+.viewTableHeader-tab .ant-menu-submenu-arrow {
+  top: calc(50% - 2px) !important;
+  right: 5px;
+}
+.viewTableHeader-tab-logo {
+  width: 15px;
+  margin-right: 8px;
 }
 .groupTableHeader-name {
   max-width: 250px;

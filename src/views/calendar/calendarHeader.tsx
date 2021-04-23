@@ -4,20 +4,21 @@ import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { setMoveState } from '../../redux/actions/commonActions';
 import calendarHomePng from '../../assets/img/calendarHome.png';
-interface CalendarProps {}
+interface CalendarProps {
+  slot: any;
+}
 
 const Calendar: React.FC<CalendarProps> = (props) => {
+  let { slot } = props;
   const dispatch = useDispatch();
   const moveState = useTypedSelector((state) => state.common.moveState);
   return (
     <div
       className="calendarHeader"
-      onClick={() => {
-        dispatch(setMoveState(moveState === 'in' ? 'out' : 'in'));
-      }}
     >
       <img src={calendarHomePng} alt="" className="calendarHeader-logo" />
-      日程
+      <div style={{ marginRight: '20px' }}>日程</div>
+      {slot}
     </div>
   );
 };

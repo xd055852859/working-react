@@ -3,6 +3,9 @@ import './basic.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useHistory } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import Loadable from 'react-loadable';
+import _ from 'lodash';
+
 
 import {
   setUnMessageNum,
@@ -13,8 +16,8 @@ import { setNewTaskArray } from '../../redux/actions/taskActions';
 import HeaderSet from '../../components/headerSet/headerSet';
 import Home from '../home/home';
 import { Route, Switch } from 'react-router-dom';
-import Loadable from 'react-loadable';
-import _ from 'lodash';
+
+
 interface BasicProps {}
 const Content = Loadable({
   loader: () => import('../content/content'),
@@ -190,14 +193,6 @@ const Basic: React.FC<BasicProps> = (props) => {
       }
     >
       <Home />
-      {/* {headerIndex === 0 ? <Content /> : null}
-      {headerIndex === 1 ? <WorkingTable /> : null}
-      {headerIndex === 3 ? <GroupTable /> : null}
-      {headerIndex === 2 ? <WorkingTable /> : null}
-      {headerIndex === 5 && theme && theme.calendarVisible ? (
-        <Calendar />
-      ) : null} */}
-
       <Switch>
         <Route exact path="/home/basic/content" component={Content} />
         <Route exact path="/home/basic/workTable" component={WorkingTable} />

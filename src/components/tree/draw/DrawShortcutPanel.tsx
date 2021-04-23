@@ -58,7 +58,7 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: '15px 0',
       color: '#424242',
     },
-  }),
+  })
 );
 
 interface Props {
@@ -75,7 +75,7 @@ export default function DrawShortcutPanel({ visible, handleClose }: Props) {
   const isMac = /macintosh|mac os x/i.test(navigator.userAgent);
 
   const rows = [
-    createData('拖动视图', `${isMac ? 'Option' : 'Ctrl'} + 鼠标左键拖动`),
+    createData('拖动视图', `${isMac ? 'Option' : 'Ctrl'} + 鼠标右键拖动`),
     createData('选中节点', '鼠标单击'),
     createData('复制节点', `${isMac ? '⌘' : 'Ctrl'} + C`),
     createData('剪切节点', `${isMac ? '⌘' : 'Ctrl'} + X`),

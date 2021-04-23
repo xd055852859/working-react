@@ -10,13 +10,8 @@ import {
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { getUserInfo } from '../../redux/actions/authActions';
 import { setMessage } from '../../redux/actions/commonActions';
-import {
-  TextField,
-  Button,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-} from '@material-ui/core';
+import { Input, Button, Radio, DatePicker, Modal } from 'antd';
+const { TextArea } = Input;
 import moment from 'moment';
 import uploadFile from '../../components/common/upload';
 import Dialog from '../common/dialog';
@@ -88,7 +83,7 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
     setTrueName(profile.trueName);
     setNickName(profile.nickName);
     setGender(profile.gender + '');
-    setBirthday(moment(profile.birthday).format('YYYY-MM-DD'));
+    setBirthday(moment(profile.birthday));
     setEmail(profile.email);
     setMobile(user.mobile);
   };
@@ -99,7 +94,7 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
         slogan: slogan,
         trueName: trueName,
         nickName: nickName,
-        birthday: moment(birthday).valueOf(),
+        birthday: birthday.valueOf(),
         email: email,
         gender: parseInt(gender),
       },
@@ -182,13 +177,9 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
       </div>
 
       <div className="user-input">
-        <TextField
-          // required
-          id="outlined-basic"
-          variant="outlined"
-          label="昵称"
-          className={classes.input}
-          style={{ width: '100%' }}
+        <div className="user-title">昵称</div>
+        <Input
+          style={{ width: 'calc(100% - 60px)' }}
           value={nickName}
           onChange={(e: any) => {
             setNickName(e.target.value);
@@ -196,13 +187,9 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
         />
       </div>
       <div className="user-input">
-        <TextField
-          // required
-          id="outlined-basic"
-          variant="outlined"
-          label="电子邮箱"
-          className={classes.input}
-          style={{ width: '100%' }}
+        <div className="user-title">电子邮箱</div>
+        <Input
+          style={{ width: 'calc(100% - 60px)' }}
           value={email}
           onChange={(e: any) => {
             setEmail(e.target.value);
@@ -210,53 +197,35 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
         />
       </div>
       <div className="user-input">
-        <RadioGroup
-          aria-label="gender"
-          value={gender}
+        <div className="user-title">性别</div>
+        <Radio.Group
           onChange={(e: any) => {
             console.log(e.target.value);
             setGender(e.target.value);
           }}
-          row
+          value={gender + ''}
         >
-          <FormControlLabel
-            value={'0'}
-            control={<Radio />}
-            label={'男'}
-            key={'radio1'}
-            style={{ height: '40px' }}
-          />
-          <FormControlLabel
-            value={'1'}
-            control={<Radio />}
-            label={'女'}
-            key={'radio2'}
-            style={{ height: '40px' }}
-          />
-        </RadioGroup>
+          <Radio value="0">男</Radio>
+          <Radio value="1">女</Radio>
+        </Radio.Group>
       </div>
       <div className="user-input">
-        <TextField
-          // required
-          id="outlined-basic"
-          variant="outlined"
-          label="个性签名"
-          className={classes.input}
-          style={{ width: '100%' }}
+        <div className="user-title">个性签名</div>
+        <TextArea
+          autoSize={{ minRows: 5 }}
+          placeholder="请输入个性签名"
+          style={{ width: 'calc(100% - 60px)', fontSize: '14px' }}
           value={slogan}
-          onChange={(e: any) => {
+          onChange={(e) => {
             setSlogan(e.target.value);
           }}
         />
       </div>
       <div className="user-input">
-        <TextField
-          // required
-          id="outlined-basic"
-          variant="outlined"
-          label="姓名"
-          className={classes.input}
-          style={{ width: '100%' }}
+        <div className="user-title">姓名</div>
+        <Input
+          placeholder="请输入姓名"
+          style={{ width: 'calc(100% - 60px)' }}
           value={trueName}
           onChange={(e: any) => {
             setTrueName(e.target.value);
@@ -264,28 +233,16 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
         />
       </div>
       <div className="user-input">
-        {/* <div className="user-title">生日</div> */}
-        <MuiPickersUtilsProvider utils={DateFnsUtils}>
-          <KeyboardDatePicker
-            disableToolbar
-            variant="inline"
-            format="yyyy-MM-DD"
-            margin="normal"
-            id="date-picker-inline"
-            label="生日"
-            value={birthday}
-            onChange={handleDateChange}
-            KeyboardButtonProps={{
-              'aria-label': 'change date',
-            }}
-            className={classes.root}
-          />
-        </MuiPickersUtilsProvider>
+        <div className="user-title">生日</div>
+        <DatePicker
+          value={birthday}
+          onChange={handleDateChange}
+          format={'YYYY-MM-DD'}
+        />
       </div>
       <div className="user-button-info">
         <Button
-          variant="contained"
-          color="primary"
+          type="primary"
           onClick={() => {
             saveuserInfo();
           }}
@@ -294,30 +251,19 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
         >
           确认
         </Button>
-        <Button variant="contained" onClick={onClose}>
-          取消
-        </Button>
+        <Button onClick={onClose}>取消</Button>
       </div>
-      <Dialog
+      <Modal
         visible={photoVisible}
-        onClose={() => {
+        onCancel={() => {
           setPhotoVisible(false);
         }}
-        onOK={() => {
+        onOk={() => {
           uploadImg();
           setPhotoVisible(false);
         }}
         title={'选择图片'}
-        dialogStyle={{
-          // position: 'fixed',
-          // top: '65px',
-          // right: '10px',
-          width: '600px',
-          height: '700px',
-          // maxHeight: 'calc(100% - 66px)',
-          // overflow: 'auto',
-        }}
-        // showMask={false}
+        centered={true}
       >
         <Cropper
           style={{ width: '100%', height: '95%' }}
@@ -328,7 +274,7 @@ const UserCenter: React.FC<UserCenterProps> = (props) => {
           // aspectRatio={16 / 9}
           preview=".img-preview"
         />
-      </Dialog>
+      </Modal>
     </div>
   );
 };

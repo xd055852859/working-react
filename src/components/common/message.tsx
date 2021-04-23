@@ -1,30 +1,39 @@
-import React from "react";
-import { useTypedSelector } from "../../redux/reducer/RootState";
-import { useDispatch } from "react-redux";
-import { setMessage } from "../../redux/actions/commonActions";
-import Snackbar from "@material-ui/core/Snackbar";
-import MuiAlert, { AlertProps } from "@material-ui/lab/Alert";
+import React, { useEffect } from 'react';
+import { useTypedSelector } from '../../redux/reducer/RootState';
+import { useDispatch } from 'react-redux';
+import { message } from 'antd';
 
-function Alert(props: AlertProps) {
-  return <MuiAlert elevation={6} variant="filled" {...props} />;
-}
+import { setMessage } from '../../redux/actions/commonActions';
 
 export default function Message() {
   const dispatch = useDispatch();
-  const message = useTypedSelector((state) => state.common.message);
-  return (
-    <Snackbar
-      open={message.visible}
-      autoHideDuration={2000}
-      anchorOrigin={{ vertical: "top", horizontal: "center" }}
-      onClose={() => dispatch(setMessage(false, "", undefined))}
-    >
-      <Alert
-        onClose={() => dispatch(setMessage(false, "", undefined))}
-        severity={message.severity}
-      >
-        {message.text}
-      </Alert>
-    </Snackbar>
-  );
+  const allmessage = useTypedSelector((state) => state.common.message);
+  useEffect(() => {
+    if (allmessage.visible) {
+      console.log(allmessage);
+      switch (allmessage.messageType) {
+        case 'success':
+          message.success(allmessage.text, 2, () =>
+            dispatch(setMessage(false, '', undefined))
+          );
+          break;
+        case 'info':
+          message.info(allmessage.text, 2, () =>
+            dispatch(setMessage(false, '', undefined))
+          );
+          break;
+        case 'warning':
+          message.warning(allmessage.text, 2, () =>
+            dispatch(setMessage(false, '', undefined))
+          );
+          break;
+        case 'error':
+          message.error(allmessage.text, 2, () =>
+            dispatch(setMessage(false, '', undefined))
+          );
+          break;
+      }
+    }
+  }, [allmessage]);
+  return <React.Fragment></React.Fragment>;
 }

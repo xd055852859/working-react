@@ -1,15 +1,18 @@
 .calendar {
   height: 100%;
   width: 100%;
-  position: relative;
-  z-index: 3;
+  /* position: relative;
+  z-index: 3; */
   color: #fff;
+  overflow: hidden;
 }
 .calendar-container {
   width: 100%;
   /* background-color: #fff; */
   padding: 12px 23px;
   box-sizing: border-box;
+  position: relative;
+  z-index: 3;
 }
 .calendar-title {
   width: 100%;
@@ -45,6 +48,7 @@
   height: calc(100% - 60px);
   display: flex;
   flex-wrap: wrap;
+  background-color: #fff;
 }
 .calendar-day-item {
   width: 14.28%;
@@ -86,7 +90,7 @@
   font-size: 12px;
   font-family: PingFangSC-Regular, PingFang SC;
   font-weight: 400;
-  /* color: #666666; */
+  color: #333;
   line-height: 17px;
 }
 .calendar-day-item-container {
@@ -112,6 +116,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  border: 1px solid #cecece;
 }
 .calendar-choose {
   width: 100px;
@@ -138,9 +143,10 @@
   display: flex;
   align-items: center;
   margin-right: 20px;
-  position: absolute;
+  position: relative;
+  /* position: absolute;
   top: 0px;
-  left: 140px;
+  left: 140px; */
 }
 .calendar-dropmenu-name {
   width: 100%;
@@ -157,7 +163,7 @@
   width: 34px;
   height: 34px;
   overflow: hidden;
-  border-radius: 50%;
+  border-radius: 5px;
   margin-right: 10px;
   flex-shrink: 0;
 }

@@ -1,85 +1,45 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './groupTableTree.css';
-import { useTypedSelector } from '../../redux/reducer/RootState';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import { editTask } from '../../redux/actions/taskActions';
-import { setMessage } from '../../redux/actions/commonActions';
 import { useDispatch } from 'react-redux';
-import { Button, TextField } from '@material-ui/core';
-import Editor from '../../components/common/Editor';
+import { Input, Button, Badge, Tabs } from 'antd';
+const { TabPane } = Tabs;
+import moment from 'moment';
+import _ from 'lodash';
+import api from '../../services/api';
+
+import { setMessage } from '../../redux/actions/commonActions';
+
+import IconFont from '../../components/common/iconFont';
+import Editor from '../../components/common/editor/editor';
 import Loading from '../../components/common/loading';
 import Table from '../../components/tree/table';
 import Link from '../../components/tree/link';
-// import Draw from '../../components/common/draw';
 import Comment from '../../components/comment/comment';
 import Markdown from '../../components/tree/markDown/Markdown';
 import DrawView from '../../components/tree/DrawView';
 import DrawEditor from '../../components/tree/Topology';
 import Book from '../../components/tree/book';
-import fullscreenSvg from '../../assets/svg/fullscreen.svg';
-import DropMenu from '../../components/common/dropMenu';
 
-import moment from 'moment';
-import _ from 'lodash';
-import api from '../../services/api';
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
 interface GroupTableTreeInfoProps {
   targetItem: any;
   fullType: string;
   editable: boolean;
-  editInfoType: string;
   changeContent: Function;
   changeTargetContent: Function;
-  changeEditable:Function
+  changeEditable: Function;
 }
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      width: '142px',
-      margin: '-10px 0px',
-    },
-    input: {
-      width: '80%',
-      color: '#fff',
-      '& .MuiInput-formControl': {
-        marginTop: '0px',
-        borderColor: '#fff',
-      },
-      '& .MuiOutlinedInput-input': {
-        padding: '10px 14px',
-        borderColor: '#fff',
-        // color: '#fff',
-      },
-      '& .MuiInputLabel-formControl': {
-        marginTop: '-10px',
-        // color: '#fff',
-      },
-    },
-    button: {
-      backgroundColor: '#17B881',
-      color: '#fff',
-    },
-    disbutton: {
-      backgroundColor: 'rgba(255,255,255,0.4)',
-    },
-    datePicker: {
-      '& .MuiInput-formControl': {
-        marginLeft: '5px',
-      },
-    },
-  })
-);
+
 const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
   const {
     targetItem,
     fullType,
-    editInfoType,
     editable,
     changeContent,
     changeTargetContent,
-    changeEditable
+    changeEditable,
   } = props;
   const dispatch = useDispatch();
-  const classes = useStyles();
   const [content, setContent] = useState<any>('');
   const [targetNode, setTargetNode] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -92,21 +52,24 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
   const [taskCommentPage, setTaskCommentPage] = useState(1);
   const [commentInput, setCommentInput] = useState('');
   const [isEdit, setIsEdit] = useState(false);
+  const [buttonLoading, setButtonLoading] = useState(false);
+  const [commentVisible, setCommentVisible] = useState(false);
   const containerRef: React.RefObject<any> = useRef();
   const taskLimit = 10;
-  let unDistory = true;
+  let unDistory = useRef<any>(null);
+  unDistory.current = true;
   useEffect(() => {
     if (!targetNode || targetItem._key !== targetNode._key) {
       getTaskItem(targetItem._key);
     }
     return () => {
-      unDistory = false;
+      // unDistory.current = false;
     };
   }, [targetItem]);
   const getTaskItem = async (key: string) => {
     setLoading(true);
     let taskItemRes: any = await api.task.getTaskInfo(key);
-    if (unDistory) {
+    if (unDistory.current) {
       if (taskItemRes.msg === 'OK') {
         let taskInfo = _.cloneDeep(taskItemRes.result);
         setLoading(false);
@@ -122,9 +85,11 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
             '<p data-f-id="pbf" style="text-align: center; font-size: 14px; margin-top: 30px; opacity: 0.65; font-family: sans-serif;">Powered by <a href="https://www.froala.com/wysiwyg-editor?pb=1" title="Froala Editor">Froala Editor</a></p>',
             ''
           );
+          if (taskInfo.content === '') {
+            taskInfo.content = '{}';
+          }
         }
         setTargetNode(taskInfo);
-
         getHistoryList(taskHistoryPage, taskInfo);
         getCommentList(taskHistoryPage, taskInfo);
       } else {
@@ -159,7 +124,7 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
       page,
       taskLimit
     );
-    if (unDistory) {
+    if (unDistory.current) {
       if (commentRes.msg === 'OK') {
         newCommentArray.push(...commentRes.result);
         setTaskCommentArray(newCommentArray);
@@ -174,6 +139,7 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
     let newCommentTotal = taskCommentTotal;
     if (commentInput !== '') {
       //保存
+      setButtonLoading(true);
       let saveRes: any = await api.task.addComment(
         targetNode._key,
         commentInput
@@ -185,7 +151,9 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
         setTaskCommentArray(newCommentArray);
         setTaskCommentTotal(newCommentTotal);
         setCommentInput('');
+        setButtonLoading(false);
       } else {
+        setButtonLoading(false);
         dispatch(setMessage(true, saveRes.msg, 'error'));
       }
     }
@@ -214,7 +182,7 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
       page,
       taskLimit
     );
-    if (unDistory) {
+    if (unDistory.current) {
       if (historyRes.msg === 'OK') {
         newHistoryArray.push(...historyRes.result);
         setTaskHistoryArray(newHistoryArray);
@@ -266,23 +234,41 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
     <React.Fragment>
       {targetNode ? (
         <React.Fragment>
-          <div className="groupTableTreeInfo-container" ref={containerRef}>
+          <div
+            className="groupTableTreeInfo-container"
+            ref={containerRef}
+            onClick={() => {
+              setCommentVisible(false);
+            }}
+          >
             {loading ? (
               <Loading loadingHeight="90px" loadingWidth="90px" />
             ) : null}
             {targetNode.type === 10 ? (
               <React.Fragment>
-                <Editor
-                  editorHeight={
-                    containerRef.current?.offsetHeight
-                      ? containerRef.current.offsetHeight
-                      : '800px'
-                  }
-                  data={content}
-                  onChange={changeTaskContent}
-                  editable={editable}
-                  fullType={fullType}
-                />
+                {editable ? (
+                  <Editor
+                    data={content}
+                    height={
+                      containerRef?.current?.offsetHeight
+                        ? containerRef.current.offsetHeight
+                        : 800
+                    }
+                    editorKey={targetNode?._key}
+                    onChange={changeTaskContent}
+                  />
+                ) : (
+                  <div
+                    dangerouslySetInnerHTML={{ __html: content }}
+                    style={{
+                      height: '100%',
+                      width: '100%',
+                      overflow: 'auto',
+                      padding: '10px 17px',
+                      boxSizing: 'border-box',
+                    }}
+                  ></div>
+                )}
               </React.Fragment>
             ) : null}
             {targetNode.type === 11 ? (
@@ -292,14 +278,14 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
                   targetNode={targetNode}
                   onChange={changeTaskContent}
                   changeEditable={changeEditable}
-                  />
+                />
               ) : (
-                  <DrawView
-                    //@ts-ignore
-                    targetNode={targetNode}
+                <DrawView
+                  //@ts-ignore
+                  targetNode={targetNode}
                   // onChange={changeContent}
-                  />
-                )
+                />
+              )
             ) : null}
             {targetNode.type === 12 ? <Table node={targetNode} /> : null}
             {targetNode.type === 13 ? (
@@ -319,138 +305,136 @@ const GroupTableTreeInfo: React.FC<GroupTableTreeInfoProps> = (props) => {
                 fullType={fullType}
               />
             ) : null}
-            <div className="taskInfo-comment">
-              <div className="taskInfo-comment-tabs">
-                <div
-                  className="taskInfo-comment-tabs-item"
-                  onClick={() => {
-                    setCommentIndex(0);
-                  }}
-                  style={
-                    commentIndex === 0
-                      ? {
-                        borderBottom: '1px solid #17B881',
-                        color: '#17B881',
-                      }
-                      : {}
-                  }
-                >
-                  评论({taskCommentTotal})
-                </div>
-                <div
-                  className="taskInfo-comment-tabs-item"
-                  onClick={() => {
-                    setCommentIndex(1);
-                  }}
-                  style={
-                    commentIndex === 1
-                      ? {
-                        borderBottom: '1px solid #17B881',
-                        color: '#17B881',
-                      }
-                      : {}
-                  }
-                >
-                  历史({taskHistoryTotal})
-                </div>
+            {commentVisible ? (
+              <div
+                className="comment-info"
+                // onClose={() => {
+                //   setCommentVisible(false);
+                // }}
+                style={{
+                  height: document.body.offsetHeight - 458,
+                  top: 340,
+                  padding: '10px',
+                  boxSizing: 'border-box',
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+              >
+                <Tabs defaultActiveKey="1">
+                  <TabPane tab={'评论(' + taskCommentTotal + ')'} key="1">
+                    <div
+                      className="taskInfo-comment-tab"
+                      onScroll={scrollCommentLoading}
+                    >
+                      {taskCommentArray.map(
+                        (commentItem: any, commentIndex: number) => {
+                          return (
+                            <Comment
+                              commentItem={commentItem}
+                              commentIndex={commentIndex}
+                              key={'comment' + commentIndex}
+                              commentClick={deleteCommentMsg}
+                            />
+                          );
+                        }
+                      )}
+                    </div>
+                    <div className="taskInfo-comment-input">
+                      <Input
+                        placeholder="评论"
+                        onChange={changeInput}
+                        value={commentInput}
+                        onKeyDown={(e: any) => {
+                          if (e.keyCode === 13) {
+                            saveCommentMsg();
+                          }
+                        }}
+                        onFocus={() => {
+                          setIsEdit(true);
+                        }}
+                        onBlur={() => {
+                          setIsEdit(false);
+                        }}
+                      />
+                      {commentInput ? (
+                        <Button
+                          loading={buttonLoading}
+                          type="primary"
+                          onClick={() => {
+                            saveCommentMsg();
+                          }}
+                        >
+                          发布
+                        </Button>
+                      ) : null}
+                    </div>
+                  </TabPane>
+                  <TabPane tab="历史" key="2">
+                    <div
+                      className="taskInfo-comment-tab"
+                      onScroll={scrollHistoryLoading}
+                    >
+                      {taskHistoryArray.map(
+                        (historyItem: any, historyIndex: number) => {
+                          return (
+                            <div
+                              key={'history' + historyIndex}
+                              className="taskInfo-comment-historyLog"
+                            >
+                              <div className="taskInfo-comment-avatar">
+                                <img
+                                  src={
+                                    historyItem.etc && historyItem.etc.avatar
+                                      ? historyItem.etc.avatar +
+                                        '?imageMogr2/auto-orient/thumbnail/80x'
+                                      : defaultPersonPng
+                                  }
+                                  alt=""
+                                />
+                              </div>
+                              <div className="taskInfo-comment-info">
+                                <div>
+                                  {moment(
+                                    parseInt(historyItem.createTime)
+                                  ).fromNow()}
+                                </div>
+                                <div
+                                  style={{ fontSize: '12px', color: '#8091a0' }}
+                                >
+                                  {historyItem.log}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        }
+                      )}
+                    </div>
+                  </TabPane>
+                </Tabs>
               </div>
-              {commentIndex === 0 ? (
-                <React.Fragment>
-                  <div
-                    className="taskInfo-comment-tab"
-                    onScroll={scrollCommentLoading}
-                  >
-                    {taskCommentArray.map(
-                      (commentItem: any, commentIndex: number) => {
-                        return (
-                          <Comment
-                            commentItem={commentItem}
-                            commentIndex={commentIndex}
-                            key={'comment' + commentIndex}
-                            commentClick={deleteCommentMsg}
-                          />
-                        );
-                      }
-                    )}
-                  </div>
-                </React.Fragment>
-              ) : (
-                  <div
-                    className="taskInfo-comment-tab"
-                    onScroll={scrollHistoryLoading}
-                  >
-                    {taskHistoryArray.map(
-                      (historyItem: any, historyIndex: number) => {
-                        return (
-                          <div
-                            key={'history' + historyIndex}
-                            className="taskInfo-comment-historyLog"
-                          >
-                            <div className="taskInfo-comment-avatar">
-                              <img
-                                src={historyItem.etc && historyItem.etc.avatar}
-                                alt=""
-                              />
-                            </div>
-                            <div className="taskInfo-comment-info">
-                              <div>
-                                {moment(
-                                  parseInt(historyItem.createTime)
-                                ).fromNow()}
-                              </div>
-                              <div style={{ fontSize: '12px', color: '#8091a0' }}>
-                                {historyItem.log}
-                              </div>
-                            </div>
-                            {/* {historyItem.log} */}
-                          </div>
-                        );
-                      }
-                    )}
-                  </div>
-                )}
+            ) : null}
+            <div className="comment-button">
+              <Badge
+                count={taskCommentTotal}
+                style={{ backgroundColor: '#1890ff' }}
+                offset={[-6, 6]}
+              >
+                <Button
+                  type="primary"
+                  size="large"
+                  shape="circle"
+                  icon={<IconFont type="icon-pinglun" />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCommentVisible(true);
+                  }}
+                />
+              </Badge>
             </div>
           </div>
         </React.Fragment>
       ) : null}
-      <div className="taskInfo-comment-input">
-        <TextField
-          required
-          id="outlined-basic"
-          variant="outlined"
-          label="评论"
-          className={classes.input}
-          onChange={changeInput}
-          value={commentInput}
-          onKeyDown={(e: any) => {
-            if (e.keyCode === 13) {
-              saveCommentMsg();
-            }
-          }}
-          onFocus={() => {
-            setIsEdit(true);
-          }}
-          onBlur={() => {
-            setIsEdit(false);
-          }}
-        />
-        {commentInput ? (
-          <Button
-            variant="contained"
-            color="primary"
-            className={classes.button}
-            onClick={() => {
-              saveCommentMsg();
-            }}
-          >
-            发布
-          </Button>
-        ) : (
-            <Button variant="contained" className={classes.disbutton} disabled>
-              发布
-            </Button>
-          )}
-      </div>
     </React.Fragment>
   );
 };

@@ -1,107 +1,70 @@
 import React, { useState, useEffect } from 'react';
 import './mainBoard.css';
-import { useTypedSelector } from '../../redux/reducer/RootState';
-import { useDispatch } from 'react-redux';
-import { getSelfTask } from '../../redux/actions/taskActions';
-import Task from '../../components/task/task';
-import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
 import moment from 'moment';
 import _ from 'lodash';
-import Avatar from '@material-ui/core/Avatar';
-import theme from '../../theme';
+import { Avatar } from 'antd';
+import { useTypedSelector } from '../../redux/reducer/RootState';
+import { useDispatch } from 'react-redux';
+
+import { getSelfTask } from '../../redux/actions/taskActions';
+
+import Task from '../../components/task/task';
+
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
+import nothingsSvg from '../../assets/svg/nothings.svg';
+
 import Loading from '../../components/common/loading';
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    avatar: {
-      width: '22px',
-      height: '22px',
-      marginRight: '5px',
-    },
-    logo: {
-      width: '14px',
-      height: '14px',
-      marginRight: '5px',
-    },
-  })
-);
 interface MainBoardItemProps {
   mainItem: any;
 }
 const MainBoardItem: React.FC<MainBoardItemProps> = (props) => {
-  const user = useTypedSelector((state) => state.auth.user);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
-  const dispatch = useDispatch();
   const { mainItem } = props;
-  const classes = useStyles();
   let myState = false;
   if (
-    mainItem[0].groupName.indexOf('主群') !== -1 &&
+    mainItem[0].groupName.indexOf('主项目') !== -1 &&
     mainItem[0].groupKey === mainGroupKey
   ) {
     mainItem[0].groupName = '个人事务';
     myState = true;
   }
-  const changeTask = (taskDetail: any) => {
-    // dispatch(
-    //   getSelfTask(
-    //     1,
-    //     user._key,
-    //     '[0, 1]',
-    //     1,
-    //     moment().add(1, 'days').startOf('day').valueOf(),
-    //     1
-    //   )
-    // );
-  };
   return (
     <React.Fragment>
       <div>
         <div className="mainBoard-title">
           {!myState ? (
             <Avatar
-              alt="群头像"
+              style={{
+                width: '22px',
+                height: '22px',
+                marginRight: '5px',
+                borderRadius: '5px',
+              }}
+              shape="square"
               src={
                 mainItem[0].groupLogo
                   ? mainItem[0].groupLogo +
                     '?imageMogr2/auto-orient/thumbnail/80x'
                   : defaultGroupPng
               }
-              className={classes.avatar}
-              style={{borderRadius:'5px'}}
             />
           ) : null}
           {mainItem[0].groupName}
         </div>
       </div>
-      <React.Fragment
-      // style={{backgroundColor: countType==='index'?'rgba(0, 0, 0, 0.05)':'rgba(0, 0, 0, 0.12)'}}
-      // className="countdown-right-info"
-      >
-        {mainItem.map((taskItem: any, taskIndex: number) => {
-          return (
-            // <div className="countdown-right-task">
-            <Task
-              taskItem={taskItem}
-              key={'task' + taskIndex}
-              changeTask={changeTask}
-              // myState={myState}
-              // timeSetStatus={taskIndex > mainItem.length - 3}
-            />
-            // </div>
-          );
-        })}
-      </React.Fragment>
+
+      {mainItem.map((taskItem: any, taskIndex: number) => {
+        return <Task taskItem={taskItem} key={'task' + taskIndex} />;
+      })}
     </React.Fragment>
   );
 };
 interface MainBoardProps {
-  getNum?: any;
   showType?: string;
 }
 
 const MainBoard: React.FC<MainBoardProps> = (props) => {
-  const { getNum, showType } = props;
+  const { showType } = props;
   const user = useTypedSelector((state) => state.auth.user);
   const selfTaskArray = useTypedSelector((state) => state.task.selfTaskArray);
   const theme = useTypedSelector((state) => state.auth.theme);
@@ -129,8 +92,6 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
     if (selfTaskArray) {
       setLoading(false);
       let groupObj: any = {};
-      let groupArray = [];
-      let createNum = 0;
       let allNum = 0;
       let finishNum = 0;
       let state = '';
@@ -171,17 +132,6 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
               ')');
       }
       selfTaskArray.forEach((item: any, index: number) => {
-        // if (
-        //   item.creatorKey === user._key &&
-        //   item.createTime >= startTime &&
-        //   item.createTime < endTime
-        // ) {
-        //   createNum++;
-        // }
-        // let finishState =
-        //   item.finishPercent === 1 &&
-        //   item.todayTaskTime >= startTime &&
-        //   item.todayTaskTime <= endTime;
         if (
           eval(state) &&
           item.taskEndDate &&
@@ -194,13 +144,9 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
             }
             item = formatDay(item);
             groupObj[item.groupKey].push(item);
-            // this.showTabObj[item.groupKey] = true;
             groupObj[item.groupKey] = _.sortBy(groupObj[item.groupKey], [
               'serialNumber',
             ]).reverse();
-            // groupObj[item.groupKey] = _.sortBy(groupObj[item.groupKey], [
-            //   'finishPercent',
-            // ]);
             if (item.finishPercent > 0) {
               finishNum++;
             }
@@ -210,7 +156,6 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
       });
       setFinishNum(finishNum);
       setAllNum(allNum);
-      // getNum(createNum, finishNum);
       setMainArray(_.sortBy(_.values(groupObj), ['groupName']));
     }
   }, [selfTaskArray]);
@@ -243,20 +188,23 @@ const MainBoard: React.FC<MainBoardProps> = (props) => {
   };
   return (
     <div className="mainBoard">
-      {loading ? <Loading loadingWidth="80px" loadingHeight="80px" /> : null}
-      {!showType ? (
+      {loading ? <Loading /> : null}
+      {/* {!showType ? (
         <div className="mainBoard-maintitle">
           今日事务 ({allNum - finishNum} / {allNum})
         </div>
-      ) : null}
-      <div
-        className="mainBoard-item"
-        style={{ height: showType ? '100%' : 'calc(100% - 50px)' }}
-      >
-        {mainArray.map((mainItem: any, mainIndex: number) => {
-          return <MainBoardItem mainItem={mainItem} key={'main' + mainIndex} />;
-        })}
-      </div>
+      ) : null} */}
+      {mainArray.length > 0 ? (
+        <div className="mainBoard-item">
+          {mainArray.map((mainItem: any, mainIndex: number) => {
+            return (
+              <MainBoardItem mainItem={mainItem} key={'main' + mainIndex} />
+            );
+          })}
+        </div>
+      ) : (
+        <img src={nothingsSvg} />
+      )}
     </div>
   );
 };

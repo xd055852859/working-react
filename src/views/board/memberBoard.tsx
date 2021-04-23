@@ -1,33 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import './memberBoard.css';
-import { useTypedSelector } from '../../redux/reducer/RootState';
-import { useDispatch } from 'react-redux';
-import { getTeamTask, getProjectTask } from '../../redux/actions/taskActions';
-import Task from '../../components/task/task';
-import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
-import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import moment from 'moment';
 import _ from 'lodash';
-import Avatar from '@material-ui/core/Avatar';
-import DropMenu from '../../components/common/dropMenu';
+import { Avatar, Dropdown } from 'antd';
+import { useTypedSelector } from '../../redux/reducer/RootState';
+import { useDispatch } from 'react-redux';
+
+import { getTeamTask, getProjectTask } from '../../redux/actions/taskActions';
+
+import Task from '../../components/task/task';
+import Loading from '../../components/common/loading';
+
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import downArrowPng from '../../assets/img/downArrow.png';
 import noneBoardPng from '../../assets/img/noneBoard.png';
 import uncarePng from '../../assets/img/uncare.png';
-import Loading from '../../components/common/loading';
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    avatar: {
-      width: '22px',
-      height: '22px',
-      marginRight: '5px',
-    },
-    logo: {
-      width: '14px',
-      height: '14px',
-      marginRight: '5px',
-    },
-  })
-);
+interface MemberBoardProps {
+  boardIndex: number;
+}
 interface MemberBoardItemProps {
   memberItem: any;
 }
@@ -36,14 +26,16 @@ interface ProjectBoardItemProps {
 }
 const MemberBoardItem: React.FC<MemberBoardItemProps> = (props) => {
   const { memberItem } = props;
-  const classes = useStyles();
   return (
     <React.Fragment>
       <div className="memberBoard-title">
         <Avatar
-          alt="人头像"
+          style={{
+            width: '22px',
+            height: '22px',
+            marginRight: '5px',
+          }}
           src={memberItem[0][0].executorAvatar}
-          className={classes.avatar}
         />
         {memberItem[0][0].executorName}
       </div>
@@ -51,17 +43,21 @@ const MemberBoardItem: React.FC<MemberBoardItemProps> = (props) => {
         return (
           <div key={'memberItem' + index} style={{ width: '100%' }}>
             <div className="memberBoard-group" style={{ marginTop: '5px' }}>
-              {item[0].groupName.indexOf('主群') === -1 ? (
+              {item[0].groupName.indexOf('主项目') === -1 ? (
                 <Avatar
-                  alt="群头像"
+                  style={{
+                    width: '22px',
+                    height: '22px',
+                    marginRight: '5px',
+                    borderRadius: '5px',
+                  }}
+                  shape="square"
                   src={
                     item[0].groupLogo
                       ? item[0].groupLogo +
                         '?imageMogr2/auto-orient/thumbnail/80x'
                       : defaultGroupPng
                   }
-                  className={classes.logo}
-                  style={{borderRadius:'5px'}}
                 />
               ) : null}
               {item[0].groupName}
@@ -85,9 +81,8 @@ const MemberBoardItem: React.FC<MemberBoardItemProps> = (props) => {
 };
 const ProjectBoardItem: React.FC<ProjectBoardItemProps> = (props) => {
   const { projectItem } = props;
-  const classes = useStyles();
   const getProjectBoardTask = () => {
-    let dom = [];
+    let dom: any = [];
     for (let key in projectItem) {
       if (key !== 'groupObj' && key !== 'position') {
         dom.push(
@@ -128,18 +123,18 @@ const ProjectBoardItem: React.FC<ProjectBoardItemProps> = (props) => {
     </React.Fragment>
   );
 };
-const MemberBoard: React.FC = () => {
+const MemberBoard: React.FC<MemberBoardProps> = (props) => {
+  const {boardIndex} = props
   const user = useTypedSelector((state) => state.auth.user);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const teamTaskArray = useTypedSelector((state) => state.task.teamTaskArray);
   const projectTaskArray = useTypedSelector(
     (state) => state.task.projectTaskArray
   );
-  // const [memberObj, setMemberObj] = useState<any>({});
   const [memberGroupArray, setMemberGroupArray] = useState<any>([]);
   const [projectGroupArray, setProjectGroupArray] = useState<any>([]);
   const [boardVisible, setBoardVisible] = useState(false);
-  const [boardIndex, setBoardIndex] = useState(0);
+  // const [boardIndex, setBoardIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   useEffect(() => {
@@ -210,7 +205,7 @@ const MemberBoard: React.FC = () => {
           if (
             groupItem.finishPercent === 0 &&
             item.title !== '' &&
-            groupItem.groupName.indexOf('主群') === -1
+            groupItem.groupName.indexOf('主项目') === -1
           ) {
             if (groupItem.labelKey) {
               if (!arr[index][groupItem.labelKey]) {
@@ -278,51 +273,46 @@ const MemberBoard: React.FC = () => {
     arr = _.sortBy(arr, ['finishPercent']);
     return arr;
   };
+
+  // const downMenu = (
+  //   <div className="dropDown-box">
+  //     <div
+  //       className="memberBoard-maintitle-board"
+  //       onClick={() => {
+  //         setBoardIndex(0);
+  //       }}
+  //     >
+  //       好友看板
+  //     </div>
+  //     <div
+  //       className="memberBoard-maintitle-board"
+  //       onClick={() => {
+  //         setBoardIndex(1);
+  //       }}
+  //     >
+  //       项目看板
+  //     </div>
+  //   </div>
+  // );
   return (
     <div className="memberBoard">
       {loading ? <Loading loadingWidth="80px" loadingHeight="80px" /> : null}
-      <div
-        className="memberBoard-maintitle"
-        onClick={() => {
-          setBoardVisible(true);
-        }}
-      >
-        {boardIndex === 0 ? '关注好友看板' : '关注项目看板'}
-        <img
-          src={downArrowPng}
-          alt=""
-          style={{ width: '15px', height: '9px', marginLeft: '15px' }}
-        />
-        <DropMenu
-          visible={boardVisible}
-          dropStyle={{
-            width: '180px',
-            height: '96x',
-            top: '30px',
-            padding: '10px 0px',
-          }}
-          onClose={() => {
-            setBoardVisible(false);
+      {/* <Dropdown overlay={downMenu}>
+        <div
+          className="memberBoard-maintitle"
+          onClick={() => {
+            setBoardVisible(true);
           }}
         >
-          <div
-            className="memberBoard-maintitle-board"
-            onClick={() => {
-              setBoardIndex(0);
-            }}
-          >
-            好友看板
-          </div>
-          <div
-            className="memberBoard-maintitle-board"
-            onClick={() => {
-              setBoardIndex(1);
-            }}
-          >
-            项目看板
-          </div>
-        </DropMenu>
-      </div>
+          {boardIndex === 0 ? '关注好友看板' : '关注项目看板'}
+
+          <img
+            src={downArrowPng}
+            alt=""
+            style={{ width: '15px', height: '9px', marginLeft: '15px' }}
+          />
+        </div>
+      </Dropdown> */}
       {boardIndex === 0 ? (
         <div className="memberBoard-item">
           {memberGroupArray.length > 0 ? (

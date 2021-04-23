@@ -1,11 +1,12 @@
-@import '~antd/dist/antd.css';
-
 .App {
   display: flex;
   position: relative;
+  z-index: 1;
 }
 
 .App-bg2 {
+  width: 100%;
+  height: 100%;
   position: fixed;
   top: 0px;
   left: 0px;
@@ -14,6 +15,7 @@
   z-index: -2;
   background-size: cover;
   background-attachment: fixed;
+  overflow: hidden;
 }
 
 .App-bg1 {
@@ -44,7 +46,7 @@
 }
 
 *::-webkit-scrollbar-thumb {
-  background: #17b881;
+  background: #1890ff;
   border-radius: 100px;
 }
 .animate__animated.animate__slideInRight {
@@ -132,7 +134,7 @@ body > div[role] {
 }
 
 .MuiAlert-filledSuccess {
-  background-color: #17b881 !important;
+  background-color: #1890ff !important;
 }
 
 textarea {
@@ -144,12 +146,12 @@ textarea {
 }
 
 textarea:focus {
-  border: 1px solid #17b881;
+  border: 1px solid #1890ff;
   outline: 0px;
 }
 
 [contenteditable]:focus {
-  outline: 1px solid #17b881;
+  outline: 1px solid #1890ff;
 }
 
 .appCanvas {
@@ -180,7 +182,7 @@ textarea:focus {
   width: 274px;
   height: 205px;
   position: fixed;
-  z-index: 50;
+  z-index: 1700;
   background-color: #fff;
   overflow: auto;
   box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.5);
@@ -194,7 +196,7 @@ textarea:focus {
   width: 260px;
   height: 50%;
   position: fixed;
-  z-index: 50;
+  z-index: 1700;
   background-color: #fff;
   overflow: auto;
   box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.5);
@@ -261,7 +263,11 @@ textarea:focus {
 .CodeMirror {
   height: 100% !important;
 }
-
+.box-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 @keyframes moveIn {
   from {
     left: 0px;

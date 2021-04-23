@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import './groupMember.css';
 import './sonGroup.css';
 import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
@@ -93,14 +93,14 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
     false
   );
   const theme = useTypedSelector((state) => state.auth.theme);
-  let unDistory = true;
-  // const roleTypeArr = ['群主', '管理员', '编辑', '作者', '群成员'];
+let unDistory = useRef<any>(null);   unDistory.current=true;
+  // const roleTypeArr = ['项目管理', '管理员', '编辑', '作者', '项目成员'];
   useEffect(() => {
     if (user && user._key) {
       getData();
     }
     return () => {
-      unDistory = false;
+      // unDistory.current = false;
     };
   }, [user]);
   useEffect(() => {
@@ -116,7 +116,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
 
   const getData = async () => {
     let res: any = await api.group.getSonGroupList(groupKey);
-    if (unDistory) {
+    if (unDistory.current) {
       if (res.msg === 'OK') {
         setSonGroupList(res.result);
       } else {
@@ -124,7 +124,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
       }
     }
     let groupRes: any = await api.group.getGroup(4, null, undefined, groupKey);
-    if (unDistory) {
+    if (unDistory.current) {
       if (groupRes.msg === 'OK') {
         setMyGroupList(groupRes.result);
       } else {
@@ -149,11 +149,11 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
       dispatch(
         setMessage(
           true,
-          '添加子群成功,' +
+          '添加子项目成功,' +
             targetGroupItem.groupName +
-            '群已被设置为' +
+            '项目已被设置为' +
             groupInfo.groupName +
-            '群的子群',
+            '项目的子项目',
           'success'
         )
       );
@@ -178,11 +178,11 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
       dispatch(
         setMessage(
           true,
-          '切换父群成功,' +
+          '切换父项目成功,' +
             groupInfo.groupName +
-            '群已被设置为' +
+            '项目已被设置为' +
             fatherObj.groupName +
-            '群的子群',
+            '项目的子项目',
           'success'
         )
       );
@@ -202,7 +202,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
     let newMyGroupList = _.cloneDeep(myGroupList);
     let res: any = await api.group.deleteFSGroup(groupKey, sonGroupKey);
     if (res.msg === 'OK') {
-      dispatch(setMessage(true, '删除子群成功', 'success'));
+      dispatch(setMessage(true, '删除子项目成功', 'success'));
       let childItem = newSonGroupList.splice(index, 1);
       newMyGroupList.push(...childItem);
       setSonGroupList(newSonGroupList);
@@ -221,7 +221,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
       passwordInput
     );
     if (memberRes.msg === 'OK') {
-      dispatch(setMessage(true, '口令加群成功', 'success'));
+      dispatch(setMessage(true, '口令加项目成功', 'success'));
       newSearchList.splice(searchIndex, 1);
       setSearchList(newSearchList);
       dispatch(getGroup(3));
@@ -233,7 +233,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
   const applyJoinGroup = async (groupKey: string) => {
     let memberRes: any = await api.group.applyJoinGroup(groupKey);
     if (memberRes.msg === 'OK') {
-      dispatch(setMessage(true, '申请加群成功', 'success'));
+      dispatch(setMessage(true, '申请加项目成功', 'success'));
       setInviteVisible(false);
     } else {
       dispatch(setMessage(true, memberRes.msg, 'error'));
@@ -268,7 +268,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
     <div className="group-member">
       <div className="group-member-person">
         <div className="group-member-choose">
-          <div className="group-member-title">我的群</div>
+          <div className="group-member-title">我的项目</div>
           <div className="group-member-container">
             {myGroupList.map((groupItem: any, groupIndex: number) => {
               return (
@@ -278,8 +278,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
                       <img
                         src={
                           groupItem.groupLogo
-                            ? groupItem.groupLogo +
-                              '?imageMogr2/auto-orient/thumbnail/80x'
+                            ? groupItem.groupLogo
                             : defaultGroupPng
                         }
                         alt=""
@@ -298,7 +297,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
                     }}
                     className={classes.button}
                   >
-                    设为子群
+                    设为子项目
                   </Button>
                 </div>
               );
@@ -312,9 +311,9 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
             className="group-member-title"
             style={{ justifyContent: 'space-between' }}
           >
-            <Tooltip title={groupInfo.groupName + ' 的子群'}>
+            <Tooltip title={groupInfo.groupName + ' 的子项目'}>
               <div className="group-member-subtitle">
-                {groupInfo.groupName + ' 的子群'}
+                {groupInfo.groupName + ' 的子项目'}
               </div>
             </Tooltip>
             <div
@@ -326,15 +325,14 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
                 }
               }}
             >
-              父群:
+              父项目:
               {fatherInfo.fatherGroupKey ? (
                 <React.Fragment>
                   <div className="group-member-fatherLogo"  style={{borderRadius:'5px'}}>
                     <img
                       src={
                         fatherInfo.fatherGroupLogo
-                          ? fatherInfo.fatherGroupLogo +
-                            '?imageMogr2/auto-orient/thumbnail/80x'
+                          ? fatherInfo.fatherGroupLogo
                           : defaultGroupPng
                       }
                       alt=""
@@ -347,9 +345,9 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
                   </Tooltip>
                 </React.Fragment>
               ) : (
-                '无父群'
+                '无父项目'
               )}
-              <Tooltip title="设置父群">
+              <Tooltip title="设置父项目">
                 <img
                   src={changeFatherSvg}
                   alt=""
@@ -374,7 +372,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
                   <input
                     type="text"
                     className="task-executor-input"
-                    placeholder={'输入群名…'}
+                    placeholder={'输入项目名…'}
                     onChange={searchGroup}
                     value={searchInput}
                   />
@@ -439,8 +437,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
                     <img
                       src={
                         groupItem.groupLogo
-                          ? groupItem.groupLogo +
-                            '?imageMogr2/auto-orient/thumbnail/80x'
+                          ? groupItem.groupLogo
                           : defaultGroupPng
                       }
                       alt=""
@@ -464,8 +461,8 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
                     className={classes.button}
                   >
                     {_.findIndex(groupArray, { _key: groupItem._key }) !== -1
-                      ? '查看子群'
-                      : '申请加群'}
+                      ? '查看子项目'
+                      : '申请加项目'}
                   </Button>
                   <div className="group-time-close">
                     <img
@@ -489,11 +486,11 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
         onOK={() => {
           setChildGroup(targetGroupItem._key, targetGroupItem);
         }}
-        title={'设置子群'}
+        title={'设置子项目'}
         dialogStyle={{ width: '400px', height: '200px' }}
       >
         <div className="dialog-onlyTitle">
-          将此群设置为{groupInfo.groupName}群组的子群，此操作不可逆，确认继续吗
+          将此项目设置为{groupInfo.groupName}项目的子项目，此操作不可逆，确认继续吗
         </div>
       </Dialog>
       <Dialog
@@ -504,11 +501,11 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
         onOK={() => {
           setFatherGroup();
         }}
-        title={'切换父群'}
+        title={'切换父项目'}
         dialogStyle={{ width: '400px', height: '200px' }}
       >
         <div className="dialog-onlyTitle">
-          将此群设置为{fatherObj.groupName}群组的子群，此操作不可逆，确认继续吗
+          将此项目设置为{fatherObj.groupName}项目的子项目，此操作不可逆，确认继续吗
         </div>
       </Dialog>
       <Dialog
@@ -516,7 +513,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
         onClose={() => {
           setInviteVisible(false);
         }}
-        title={'申请加群'}
+        title={'申请加项目'}
         dialogStyle={{
           width: '400px',
           height: question ? '300px' : isHasPassword ? '250px' : '200px',
@@ -560,7 +557,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
                   passwordJoinGroup(searchItem._key);
                 }}
               >
-                口令加群
+                口令加项目
               </Button>
             ) : null}
             {joinType == 1 ? (
@@ -572,7 +569,7 @@ const SonGroup: React.FC<SonGroupProps> = (props) => {
                   applyJoinGroup(searchItem._key);
                 }}
               >
-                申请加群
+                申请加项目
               </Button>
             ) : null}
           </div>

@@ -1,8 +1,7 @@
 import React from 'react';
 import './filter.css';
 import DropMenu from './dropMenu';
-import Avatar from '@material-ui/core/Avatar';
-import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
+import { Avatar } from 'antd';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import downArrowbPng from '../../assets/img/downArrowb.png';
@@ -20,15 +19,7 @@ interface FilterProps {
   filterItem: any;
   defaultPngType?: number;
 }
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    avatar: {
-      width: '26px',
-      height: '26px',
-      marginRight: '5px',
-    },
-  })
-);
+
 const Filter: React.FC<FilterProps> = (prop) => {
   const {
     title,
@@ -44,7 +35,6 @@ const Filter: React.FC<FilterProps> = (prop) => {
     defaultPngType,
     onClick,
   } = prop;
-  const classes = useStyles();
 
   return (
     <div className="filter" style={filterStyle}>
@@ -58,7 +48,6 @@ const Filter: React.FC<FilterProps> = (prop) => {
         {filterArray.length > 0 ? (
           <div className="filter-menu-info">
             <Avatar
-              alt={filterArray[filterIndex][filterItem[1]]}
               src={
                 filterArray[filterIndex][filterItem[1]]
                   ? filterIndex !== 0 &&
@@ -71,7 +60,7 @@ const Filter: React.FC<FilterProps> = (prop) => {
                   ? defaultPersonPng
                   : defaultGroupPng
               }
-              className={classes.avatar}
+              size={26}
             />
             <div className="filter-menu-name">
               {filterArray[filterIndex][filterItem[0]]}
@@ -96,7 +85,6 @@ const Filter: React.FC<FilterProps> = (prop) => {
                 }}
               >
                 <Avatar
-                  alt={item[filterItem[0]]}
                   src={
                     item[filterItem[1]]
                       ? filterIndex !== 0 &&
@@ -108,7 +96,7 @@ const Filter: React.FC<FilterProps> = (prop) => {
                       ? defaultPersonPng
                       : defaultGroupPng
                   }
-                  className={classes.avatar}
+                  size={26}
                 />
                 <div className="filter-menu-name">{item[filterItem[0]]}</div>
               </div>

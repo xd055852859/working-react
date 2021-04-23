@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
+import './chat.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
+import _ from 'lodash';
+import api from '../../services/api';
 
 import {
   setChatState,
   setUnChatNum,
   setMessage,
 } from '../../redux/actions/commonActions';
-import './chat.css';
-import _ from 'lodash';
-import api from '../../services/api';
+
 import closePng from '../../assets/img/close.png';
-import moment from 'moment';
 interface ChatProps {
   chatType?: any;
 }
@@ -28,47 +28,31 @@ const Chat: React.FC<ChatProps> = (prop) => {
   const memberArray = useTypedSelector((state) => state.member.memberArray);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
   const showChatState = useTypedSelector((state) => state.common.showChatState);
-  // const unChatNum = useTypedSelector((state) => state.common.unChatNum);
   const [url, setUrl] = useState('');
   const [clickType, setClickType] = useState(true);
   let chatRef = useRef<any>(null);
-  let unDistory = true;
+let unDistory = useRef<any>(null);   unDistory.current=true;
   useEffect(() => {
     if (user) {
       setUrl(
         api.ROCKET_CHAT_URL + '/login?chatToken=' + user.rocketChat.authToken
-        //  +
-        // '&newTime=' +
-        // moment().valueOf()
       );
       window.addEventListener('message', handlerIframeEvent);
     }
-    return () => {
-      if (chatRef.current) {
-        clearInterval(chatRef.current);
-      }
-    };
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (
-      ((headerIndex === 2 && memberArray) ||
-        (headerIndex === 3 && groupInfo)) &&
-      chatType
+      (headerIndex === 2 && memberArray) ||
+      (headerIndex === 3 && groupInfo)
     ) {
       goChat();
     }
     return () => {
-      unDistory = false;
+      // unDistory.current = false;
     };
     // dispatch(setChatState(false));
   }, [headerIndex, groupKey, targetUserKey, groupInfo, memberArray, url]);
-  useEffect(() => {
-    if (chatState) {
-      chatRef.current = setTimeout(goChat, 2000);
-    }
-    // dispatch(setChatState(false));
-  }, [showChatState]);
   useEffect(() => {
     if (headerIndex === 2 || headerIndex === 3) {
       setClickType(false);
@@ -83,9 +67,7 @@ const Chat: React.FC<ChatProps> = (prop) => {
           e.data.data = 0;
         }
         dispatch(setUnChatNum(e.data.data));
-        // setUnReadNum(unReadNum + e.data.data.unread);
         break;
-      // default:null;
     }
   };
   const goChat = async () => {
@@ -109,7 +91,7 @@ const Chat: React.FC<ChatProps> = (prop) => {
               mainGroupKey,
               targetUserKey
             );
-            if (unDistory) {
+            if (unDistory.current) {
               if (chatRes.msg === 'OK') {
                 dom.contentWindow.postMessage(
                   {
@@ -140,13 +122,6 @@ const Chat: React.FC<ChatProps> = (prop) => {
       <div
         className="chat-iframe  animate__animated animate__slideInRight"
         style={
-          // headerIndex === 4
-          //   ? {
-          //       opacity: 1,
-          //       left: '320px',
-          //       top: '0px',
-          //     }
-          // :
           chatState
             ? !clickType
               ? {

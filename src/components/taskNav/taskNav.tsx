@@ -1,35 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDispatch } from 'react-redux';
-import { getWorkingTableTask } from '../../redux/actions/taskActions';
-import {
-  Button,
-  Tooltip,
-  Chip,
-  IconButton,
-  TextareaAutosize,
-} from '@material-ui/core';
-import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
-import moment from 'moment';
+import { Button, Tooltip, Input, Avatar, Progress } from 'antd';
+const { TextArea } = Input;
+import { GlobalOutlined } from '@ant-design/icons';
 import _ from 'lodash';
-import { useTypedSelector } from '../../redux/reducer/RootState';
 import api from '../../services/api';
-import DropMenu from '../common/dropMenu';
-import Dialog from '../common/dialog';
-import Loading from '../common/loading';
-import './taskNav.css';
-import plusPng from '../../assets/img/plus.png';
-import unDragPng from '../../assets/img/undrag.png';
-import ellipsisPng from '../../assets/img/ellipsis.png';
-import defaultPersonPng from '../../assets/img/defaultPerson.png';
-import checkPersonPng from '../../assets/img/checkPerson.png';
-import urlSvg from '../../assets/svg/url.svg';
+import { useTypedSelector } from '../../redux/reducer/RootState';
+
+import { getWorkingTableTask } from '../../redux/actions/taskActions';
 import {
   getGroupTask,
   setChooseKey,
   changeLabelarray,
 } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
-import { changeCreateMusic } from '../../redux/actions/authActions';
+import { changeMusic } from '../../redux/actions/authActions';
+
+import DropMenu from '../common/dropMenu';
+import Dialog from '../common/dialog';
+import Loading from '../common/loading';
+import './taskNav.css';
+import plusPng from '../../assets/img/plus.png';
+import ellipsisPng from '../../assets/img/ellipsis.png';
+import defaultPersonPng from '../../assets/img/defaultPerson.png';
+import checkPersonPng from '../../assets/img/checkPerson.png';
 
 interface TaskNavProps {
   avatar?: any;
@@ -47,31 +41,6 @@ interface TaskNavProps {
   taskNavTask?: any;
   changeLabelTaskType?: any;
 }
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    input: {
-      width: '250px',
-      color: '#fff',
-      '& .MuiInput-formControl': {
-        marginTop: '0px',
-      },
-      '& .MuiOutlinedInput-input': {
-        padding: '10px 14px',
-        borderColor: '#fff',
-        color: '#fff',
-      },
-      '& .MuiInputLabel-formControl': {
-        marginTop: '-10px',
-        color: '#fff',
-      },
-    },
-    chip: {
-      backgroundColor: 'rgba(255,255,255,0.24)',
-      color: '#fff',
-      marginLeft: '3px',
-    },
-  })
-);
 const TaskNav: React.FC<TaskNavProps> = (prop) => {
   const {
     avatar,
@@ -89,7 +58,6 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
     arrlength,
     changeLabelTaskType,
   } = prop;
-  const classes = useStyles();
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const labelArray = useTypedSelector((state) => state.task.labelArray);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
@@ -144,7 +112,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
     { name: '致命错误', id: 5 },
     { name: '顶级优先', id: 10 },
   ];
-
+  const taskNavRef: React.RefObject<any> = useRef();
   useEffect(() => {
     if (avatar) {
       setLabelAvatar(avatar);
@@ -166,12 +134,12 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       let unfinishNum = 0;
       let allNum = 0;
       taskNavTask.forEach((item: any, index: number) => {
-        if (item.show) {
-          if (item.finishPercent === 0) {
-            unfinishNum++;
-          }
-          allNum++;
+        // if (item.show) {
+        if (item.finishPercent === 0) {
+          unfinishNum++;
         }
+        allNum++;
+        // }
       });
       setUnFinsihNum(unfinishNum);
       setAllNum(allNum);
@@ -228,7 +196,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       } else {
         dispatch(setMessage(true, '新增任务成功', 'success'));
       }
-      dispatch(changeCreateMusic(true));
+      dispatch(changeMusic(5));
       dispatch(setChooseKey(addTaskRes.result._key));
       if (headerIndex === 1) {
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10]));
@@ -246,6 +214,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
       }
       // setAddTaskVisible(false);
       setAddInput('');
+      setUrlInput('');
       setLoading(false);
     } else {
       setLoading(false);
@@ -336,7 +305,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
     setBatchLoading(false);
     if (batchTaskRes.msg === 'OK') {
       dispatch(setMessage(true, '新增成功', 'success'));
-      dispatch(changeCreateMusic(true));
+      dispatch(changeMusic(5));
       if (headerIndex === 1) {
         dispatch(getWorkingTableTask(1, user._key, 1, [0, 1, 2, 10]));
       } else if (headerIndex === 2) {
@@ -404,14 +373,12 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
               marginRight: headerIndex === 3 ? '15px' : '0px',
             }}
           >
-            {loading ? (
-              <Loading loadingWidth="60px" loadingHeight="60px" />
-            ) : null}
             <div
               className="taskNav-name-info"
               style={{
                 maxWidth: 'calc(100% - 55px)',
               }}
+              ref={taskNavRef}
             >
               {avatar ? (
                 <div
@@ -427,7 +394,24 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                     }
                   }}
                 >
-                  <img src={labelAvatar} alt="" />
+                  <Avatar
+                    size={30}
+                    icon={
+                      <img
+                        src={
+                          labelAvatar
+                            ? labelAvatar +
+                              '?imageMogr2/auto-orient/thumbnail/80x'
+                            : defaultPersonPng
+                        }
+                        alt=""
+                        onError={(e: any) => {
+                          e.target.onerror = null;
+                          e.target.src = defaultPersonPng;
+                        }}
+                      />
+                    }
+                  />
                   <DropMenu
                     visible={
                       (taskNavArray[1]._key === chooseLabelKey ||
@@ -466,21 +450,25 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                                   }}
                                 >
                                   <div className="defaultExecutor-info-left">
-                                    <div className="defaultExecutor-info-avatar">
-                                      <img
-                                        src={
-                                          groupMemberItem.avatar
-                                            ? groupMemberItem.avatar +
-                                              '?imageMogr2/auto-orient/thumbnail/80x'
-                                            : defaultPersonPng
-                                        }
-                                        alt=""
-                                        onError={(e: any) => {
-                                          e.target.onerror = null;
-                                          e.target.src = defaultPersonPng;
-                                        }}
-                                      />
-                                    </div>
+                                    <Avatar
+                                      size={26}
+                                      icon={
+                                        <img
+                                          src={
+                                            groupMemberItem.avatar
+                                              ? groupMemberItem.avatar +
+                                                '?imageMogr2/auto-orient/thumbnail/80x'
+                                              : defaultPersonPng
+                                          }
+                                          alt=""
+                                          onError={(e: any) => {
+                                            e.target.onerror = null;
+                                            e.target.src = defaultPersonPng;
+                                          }}
+                                        />
+                                      }
+                                      style={{ marginRight: '10px' }}
+                                    />
                                     {groupMemberItem.nickName}
                                   </div>
                                   {executorKey === groupMemberItem.userId ? (
@@ -510,6 +498,7 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                       ? labelName.split('_')[0] + '/' + labelName.split('/')[1]
                       : labelName
                   }
+                  getPopupContainer={() => taskNavRef.current}
                 >
                   <div
                     className="taskNav-name"
@@ -540,12 +529,24 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                 />
               )}
               {unFinsihNum || allNum ? (
-                <Chip
-                  size="small"
-                  label={unFinsihNum + ' / ' + allNum}
-                  className={classes.chip}
-                />
-              ) : null}
+                // <div style={{ width: '20px', height: '20px' }}>
+                <Tooltip
+                  title={allNum - unFinsihNum + ' / ' + allNum}
+                  getPopupContainer={() => taskNavRef.current}
+                >
+                  <Progress
+                    percent={Math.round(
+                      ((allNum - unFinsihNum) / allNum) * 100
+                    )}
+                    type="circle"
+                    size="small"
+                    status="active"
+                    width={35}
+                    // style={{ zoom: 0.3, color: '#fff' }}
+                  />
+                </Tooltip>
+              ) : // </div>
+              null}
             </div>
 
             {/* {!taskNavArray[1]._key ? (
@@ -764,13 +765,12 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
           headerIndex !== 3 ? (
             <div className="taskItem-plus-title taskNav-plus-title">
               <div className="taskItem-plus-input">
-                <TextareaAutosize
-                  rowsMin={1}
-                  aria-label="maximum height"
+                <TextArea
+                  autoSize={{ minRows: 1 }}
                   placeholder="任务标题"
                   value={addInput}
                   autoComplete="off"
-                  onChange={(e) => {
+                  onChange={(e: any) => {
                     setAddInput(e.target.value);
                   }}
                   style={{ width: '100%' }}
@@ -787,19 +787,16 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                 style={{ marginTop: '10px' }}
               >
                 <div className="taskNav-url">
-                  <IconButton
-                    color="primary"
-                    component="span"
+                  <Button
+                    type="primary"
+                    shape="circle"
+                    icon={<GlobalOutlined />}
+                    ghost
+                    style={{ border: '0px', color: '#fff' }}
                     onClick={() => {
                       setMoveState(true);
                     }}
-                  >
-                    <img
-                      src={urlSvg}
-                      alt=""
-                      style={{ height: '25px', width: '25px' }}
-                    />
-                  </IconButton>
+                  />
 
                   <input
                     className="taskNav-url-input"
@@ -819,36 +816,31 @@ const TaskNav: React.FC<TaskNavProps> = (prop) => {
                   />
                 </div>
                 <Button
+                  ghost
                   onClick={() => {
                     setChooseLabelKey('');
                     setAddTaskVisible(false);
                     setAddInput('');
+                    setUrlInput('');
                     setMoveState(false);
                   }}
-                  style={{ marginRight: '10px', color: '#efefef' }}
+                  style={{ marginRight: '10px', border: '0px' }}
                 >
                   取消
                 </Button>
-                {addInput && !loading ? (
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => {
-                      addTask(taskNavArray[0], taskNavArray[1]);
-                    }}
-                    style={{ marginLeft: '10px', color: '#fff' }}
-                  >
-                    确定
-                  </Button>
-                ) : (
-                  <Button
-                    variant="contained"
-                    disabled
-                    style={{ marginLeft: '10px', color: '#fff' }}
-                  >
-                    确定
-                  </Button>
-                )}
+
+                <Button
+                  loading={loading}
+                  type="primary"
+                  onClick={() => {
+                    addTask(taskNavArray[0], taskNavArray[1]);
+                  }}
+                  style={{
+                    marginLeft: '10px',
+                  }}
+                >
+                  确定
+                </Button>
               </div>
             </div>
           ) : null}

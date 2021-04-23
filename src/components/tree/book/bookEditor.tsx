@@ -14,7 +14,9 @@ import { useDispatch } from 'react-redux';
 import { setMessage } from '../../../redux/actions/commonActions';
 import { editTask } from '../../../redux/actions/taskActions';
 import Dialog from '../../common/dialog';
-import Editor from '../../common/Editor';
+import Editor from '../../common/editor/editor';
+import Loading from '../../common/loading';
+
 import api from '../../../services/api';
 import _ from 'lodash';
 import { StepContent } from '@material-ui/core';
@@ -50,34 +52,36 @@ const BookEditor: React.FC<BookEditorProps> = (props) => {
   const [editable, setEditable] = useState<any>(false);
   const [defaultSelectedId, setDefaultSelectedId] = useState<any>(null);
   const [deleteDialogShow, setDeleteDialogShow] = useState(false);
+  const [loading, setLoading] = useState(false);
   const targetTreeRef: React.RefObject<any> = useRef();
   const bookRef: React.RefObject<any> = useRef();
   useEffect(() => {
     if (selectId && nodeObj) {
-      if (nodeObj[selectId].content) {
-        setContent(nodeObj[selectId].content);
-      } else {
-        setContent('<p>标题</p>');
-      }
+      chooseNode(nodeObj[selectId]);
     }
   }, [onChange]);
-  const chooseNode = (node: any, type?: number) => {
+  const chooseNode = async (node: any, type?: number) => {
     let newGridList = _.cloneDeep(gridList);
     let nodeIndex = _.findIndex(newGridList, { _key: node._key });
     if (nodeIndex !== -1) {
       setTargetIndex(nodeIndex);
     }
-    // if (targetNode) {
-    //   editTaskContent();
-    // }
-    setTargetNode(node);
-    // console.log(content, node.content);
-    if (node.content) {
-      setContent(node.content);
+    setLoading(true);
+    let taskItemRes: any = await api.task.getTaskInfo(node._key);
+    if (taskItemRes.msg === 'OK') {
+      let taskInfo = _.cloneDeep(taskItemRes.result);
+      setLoading(false);
+      if (taskInfo.content) {
+        setContent(taskInfo.content);
+      } else {
+        setContent('<p>标题:</p>');
+      }
+      setTargetNode(taskInfo);
+      setSelectId(node._key);
     } else {
-      setContent('<p>标题</p>');
+      setLoading(false);
+      dispatch(setMessage(true, taskItemRes.msg, 'error'));
     }
-    setSelectId(node._key);
   };
 
   const addChildrenTask = async (selectedNode: any, type: string) => {
@@ -157,6 +161,7 @@ const BookEditor: React.FC<BookEditorProps> = (props) => {
     let newNodeObj = _.cloneDeep(nodeObj);
     let newGridList = _.cloneDeep(gridList);
     let newTargetNode = _.cloneDeep(targetNode);
+    console.log(newTargetNode);
     newNodeObj[newTargetNode._key].content = content;
     let nodeIndex = _.findIndex(newGridList, { _key: newTargetNode._key });
     newGridList[nodeIndex].content = content;
@@ -164,7 +169,7 @@ const BookEditor: React.FC<BookEditorProps> = (props) => {
     dispatch(setMessage(true, '保存成功', 'success'));
     setNodeObj(newNodeObj);
     setGridList(newGridList);
-    onChange(content);
+    // onChange(content);
   };
 
   const editContract = (node: any) => {
@@ -211,6 +216,7 @@ const BookEditor: React.FC<BookEditorProps> = (props) => {
   };
   return (
     <div className="book" ref={bookRef}>
+      {loading ? <Loading /> : null}
       <div className="book-left">
         <div className="book-left-title">
           目录
@@ -267,26 +273,37 @@ const BookEditor: React.FC<BookEditorProps> = (props) => {
         ) : null}
       </div>
       <div className="book-right">
-        <Editor
-          editorHeight={bookRef?.current?.offsetHeight}
-          data={content}
-          onChange={changeTaskContent}
-          editable={editable}
-          fullType={'big'}
-        />
         {editable ? (
-          <Button
-            variant="contained"
-            color="primary"
-            component="span"
-            onClick={() => {
-              editTaskContent();
+          <React.Fragment>
+            <Editor
+              data={content}
+              height={500}
+              onChange={changeTaskContent}
+              editorKey={targetNode?._key}
+            />
+            <Button
+              variant="contained"
+              color="primary"
+              component="span"
+              onClick={() => {
+                editTaskContent();
+              }}
+              className="book-editor-button"
+              style={{ color: '#fff' }}
+            >
+              保存
+            </Button>
+          </React.Fragment>
+        ) : (
+          <div
+            dangerouslySetInnerHTML={{ __html: content }}
+            style={{
+              width: '100%',
+              height: '100%',
+              overflow: 'auto',
             }}
-            className="book-editor-button"
-          >
-            保存
-          </Button>
-        ) : null}
+          ></div>
+        )}
       </div>
       <Dialog
         visible={deleteDialogShow}

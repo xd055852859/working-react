@@ -3,31 +3,14 @@ import './companySearch.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux';
-import moment from 'moment';
-import { Button, IconButton } from '@material-ui/core';
-import {
-  AddOutlined,
-  NavigateNext,
-  CloseOutlined,
-  Search,
-} from '@material-ui/icons';
+import { Button, Input, Tooltip, Tabs, Table, Modal, Checkbox } from 'antd';
+const { Search } = Input;
+const { TabPane } = Tabs;
+import { PlusOutlined, CloseOutlined } from '@ant-design/icons';
+
 // import addPng from '../../assets/img/contact-plus.png';
 import { setMessage } from '../../redux/actions/commonActions';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
-  Checkbox,
-  Tabs,
-  Tab,
-  Breadcrumbs,
-  Link,
-  Typography,
-} from '@material-ui/core';
+
 import _ from 'lodash';
 import api from '../../services/api';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
@@ -40,89 +23,6 @@ const useStyles = makeStyles({
   // },
 });
 
-let columns1 = [
-  {
-    id: 'avatar',
-    label: '头像',
-    width: 20,
-  },
-  {
-    id: 'nickName',
-    label: '姓名',
-    width: 20,
-  },
-  {
-    id: 'operation',
-    label: '操作',
-    width: 20,
-  },
-];
-let columns2 = [
-  {
-    id: 'groupLogo',
-    label: '图标',
-    width: 20,
-  },
-  {
-    id: 'groupName',
-    label: '群名',
-    width: 20,
-  },
-  {
-    id: 'operation',
-    label: '操作',
-    width: 20,
-  },
-];
-const columns3 = [
-  {
-    id: 'avatar',
-    label: '头像',
-    width: 10,
-  },
-  {
-    id: 'nickName',
-    label: '姓名',
-    minWidth: 25,
-  },
-  {
-    id: 'post',
-    label: '职位',
-    minWidth: 15,
-  },
-  {
-    id: 'isLeader',
-    label: '部门领导',
-    minWidth: 10,
-  },
-  {
-    id: 'operation',
-    label: '操作',
-    width: 15,
-  },
-];
-const columns4 = [
-  // {
-  //   id: 'updateTime',
-  //   label: '更新时间',
-  //   minWidth: 100,
-  // },
-  {
-    id: 'groupLogo',
-    label: '图标',
-    minWidth: 20,
-  },
-  {
-    id: 'groupName',
-    label: '群名',
-    minWidth: 20,
-  },
-  {
-    id: 'operation',
-    label: '操作',
-    minWidth: 20,
-  },
-];
 interface CompanySearchListProps {
   addMember?: any;
   targetGroupKey: string;
@@ -158,46 +58,266 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
   const [nodeRows, setNodeRows] = useState<any>([]);
   const [postInput, setPostInput] = useState<any>('');
   const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(100);
+  const [pageSize, setPageSize] = React.useState(80);
 
   const [deleteDialogShow, setDeleteDialogShow] = useState(false);
   const [departmentId, setDepartmentId] = useState<any>(null);
 
   const personRef: React.RefObject<any> = useRef();
-  let unDistory = true;
+let unDistory = useRef<any>(null);   unDistory.current=true;
+  let memberColumns = [
+    {
+      title: '头像',
+      dataIndex: 'avatar',
+      key: 'avatar',
+      width: 20,
+      align: 'center' as 'center',
+      render: (avatar) => (
+        <div className="company-avatar-container ">
+          <div className="company-avatar">
+            <img
+              src={
+                avatar
+                  ? avatar + '?imageMogr2/auto-orient/thumbnail/80x'
+                  : defaultPersonPng
+              }
+              alt=""
+              onError={(e: any) => {
+                e.target.onerror = null;
+                e.target.src = defaultPersonPng;
+              }}
+            />
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: '姓名',
+      dataIndex: 'nickName',
+      key: 'nickName',
+      width: 20,
+      align: 'center' as 'center',
+      ellipsis: true,
+    },
+    {
+      title: '操作',
+      dataIndex: 'operation',
+      key: 'operation',
+      render: (operation, item, index) => (
+        <Tooltip title="添加成员">
+          <Button
+            shape="circle"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              addMember(item);
+            }}
+          />
+        </Tooltip>
+      ),
+      width: 20,
+      align: 'center' as 'center',
+    },
+  ];
+  let groupColumns = [
+    {
+      title: '图标',
+      dataIndex: 'groupLogo',
+      key: 'groupLogo',
+      width: 20,
+      align: 'center' as 'center',
+      render: (groupLogo) => (
+        <div className="company-avatar-container ">
+          <div className="company-avatar">
+            <img
+              src={
+                groupLogo
+                  ? groupLogo + '?imageMogr2/auto-orient/thumbnail/80x'
+                  : defaultGroupPng
+              }
+              alt=""
+            />
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: '项目名',
+      dataIndex: 'groupName',
+      key: 'groupName',
+      width: 20,
+      align: 'center' as 'center',
+      ellipsis: true,
+    },
+    {
+      title: '操作',
+      dataIndex: 'operation',
+      key: 'operation',
+      render: (operation, item, index) => (
+        <Tooltip title="添加项目">
+          <Button
+            shape="circle"
+            icon={<PlusOutlined />}
+            onClick={() => {
+              addMember(item);
+            }}
+          />
+        </Tooltip>
+      ),
+      width: 20,
+      align: 'center' as 'center',
+    },
+  ];
+  const memberInfoColumns = [
+    {
+      title: '头像',
+      dataIndex: 'avatar',
+      key: 'avatar',
+      width: 10,
+      align: 'center' as 'center',
+      render: (avatar) => (
+        <div className="company-avatar-container ">
+          <div className="company-avatar">
+            <img
+              src={
+                avatar
+                  ? avatar + '?imageMogr2/auto-orient/thumbnail/80x'
+                  : defaultPersonPng
+              }
+              alt=""
+              onError={(e: any) => {
+                e.target.onerror = null;
+                e.target.src = defaultPersonPng;
+              }}
+            />
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: '姓名',
+      dataIndex: 'nickName',
+      key: 'nickName',
+      width: 20,
+      align: 'center' as 'center',
+      ellipsis: true,
+    },
+    {
+      title: '职位',
+      dataIndex: 'post',
+      key: 'post',
+      width: 15,
+      align: 'center' as 'center',
+      editable: true,
+    },
+    {
+      title: '领导',
+      dataIndex: 'isLeader',
+      key: 'isLeader',
+      width: 20,
+      align: 'center' as 'center',
+      render: (isLeader, item, index) => (
+        <Checkbox
+          checked={isLeader ? true : false}
+          onChange={(e: any) => {
+            changeLeader(index);
+          }}
+        />
+      ),
+    },
+    {
+      title: '操作',
+      dataIndex: 'operation',
+      key: 'operation',
+      align: 'center' as 'center',
+      width: 15,
+      render: (operation, item, index) => (
+        <Button
+          shape="circle"
+          icon={<CloseOutlined />}
+          onClick={() => {
+            setDeleteDialogShow(true);
+            setDepartmentId(item.staffKey);
+          }}
+        />
+      ),
+    },
+  ];
+  const groupInfoColumns = [
+    {
+      title: '图标',
+      dataIndex: 'groupLogo',
+      key: 'groupLogo',
+      width: 20,
+      align: 'center' as 'center',
+      render: (groupLogo) => (
+        <div className="company-avatar-container">
+          <div className="company-avatar">
+            <img
+              src={
+                groupLogo
+                  ? groupLogo + '?imageMogr2/auto-orient/thumbnail/80x'
+                  : defaultGroupPng
+              }
+              alt=""
+            />
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: '项目名',
+      dataIndex: 'groupName',
+      key: 'groupName',
+      width: 40,
+      align: 'center' as 'center',
+      ellipsis: true,
+    },
+    {
+      title: '操作',
+      dataIndex: 'operation',
+      key: 'operation',
+      align: 'center' as 'center',
+      width: 15,
+      render: (operation, item, index) => (
+        <Button
+          shape="circle"
+          icon={<CloseOutlined />}
+          onClick={() => {
+            setDeleteDialogShow(true);
+            setDepartmentId(item.staffKey);
+          }}
+        />
+      ),
+    },
+  ];
   useEffect(() => {
     if (companyObj) {
-      getCompanyRow(page, rowsPerPage, '', companyObj._key);
+      getCompanyRow(page, pageSize, '', companyObj._key);
       getCompanyNodeRow(1, 100, companyObj);
     }
     console.log(companyObj);
     return () => {
-      unDistory = false;
+      // unDistory.current = false;
     };
   }, [companyObj]);
   // useEffect(() => {
-  //   // getCompanyRow(page, rowsPerPage, '', '');
+  //   // getCompanyRow(page, pageSize, '', '');
   //   getCompanyNodeRow(1, 100, companyObj);
   // }, [companyObj]);
   useEffect(() => {
     if (rows.length > 0) {
-      getCompanyRow(page, rowsPerPage, searchInput, companyObj._key);
+      getCompanyRow(page, pageSize, searchInput, companyObj._key);
     }
   }, [page]);
   useEffect(() => {
     if (searchInput === '') {
       setPage(0);
-      getCompanyRow(0, rowsPerPage, '', companyObj._key);
+      getCompanyRow(0, pageSize, '', companyObj._key);
     }
   }, [searchInput]);
   useEffect(() => {
-    if (rowsPerPage * page < total) {
-      getCompanyRow(page, rowsPerPage, searchInput, companyObj._key);
-    }
-  }, [page, rowsPerPage, searchIndex]);
-  useEffect(() => {
-    getCompanyRow(page, rowsPerPage, searchInput, companyObj._key);
-  }, [searchIndex]);
+    getCompanyRow(page, pageSize, searchInput, companyObj._key);
+  }, [page, pageSize, searchIndex]);
   const getCompanyRow = async (
     page: number,
     limit: number,
@@ -205,7 +325,6 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
     nodeId: string
   ) => {
     let newRow: any = [];
-    page = page + 1;
     let companyPersonRes: any = null;
     if (searchType === 2) {
       if (searchIndex) {
@@ -233,15 +352,14 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
         companyPersonRes = await api.company.getCompanyGroupList(
           groupKey,
           page,
-          rowsPerPage,
+          pageSize,
           searchInput,
           nodeId
         );
       }
     }
-    if (unDistory) {
+    if (unDistory.current) {
       if (companyPersonRes.msg === 'OK') {
-        console.log(companyPersonRes);
         companyPersonRes.result.map((item: any, index: number) => {
           newRow[index] = {
             ...item,
@@ -261,18 +379,14 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
   };
   const getCompanyNodeRow = async (page: number, limit: number, node: any) => {
     let newRow: any = [];
-    // if (page !== 0) {
-    //   page = page + 1;
-    //   newRow = _.cloneDeep(rows);
-    // }
     if (searchType === 2) {
       let companyPersonRes: any = await api.company.getCompanyList(
         2,
         node._key,
         page,
-        rowsPerPage
+        pageSize
       );
-      if (unDistory) {
+      if (unDistory.current) {
         if (companyPersonRes.msg === 'OK') {
           companyPersonRes.result.map((item: any, index: number) => {
             newRow.push({
@@ -290,9 +404,9 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
       let companyPersonRes: any = await api.company.getOrgGroupList(
         node._key,
         page,
-        rowsPerPage
+        pageSize
       );
-      if (unDistory) {
+      if (unDistory.current) {
         if (companyPersonRes.msg === 'OK') {
           companyPersonRes.result.map((item: any, index: number) => {
             newRow[index] = {
@@ -306,12 +420,13 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
       }
     }
   };
-  const handleChangePage = (event: any, newPage: number) => {
-    setPage(newPage);
+
+  const handleChangePage = (page: number) => {
+    setPage(page);
   };
 
-  const handleChangeRowsPerPage = (event: any) => {
-    setRowsPerPage(+event.target.value);
+  const handleChangePageSize = (current, size) => {
+    setPageSize(size);
   };
   const searchGroup = () => {
     let newRow: any = _.cloneDeep(rows);
@@ -356,39 +471,20 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
   return (
     <div className="companySearch">
       <div className="companySearch-container companySearch-listSearch">
-        <input
-          type="text"
-          value={searchInput}
-          onChange={(e: any) => {
-            setSearchInput(e.target.value);
-          }}
+        <Search
           placeholder="请输入名称"
-          className="companySearch-input"
-          onKeyDown={(e: any) => {
-            if (e.keyCode === 13) {
-              if (searchIndex === 1 && searchType === 3) {
-                searchGroup();
-              } else {
-                getCompanyRow(0, rowsPerPage, searchInput, companyObj._key);
-              }
-            }
-          }}
-        />
-        <IconButton
-          color="primary"
-          component="span"
-          className="companySearch-button"
-          onClick={() => {
+          value={searchInput}
+          onSearch={() => {
             if (searchIndex === 1 && searchType === 3) {
               searchGroup();
             } else {
-              getCompanyRow(0, rowsPerPage, searchInput, companyObj._key);
+              getCompanyRow(0, pageSize, searchInput, companyObj._key);
             }
           }}
-          size="small"
-        >
-          <Search />
-        </IconButton>
+          onChange={(e: any) => {
+            setSearchInput(e.target.value);
+          }}
+        />
       </div>
       <div
         className="companySearch-info-container"
@@ -399,166 +495,54 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
       >
         {searchType === 3 ? (
           <Tabs
-            value={searchIndex}
-            indicatorColor="primary"
-            textColor="primary"
-            onChange={(event: React.ChangeEvent<{}>, newValue: number) => {
-              setSearchIndex(newValue);
+            activeKey={searchIndex + ''}
+            onChange={(activeKey) => {
+              setSearchIndex(parseInt(activeKey));
             }}
-            style={{ marginBottom: '7px' }}
           >
-            <Tab label="企业项目" />
-            <Tab label="我的项目" />
+            <TabPane tab="企业项目" key={'0'}>
+              <Table
+                columns={groupColumns}
+                scroll={{ y: document.body.offsetHeight - 430 }}
+                dataSource={rows}
+                size="small"
+                pagination={{
+                  pageSize: pageSize,
+                  onChange: handleChangePage,
+                  onShowSizeChange: handleChangePageSize,
+                  total: total,
+                }}
+              />
+            </TabPane>
+            <TabPane tab="我的项目" key={'1'}>
+              <Table
+                columns={groupColumns}
+                scroll={{ y: document.body.offsetHeight - 430 }}
+                dataSource={rows}
+                size="small"
+                pagination={{
+                  pageSize: pageSize,
+                  onChange: handleChangePage,
+                  onShowSizeChange: handleChangePageSize,
+                  total: total,
+                }}
+              />
+            </TabPane>
           </Tabs>
-        ) : null}
-        <TableContainer
-          style={{
-            height:
-              searchType === 3 ? 'calc(100% - 110px)' : 'calc(100% - 55px)',
-          }}
-        >
-          <Table stickyHeader aria-label="sticky table" size="small">
-            <TableHead>
-              <TableRow>
-                {searchType === 2
-                  ? columns1.map((column: any) => (
-                      <TableCell
-                        key={column.id}
-                        align="center"
-                        style={{ minWidth: column.minWidth }}
-                      >
-                        {column.label}
-                      </TableCell>
-                    ))
-                  : searchType === 3
-                  ? columns2.map((column: any) => (
-                      <TableCell
-                        key={column.id}
-                        align="center"
-                        style={{ minWidth: column.minWidth }}
-                      >
-                        {column.label}
-                      </TableCell>
-                    ))
-                  : null}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {rows.map((row: any, index: number) => {
-                return (
-                  <TableRow
-                    hover
-                    role="checkbox"
-                    tabIndex={-1}
-                    key={'row' + index}
-                  >
-                    {searchType === 2
-                      ? columns1.map((column: any) => {
-                          const value = row[column.id];
-                          return (
-                            <React.Fragment key={column.id}>
-                              {column.id === 'operation' ? (
-                                <TableCell align="center">
-                                  <IconButton
-                                    color="primary"
-                                    component="span"
-                                    onClick={() => {
-                                      addMember(row);
-                                    }}
-                                  >
-                                    <AddOutlined />
-                                  </IconButton>
-                                </TableCell>
-                              ) : column.id === 'avatar' ? (
-                                <TableCell key={column.id} align="center">
-                                  <div className="company-avatar-container ">
-                                    <div className="company-avatar">
-                                      <img
-                                        src={
-                                          row.avatar
-                                            ? row.avatar +
-                                              '?imageMogr2/auto-orient/thumbnail/80x'
-                                            : defaultPersonPng
-                                        }
-                                        alt=""
-                                        onError={(e: any) => {
-                                          e.target.onerror = null;
-                                          e.target.src = defaultPersonPng;
-                                        }}
-                                      />
-                                    </div>
-                                  </div>
-                                </TableCell>
-                              ) : (
-                                <TableCell align="center">
-                                  {column.format && typeof value === 'number'
-                                    ? column.format(value)
-                                    : value}
-                                </TableCell>
-                              )}
-                            </React.Fragment>
-                          );
-                        })
-                      : searchType === 3
-                      ? columns2.map((column: any) => {
-                          const value = row[column.id];
-                          return (
-                            <React.Fragment key={column.id}>
-                              {column.id === 'operation' ? (
-                                <TableCell align="center">
-                                  <IconButton
-                                    color="primary"
-                                    component="span"
-                                    onClick={() => {
-                                      addMember(row);
-                                    }}
-                                  >
-                                    <AddOutlined />
-                                  </IconButton>
-                                </TableCell>
-                              ) : column.id === 'groupLogo' ? (
-                                <TableCell key={column.id} align="center">
-                                  <div className="company-avatar-container ">
-                                    <div className="company-avatar">
-                                      <img
-                                        src={
-                                          row.groupLogo
-                                            ? row.groupLogo +
-                                              '?imageMogr2/auto-orient/thumbnail/80x'
-                                            : defaultGroupPng
-                                        }
-                                        alt=""
-                                      />
-                                    </div>
-                                  </div>
-                                </TableCell>
-                              ) : (
-                                <TableCell align="center">
-                                  {column.format && typeof value === 'number'
-                                    ? column.format(value)
-                                    : value}
-                                </TableCell>
-                              )}
-                            </React.Fragment>
-                          );
-                        })
-                      : null}
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[10, 25, 100]}
-          component="div"
-          count={total}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onChangePage={handleChangePage}
-          onChangeRowsPerPage={handleChangeRowsPerPage}
-          labelRowsPerPage="分页"
-        />
+        ) : (
+          <Table
+            columns={memberColumns}
+            scroll={{ y: document.body.offsetHeight - 380 }}
+            dataSource={rows}
+            size="small"
+            pagination={{
+              pageSize: pageSize,
+              onChange: handleChangePage,
+              onShowSizeChange: handleChangePageSize,
+              total: total,
+            }}
+          />
+        )}
       </div>
       {companyObj.orgType === 1 ? (
         <React.Fragment>
@@ -567,228 +551,36 @@ const CompanySearchList: React.FC<CompanySearchListProps> = (props) => {
             {nodeRows.length}人 )
           </div>
           <div className="companySearch-info-container">
-            <TableContainer
-              style={{
-                height: '150px',
-              }}
-            >
-              <Table stickyHeader aria-label="sticky table" size="small">
-                <TableHead>
-                  <TableRow>
-                    {searchType === 2
-                      ? columns3.map((column: any) => (
-                          <TableCell
-                            key={column.id}
-                            align="center"
-                            style={{ minWidth: column.minWidth }}
-                          >
-                            {column.label}
-                          </TableCell>
-                        ))
-                      : searchType === 3
-                      ? columns4.map((column: any) => (
-                          <TableCell
-                            key={column.id}
-                            align="center"
-                            style={{ minWidth: column.minWidth }}
-                          >
-                            {column.label}
-                          </TableCell>
-                        ))
-                      : null}
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {nodeRows.map((row: any, index: number) => {
-                    return (
-                      <TableRow
-                        hover
-                        role="checkbox"
-                        tabIndex={-1}
-                        key={'row' + index}
-                      >
-                        {searchType === 2
-                          ? columns3.map((column: any) => {
-                              const value = row[column.id];
-                              return (
-                                <React.Fragment key={column.id}>
-                                  {column.id === 'isLeader' ? (
-                                    <TableCell align="center">
-                                      <Checkbox
-                                        checked={
-                                          nodeRows[index].isLeader
-                                            ? true
-                                            : false
-                                        }
-                                        onChange={(e: any) => {
-                                          changeLeader(index);
-                                          // setMessageCheck(e.target.checked);
-                                        }}
-                                        color="primary"
-                                      />
-                                    </TableCell>
-                                  ) : column.id === 'post' ? (
-                                    <TableCell align="center">
-                                      <div
-                                        suppressContentEditableWarning
-                                        contentEditable={true}
-                                        id={'postValue' + index}
-                                        onBlur={(e: any) => {
-                                          // setPostInput(document.getElementById('postValue' + index)?.innerText);
-                                          if (document) {
-                                            let postInput: any = document.getElementById(
-                                              'postValue' + index
-                                            )?.innerText;
-                                            changePost(index, postInput);
-                                          }
-                                        }}
-                                        style={{ width: '70px' }}
-                                      >
-                                        {nodeRows[index].post}
-                                      </div>
-                                    </TableCell>
-                                  ) : column.id === 'operation' ? (
-                                    <TableCell align="center">
-                                      <IconButton
-                                        color="primary"
-                                        component="span"
-                                        onClick={() => {
-                                          setDeleteDialogShow(true);
-                                          setDepartmentId(
-                                            nodeRows[index].staffKey
-                                          );
-                                        }}
-                                      >
-                                        <CloseOutlined />
-                                      </IconButton>
-                                    </TableCell>
-                                  ) : column.id === 'avatar' ? (
-                                    <TableCell key={column.id} align="center">
-                                      <div className="company-avatar-container ">
-                                        <div className="company-avatar">
-                                          <img
-                                            src={
-                                              row.avatar
-                                                ? row.avatar +
-                                                  '?imageMogr2/auto-orient/thumbnail/80x'
-                                                : defaultPersonPng
-                                            }
-                                            alt=""
-                                            onError={(e: any) => {
-                                              e.target.onerror = null;
-                                              e.target.src = defaultPersonPng;
-                                            }}
-                                          />
-                                        </div>
-                                      </div>
-                                    </TableCell>
-                                  ) : (
-                                    <TableCell key={column.id} align="center">
-                                      {column.format &&
-                                      typeof value === 'number'
-                                        ? column.format(value)
-                                        : value}
-                                    </TableCell>
-                                  )}
-                                </React.Fragment>
-                              );
-                            })
-                          : searchType === 3
-                          ? columns4.map((column: any, columnIndex: number) => {
-                              const value = row[column.id];
-                              return column.id === 'groupName' ? (
-                                <TableCell key={column.id} align="center">
-                                  {column.format && typeof value === 'number'
-                                    ? column.format(value)
-                                    : value}
-                                </TableCell>
-                              ) : column.id === 'operation' ? (
-                                <TableCell align="center" key={column.id}>
-                                  <IconButton
-                                    color="primary"
-                                    component="span"
-                                    onClick={() => {
-                                      setDeleteDialogShow(true);
-                                      console.log(
-                                        '?????????',
-                                        nodeRows[index].staffKey
-                                      );
-                                      setDepartmentId(nodeRows[index].staffKey);
-                                    }}
-                                  >
-                                    <CloseOutlined />
-                                  </IconButton>
-                                </TableCell>
-                              ) : column.id === 'groupLogo' ? (
-                                <TableCell key={column.id} align="center">
-                                  <div className="company-avatar-container ">
-                                    <div className="company-avatar">
-                                      <img
-                                        src={
-                                          row.groupLogo
-                                            ? row.groupLogo +
-                                              '?imageMogr2/auto-orient/thumbnail/80x'
-                                            : defaultGroupPng
-                                        }
-                                        alt=""
-                                      />
-                                    </div>
-                                  </div>
-                                </TableCell>
-                              ) : (
-                                <TableCell key={column.id} align="center">
-                                  <React.Fragment>
-                                    <Checkbox
-                                      checked={value ? true : false}
-                                      disabled={
-                                        nodeRows[index].role >
-                                        nodeRows[index].checkIndex
-                                          ? true
-                                          : false
-                                      }
-                                      onChange={(e: any) => {
-                                        // changeRole(e, index, columnIndex);
-                                        // setMessageCheck(e.target.checked);
-                                      }}
-                                      color="primary"
-                                    />
-                                  </React.Fragment>
-                                </TableCell>
-                              );
-                            })
-                          : null}
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TableContainer>
-            {/* <TablePagination
-          rowsPerPageOptions={[10, 25, 100]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onChangePage={handleChangePage}
-          onChangeRowsPerPage={handleChangeRowsPerPage}
-          labelRowsPerPage="分页"
-        /> */}
-            <Dialog
+            {searchType === 2 ? (
+              <Table
+                columns={memberInfoColumns}
+                scroll={{ y: 120 }}
+                dataSource={nodeRows}
+                size="small"
+                pagination={false}
+              />
+            ) : (
+              <Table
+                columns={groupInfoColumns}
+                scroll={{ y: 120 }}
+                dataSource={nodeRows}
+                size="small"
+                pagination={false}
+              />
+            )}
+            <Modal
               visible={deleteDialogShow}
-              onClose={() => {
+              onCancel={() => {
                 setDeleteDialogShow(false);
               }}
-              onOK={() => {
+              onOk={() => {
                 setDeleteDialogShow(false);
                 deleteDepartment(departmentId);
               }}
               title={'删除' + (searchType === 2 ? '成员' : '项目')}
-              dialogStyle={{ width: '400px', height: '200px' }}
             >
-              <div className="dialog-onlyTitle">
-                是否删除该{searchType === 2 ? '成员' : '项目'}
-              </div>
-            </Dialog>
+              是否删除该{searchType === 2 ? '成员' : '项目'}
+            </Modal>
           </div>
         </React.Fragment>
       ) : null}

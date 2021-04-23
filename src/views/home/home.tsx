@@ -1,38 +1,48 @@
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import './home.css';
+import _ from 'lodash';
+import api from '../../services/api';
+import { useDispatch } from 'react-redux';
+import { Tooltip, Dropdown, Button } from 'antd';
+import {
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+  SettingOutlined,
+} from '@ant-design/icons';
+
+import {
+  setCommonHeaderIndex,
+  setMessage,
+  setMoveState,
+} from '../../redux/actions/commonActions';
+import { useTypedSelector } from '../../redux/reducer/RootState';
+import {
+  changeMainenterpriseGroup,
+  getTargetUserInfo,
+  setClickType,
+} from '../../redux/actions/authActions';
+import { getCompanyItem } from '../../redux/actions/memberActions';
+import { setGroupKey } from '../../redux/actions/groupActions';
+
+import Tabs from '../tabs/tabs';
+import LiquidChart from '../../components/common/chart/liquidChart';
+import IconFont from '../../components/common/iconFont';
+
+import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import logoSvg from '../../assets/svg/logo.svg';
 import boardPng from '../../assets/img/board.png';
 import tablePng from '../../assets/img/table.png';
-import chatPng from '../../assets/img/chat.png';
 import calendarPng from '../../assets/img/calendarHome.png';
 import companyIcon from '../../assets/svg/companyIcon.svg';
 import fixIconSvg from '../../assets/svg/fixIcon.svg';
 import unfixIconSvg from '../../assets/svg/unfixIcon.svg';
-import { ExpandMoreOutlined } from '@material-ui/icons';
-import { IconButton } from '@material-ui/core';
-import Tabs from '../tabs/tabs';
-import { useDispatch } from 'react-redux';
-import {
-  setCommonHeaderIndex,
-  setMessage,
-} from '../../redux/actions/commonActions';
-import { useTypedSelector } from '../../redux/reducer/RootState';
-import {
-  setTheme,
-  changeMainenterpriseGroup,
-} from '../../redux/actions/authActions';
-import { getCompanyItem } from '../../redux/actions/memberActions';
-import _ from 'lodash';
-import api from '../../services/api';
-import { Tooltip } from '@material-ui/core';
-import DropMenu from '../../components/common/dropMenu';
-import Loading from '../../components/common/loading';
-import defaultGroupPng from '../../assets/img/defaultGroup.png';
-export interface HomeProps { }
+import otherGroupSvg from '../../assets/svg/otherGroup.svg';
+import allGroupSvg from '../../assets/svg/allGroup.svg';
+
+export interface HomeProps {}
 
 const Home: React.FC<HomeProps> = (props) => {
-  // const location = useLocation();
   const history = useHistory();
   const dispatch = useDispatch();
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
@@ -42,48 +52,65 @@ const Home: React.FC<HomeProps> = (props) => {
   const mainEnterpriseGroup = useTypedSelector(
     (state) => state.auth.mainEnterpriseGroup
   );
+  const allTask = useTypedSelector((state) => state.auth.allTask);
+
   const groupArray = useTypedSelector((state) => state.group.groupArray);
   const [companyGroupList, setCompanyGroupList] = useState<any>([]);
   const [companyVisible, setCompanyVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (
-      user &&
-      user._key &&
-      mainEnterpriseGroup &&
-      mainEnterpriseGroup.mainEnterpriseGroupKey
-    ) {
-      dispatch(getCompanyItem(mainEnterpriseGroup.mainEnterpriseGroupKey));
+    if (user && user._key) {
+      if (
+        mainEnterpriseGroup &&
+        mainEnterpriseGroup.mainEnterpriseGroupKey &&
+        localStorage.getItem('mainEnterpriseGroupKey') !== 'out'
+      ) {
+        dispatch(getCompanyItem(mainEnterpriseGroup.mainEnterpriseGroupKey));
+      }
+      getCompanyGroupList();
     }
   }, [user, mainEnterpriseGroup]);
 
-  const changeBoard = (type: string, bool: boolean) => {
-    let newTheme = _.cloneDeep(theme);
-    newTheme[type] = bool;
-    dispatch(setTheme(newTheme));
-  };
-  useEffect(() => {
-    if (groupArray) {
-      let newCompanyGroupList: any = [];
-      groupArray.forEach((item: any) => {
-        if (item.enterprise === 2) {
-          if (mainEnterpriseGroup.mainEnterpriseGroupKey === item._key) {
-            newCompanyGroupList.unshift(item);
-          } else {
-            newCompanyGroupList.push(item);
-          }
+  // useEffect(() => {
+  //   if (groupArray && companyGroupList.length === 0) {
+  //     let newCompanyGroupList: any = [];
+  //     groupArray.forEach((item: any) => {
+  //       if (item.enterprise === 2) {
+  //       }
+  //     });
+
+  //     setCompanyGroupList(newCompanyGroupList);
+  //   }
+  // }, [groupArray, companyGroupList]);
+  const getCompanyGroupList = async () => {
+    let newCompanyGroupList: any = [];
+    let res: any = await api.group.getUserEnterpriseGroupList();
+    if (res.msg == 'OK') {
+      res.result.forEach((item: any, index: number) => {
+        if (mainEnterpriseGroup.mainEnterpriseGroupKey === item._key) {
+          newCompanyGroupList.unshift(item);
+        } else {
+          newCompanyGroupList.push(item);
         }
       });
       newCompanyGroupList.push({
         _key: '',
-        groupLogo: '',
-        groupName: '所有项目',
+        groupLogo: allGroupSvg,
+        groupName: '组织',
+        isRight: 0,
       });
+      newCompanyGroupList.push({
+        _key: 'out',
+        groupLogo: otherGroupSvg,
+        groupName: '自由协作项目',
+        isRight: 0,
+      });
+      console.log(newCompanyGroupList);
       setCompanyGroupList(newCompanyGroupList);
+    } else {
+      dispatch(setMessage(true, res.msg, 'error'));
     }
-  }, [groupArray]);
-
+  };
   const changeMainEnterpriseKey = async (groupKey: string) => {
     let newCompanyGroupList: any = _.cloneDeep(companyGroupList);
     let res: any = await api.group.setMainEnterpriseGroup(groupKey);
@@ -94,14 +121,21 @@ const Home: React.FC<HomeProps> = (props) => {
       newCompanyGroupList.splice(groupIndex, 1);
       newCompanyGroupList.unshift(groupItem);
       setCompanyGroupList(newCompanyGroupList);
-      dispatch(
-        changeMainenterpriseGroup(
-          groupItem._key,
-          groupItem.groupLogo,
-          groupItem.groupName
-        )
-      );
-      if (groupItem._key) {
+      console.log(groupItem);
+      if (groupItem._key !== 'out') {
+        dispatch(
+          changeMainenterpriseGroup(
+            groupItem._key,
+            groupItem.groupLogo,
+            groupItem.groupName,
+            groupItem.isRight
+          )
+        );
+      } else {
+        dispatch(changeMainenterpriseGroup('', '', groupItem.groupName, 0));
+      }
+      localStorage.setItem('mainEnterpriseGroupKey', groupItem._key);
+      if (groupItem._key && groupItem._key !== 'out') {
         dispatch(getCompanyItem(groupItem._key));
       }
       setCompanyVisible(false);
@@ -109,23 +143,29 @@ const Home: React.FC<HomeProps> = (props) => {
       dispatch(setMessage(true, res.msg, 'error'));
     }
   };
+  const toTargetUser = async (e) => {
+    e.stopPropagation();
+    dispatch(getTargetUserInfo(user._key));
+    dispatch(setCommonHeaderIndex(2));
+    dispatch(setClickType('self'));
+  };
   return (
     <div
       className="home"
       style={
         moveState === 'in'
           ? {
-            animation: 'moveIn 500ms',
-            // animationFillMode: 'forwards',
-            left: '-320px',
-          }
+              // animation: 'moveIn 500ms',
+              // animationFillMode: 'forwards',
+              left: '-320px',
+            }
           : moveState === 'out'
-            ? {
-              animation: 'moveOut 500ms',
+          ? {
+              // animation: 'moveOut 500ms',
               // animationFillMode: 'forwards',
               left: '0px',
             }
-            : { left: '0px' }
+          : { left: '0px' }
       }
     >
       <div
@@ -134,50 +174,35 @@ const Home: React.FC<HomeProps> = (props) => {
           background: 'rgba(0,0,0,' + theme.grayPencent + ')',
         }}
       ></div>
-      <div
-        className="home-bg2"
-        style={
-          theme.backgroundImg
-            ? {
-              backgroundImage: 'url(' + theme.backgroundImg + ')',
-            }
-            : { backgroundColor: theme.backgroundColor }
-        }
-      ></div>
+      {!theme.randomVisible ? (
+        <div
+          className="home-bg2"
+          style={
+            theme.backgroundImg
+              ? {
+                  backgroundImage: 'url(' + theme.backgroundImg + ')',
+                }
+              : { backgroundColor: theme.backgroundColor }
+          }
+        ></div>
+      ) : null}
       <div className="home-b"></div>
       <div className="home-header">
         <div className="home-header-logo">
-          <img
-            src={logoSvg}
-            alt=""
+          <img src={logoSvg} alt="" />
+          <div
+            className="home-openIcon"
             onClick={() => {
-              history.push('/');
-              localStorage.setItem('viewWelcome', '1');
+              dispatch(setMoveState(moveState === 'in' ? 'out' : 'in'));
             }}
-          />
-          {theme.moveState ? (
-            <Tooltip title="锁定左侧面板">
-              <img
-                src={fixIconSvg}
-                alt=""
-                style={{ width: '30px', height: '30px' }}
-                onClick={() => {
-                  changeBoard('moveState', false);
-                }}
-              />
-            </Tooltip>
-          ) : (
-              <Tooltip title="动态伸缩左侧面板">
-                <img
-                  src={unfixIconSvg}
-                  alt=""
-                  style={{ width: '30px', height: '30px' }}
-                  onClick={() => {
-                    changeBoard('moveState', true);
-                  }}
-                />
-              </Tooltip>
+            style={{ right: moveState === 'in' ? '-35px' : '-15px' }}
+          >
+            {moveState === 'in' ? (
+              <MenuUnfoldOutlined style={{ fontSize: '20px' }} />
+            ) : (
+              <MenuFoldOutlined style={{ fontSize: '20px' }} />
             )}
+          </div>
         </div>
         <div
           className="home-header-item"
@@ -189,7 +214,19 @@ const Home: React.FC<HomeProps> = (props) => {
           }}
         >
           <img src={boardPng} alt="" className="home-header-item-logo" />
-          首页
+          <div style={{ flexShrink: 0, width: '200px' }}>首页</div>
+          {allTask[0] > 0 ? (
+            <div>
+              <LiquidChart
+                percent={parseFloat(
+                  ((allTask[0] - allTask[1]) / allTask[0]).toFixed(1)
+                )}
+                zoom={0.1}
+                liquidId={'liquid'}
+                fillColor={'#1890ff'}
+              />
+            </div>
+          ) : null}
         </div>
         <div
           style={
@@ -198,10 +235,24 @@ const Home: React.FC<HomeProps> = (props) => {
           className="home-header-item"
           onClick={() => {
             dispatch(setCommonHeaderIndex(1));
+            dispatch(setClickType('out'));
           }}
         >
           <img src={tablePng} alt="" className="home-header-item-logo" />
-          我的工作
+          <div style={{ flexShrink: 0, width: '200px' }}>我的工作</div>
+          <Tooltip title={'私有项目'}>
+            <Button
+              size="large"
+              shape="circle"
+              style={{ border: '0px', color: '#fff' }}
+              ghost
+              icon={<IconFont type="icon-dunpaisuo" />}
+              onClick={(e) => {
+                toTargetUser(e);
+              }}
+            />
+          </Tooltip>
+          <Button />
         </div>
         {theme && theme.calendarVisible ? (
           <div
@@ -219,44 +270,97 @@ const Home: React.FC<HomeProps> = (props) => {
             我的日程
           </div>
         ) : null}
-        <div
-          style={
-            headerIndex === 6 ? { background: 'rgba(255, 255, 255, 0.34)' } : {}
+
+        <Dropdown
+          overlay={
+            <div className="dropDown-box">
+              {companyGroupList.length > 0
+                ? companyGroupList.map((groupItem: any, groupIndex: number) => {
+                    return (
+                      <div
+                        key={'home' + groupIndex}
+                        onClick={() => {
+                          changeMainEnterpriseKey(groupItem._key);
+                        }}
+                        className="home-item"
+                      >
+                        <div className="home-item-logo">
+                          <img
+                            src={
+                              groupItem.groupLogo
+                                ? groupItem.groupLogo
+                                : defaultGroupPng
+                            }
+                            alt=""
+                          />
+                        </div>
+                        <div className="home-item-name tolong">
+                          {groupItem.groupName}
+                        </div>
+                      </div>
+                    );
+                  })
+                : null}
+            </div>
           }
-          className="home-header-item home-space"
-          onClick={() => dispatch(setCommonHeaderIndex(6))}
         >
-          <div className="home-header-item-left">
-            <img src={companyIcon} alt="" className="home-header-item-logo" />
-
-            {mainEnterpriseGroup?.mainEnterpriseGroupKey ? (
-              <React.Fragment>
-                <div className="home-header-item-groupLogo">
-                  <img
-                    src={mainEnterpriseGroup.mainEnterpriseGroupLogo}
-                    alt=""
-                  />
-                </div>
-                <div className="home-header-item-groupName toLong">
-                  {mainEnterpriseGroup.mainEnterpriseGroupName}
-                </div>
-              </React.Fragment>
-            ) : (
-                '所有项目'
-              )}
-          </div>
-          <IconButton
-            color="primary"
-            component="span"
-            onClick={(e: any) => {
-              e.stopPropagation();
-              setCompanyVisible(true);
-            }}
+          <div
+            style={
+              headerIndex === 6
+                ? { background: 'rgba(255, 255, 255, 0.34)' }
+                : {}
+            }
+            className="home-header-item home-space"
+            onClick={() => dispatch(setCommonHeaderIndex(6))}
           >
-            <ExpandMoreOutlined />
-          </IconButton>
+            <div className="home-header-item-left">
+              <img src={companyIcon} alt="" className="home-header-item-logo" />
+              {mainEnterpriseGroup?.mainEnterpriseGroupName ? (
+                <React.Fragment>
+                  {mainEnterpriseGroup.mainEnterpriseGroupKey ? (
+                    <div className="home-header-item-groupLogo">
+                      <img
+                        src={mainEnterpriseGroup.mainEnterpriseGroupLogo}
+                        alt=""
+                      />
+                    </div>
+                  ) : null}
+                  <div className="home-header-item-groupName toLong">
+                    {mainEnterpriseGroup.mainEnterpriseGroupName}
+                  </div>
+                </React.Fragment>
+              ) : null}
+              {companyGroupList[
+                _.findIndex(companyGroupList, {
+                  _key: mainEnterpriseGroup.mainEnterpriseGroupKey,
+                })
+              ]?.isRight ? (
+                <Button
+                  size="large"
+                  shape="circle"
+                  style={{ border: '0px', color: '#fff' }}
+                  ghost
+                  icon={<SettingOutlined />}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    dispatch(
+                      setGroupKey(mainEnterpriseGroup.mainEnterpriseGroupKey)
+                    );
+                    history.push('/home/company');
+                    localStorage.setItem(
+                      'companyKey',
+                      mainEnterpriseGroup.mainEnterpriseGroupKey
+                    );
+                    // window.open('https://cheerchat.qingtime.cn');
+                  }}
+                />
+              ) : null}
+            </div>
+            {/* <DownOutlined style={{ color: '#17B881' }} /> */}
+          </div>
+        </Dropdown>
 
-          <DropMenu
+        {/* <DropMenu
             visible={companyVisible}
             dropStyle={{
               width: '100%',
@@ -270,40 +374,8 @@ const Home: React.FC<HomeProps> = (props) => {
               setCompanyVisible(false);
             }}
           >
-            <React.Fragment>
-              {loading ? <Loading /> : null}
-              {companyGroupList.length > 0
-                ? companyGroupList.map((groupItem: any, groupIndex: number) => {
-                  return (
-                    <div
-                      key={'home' + groupIndex}
-                      onClick={() => {
-                        changeMainEnterpriseKey(groupItem._key);
-                      }}
-                      className="home-item"
-                    >
-                      <div className="home-item-logo">
-                        <img
-                          src={
-                            groupItem.groupLogo
-                              ? groupItem.groupLogo
-                              : defaultGroupPng
-                          }
-                          alt=""
-                        />
-                      </div>
-                      <Tooltip title={groupItem.groupName}>
-                        <div className="home-item-name tolong">
-                          {groupItem.groupName}
-                        </div>
-                      </Tooltip>
-                    </div>
-                  );
-                })
-                : null}
-            </React.Fragment>
-          </DropMenu>
-        </div>
+          
+          </DropMenu> */}
       </div>
       <Tabs />
     </div>

@@ -2,7 +2,7 @@
   width: 100%;
   height: 100%;
   display: flex;
-  background: #eeeeee;
+  background: #fff;
 }
 
 .tree-info {
@@ -119,7 +119,7 @@
 
 .tree-member {
   width: 50px;
-  /* height: 100%; */
+  height: 100%;
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
@@ -223,12 +223,12 @@
 
 .groupTableTreeInfo-container {
   width: 100%;
-  height: 100%;
+  height: calc(100% - 54px);
   overflow: auto;
   position: relative;
   z-index: 1;
-  padding: 8px 8px 55px 8px;
-  box-sizing: border-box;
+  /* padding: 8px 8px 55px 8px;
+  box-sizing: border-box; */
 }
 .groupTableTreeInfo-container *::-webkit-scrollbar {
   width: 1.5px;
@@ -250,7 +250,7 @@
   position: fixed;
   top: 0px;
   right: 0px;
-  z-index: 20;
+  z-index: 99;
   background-color: #fff;
   box-shadow: 0px 2px 6px 0px rgba(0, 0, 0, 0.5);
 }
@@ -266,6 +266,8 @@
   justify-content: space-between;
   padding: 0px 17px;
   box-sizing: border-box;
+  position: relative;
+  z-index: 1;
 }
 
 .groupTableTree-full-img {
@@ -298,6 +300,17 @@
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #eee;
+}
+.help-item > span:nth-child(2) {
+  font-weight: bold;
+}
+.tree-empty {
+  width: 500px;
+  height: 300px;
+  position: absolute;
+  left: calc(50% - 250px);
+  top: calc(50% - 150px);
+  z-index: 3;
 }
 @keyframes rightTop {
   from {

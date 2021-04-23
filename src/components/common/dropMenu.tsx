@@ -1,5 +1,5 @@
 import React from 'react';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import ClickOutSide from './clickOutside';
 import './dropMenu.css';
 interface dropMenuProp {
   children: any;
@@ -24,7 +24,7 @@ const DropMenu: React.FC<dropMenuProp> = (prop) => {
   return (
     <React.Fragment>
       {visible ? (
-        <ClickAwayListener onClickAway={onClose ? onClose : () => {}}>
+        <ClickOutSide onClickOutside={onClose ? onClose : () => {}}>
           <div
             className="dropMenu"
             style={dropStyle}
@@ -47,7 +47,7 @@ const DropMenu: React.FC<dropMenuProp> = (prop) => {
               {children}
             </div>
           </div>
-        </ClickAwayListener>
+        </ClickOutSide>
       ) : null}
     </React.Fragment>
   );

@@ -94,7 +94,8 @@ export const member = (state = defaultState, action: any) => {
           executorAvatar: '',
           executorName: '',
           filterType: ['过期', '今天', '未来', '已完成'],
-          startId: '',
+          memberStartId: '',
+          groupStartId: '',
         },
         groupMemberKey: '',
       };
@@ -103,8 +104,11 @@ export const member = (state = defaultState, action: any) => {
           companyItem.config[key] = action.data.config[key];
         }
       }
-      if (!companyItem.config.startId) {
-        companyItem.config.startId = '';
+      if (!companyItem.config.memberStartId) {
+        companyItem.config.memberStartId = '';
+      } 
+      if (!companyItem.config.groupStartId) {
+        companyItem.config.memberStartId = '';
       }
       companyItem.groupMemberKey = action.data.groupMemberKey;
       return {

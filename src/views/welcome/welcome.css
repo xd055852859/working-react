@@ -1,26 +1,18 @@
-.welcome-link {
-  color: rgb(255, 101, 143);
-  display: flex;
-  position: absolute;
-  top: 47px;
-  right: 300px;
-}
-.welcome-link > div {
-  margin-right: 12px;
-  cursor: pointer;
-}
-.welcome-link-help {
-  position: relative;
-  z-index: 1;
-}
-.welcome-link-item {
-  height: 38px;
+.begin {
   width: 100%;
-  display: flex;
-  align-items: center;
-  box-sizing: border-box;
-  cursor: pointer;
+  height: 100%;
+  background-position: bottom;
+  background-repeat: no-repeat;
+  background-color: #fff;
 }
-.welcome-link-item:hover {
-  background-color: #f0f0f0;
+.pages-local {
+  width: 60px;
+  height: 60px;
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  z-index: 2;
+  opacity: 0;
 }

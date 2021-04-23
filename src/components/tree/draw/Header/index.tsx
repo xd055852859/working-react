@@ -35,7 +35,6 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import FormatColorFillOutlinedIcon from '@material-ui/icons/FormatColorFillOutlined';
 import { InputBase } from '@material-ui/core';
-
 interface HeaderProps {
   node: any;
   canvas: Topology;
@@ -102,9 +101,15 @@ const Header = ({
     dash = 0,
     fromArrow = 'null',
     toArrow = 'triangleSolid',
-    font = initFont,
+    // font = initFont,
     fillStyle,
     name = 'line',
+    fontSize = 12,
+    fontColor = '#222222',
+    fontStyle = 'normal',
+    textBaseline = 'middle',
+    textAlign = 'center',
+    fontWeight = 'normal',
   } = data.pen || ({} as any);
   const [backGrid, setBackGrid] = useState<boolean>(true);
   // 背景 颜色
@@ -212,35 +217,36 @@ const Header = ({
    */
 
   const onHandleSaveToSvg = () => {
-    // const C2S = window.C2S;
-    //   const ctx = new C2S(canvas.canvas.width + 200, canvas.canvas.height + 200);
-    //   if (canvas.data.pens) {
-    //     for (const item of canvas.data.pens) {
-    //       item.render(ctx);
-    //     }
-    //   }
-    //   let mySerializedSVG = ctx.getSerializedSvg();
-    //   mySerializedSVG = mySerializedSVG.replace(
-    //     "<defs/>",
-    //     `<defs>
-    //   <style type="text/css">
-    //     @font-face {
-    //       font-family: 'topology';
-    //       src: url('http://at.alicdn.com/t/font_1331132_h688rvffmbc.ttf?t=1569311680797') format('truetype');
-    //     }
-    //   </style>
-    // </defs>`
-    //   );
-    //   mySerializedSVG = mySerializedSVG.replace(/--le5le--/g, "&#x");
-    //   const urlObject = window.URL || window;
-    //   const export_blob = new Blob([mySerializedSVG]);
-    //   const url = urlObject.createObjectURL(export_blob);
-    //   const a = document.createElement("a");
-    //   a.setAttribute("download", `${title || "无标题"}.svg`);
-    //   a.setAttribute("href", url);
-    //   const evt = document.createEvent("MouseEvents");
-    //   evt.initEvent("click", true, true);
-    //   a.dispatchEvent(evt);
+    //@ts-ignore
+    const C2S = window.C2S;
+    const ctx = new C2S(canvas.canvas.width + 300, canvas.canvas.height + 300);
+    if (canvas.data.pens) {
+      for (const item of canvas.data.pens) {
+        item.render(ctx);
+      }
+    }
+    let mySerializedSVG = ctx.getSerializedSvg();
+    mySerializedSVG = mySerializedSVG.replace(
+      '<defs/>',
+      `<defs>
+      <style type="text/css">
+        @font-face {
+          font-family: 'topology';
+          src: url('http://at.alicdn.com/t/font_1331132_h688rvffmbc.ttf?t=1569311680797') format('truetype');
+        }
+      </style>
+    </defs>`
+    );
+    mySerializedSVG = mySerializedSVG.replace(/--le5le--/g, '&#x');
+    const urlObject = window.URL || window;
+    const export_blob = new Blob([mySerializedSVG]);
+    const url = urlObject.createObjectURL(export_blob);
+    const a = document.createElement('a');
+    a.setAttribute('download', 'le5le.topology.svg');
+    a.setAttribute('href', url);
+    const evt = document.createEvent('MouseEvents');
+    evt.initEvent('click', true, true);
+    a.dispatchEvent(evt);
   };
 
   /**
@@ -472,15 +478,15 @@ const Header = ({
       'textAlign',
       'textBaseline',
     ];
-    if (fontProps.includes(name)) {
-      res = {
-        font: {
-          [name]: value,
-        },
-      };
-    } else {
-      res = { [name]: value };
-    }
+    // if (fontProps.includes(name)) {
+    //   res = {
+    //     font: {
+    //       [name]: value,
+    //     },
+    //   };
+    // } else {
+    res = { [name]: value };
+    // }
     propsChange(res);
   };
 
@@ -505,6 +511,9 @@ const Header = ({
               </ListItem>
               <ListItem button onClick={() => clickMenu('save_png')}>
                 <ListItemText key="save_png" primary="下载png文件" />
+              </ListItem>
+              <ListItem button onClick={() => clickMenu('save_svg')}>
+                <ListItemText key="save_svg" primary="下载svg文件" />
               </ListItem>
             </List>
           </li>
@@ -724,7 +733,7 @@ const Header = ({
               <InputBase
                 type="number"
                 className="no-border-color"
-                value={font?.fontSize}
+                value={fontSize}
                 onChange={(e: any) => {
                   changeProps('fontSize', e.target.value);
                 }}
@@ -735,13 +744,13 @@ const Header = ({
           <Tooltip placement="bottom-start" title="粗体">
             <div
               className={`toolbar_button ${
-                font?.fontWeight === 'normal' ? 'null' : 'active'
+                fontWeight === 'normal' ? 'null' : 'active'
               }`}
               key="weight"
               onClick={() => {
                 changeProps(
                   'fontWeight',
-                  font?.fontWeight === 'bold' ? 'normal' : 'bold'
+                  fontWeight === 'bold' ? 'normal' : 'bold'
                 );
               }}
             >
@@ -751,13 +760,13 @@ const Header = ({
           <Tooltip placement="bottom-start" title="斜体">
             <div
               className={`toolbar_button ${
-                font?.fontStyle === 'normal' ? 'null' : 'active'
+                fontStyle === 'normal' ? 'null' : 'active'
               }`}
               key="style"
               onClick={() => {
                 changeProps(
                   'fontStyle',
-                  font?.fontStyle === 'normal' ? 'italic' : 'normal'
+                  fontStyle === 'normal' ? 'italic' : 'normal'
                 );
               }}
             >
@@ -771,9 +780,9 @@ const Header = ({
             >
               <FormatColorTextIcon
                 fontSize="small"
-                style={{ color: font?.color }}
+                style={{ color: fontColor }}
               />
-              {consumeColorPicker(font?.color, 1)}
+              {consumeColorPicker(fontColor, 1)}
             </div>
           </Tooltip>
           <Tooltip placement="bottom-start" title="水平对齐">
@@ -781,7 +790,7 @@ const Header = ({
               variant="outlined"
               size="small"
               select
-              value={font?.textAlign}
+              value={textAlign}
               className="select-consume"
               style={{ width: '50px' }}
               onChange={(e: any) => changeProps('textAlign', e.target.value)}
@@ -866,7 +875,7 @@ const Header = ({
               variant="outlined"
               size="small"
               select
-              value={font?.textBaseline}
+              value={textBaseline}
               className="select-consume"
               style={{ width: '50px' }}
               onChange={(e: any) => changeProps('textBaseline', e.target.value)}

@@ -1,13 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import './book.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import Loadable from 'react-loadable';
-import { IconButton, Tooltip } from '@material-ui/core';
-import { CallMadeOutlined, CallReceivedOutlined } from '@material-ui/icons';
+import { Button, Tooltip } from 'antd';
 import api from '../../services/api';
-import { setMessage } from '../../redux/actions/commonActions';
 import _ from 'lodash';
+import IconFont from '../common/iconFont';
+
+import { setMessage } from '../../redux/actions/commonActions';
+
 const BookView = Loadable({
   loader: () => import('./book/bookView'),
   loading: () => null,
@@ -31,13 +33,13 @@ const Book: React.FC<BookProps> = (props) => {
   const [editable, setEditable] = useState<any>(false);
   const [targetNode, setTargetNode] = useState<any>(null);
   const [selectId, setSelectId] = useState<any>(null);
-  let unDistory = true;
+let unDistory = useRef<any>(null);   unDistory.current=true;
   useEffect(() => {
     if (targetData) {
       getBookData(targetData._key);
     }
     return () => {
-      unDistory = false;
+      // unDistory.current = false;
     };
   }, [targetData]);
   const getBookData = async (key: string) => {
@@ -45,7 +47,7 @@ const Book: React.FC<BookProps> = (props) => {
       groupInfo.taskTreeRootCardKey,
       key
     );
-    if (unDistory) {
+    if (unDistory.current) {
       if (bookRes.msg === 'OK') {
         let newNodeObj: any = _.cloneDeep(nodeObj);
         if (!newNodeObj) {
@@ -104,31 +106,25 @@ const Book: React.FC<BookProps> = (props) => {
           changeSelect={changeSelect}
         />
       )}
-      <div
-        className="book-button"
-        style={
-          fullType === 'small'
-            ? { top: '70px', right: '55px' }
-            : { top: '2px', right: '55px' }
-        }
-      >
-        <IconButton
+      <div className="book-button" style={{ top: '0px', right: '55px' }}>
+        <Button
+          icon={
+            editable ? (
+              <Tooltip title="目录">
+                <IconFont type="icon-fengmian" />
+              </Tooltip>
+            ) : (
+              <Tooltip title="内页">
+                <IconFont type="icon-dir" />
+              </Tooltip>
+            )
+          }
           color="primary"
-          component="span"
           onClick={() => {
             setEditable(!editable);
           }}
-        >
-          {editable ? (
-            <Tooltip title="目录">
-              <CallMadeOutlined />
-            </Tooltip>
-          ) : (
-            <Tooltip title="内页">
-              <CallReceivedOutlined />
-            </Tooltip>
-          )}
-        </IconButton>
+          style={{ border: '0px', marginTop: '10px' }}
+        />
       </div>
     </React.Fragment>
   );

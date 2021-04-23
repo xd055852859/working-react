@@ -1,17 +1,15 @@
 .taskInfo {
-  width: 430px;
-  height: calc(100% - 66px);
-  position: fixed;
+  width: 100%;
+  height: 100%;
+  /* position: fixed;
   top: 65px;
-  right: 0px;
+  right: 0px; */
   overflow: auto;
-  z-index: 50;
-  background-color: #fff;
-  padding: 10px 15px;
-  box-sizing: border-box;
+  /* z-index: 50; */
+  /* background-color: #fff; */
   color: #333;
-  box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.5);
-  border-radius: 12px;
+  /* box-shadow: 0px 2px 4px 0px rgba(0, 0, 0, 0.5); */
+  /* border-radius: 12px; */
 }
 .taskInfo-mainTitle {
   width: 100%;
@@ -71,6 +69,8 @@
   width: 100%;
   height: calc(100% - 68px);
   overflow: auto;
+  position: relative;
+  z-index: 1;
 }
 .taskInfo-title {
   width: calc(100% - 5px);
@@ -89,13 +89,13 @@
   align-items: center;
   position: relative;
 }
-.taskInfo-Editor {
+/* .taskInfo-Editor {
   border: 1px solid #efefef;
   padding: 2px;
   box-sizing: border-box;
   position: relative;
   z-index: 1;
-}
+} */
 .taskInfo-Editor-mask {
   position: absolute;
   top: 0px;
@@ -138,7 +138,7 @@
   cursor: pointer;
   font-size: 12px;
   position: relative;
-  z-index: 1;
+  z-index: 10;
   margin-left: 7px;
 }
 .taskInfo-item-suggest-item {
@@ -177,7 +177,7 @@
   border-radius: 4px;
 }
 .taskInfo-comment {
-  margin: 15px 0px 40px 0px;
+  margin: 15px 0px 65px 0px;
 }
 .taskInfo-comment-tabs {
   width: 100%;
@@ -204,6 +204,7 @@
   overflow: auto;
   padding-top: 15px;
   box-sizing: border-box;
+  margin-bottom: 20px;
 }
 .taskInfo-comment-tab::-webkit-scrollbar,
 .taskInfo-container::-webkit-scrollbar {
@@ -263,7 +264,7 @@
   margin-right: 5px;
 }
 .editor-button {
-  background-color: #17b881;
+  background-color: #1890ff;
   color: #fff;
   position: absolute;
   bottom: -105px;
@@ -284,4 +285,17 @@
   border-radius: 6px;
   padding: 0px 8px;
   box-sizing: border-box;
+}
+.comment-button {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  z-index: 5;
+}
+.comment-info {
+  width: 100%;
+  position: absolute;
+  left: 0px;
+  background-color: #fff;
+  z-index: 10;
 }

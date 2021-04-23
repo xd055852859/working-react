@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './contact.css';
-
-import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 import { useDispatch } from 'react-redux';
 import { useTypedSelector } from '../../redux/reducer/RootState';
+import { Breadcrumb, Modal } from 'antd';
+import { SearchOutlined } from '@ant-design/icons';
+import { Tree } from 'tree-graph-react';
+import api from '../../services/api';
+import _ from 'lodash';
+
 import { setMessage } from '../../redux/actions/commonActions';
 import { getMember } from '../../redux/actions/memberActions';
 import {
@@ -18,57 +22,34 @@ import {
   setShowChatState,
 } from '../../redux/actions/commonActions';
 import {
-  // setTargetUserKey,
   getTargetUserInfo,
   setClickType,
-  // userKeyToGroupKey
 } from '../../redux/actions/authActions';
-import { Breadcrumbs, Link, Typography } from '@material-ui/core';
 import {
   setHeaderIndex,
   changeCompanyItem,
 } from '../../redux/actions/memberActions';
-import Dialog from '../../components/common/dialog';
-import { Tree } from 'tree-graph-react';
-import Avatar from '../../components/common/avatar';
-import TimeIcon from '../../components/common/timeIcon';
+
 import Loading from '../../components/common/loading';
+import Dialog from '../../components/common/dialog';
+
 import checkPersonPng from '../../assets/img/checkPerson.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import defaultPersonSvg from '../../assets/svg/defaultPerson.svg';
-
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import carePng from '../../assets/img/care.png';
 import chatSvg from '../../assets/svg/chat.svg';
 import uncarePng from '../../assets/img/uncare.png';
-import unUseSvg from '../../assets/svg/unUse.svg';
 import contactTree from '../../assets/svg/contactTree.svg';
 import contactBook from '../../assets/svg/contactBook.svg';
 import computer from '../../assets/svg/computer.svg';
-import { Search, NavigateNext } from '@material-ui/icons';
-import api from '../../services/api';
-import _ from 'lodash';
+
 export interface ContactProps {
   contactIndex: number;
   contactType?: string;
 }
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      height: '700px',
-      overflow: 'auto',
-    },
-    item: {
-      width: '100%',
-      height: '63px',
-    },
-    title: {
-      fontSize: '14px',
-    },
-  })
-);
+
 const Contact: React.FC<ContactProps> = (props) => {
-  // const classes = useStyles();
   const { contactIndex, contactType } = props;
   const dispatch = useDispatch();
   const user = useTypedSelector((state) => state.auth.user);
@@ -84,8 +65,8 @@ const Contact: React.FC<ContactProps> = (props) => {
   );
   const chatState = useTypedSelector((state) => state.common.chatState);
   const showChatState = useTypedSelector((state) => state.common.showChatState);
+
   const [contactArray, setContactArray] = useState<any>([]);
-  const [FoldArray, setFoldArray] = useState<any>([]);
   const [contactKey, setContactKey] = useState<any>(null);
   const [contactSearchInput, setContactSearchInput] = useState('');
   const [cloneGroupKey, setCloneGroupKey] = useState('');
@@ -100,11 +81,11 @@ const Contact: React.FC<ContactProps> = (props) => {
   const [targetNode, setTargetNode] = useState<any>(null);
   const theme = useTypedSelector((state) => state.auth.theme);
   let chatRef = useRef<any>(null);
-  let unDistory = true;
-  // const theme = useTypedSelector((state) => state.auth.theme)
+  let unDistory = useRef<any>(null);
+  unDistory.current = true;
   useEffect(() => {
     return () => {
-      unDistory = false;
+      // unDistory.current = false;
       if (chatRef.current) {
         clearInterval(chatRef.current);
       }
@@ -113,26 +94,25 @@ const Contact: React.FC<ContactProps> = (props) => {
   useEffect(() => {
     if (user) {
       if (contactIndex === 0) {
-        // if (groupArray) {
-        //   setLoading(false);
-        //   setContactArray(groupArray);
-        // } else {
         setLoading(true);
-        dispatch(getGroup(3));
+        dispatch(getGroup(3, null, 2));
         if (!groupArray) {
-          dispatch(getMember(mainGroupKey));
+          dispatch(getMember(mainGroupKey, 2));
         }
-        // }
       } else if (contactIndex === 1) {
         setLoading(true);
-        dispatch(getMember(mainGroupKey));
+        dispatch(getMember(mainGroupKey, 2));
       }
     }
   }, [user, contactIndex]);
   useEffect(() => {
-    if (contactIndex === 3) {
-      setLoading(true);
-      getGroupTree(companyItem.config.startId);
+    if (companyItem?.config) {
+      if (contactIndex === 3) {
+        setLoading(true);
+        getGroupTree(companyItem.config.memberStartId);
+      } else if (contactIndex === 4) {
+        getGroupTree(companyItem.config.groupStartId);
+      }
     }
   }, [companyItem, contactIndex]);
   useEffect(() => {
@@ -143,16 +123,21 @@ const Contact: React.FC<ContactProps> = (props) => {
         newGroupArray = groupArray.filter((item: any) => {
           if (
             item.enterpriseGroupKey ===
-            mainEnterpriseGroup.mainEnterpriseGroupKey ||
+              mainEnterpriseGroup.mainEnterpriseGroupKey ||
             item._key === mainEnterpriseGroup.mainEnterpriseGroupKey
           ) {
+            return item;
+          }
+        });
+      } else if (localStorage.getItem('mainEnterpriseGroupKey') === 'out') {
+        newGroupArray = groupArray.filter((item: any) => {
+          if (!item.enterpriseGroupKey && item.enterprise !== 2) {
             return item;
           }
         });
       } else {
         newGroupArray = groupArray;
       }
-      console.log(newGroupArray);
       setContactArray(newGroupArray);
     }
   }, [groupArray, contactIndex, mainEnterpriseGroup]);
@@ -160,7 +145,13 @@ const Contact: React.FC<ContactProps> = (props) => {
   useEffect(() => {
     if (memberArray && contactIndex === 1) {
       setLoading(false);
-      setContactArray(memberArray);
+      let arr: any = [];
+      memberArray.forEach((item: any) => {
+        if (item.userId !== user._key) {
+          arr.push(item);
+        }
+      });
+      setContactArray(arr);
     }
   }, [memberArray, contactIndex]);
   useEffect(() => {
@@ -173,7 +164,13 @@ const Contact: React.FC<ContactProps> = (props) => {
       if (groupArray && contactIndex === 0) {
         setContactArray(groupArray);
       } else if (memberArray && contactIndex === 1) {
-        setContactArray(memberArray);
+        let arr: any = [];
+        memberArray.forEach((item: any) => {
+          if (item.userId !== user._key) {
+            arr.push(item);
+          }
+        });
+        setContactArray(arr);
       }
     }
   }, [contactSearchInput]);
@@ -189,7 +186,6 @@ const Contact: React.FC<ContactProps> = (props) => {
     if (contactKey) {
       goChat();
     }
-    // dispatch(setChatState(false));
   }, [contactKey]);
   useEffect(() => {
     if (startId && companyData && companyData[startId]) {
@@ -198,33 +194,23 @@ const Contact: React.FC<ContactProps> = (props) => {
   }, [startId, companyData]);
   const toTargetGroup = async (groupKey: string) => {
     dispatch(setGroupKey(groupKey));
-    // dispatch(getGroupInfo(groupKey));
     dispatch(setCommonHeaderIndex(3));
-    if (!theme.moveState) {
-      dispatch(setMoveState('in'));
-    }
     await api.group.visitGroupOrFriend(2, groupKey);
-    // if (contactType === 'header') {
-    dispatch(getGroup(3));
-    // }
+    dispatch(getGroup(3, null, 2));
   };
   const toTargetUser = async (targetUserKey: string) => {
     if (targetUserKey !== user._key) {
       dispatch(getTargetUserInfo(targetUserKey));
       dispatch(setCommonHeaderIndex(2));
+      dispatch(setClickType('out'));
     } else {
       dispatch(setCommonHeaderIndex(1));
       setClickType('self');
     }
-
-    if (!theme.moveState) {
-      dispatch(setMoveState('in'));
-    }
     await api.group.visitGroupOrFriend(1, targetUserKey);
     if (contactType === 'header') {
-      dispatch(getMember(mainGroupKey));
+      dispatch(getMember(mainGroupKey, 2));
     }
-    //
   };
   const changeCare = (
     e: any,
@@ -239,13 +225,6 @@ const Contact: React.FC<ContactProps> = (props) => {
     newContactArray[index].isCare = status === 1 ? true : false;
     setContactArray(newContactArray);
   };
-  const changeUse = (e: any, key: string, status: number, index: number) => {
-    e.stopPropagation();
-    let newContactArray: any = _.cloneDeep(contactArray);
-    api.auth.dealGroupFold(key, status);
-    newContactArray[index].isFold = true;
-    setContactArray(newContactArray);
-  };
   const searchGroup = (input?: string) => {
     let newContactArray = _.cloneDeep(groupArray);
     let searchInput = input ? input : contactSearchInput;
@@ -258,20 +237,19 @@ const Contact: React.FC<ContactProps> = (props) => {
     setContactArray(newContactArray);
   };
   const cloneGroup = async () => {
+    console.log('克隆123456');
     let cloneRes: any = await api.group.cloneGroup(
       cloneGroupKey,
       cloneGroupName + '_副本'
     );
     if (cloneRes.msg === 'OK') {
-      dispatch(setMessage(true, '克隆群成功', 'success'));
+      dispatch(setMessage(true, '克隆项目成功', 'success'));
       dispatch(setGroupKey(cloneRes.result));
       dispatch(getGroupInfo(cloneRes.result));
       dispatch(setCommonHeaderIndex(3));
-      if (!theme.moveState) {
-        dispatch(setMoveState('in'));
-      }
       await api.group.visitGroupOrFriend(2, cloneRes.result);
-      dispatch(getGroup(3));
+      dispatch(getGroup(3, null, 2));
+      setCloneGroupVisible(false);
     } else {
       dispatch(setMessage(true, cloneRes.msg, 'error'));
     }
@@ -325,12 +303,12 @@ const Contact: React.FC<ContactProps> = (props) => {
   const getGroupTree = async (nodeId: any) => {
     if (mainEnterpriseGroup && mainEnterpriseGroup.mainEnterpriseGroupKey) {
       let newCompanyData: any = {};
-      let companyDepartmentRes: any = await api.company.getOrganizationTree(
-        mainEnterpriseGroup.mainEnterpriseGroupKey,
-        4
-      );
+      let companyDepartmentRes: any = await api.company.getOrganizationTree({
+        enterpriseGroupKey: mainEnterpriseGroup.mainEnterpriseGroupKey,
+        type: contactIndex === 3 ? 4 : 5,
+      });
       setLoading(false);
-      if (unDistory) {
+      if (unDistory.current) {
         if (companyDepartmentRes.msg === 'OK') {
           let data = companyDepartmentRes.result;
           for (let key in data) {
@@ -351,25 +329,31 @@ const Contact: React.FC<ContactProps> = (props) => {
               groupMemberKey: data[key].groupMemberKey,
               orgType: data[key].orgType,
               staffKey: data[key].staffKey,
-              color: data[key].orgType === 2 ? '#fff' : '#333',
-              backgroundColor: data[key].orgType === 2 ? 'transparent' : '#fff',
+              groupKey: data[key].groupKey,
+              color: '#fff',
               // disabled: data[key].orgType === 2,
+              backgroundColor: 'transparent',
               childrenAll: data[key].childrenAll,
             };
-            if (data[key].orgType === 2) {
+            if (data[key].orgType !== 1) {
               //?imageMogr2/auto-orient/thumbnail/80x
-              newCompanyData[key].icon = data[key].avatar
-                ? data[key].avatar + '?roundPic/radius/!50p'
-                : defaultPersonSvg;
+              newCompanyData[key].avatarUri =
+                contactIndex === 3
+                  ? data[key].avatar
+                    ? data[key].avatar + '?imageMogr2/auto-orient/thumbnail/80x'
+                    : defaultPersonSvg
+                  : data[key].groupLogo
+                  ? data[key].groupLogo
+                  : defaultGroupPng;
             }
             if (!nodeId && !data[key].parentOrgKey) {
               nodeId = data[key]._key;
+              console.log('nodeId', nodeId);
               newCompanyData[
                 key
               ].icon = mainEnterpriseGroup.mainEnterpriseGroupLogo
-                  ? mainEnterpriseGroup.mainEnterpriseGroupLogo +
-                  '?imageMogr2/auto-orient/thumbnail/80x'
-                  : defaultGroupPng;
+                ? mainEnterpriseGroup.mainEnterpriseGroupLogo
+                : defaultGroupPng;
             }
           }
           setStartId(nodeId);
@@ -386,7 +370,11 @@ const Contact: React.FC<ContactProps> = (props) => {
     let newCompanyItem = _.cloneDeep(companyItem);
     setStartId(node._key);
     setSelectedPath(node.path);
-    newCompanyItem.config.startId = node._key;
+    if (contactIndex === 3) {
+      newCompanyItem.config.memberStartId = node._key;
+    } else if (contactIndex === 4) {
+      newCompanyItem.config.groupStartId = node._key;
+    }
     getGroupTree(node._key);
     api.member.setConfig(newCompanyItem.groupMemberKey, newCompanyItem.config);
     dispatch(changeCompanyItem(newCompanyItem));
@@ -404,12 +392,16 @@ const Contact: React.FC<ContactProps> = (props) => {
   return (
     <div
       className="contact"
-      style={{ height: contactType ? '100%' : 'calc(100% - 40px)', position: contactIndex === 3 ? 'relative' : 'static' }}
+      style={{
+        height: contactType ? '100%' : 'calc(100% - 40px)',
+        position:
+          contactIndex === 3 || contactIndex === 4 ? 'relative' : 'static',
+      }}
     >
-      {loading ? <Loading loadingWidth="70px" loadingHeight="70px" /> : null}
+      {loading ? <Loading /> : null}
       {contactType && contactIndex === 0 ? (
         <div className="contact-search">
-          <Search />
+          <SearchOutlined />
           <input
             type="text"
             value={contactSearchInput}
@@ -418,7 +410,7 @@ const Contact: React.FC<ContactProps> = (props) => {
               searchGroup(e.target.value);
             }}
             className="contact-search-input"
-            placeholder="请输入群名"
+            placeholder="请输入项目名"
             onKeyDown={(e: any) => {
               if (e.keyCode === 13) {
                 searchGroup();
@@ -437,7 +429,7 @@ const Contact: React.FC<ContactProps> = (props) => {
           </Button> */}
         </div>
       ) : null}
-      {contactIndex !== 3 ? (
+      {contactIndex === 0 || contactIndex === 1 ? (
         contactArray && contactArray.length > 0 ? (
           contactArray.map((item: any, index: number) => {
             let name = contactIndex ? item.nickName : item.groupName;
@@ -446,17 +438,17 @@ const Contact: React.FC<ContactProps> = (props) => {
                 ? item.avatar + '?imageMogr2/auto-orient/thumbnail/80x'
                 : ''
               : item.groupLogo
-                ? item.groupLogo + '?imageMogr2/auto-orient/thumbnail/80x'
-                : defaultGroupPng;
+              ? item.groupLogo
+              : defaultGroupPng;
             let key = contactIndex ? item.userId : item._key;
             let onlineColor =
               item.onlineStatus === 'online'
                 ? '#7ED321'
                 : item.onlineStatus === 'busy'
-                  ? '#EA3836'
-                  : item.onlineStatus === 'away'
-                    ? '#F5A623'
-                    : '#B3B3B3';
+                ? '#EA3836'
+                : item.onlineStatus === 'away'
+                ? '#F5A623'
+                : '#B3B3B3';
             return (
               <div
                 className="contact-item"
@@ -523,21 +515,21 @@ const Contact: React.FC<ContactProps> = (props) => {
                         }}
                       />
                     ) : (
-                        <img
-                          src={uncarePng}
-                          alt=""
-                          className="contact-uncare-img"
-                          onClick={(e) => {
-                            changeCare(
-                              e,
-                              contactIndex === 0 ? 2 : 1,
-                              key,
-                              1,
-                              index
-                            );
-                          }}
-                        />
-                      )
+                      <img
+                        src={uncarePng}
+                        alt=""
+                        className="contact-uncare-img"
+                        onClick={(e) => {
+                          changeCare(
+                            e,
+                            contactIndex === 0 ? 2 : 1,
+                            key,
+                            1,
+                            index
+                          );
+                        }}
+                      />
+                    )
                   ) : null}
                   {!contactType && !item.notActive ? (
                     <img
@@ -601,7 +593,7 @@ const Contact: React.FC<ContactProps> = (props) => {
                         marginRight: '5px',
                       }}
                       onClick={() => {
-                        dispatch(setHeaderIndex(11));
+                        dispatch(setHeaderIndex(3));
                       }}
                     ></img>
                   ) : null}
@@ -626,7 +618,7 @@ const Contact: React.FC<ContactProps> = (props) => {
                   )} */}
                 </div>
               </div>
-            )
+            );
           })
         ) : null
       ) : companyData && startId ? (
@@ -635,12 +627,16 @@ const Contact: React.FC<ContactProps> = (props) => {
             // disabled
             itemHeight={32}
             blockHeight={25}
+            columnSpacing={25}
             singleColumn={true}
             nodes={companyData}
             uncontrolled={false}
-            showIcon={true}
-            showMoreButton
+            showAvatar={true}
+            // showMoreButton
             startId={startId}
+            pathWidth={0.5}
+            root_zoom_ratio={1}
+            second_zoom_ratio={1}
             // selectedBackgroundColor="#E3E3E3"
             defaultSelectedId={selectedId}
             handleClickNode={(node: any) => {
@@ -648,6 +644,9 @@ const Contact: React.FC<ContactProps> = (props) => {
               setTargetNode(node);
               if (node.orgType === 2) {
                 toTargetUser(node.staffKey);
+              } else if (node.orgType === 3) {
+                console.log(node);
+                toTargetGroup(node.groupKey);
               }
             }}
             handleClickDot={
@@ -655,61 +654,45 @@ const Contact: React.FC<ContactProps> = (props) => {
               // setSelectedId(node._key);
             }
             handleClickExpand={editContract}
-          // itemHeight={32}
-          // blockHeight={
-          //   departmentRef.current ? departmentRef.current.offsetHeight : 0
-          // }
+            // itemHeight={32}
+            // blockHeight={
+            //   departmentRef.current ? departmentRef.current.offsetHeight : 0
+            // }
           />
         </div>
       ) : null}
       <React.Fragment>
-        {selectedPath && contactIndex === 3 ? (
+        {selectedPath && (contactIndex === 3 || contactIndex === 4) ? (
           <div className="contact-tree-path">
-            <Breadcrumbs
-              aria-label="breadcrumb"
-              maxItems={3}
-              separator={<NavigateNext fontSize="small" color="primary" />}
-            >
+            <Breadcrumb separator=">">
               {selectedPath.map((pathItem: any, pathIndex: number) => {
-                const dom: any =
-                  pathIndex < selectedPath.length - 1 ||
-                    selectedPath.length == 1 ? (
-                      <Link
-                        href="#"
-                        onClick={() => {
-                          getGroupTree(pathItem._key);
-                          let newCompanyItem = _.cloneDeep(companyItem);
-                          newCompanyItem.config.startId = pathItem._key;
-                          api.member.setConfig(
-                            newCompanyItem.groupMemberKey,
-                            newCompanyItem.config
-                          );
-                          dispatch(changeCompanyItem(newCompanyItem));
-                        }}
-                        style={{ fontSize: '14px', color: '#fff' }}
-                        // color={'primary'}
-                        underline={'none'}
-                        key={'path' + pathIndex}
-                      >
-                        {pathItem.name}
-                      </Link>
-                    ) : (
-                      <Typography
-                        color={'primary'}
-                        // onClick={() => {
-                        //   getGroupTree(pathItem._key);
-                        // }}
-                        style={{ fontSize: '14px' }}
-                        key={'path' + pathIndex}
-                      >
-                        {pathItem.name}
-                      </Typography>
-                    );
-                return dom;
+                return (
+                  <Breadcrumb.Item
+                    key={'path' + pathIndex}
+                    onClick={() => {
+                      getGroupTree(pathItem._key);
+                      let newCompanyItem = _.cloneDeep(companyItem);
+                      if (contactIndex === 3) {
+                        newCompanyItem.config.memberStartId = pathItem._key;
+                      } else if (contactIndex === 4) {
+                        newCompanyItem.config.groupStartId = pathItem._key;
+                      }
+                      api.member.setConfig(
+                        newCompanyItem.groupMemberKey,
+                        newCompanyItem.config
+                      );
+                      dispatch(changeCompanyItem(newCompanyItem));
+                    }}
+                  >
+                    {pathItem.name}
+                  </Breadcrumb.Item>
+                );
               })}
-            </Breadcrumbs>
-          </div>) : null}
+            </Breadcrumb>
+          </div>
+        ) : null}
       </React.Fragment>
+
       <Dialog
         visible={cloneGroupVisible}
         onClose={() => {

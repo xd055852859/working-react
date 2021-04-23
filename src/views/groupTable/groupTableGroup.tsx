@@ -1,72 +1,38 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import _ from 'lodash';
-import format from '../../components/common/format';
-import { useTypedSelector } from '../../redux/reducer/RootState';
-import {
-  TextField,
-  Button,
-  IconButton,
-  TextareaAutosize,
-} from '@material-ui/core';
-
-import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
-import { useDispatch } from 'react-redux';
-import {
-  getGroupTask,
-  setChooseKey,
-  setTaskKey,
-} from '../../redux/actions/taskActions';
-import {
-  changeBatchMusic,
-  changeCreateMusic,
-} from '../../redux/actions/authActions';
-// import { getGroupInfo } from '../../redux/actions/groupActions';
-// import { getTheme } from '../../redux/actions/authActions';
-import { setMessage } from '../../redux/actions/commonActions';
 import './groupTableGroup.css';
 import api from '../../services/api';
+import _ from 'lodash';
+import { useTypedSelector } from '../../redux/reducer/RootState';
+import { Input, Button, Modal } from 'antd';
+const { TextArea } = Input;
+import { GlobalOutlined } from '@ant-design/icons';
+import { useDispatch } from 'react-redux';
+
+import { getGroupTask, setChooseKey } from '../../redux/actions/taskActions';
+import { changeMusic } from '../../redux/actions/authActions';
+import { setMessage } from '../../redux/actions/commonActions';
+
+import format from '../../components/common/format';
 import Task from '../../components/task/task';
 import TaskNav from '../../components/taskNav/taskNav';
-import DropMenu from '../../components/common/dropMenu';
-import Dialog from '../../components/common/dialog';
+import Loading from '../../components/common/loading';
+
 import defaultPerson from '../../assets/img/defaultPerson.png';
 import taskAddPng from '../../assets/img/contact-add.png';
-import urlSvg from '../../assets/svg/url.svg';
-import Loading from '../../components/common/loading';
-// const taskRef: React.RefObject<any> = useRef();
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    input: {
-      '& .MuiInput-formControl': {
-        marginTop: '0px',
-      },
-      '& .MuiOutlinedInput-input': {
-        padding: '10px 14px',
-      },
-      '& .MuiInputLabel-formControl': {
-        marginTop: '-10px',
-      },
-    },
-  })
-);
+
 const GroupTableGroup: React.FC = (prop) => {
-  const classes = useStyles();
   const user = useTypedSelector((state) => state.auth.user);
   const labelArray = useTypedSelector((state) => state.task.labelArray);
   const taskArray = useTypedSelector((state) => state.task.taskArray);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const groupInfo = useTypedSelector((state) => state.group.groupInfo);
-  const chooseKey = useTypedSelector((state) => state.task.chooseKey);
-  const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
-  // const [memberObj, setMemberObj] = useState<any>({});
   const [groupTaskArray, setGroupTaskArray] = useState<any>([]);
   const [taskNumber, setTaskNumber] = useState(10);
   const [taskLoadInfo, setTaskLoadInfo] = useState<any>([]);
   const [taskNameArr, setTaskNameArr] = useState<any>([]);
   const [labelExecutorArray, setLabelExecutorArray] = useState<any>([]);
-  const [labelName, setLabelName] = useState('');
   const [labelIndex, setLabelIndex] = useState<any>(null);
   const [labelVisible, setLabelVisible] = useState(false);
   const [addLabelInput, setAddLabelInput] = useState('');
@@ -74,9 +40,6 @@ const GroupTableGroup: React.FC = (prop) => {
   const [taskLoading, setTaskLoading] = useState(false);
   const [addTaskVisible, setAddTaskVisible] = useState(false);
   const [addInput, setAddInput] = useState('');
-  // const [batchTaskVisible, setBatchTaskVisible] = useState(false);
-  // const [batchLabelKey, setBatchLabelKey] = useState<string | null>('');
-  // const [batchGroupKey, setBatchGroupKey] = useState<string | null>('');
   const [chooseLabelKey, setChooseLabelKey] = useState('');
   const [addVisible, setAddVisible] = useState<any>(null);
   const [moveState, setMoveState] = useState(false);
@@ -101,7 +64,7 @@ const GroupTableGroup: React.FC = (prop) => {
   }, [taskLoadInfo]);
 
   useEffect(() => {
-    if (taskArray) {
+    if (taskArray && filterObject) {
       setLoading(false);
       getData(labelArray, taskArray, filterObject);
     }
@@ -110,24 +73,11 @@ const GroupTableGroup: React.FC = (prop) => {
     if (groupTaskArray) {
       let newTaskLoadInfo: any = [];
       groupTaskArray.forEach((item: any, index: number) => {
-        let taskInfoItem: any = _.cloneDeep(
-          format.formatFilter(item, filterObject)
-        );
-        newTaskLoadInfo[index] = taskInfoItem
-          .filter((taskItem: any, taskIndex: number) => {
-            return taskItem;
-          })
-          .slice(0, taskNumber + 1);
+        newTaskLoadInfo[index] = item.slice(0, taskNumber + 1);
       });
       setTaskLoadInfo(newTaskLoadInfo);
     }
   }, [groupTaskArray]);
-  // useEffect(() => {
-  //   if (chooseKey) {
-  //     dispatch(setTaskKey(chooseKey));
-  //     dispatch(setChooseKey(''));
-  //   }
-  // }, [chooseKey]);
   const getData = (labelArray: any, taskArray: any, filterObject: any) => {
     let taskNameArr: any = [];
     let labelExecutorArray: any = [];
@@ -138,22 +88,12 @@ const GroupTableGroup: React.FC = (prop) => {
     let finishPercentArray10: any = [];
     labelArray.forEach((item: any, index: any) => {
       groupTaskArray[index] = [];
-      // this.taskClickArr[index] = false;
-      // this.taskMoveArr[index] = false;
       taskNameArr.push({ name: item.cardLabelName, key: item._key });
-      // if (item.executorKey) {
       labelExecutorArray.push({
         executorKey: item.executorKey,
         executorAvatar: item.executorAvatar,
         executorNickName: item.executorNickName,
       });
-      // } else {
-      //   labelExecutorArray.push({
-      //     executorKey: null,
-      //     executorAvatar: '',
-      //     executorNickName: '',
-      //   });
-      // }
     });
 
     taskArray.forEach((item: any) => {
@@ -162,13 +102,12 @@ const GroupTableGroup: React.FC = (prop) => {
           if (item.labelKey === labelArray[i]._key) {
             let index = labelArray[i].cardOrder.indexOf(item._key);
             groupTaskArray[i][index] = item;
-            // groupTaskArray[i].push(item);
           }
         }
       }
     });
     groupTaskArray = groupTaskArray.map((item: any) => {
-      let arr = [];
+      let arr: any = [];
       if (item) {
         for (let i = 0; i < item.length; i++) {
           if (item[i]) {
@@ -213,14 +152,9 @@ const GroupTableGroup: React.FC = (prop) => {
       if (finishPercentArray10[index]) {
         item.push(...finishPercentArray10[index]);
       }
-      let formatArr: any = _.cloneDeep(format.formatFilter(item, filterObject));
-      formatArr = formatArr.filter((item: any, index: number) => {
-        if (item.show) {
-          return item;
-        }
-      });
-      return item;
+      return _.cloneDeep(format.formatFilter(item, filterObject));
     });
+    console.log(groupTaskArray);
     setGroupTaskArray(groupTaskArray);
     setTaskNameArr(taskNameArr);
     setLabelExecutorArray(labelExecutorArray);
@@ -256,7 +190,6 @@ const GroupTableGroup: React.FC = (prop) => {
 
   const onDragEnd = async (result: any) => {
     const { source, destination } = result;
-
     let cardOrder1: any = [];
     let cardOrder2: any = [];
     let newGroupTaskArray: any = _.cloneDeep(groupTaskArray);
@@ -289,12 +222,6 @@ const GroupTableGroup: React.FC = (prop) => {
         labelKey2: labelArray[parseInt(source.droppableId)]._key,
         cardKey:
           groupTaskArray[parseInt(source.droppableId)][source.index]._key,
-        // labelObject1: {
-        //   cardOrder: cardOrder1,
-        // },
-        // labelObject2: {
-        //   cardOrder: cardOrder2,
-        // },
       };
       let targetIndex = cardOrder1.indexOf(
         groupTaskArray[parseInt(source.droppableId)][source.index]._key
@@ -327,12 +254,6 @@ const GroupTableGroup: React.FC = (prop) => {
         labelKey2: labelArray[parseInt(destination.droppableId)]._key,
         cardKey:
           groupTaskArray[parseInt(source.droppableId)][source.index]._key,
-        // labelObject1: {
-        //   cardOrder: cardOrder1,
-        // },
-        // labelObject2: {
-        //   cardOrder: cardOrder2,
-        // },
       };
       let targetIndex = cardOrder2.indexOf(
         groupTaskArray[parseInt(source.droppableId)][source.index]._key
@@ -402,31 +323,13 @@ const GroupTableGroup: React.FC = (prop) => {
     });
     let batchRes: any = await api.task.batchTaskArray(cardKeyArray);
     if (batchRes.msg === 'OK') {
-      dispatch(changeBatchMusic(true));
+      dispatch(changeMusic(4));
       dispatch(setMessage(true, '归档成功', 'success'));
       dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
     } else {
       dispatch(setMessage(true, batchRes.msg, 'error'));
     }
   };
-  // const chooseBatchLabel = (
-  //   labelKey: string | null,
-  //   groupKey: string | null,
-  //   index: number
-  // ) => {
-  //   setBatchGroupKey(groupKey);
-  //   setBatchTaskVisible(true);
-  //   setBatchTaskIndex(index - 1);
-  // };
-  // const changeTask = (
-  //   taskItem: any,
-  //   taskIndex: number,
-  //   taskInfoIndex: number
-  // ) => {
-  //   let newGroupTaskArray = _.cloneDeep(groupTaskArray);
-  //   newGroupTaskArray[taskInfoIndex][taskIndex] = taskItem;
-  //   setGroupTaskArray(newGroupTaskArray);
-  // };
   const addLabel = async () => {
     let newTaskNameArr: any = _.cloneDeep(taskNameArr);
     let newLabelIndex: any = labelIndex + 1;
@@ -495,11 +398,12 @@ const GroupTableGroup: React.FC = (prop) => {
     });
     if (addTaskRes.msg === 'OK') {
       dispatch(setMessage(true, '新增任务成功', 'success'));
-      dispatch(changeCreateMusic(true));
+      dispatch(changeMusic(5));
       dispatch(setChooseKey(addTaskRes.result._key));
       dispatch(getGroupTask(3, groupKey, '[0,1,2,10]'));
       // setAddTaskVisible(false);
       setAddInput('');
+      setUrlInput('');
       setLoading(false);
     } else {
       setLoading(false);
@@ -515,33 +419,22 @@ const GroupTableGroup: React.FC = (prop) => {
     let scrollTop = e.target.scrollTop;
     //窗口可视范围高度
     let clientHeight = e.target.clientHeight;
-    let taskArr = groupTaskArray[index].filter(
-      (taskItem: any, taskIndex: number) => {
-        if (taskItem.show) {
-          return taskItem;
-        }
-      }
-    );
     if (
       clientHeight + scrollTop + 1 >= scrollHeight &&
-      taskLength < taskArr.length
+      taskLength < groupTaskArray[index].length
     ) {
       newTaskLoadInfo[index].push(
-        ...taskArr.slice(taskLength, taskLength + taskNumber)
+        ...groupTaskArray[index].slice(taskLength, taskLength + taskNumber)
       );
       setTaskLoadInfo(newTaskLoadInfo);
+      console.log(newTaskLoadInfo);
     } else {
       setTaskLoading(false);
     }
   };
 
   return (
-    <div
-      className="task"
-      // onClick={(e: any) => {
-      //   dispatch(setChooseKey(''));
-      // }}
-    >
+    <div className="task">
       {loading || taskLoading ? <Loading /> : null}
       {groupInfo && labelArray ? (
         <div className="task-container-profile" ref={containerRef}>
@@ -707,9 +600,8 @@ const GroupTableGroup: React.FC = (prop) => {
                               !labelArray[taskInfoindex]._key) ? (
                               <div className="taskItem-plus-title taskNav-plus-title">
                                 <div className="taskItem-plus-input">
-                                  <TextareaAutosize
-                                    rowsMin={1}
-                                    aria-label="maximum height"
+                                  <TextArea
+                                    autoSize={{ minRows: 1 }}
                                     placeholder="任务标题"
                                     value={addInput}
                                     autoComplete="off"
@@ -733,24 +625,18 @@ const GroupTableGroup: React.FC = (prop) => {
                                   style={{ marginTop: '10px' }}
                                 >
                                   <div className="taskNav-url">
-                                    <IconButton
-                                      color="primary"
-                                      component="span"
+                                    <Button
+                                      type="primary"
+                                      shape="circle"
+                                      icon={<GlobalOutlined />}
+                                      ghost
+                                      style={{ border: '0px', color: '#fff' }}
                                       onClick={() => {
                                         setMoveState(true);
                                       }}
-                                    >
-                                      <img
-                                        src={urlSvg}
-                                        alt=""
-                                        style={{
-                                          height: '25px',
-                                          width: '25px',
-                                        }}
-                                      />
-                                    </IconButton>
+                                    />
 
-                                    <input
+                                    <Input
                                       className="taskNav-url-input"
                                       value={urlInput}
                                       onChange={(e: any) => {
@@ -768,6 +654,7 @@ const GroupTableGroup: React.FC = (prop) => {
                                     />
                                   </div>
                                   <Button
+                                    ghost
                                     onClick={() => {
                                       setChooseLabelKey('');
                                       setAddTaskVisible(false);
@@ -776,47 +663,34 @@ const GroupTableGroup: React.FC = (prop) => {
                                     }}
                                     style={{
                                       marginRight: '10px',
-                                      color: '#efefef',
+                                      border: '0px',
                                     }}
                                   >
                                     取消
                                   </Button>
-                                  {addInput && !loading ? (
-                                    <Button
-                                      variant="contained"
-                                      color="primary"
-                                      onClick={() => {
-                                        addTask(
-                                          groupInfo,
-                                          labelArray[taskInfoindex]
-                                        );
-                                      }}
-                                      style={{
-                                        marginLeft: '10px',
-                                        color: '#fff',
-                                      }}
-                                    >
-                                      确定
-                                    </Button>
-                                  ) : (
-                                    <Button
-                                      variant="contained"
-                                      disabled
-                                      style={{
-                                        marginLeft: '10px',
-                                        color: '#fff',
-                                      }}
-                                    >
-                                      确定
-                                    </Button>
-                                  )}
+
+                                  <Button
+                                    loading={loading}
+                                    type="primary"
+                                    onClick={() => {
+                                      addTask(
+                                        groupInfo,
+                                        labelArray[taskInfoindex]
+                                      );
+                                    }}
+                                    style={{
+                                      marginLeft: '10px',
+                                    }}
+                                  >
+                                    确定
+                                  </Button>
                                 </div>
                               </div>
                             ) : null}
                             {taskInfoitem.map((item: any, index: any) => (
                               <Draggable
-                                key={item._key}
-                                draggableId={item._key}
+                                key={'task' + item._key}
+                                draggableId={'task' + item._key}
                                 index={index}
                               >
                                 {(provided, snapshot) => (
@@ -844,7 +718,6 @@ const GroupTableGroup: React.FC = (prop) => {
                                               ].cardOrder.indexOf(item._key)
                                             : 0
                                         }
-                                        outSide={true}
                                       />
                                     ) : null}
                                   </div>
@@ -861,32 +734,24 @@ const GroupTableGroup: React.FC = (prop) => {
               })}
             </div>
           </DragDropContext>
-          <Dialog
+          <Modal
             visible={labelVisible}
-            onClose={() => {
+            onCancel={() => {
               setLabelVisible(false);
             }}
-            onOK={() => {
+            onOk={() => {
               addLabel();
             }}
             title={'添加频道'}
-            dialogStyle={{ width: '400px', height: '300px' }}
           >
-            <div className="headerSet-search-title">
-              <TextField
-                // required
-                id="outlined-basic"
-                variant="outlined"
-                label="添加频道"
-                className={classes.input}
-                style={{ width: '100%' }}
-                value={addLabelInput}
-                onChange={(e) => {
-                  setAddLabelInput(e.target.value);
-                }}
-              />
-            </div>
-          </Dialog>
+            <Input
+              placeholder="请添加频道"
+              value={addLabelInput}
+              onChange={(e) => {
+                setAddLabelInput(e.target.value);
+              }}
+            />
+          </Modal>
         </div>
       ) : null}
     </div>

@@ -1,8 +1,6 @@
 .companySearch {
   width: 100%;
   height: 100%;
-  padding: 8px 0px;
-  box-sizing: border-box;
 }
 .companySearch-listSearch {
   position: absolute;

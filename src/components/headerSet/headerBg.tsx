@@ -2,14 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import './headerSet.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
-import { setTheme, getThemeBg } from '../../redux/actions/authActions';
-import leftArrowPng from '../../assets/img/leftArrow.png';
-import set2Png from '../../assets/img/set2.png';
-import Loading from '../common/loading';
-import Switch from '@material-ui/core/Switch';
+import { Switch, Radio } from 'antd';
 import _ from 'lodash';
 import api from '../../services/api';
-import format from '../../components/common/format';
+
+import { setTheme, getThemeBg } from '../../redux/actions/authActions';
+
+import Loading from '../common/loading';
+
 interface HeaderBgProps {
   setMoveState?: any;
   setChooseWallKey?: any;
@@ -52,15 +52,14 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
     }
   }, []);
   useEffect(() => {
-    console.log('themeBg', themeBg);
     if (themeBg.length > 0) {
       setLoading(false);
     }
   }, [themeBg]);
 
-  const changeBoard = (type: string) => {
+  const changeBoard = (type: string, value: boolean) => {
     let newTheme = _.cloneDeep(theme);
-    newTheme[type] = newTheme[type] ? false : true;
+    newTheme[type] = value;
     dispatch(setTheme(newTheme));
   };
   const changeRandomType = (value: string) => {
@@ -111,9 +110,11 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
   };
   return (
     <React.Fragment>
-      <div className="contentHeader-set-item" style={{ marginTop: '0px' }}>
-        <div className="contentHeader-set-item-title">
-          {/* <img
+      <div
+        className="contentHeader-set-item"
+        style={{ marginTop: '0px', padding: '0px' }}
+      >
+        {/* <img
               src={set2Png}
               alt=""
               style={{
@@ -122,153 +123,116 @@ const HeaderBg: React.FC<HeaderBgProps> = (props) => {
                 marginRight: '10px',
               }}
             /> */}
-          <div>自动更新</div>
-        </div>
-        <div className="contentHeader-set-item-radio">
-          <Switch
-            checked={theme.randomVisible ? true : false}
-            onChange={() => {
-              changeBoard('randomVisible');
-            }}
-            name="checkedD"
-            inputProps={{ 'aria-label': 'primary checkbox' }}
-          />
-        </div>
+        <div>自动更新</div>
+        <Switch
+          checked={theme.randomVisible ? true : false}
+          onChange={() => {
+            changeBoard('randomVisible', !_.cloneDeep(theme)['randomVisible']);
+          }}
+        />
       </div>
       {theme.randomVisible ? (
-        <div className="contentHeader-set-item" style={{ marginTop: '0px' }}>
-          <div className="contentHeader-set-item-title">
-            {/* <img
-              src={set2Png}
-              alt=""
-              style={{
-                width: '15px',
-                height: '17px',
-                marginRight: '10px',
-              }}
-            /> */}
-            <div>更新频率</div>
-          </div>
-          <div className="contentHeader-set-item-radio">
-            <input
-              type="radio"
-              name="randomType"
-              value={'1'}
-              onChange={() => {
-                changeRandomType('1');
-              }}
-              checked={theme.randomType === '1'}
-            />
-            分钟
-            <input
-              type="radio"
-              name="randomType"
-              value={'2'}
-              onChange={() => {
-                changeRandomType('2');
-              }}
-              checked={theme.randomType === '2'}
-            />
-            小时
-            <input
-              type="radio"
-              name="randomType"
-              value={'3'}
-              onChange={() => {
-                changeRandomType('3');
-              }}
-              checked={theme.randomType === '3'}
-            />
-            日
-          </div>
+        <div className="contentHeader-set-item" style={{ marginTop: '0px',padding:'0px' }}>
+          <div>更新频率</div>
+          <Radio.Group
+            onChange={(e: any) => {
+              console.log(e.target.value);
+              changeRandomType(e.target.value);
+            }}
+            value={theme.randomType}
+          >
+            <Radio value="1">分钟</Radio>
+            <Radio value="2">小时</Radio>
+            <Radio value="3">日</Radio>
+          </Radio.Group>
         </div>
-      ) : null}
-      <div
-        className="bg-title"
-        style={{ marginTop: theme.randomVisible ? '0px' : '20px' }}
-      >
-        颜色
-      </div>
-      <div className="bg-container">
-        {color1.map((color1Item: any, color1Index: number) => {
-          return (
-            <div
-              style={{
-                backgroundColor: color1Item,
-                border:
-                  theme.backgroundColor === color1Item
-                    ? '3px solid #87B940'
-                    : 'transparent',
-              }}
-              key={'color1' + color1Index}
-              className="bg-item"
-              onClick={() => {
-                changeBg('backgroundColor', color1Item);
-              }}
-            >
-              {theme.backgroundColor === color1Item ? (
-                <div className="bg-point"></div>
-              ) : null}
-            </div>
-          );
-        })}
-      </div>
-      <div className="bg-title">壁纸</div>
-      <div
-        className="bg-container"
-        style={{
-          height: theme.randomVisible
-            ? 'calc(100% - 350px)'
-            : 'calc(100% - 322px)',
-          overflow: 'auto',
-        }}
-      // onScroll={scrollBgLoading}
-      >
-        {loading ? <Loading loadingWidth="60px" loadingHeight="60px" /> : null}
-        {themeBg.map((imgBigArr2Item: any, imgBigArr2Index: number) => {
-          return (
-            <React.Fragment key={'imgBigArr2' + imgBigArr2Index}>
-              {imgBigArr2Item.url ? (
+      ) : (
+        <React.Fragment>
+          <div className="bg-title">颜色</div>
+          <div className="bg-container">
+            {color1.map((color1Item: any, color1Index: number) => {
+              return (
                 <div
                   style={{
-                    backgroundImage:
-                      'url(' +
-                      imgBigArr2Item.url +
-                      '?imageMogr2/auto-orient/thumbnail/90x)',
+                    backgroundColor: color1Item,
                     border:
-                      theme.backgroundImg === imgBigArr2Item.url
-                        ? '2px solid #87B940'
+                      theme.backgroundColor === color1Item
+                        ? '3px solid #87B940'
                         : 'transparent',
                   }}
+                  key={'color1' + color1Index}
                   className="bg-item"
                   onClick={() => {
-                    changeBg('backgroundImg', imgBigArr2Item);
-                    setChooseWallKey(imgBigArr2Item._key);
+                    changeBg('backgroundColor', color1Item);
                   }}
                 >
-                  {theme.backgroundImg === imgBigArr2Item.url ? (
+                  {theme.backgroundColor === color1Item ? (
                     <div className="bg-point"></div>
                   ) : null}
                 </div>
-              ) : null}
-            </React.Fragment>
-          );
-        })}
-      </div>
-      {themeBg.length < themeBgTotal ? (
-        <div
-          className="bg-button"
-          onClick={() => {
-            let newPage = bgPage;
-            newPage = newPage + 1;
-            setLoading(true);
-            dispatch(getThemeBg(newPage));
-            setBgPage(newPage);
-          }}
-        >
-          加载更多
-        </div>
-      ) : null}
+              );
+            })}
+          </div>
+          <div className="bg-title">壁纸</div>
+          <div
+            className="bg-container"
+            style={{
+              height: theme.randomVisible
+                ? 'calc(100% - 283px)'
+                : 'calc(100% - 255px)',
+              overflow: 'auto',
+            }}
+            // onScroll={scrollBgLoading}
+          >
+            {loading ? (
+              <Loading loadingWidth="60px" loadingHeight="60px" />
+            ) : null}
+            {themeBg.map((imgBigArr2Item: any, imgBigArr2Index: number) => {
+              return (
+                <React.Fragment key={'imgBigArr2' + imgBigArr2Index}>
+                  {imgBigArr2Item.url ? (
+                    <div
+                      style={{
+                        backgroundImage:
+                          'url(' +
+                          imgBigArr2Item.url +
+                          '?imageMogr2/auto-orient/thumbnail/90x)',
+                        border:
+                          theme.backgroundImg === imgBigArr2Item.url
+                            ? '2px solid #87B940'
+                            : 'transparent',
+                      }}
+                      className="bg-item"
+                      onClick={() => {
+                        changeBg('backgroundImg', imgBigArr2Item);
+                        setChooseWallKey(imgBigArr2Item._key);
+                      }}
+                    >
+                      {theme.backgroundImg === imgBigArr2Item.url ? (
+                        <div className="bg-point"></div>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </React.Fragment>
+              );
+            })}
+          </div>
+          {themeBg.length < themeBgTotal ? (
+            <div
+              className="bg-button"
+              onClick={() => {
+                let newPage = bgPage;
+                newPage = newPage + 1;
+                setLoading(true);
+                dispatch(getThemeBg(newPage));
+                setBgPage(newPage);
+              }}
+            >
+              加载更多
+            </div>
+          ) : null}
+        </React.Fragment>
+      )}
     </React.Fragment>
   );
 };

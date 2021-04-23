@@ -1,9 +1,8 @@
 import React from 'react';
-import { Button } from '@material-ui/core';
-import ClickAwayListener from '@material-ui/core/ClickAwayListener';
+import { Button } from 'antd';
+import ClickOutSide from './clickOutside';
 import closePng from '../../assets/img/close.png';
 import './dialog.css';
-import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
 interface dialogProp {
   children: any;
   visible: boolean;
@@ -18,15 +17,6 @@ interface dialogProp {
   noAnimate?: boolean;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    button: {
-      backgroundColor: '#17B881',
-      padding: '6 26px',
-      color: '#fff',
-    },
-  })
-);
 const Dialog: React.FC<dialogProp> = (prop) => {
   const {
     children,
@@ -41,7 +31,6 @@ const Dialog: React.FC<dialogProp> = (prop) => {
     unOut,
     noAnimate,
   } = prop;
-  const classes = useStyles();
   const dialog = () => {
     return (
       <div
@@ -89,17 +78,13 @@ const Dialog: React.FC<dialogProp> = (prop) => {
           {footer ? (
             <div className="dialog-button">
               <Button
-                variant="contained"
-                color="primary"
+                type="primary"
                 onClick={onOK}
                 style={{ marginRight: '10px' }}
-                className={classes.button}
               >
                 确认
               </Button>
-              <Button variant="contained" onClick={onClose}>
-                取消
-              </Button>
+              <Button onClick={onClose}>取消</Button>
             </div>
           ) : null}
         </div>
@@ -112,19 +97,15 @@ const Dialog: React.FC<dialogProp> = (prop) => {
         showMask ? (
           <div className="mask">{dialog()}</div>
         ) : (
-          <ClickAwayListener
-            onClickAway={() => {
+          <ClickOutSide
+            onClickOutside={() => {
               if (unOut) {
-                // const element: any = document.querySelector('#dialog');
-                // console.log(element);
-                // element.classList.remove('animate__slideInRight');
-                // element.classList.add('animate__slideInLeft');
                 onClose();
               }
             }}
           >
             {dialog()}
-          </ClickAwayListener>
+          </ClickOutSide>
         )
       ) : null}
     </React.Fragment>

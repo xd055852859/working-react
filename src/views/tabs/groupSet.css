@@ -3,20 +3,18 @@
   /* height: 100px; */
   display: flex;
   justify-content: space-between;
-  margin: 17px 0px;
-  padding-right: 25px;
   box-sizing: border-box;
 }
 
 .contact-dialog-logo {
-  width: 100px;
-  height: 100px;
-  position: absolute;
+  width: 150px;
+  height: 150px;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  top: 0px;
-  right: 0px;
+  /* top: 0px;
+  right: 0px; */
   border-radius: 10px;
 }
 
@@ -58,7 +56,7 @@
   display: flex;
   align-items: center;
   position: relative;
-  margin-bottom: 12px;
+  margin: 8px 0px;
 }
 
 .contact-dialog-content {
@@ -67,14 +65,16 @@
   display: flex;
   flex-wrap: wrap;
   align-content: space-between;
-  padding: 0px 17px;
   box-sizing: border-box;
   overflow: auto;
 }
 
 .contact-name-title {
-  width: 100px;
-  margin-right: 15px;
+  width: 80px;
+  height: 42px;
+  line-height: 42px;
+  margin-right: 10px;
+  font-size: 14px;
 }
 
 .contact-role {
@@ -113,8 +113,8 @@
   width: 25px;
   height: 25px;
   position: absolute;
-  top: 71px;
-  left: 73px;
+  top: 98px;
+  left: 102px;
   z-index: 5;
 }
 
@@ -127,15 +127,21 @@
   box-sizing: border-box;
 }
 
-.defaultPng-container img {
-  width: 50px;
-  height: 50px;
-  margin-right: 7px;
+.defaultPng-container-item {
+  width: 150px;
+  height: 150px;
+  margin-right: 10px;
   margin-bottom: 5px;
   border-radius: 10px;
   cursor: pointer;
+  overflow: hidden;
 }
 
-.defaultPng-container img:nth-child(5n + 5) {
+.defaultPng-container-item:nth-child(3n + 3) {
   margin-right: 0px;
+}
+.defaultPng-container-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }

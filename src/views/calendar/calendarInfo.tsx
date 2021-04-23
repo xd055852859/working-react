@@ -1,27 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import './calendarInfo.css';
+import './calendarItem.css';
 import { useDispatch } from 'react-redux';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-import DateFnsUtils from '@date-io/moment';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import {
-  MuiPickersUtilsProvider,
-  KeyboardDatePicker,
-} from '@material-ui/pickers';
-import {
-  TextField,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
+  Input,
   Button,
-} from '@material-ui/core';
-import { DeleteOutlineOutlined } from '@material-ui/icons';
+  DatePicker,
+  TimePicker,
+  Modal,
+  Radio,
+  Select,
+} from 'antd';
+const { Option } = Select;
+const { RangePicker } = DatePicker;
 import { setMessage } from '../../redux/actions/commonActions';
-import { getCalendarList, editTask } from '../../redux/actions/taskActions';
 import _ from 'lodash';
 import api from '../../services/api';
-import 'moment/locale/zh-cn';
+
 import moment from 'moment';
+
 import plusPng from '../../assets/img/contact-plus.png';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
@@ -36,58 +34,13 @@ interface CalendarInfoProps {
   calendarColor: any;
   getData?: any;
   calendarType: string;
-  onClose?: any;
+  onClose: any;
   targetGroupKey: string;
   setFollowList?: any;
   changeEdit: Function;
   changeFollowEdit: Function;
 }
-moment.locale('zh-cn');
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      width: '150px',
-    },
-    dateRoot: {
-      width: '80%',
-    },
-    input: {
-      width: '100%',
-      color: '#fff',
-      '& .MuiInput-formControl': {
-        marginTop: '0px',
-        borderColor: '#fff',
-      },
-      '& .MuiOutlinedInput-input': {
-        padding: '10px 14px',
-        borderColor: '#fff',
-        // color: '#fff',
-      },
-      '& .MuiInputLabel-formControl': {
-        marginTop: '-10px',
-        // color: '#fff',
-      },
-    },
-    hourInput: {
-      width: '150px',
-      color: '#fff',
-      marginTop: '10px',
-      '& .MuiInput-formControl': {
-        marginTop: '0px',
-        borderColor: '#fff',
-      },
-      '& .MuiOutlinedInput-input': {
-        padding: '10px 14px',
-        borderColor: '#fff',
-        // color: '#fff',
-      },
-      '& .MuiInputLabel-formControl': {
-        marginTop: '-17px',
-        // color: '#fff',
-      },
-    },
-  })
-);
+
 const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
   const {
     taskItem,
@@ -102,10 +55,8 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
     changeFollowEdit,
   } = props;
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
-  const mainGroupKey = useTypedSelector((state) => state.auth.mainGroupKey);
-  const userKey = useTypedSelector((state) => state.auth.userKey);
+  const groupInfo = useTypedSelector((state) => state.group.groupInfo);
   const groupArray = useTypedSelector((state) => state.group.groupArray);
-  const classes = useStyles();
   const dispatch = useDispatch();
   const [calendarInfo, setCalendarInfo] = useState<any>({
     circleData: [],
@@ -113,7 +64,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
     title: '',
     startDay: moment().startOf('day').valueOf(),
     endDay: moment().endOf('day').valueOf(),
-    remindTime: moment().format('HH:mm'),
+    remindTime: moment(),
     type: 2,
     taskType: 0,
   });
@@ -128,17 +79,25 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
   const [calendarFollow, setCalendarFollow] = useState<any>([]);
 
   const [deleteDialogShow, setDeleteDialogShow] = useState(false);
-  const [calendarEditType, setCalendarEditType] = useState('1');
+  const [calendarEditType, setCalendarEditType] = useState(1);
 
   const weekStr = ['日', '一', '二', '三', '四', '五', '六'];
   const repeatStr = ['无', '日', '周', '月', '年'];
   useEffect(() => {
     if (taskItem) {
-      let newTaskItem = _.cloneDeep(calendarInfo);
+      let newTaskItem: any = {
+        circleData: [],
+        groupKeyArray: [],
+        title: '',
+        startDay: moment().startOf('day').valueOf(),
+        endDay: moment().endOf('day').valueOf(),
+        remindTime: moment().valueOf(),
+        type: 2,
+        taskType: 0,
+      };
       for (let key in _.cloneDeep(taskItem)) {
         newTaskItem[key] = _.cloneDeep(taskItem)[key];
       }
-      let newCalendarGroup = _.cloneDeep(calendarGroup);
       if (!newTaskItem.circleData) {
         newTaskItem.circleData = [];
       }
@@ -151,8 +110,11 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
       if (!newTaskItem.calendarEditType) {
         newTaskItem.calendarEditType = 1;
       }
+      if (isNaN(moment(newTaskItem.remindTime).valueOf())) {
+        newTaskItem.remindTime = moment().valueOf();
+      }
+      // newTaskItem.remindTime = moment(newTaskItem.remindTime).valueOf();
       if (calendarType !== '新建') {
-        console.log(newTaskItem.circleData);
         if (newTaskItem.repeatCircle === 3) {
           setDayInput(newTaskItem.circleData[0]);
         }
@@ -164,16 +126,22 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
           getFollowList(newTaskItem);
         }
       }
-      if (
-        calendarType !== '新建' &&
-        newTaskItem.startDay !== moment().startOf('day').valueOf()
-      ) {
-        newTaskItem.calendarEditType = 2;
-      }
-      console.log(newTaskItem);
+
+      console.log(newTaskItem, calendarType);
       setCalendarInfo(newTaskItem);
     }
-  }, [taskItem]);
+  }, []);
+  useEffect(() => {
+    if (calendarGroup.length === 0 && headerIndex === 3 && groupInfo) {
+      let newCalendarInfo = _.cloneDeep(calendarInfo);
+      let newCalendarGroup = _.cloneDeep(calendarGroup);
+      newCalendarGroup.push(groupInfo);
+      newCalendarInfo.groupKeyArray.push(groupInfo._key);
+      setCalendarGroup(newCalendarGroup);
+      setCalendarInfo(newCalendarInfo);
+    }
+  }, [calendarGroup, headerIndex]);
+
   const getFollowList = async (calendar: any) => {
     let obj: any =
       calendar.type === 8
@@ -206,18 +174,27 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
     setCalendar(newCalendarInfo);
     changeEdit(true);
   };
-  const changeDate = (date: any, type: string) => {
+  const changeDate = (dates) => {
     let newCalendarInfo = _.cloneDeep(calendarInfo);
-    if (type === 'start') {
-      newCalendarInfo.startDay = date.valueOf();
-    } else if (type === 'end') {
-      newCalendarInfo.endDay = date.valueOf();
-    } else if (type === 'remind') {
-      newCalendarInfo.remindTime = date;
+    console.log('????????', dates);
+    if (dates) {
+      newCalendarInfo.startDay = dates[0].valueOf();
+
+      newCalendarInfo.endDay = dates[1].valueOf();
+
+      setCalendarInfo(newCalendarInfo);
+      setCalendar(newCalendarInfo);
+      changeEdit(true);
     }
-    setCalendarInfo(newCalendarInfo);
-    setCalendar(newCalendarInfo);
-    changeEdit(true);
+  };
+  const changeHour = (date: any) => {
+    let newCalendarInfo = _.cloneDeep(calendarInfo);
+    if (date) {
+      newCalendarInfo.remindTime = date.valueOf();
+      setCalendarInfo(newCalendarInfo);
+      setCalendar(newCalendarInfo);
+      changeEdit(true);
+    }
   };
   const chooseCalendarGroup = (item: any) => {
     let newCalendarInfo = _.cloneDeep(calendarInfo);
@@ -278,188 +255,153 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
     setCalendar(newCalendarInfo);
     changeEdit(true);
   };
+  const changeRepeat = (repeatStrIndex) => {
+    let newCalendarInfo = _.cloneDeep(calendarInfo);
+    setRepeatIndex(repeatStrIndex);
+    newCalendarInfo.repeatCircle = repeatStrIndex;
+    newCalendarInfo.type = repeatStrIndex > 0 ? 1 : 2;
+    setCalendarInfo(newCalendarInfo);
+    setCalendar(newCalendarInfo);
+  };
+  const changeDay = (e) => {
+    let newCalendarInfo = _.cloneDeep(calendarInfo);
+    if (e.target.value > 31) {
+      e.target.value = 31;
+    }
+    setDayInput(e.target.value);
+    if (repeatIndex === 4) {
+      if (!newCalendarInfo.circleData[0]) {
+        newCalendarInfo.circleData[0] = {};
+      }
+
+      newCalendarInfo.circleData[0].date = parseInt(e.target.value);
+    } else {
+      newCalendarInfo.circleData[0] = parseInt(e.target.value);
+    }
+    setCalendarInfo(newCalendarInfo);
+    setCalendar(newCalendarInfo);
+  };
+  const changeMonth = (e) => {
+    let newCalendarInfo = _.cloneDeep(calendarInfo);
+    if (e.target.value > 12) {
+      e.target.value = 12;
+    }
+    setMonthInput(e.target.value);
+    if (!newCalendarInfo.circleData[0]) {
+      newCalendarInfo.circleData[0] = {};
+    }
+    newCalendarInfo.circleData[0].month = parseInt(e.target.value) - 1;
+    setCalendarInfo(newCalendarInfo);
+    setCalendar(newCalendarInfo);
+  };
   return (
     <div className="calendarInfo">
-      <div className="calendarInfo-title">
-        <TextField
-          // required
-          id="outlined-basic"
-          variant="outlined"
-          label="日程标题"
-          className={classes.input}
+      <div className="calendarInfo-item">
+        <div className="calendarInfo-item-title">日程标题</div>
+        <Input
           value={calendarInfo.title}
           autoComplete="off"
           onChange={changeTitle}
+          style={{ width: 'calc(100% - 73px)' }}
+          placeholder="请输入日程标题"
         />
       </div>
       <div className="calendarInfo-item">
-        <div className="calendarInfo-item-title">开始时间</div>
-        <MuiPickersUtilsProvider utils={DateFnsUtils}>
-          <KeyboardDatePicker
-            disableToolbar
-            variant="inline"
-            format="yyyy-MM-DD"
-            margin="normal"
-            id="date-picker-inline"
-            // label="开始日期"
-            value={moment(calendarInfo.startDay)}
-            onChange={(date) => {
-              changeDate(date, 'start');
-            }}
-            KeyboardButtonProps={{
-              'aria-label': 'change date',
-            }}
-            className={classes.dateRoot}
-          />
-        </MuiPickersUtilsProvider>
+        <div className="calendarInfo-item-title">日程时间</div>
+        <RangePicker
+          value={[moment(calendarInfo.startDay), moment(calendarInfo.endDay)]}
+          onChange={(dates) => {
+            changeDate(dates);
+          }}
+        />
       </div>
 
-      <div className="calendarInfo-repeat-item">
-        <div className="calendarInfo-item-title">重复</div>
-        <div className="calendarInfo-repeat">
-          <div className="calendarInfo-week">
-            {repeatStr.map((repeatItem: any, repeatStrIndex: number) => {
-              return (
-                <div
-                  key={'repeat' + repeatStrIndex}
-                  onClick={() => {
-                    let newCalendarInfo = _.cloneDeep(calendarInfo);
-                    setRepeatIndex(repeatStrIndex);
-                    newCalendarInfo.repeatCircle = repeatStrIndex;
-                    newCalendarInfo.type = repeatStrIndex > 0 ? 1 : 2;
-                    setCalendarInfo(newCalendarInfo);
-                    setCalendar(newCalendarInfo);
-                  }}
-                  className="calendarInfo-week-item"
-                  style={
-                    repeatIndex === repeatStrIndex
-                      ? { backgroundColor: '#17B881', color: '#fff' }
-                      : {}
-                  }
-                >
-                  {repeatItem}
-                </div>
-              );
-            })}
-          </div>
-          {repeatIndex === 4 ? (
-            <div className="calendarInfo-repeat-input">
-              <input
-                type="number"
-                value={monthInput}
-                onChange={(e: any) => {
-                  let newCalendarInfo = _.cloneDeep(calendarInfo);
-                  if (e.target.value > 12) {
-                    e.target.value = 12;
-                  }
-                  setMonthInput(e.target.value);
-                  if (!newCalendarInfo.circleData[0]) {
-                    newCalendarInfo.circleData[0] = {};
-                  }
-                  newCalendarInfo.circleData[0].month =
-                    parseInt(e.target.value) - 1;
-                  setCalendarInfo(newCalendarInfo);
-                  setCalendar(newCalendarInfo);
-                }}
-                max="12"
-              />
-              月
-            </div>
-          ) : null}
-          {repeatIndex >= 3 ? (
-            <div className="calendarInfo-repeat-input">
-              <input
-                type="number"
-                value={dayInput}
-                onChange={(e: any) => {
-                  let newCalendarInfo = _.cloneDeep(calendarInfo);
-                  if (e.target.value > 31) {
-                    e.target.value = 31;
-                  }
-                  setDayInput(e.target.value);
-                  if (repeatIndex === 4) {
-                    if (!newCalendarInfo.circleData[0]) {
-                      newCalendarInfo.circleData[0] = {};
-                    }
-
-                    newCalendarInfo.circleData[0].date = parseInt(
-                      e.target.value
-                    );
-                  } else {
-                    newCalendarInfo.circleData[0] = parseInt(e.target.value);
-                  }
-                  setCalendarInfo(newCalendarInfo);
-                  setCalendar(newCalendarInfo);
-                }}
-                max="31"
-              />
-              日
-            </div>
-          ) : null}
-          {repeatIndex === 2 ? (
-            <div className="calendarInfo-week">
-              {weekStr.map((weekItem: any, weekIndex: number) => {
+      {calendarInfo.type !== 8 ? (
+        <div className="calendarInfo-repeat-item">
+          <div className="calendarInfo-item-title">重复</div>
+          <div className="calendarInfo-repeat">
+            <Select
+              value={repeatIndex}
+              style={{ width: 60 }}
+              onSelect={(value) => {
+                changeRepeat(value);
+              }}
+            >
+              {repeatStr.map((repeatItem: any, repeatStrIndex: number) => {
                 return (
-                  <div
-                    key={'week' + weekIndex}
-                    onClick={() => {
-                      changeWeekArr(weekIndex);
-                    }}
-                    className="calendarInfo-week-item"
-                    style={
-                      calendarInfo.circleData.indexOf(weekIndex) !== -1
-                        ? { backgroundColor: '#17B881', color: '#fff' }
-                        : {}
-                    }
+                  <Option
+                    value={repeatStrIndex}
+                    key={'repeatStr' + repeatStrIndex}
                   >
-                    {weekItem}
-                  </div>
+                    {repeatItem}
+                  </Option>
                 );
               })}
-            </div>
-          ) : null}
+            </Select>
+            {repeatIndex === 4 ? (
+              <div className="calendarInfo-repeat-input">
+                <Input
+                  type="number"
+                  value={monthInput}
+                  onChange={(e: any) => {
+                    changeMonth(e);
+                  }}
+                  style={{ width: '70px', margin: '0px 8px' }}
+                  max="12"
+                />
+                月
+              </div>
+            ) : null}
+            {repeatIndex >= 3 ? (
+              <div className="calendarInfo-repeat-input">
+                <Input
+                  type="number"
+                  value={dayInput}
+                  onChange={(e: any) => {
+                    changeDay(e);
+                  }}
+                  max="31"
+                  style={{ width: '70px', margin: '0px 8px' }}
+                />
+                日
+              </div>
+            ) : null}
+            {repeatIndex === 2 ? (
+              <div className="calendarInfo-week">
+                {weekStr.map((weekItem: any, weekIndex: number) => {
+                  return (
+                    <div
+                      key={'week' + weekIndex}
+                      onClick={() => {
+                        changeWeekArr(weekIndex);
+                      }}
+                      className="calendarInfo-week-item"
+                      style={
+                        calendarInfo.circleData.indexOf(weekIndex) !== -1
+                          ? { backgroundColor: '#17B881', color: '#fff' }
+                          : {}
+                      }
+                    >
+                      {weekItem}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : null}
+          </div>
         </div>
-      </div>
-      {repeatIndex !== 0 ?
-        <div className="calendarInfo-item">
-          <div className="calendarInfo-item-title">结束时间</div>
-          <MuiPickersUtilsProvider utils={DateFnsUtils}>
-            <KeyboardDatePicker
-              disableToolbar
-              variant="inline"
-              format="yyyy-MM-DD"
-              margin="normal"
-              id="date-picker-inline"
-              // label="截止日期"
-              value={moment(calendarInfo.endDay)}
-              onChange={(date) => {
-                changeDate(date, 'end');
-              }}
-              KeyboardButtonProps={{
-                'aria-label': 'change date',
-              }}
-              className={classes.dateRoot}
-            />
-          </MuiPickersUtilsProvider>
-        </div>
-        : null}
+      ) : null}
       <div className="calendarInfo-item">
         <div className="calendarInfo-item-title">提醒</div>
         <div className="calendarInfo-item-notice">
-          <TextField
-            id="time"
-            type="time"
-            value={calendarInfo.remindTime}
-            className={classes.hourInput}
-            onChange={(e) => {
-              changeDate(e.target.value, 'remind');
+          <TimePicker
+            onChange={(data) => {
+              changeHour(data);
             }}
-            InputLabelProps={{
-              shrink: true,
-            }}
-            inputProps={{
-              step: 60, // 5 min
-            }}
+            value={moment(calendarInfo.remindTime)}
+            format="HH:mm"
+            allowClear={false}
+            showNow={false}
           />
         </div>
       </div>
@@ -475,7 +417,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
                   height: '25px',
                 }}
                 key={'color' + colorIndex}
-                className="calendarItem-color-title"
+                className="calendarInfo-color-title"
                 onClick={() => {
                   let newCalendarInfo = _.cloneDeep(calendarInfo);
                   setCalendarIndex(colorIndex);
@@ -492,49 +434,25 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
           })}
         </div>
       </div>
-      {calendarType === '编辑' &&
-        calendarInfo.startDay === moment().startOf('day').valueOf() &&
-        calendarInfo.origionalKey ? (
-          // <div className="taskItem-check-icon">
-          <div className="calendarInfo-item" style={{ marginTop: '20px' }}>
-            <div className="calendarInfo-item-title">设置</div>
-            <div className="calendarInfo-item-color">
-              <RadioGroup
-                aria-label="gender"
-                value={calendarEditType}
-                onChange={onChange}
-              >
-                <FormControlLabel
-                  value={'1'}
-                  control={<Radio />}
-                  label={'当日'}
-                  key={'radio1'}
-                  style={{ height: '40px' }}
-                />
-                <FormControlLabel
-                  value={'2'}
-                  control={<Radio />}
-                  label={'循环'}
-                  key={'radio2'}
-                  style={{ height: '40px' }}
-                />
-              </RadioGroup>
-            </div>
-          </div>
-        ) : // </div>
-        null}
-      {calendarType === '编辑' ? (
-        // <div className="taskItem-check-icon">
-        // <img
-        //   src={deleteIconSvg}
-        //   alt="删除"
-        //   onClick={() => {
-        //     setDeleteDialogShow(true);
-        //   }}
+      {/* {calendarType === '编辑' &&
+      calendarInfo.type !== 8 &&
+      calendarInfo.calendarType === '未来' ? (
+        // &&
+        // calendarInfo.origionalKey
 
-        // />
+        <div className="calendarInfo-item" style={{ marginTop: '20px' }}>
+          <div className="calendarInfo-item-title">设置</div>
+          <div className="calendarInfo-item-color">
+            <Radio.Group onChange={onChange} value={calendarEditType}>
+              <Radio value={1}>当日</Radio>
+              <Radio value={2}>循环</Radio>
+            </Radio.Group>
+          </div>
+        </div>
+      ) : null} */}
+      {calendarType === '编辑' ? (
         <Button
-          color="primary"
+          type="link"
           onClick={() => {
             setDeleteDialogShow(true);
           }}
@@ -542,8 +460,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
         >
           删除日程
         </Button>
-      ) : // </div>
-        null}
+      ) : null}
       {calendarType === '编辑' ? (
         <div className="calendarInfo-icon">
           <div className="calendarInfo-icon-title">关注者：</div>
@@ -556,7 +473,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
                       src={
                         iconItem.avatar
                           ? iconItem.avatar +
-                          '?imageMogr2/auto-orient/thumbnail/80x'
+                            '?imageMogr2/auto-orient/thumbnail/80x'
                           : defaultPersonPng
                       }
                       alt=""
@@ -589,7 +506,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
           </div>
         </div>
       ) : // </div>
-        null}
+      null}
       {calendarType === '新建' ? (
         <div className="calendarInfo-icon">
           <div className="calendarInfo-icon-title">复制到日程表：</div>
@@ -604,8 +521,7 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
                     <img
                       src={
                         iconItem.groupLogo
-                          ? iconItem.groupLogo +
-                          '?imageMogr2/auto-orient/thumbnail/80x'
+                          ? iconItem.groupLogo
                           : defaultGroupPng
                       }
                       alt=""
@@ -654,41 +570,40 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
         <div className="calendarInfo-group-box">
           {groupArray
             ? groupArray.map((groupItem: any, groupIndex: number) => {
-              return (
-                <div
-                  className="calendarInfo-group-box-container"
-                  key={'group' + groupIndex}
-                  onClick={() => {
-                    chooseCalendarGroup(groupItem);
-                  }}
-                  style={
-                    calendarGroup.indexOf(groupItem._key) !== -1
-                      ? { backgroundColor: '#efefef' }
-                      : {}
-                  }
-                >
+                return (
                   <div
-                    className="calendarInfo-group-box-item"
-                    style={{ borderRadius: '5px' }}
+                    className="calendarInfo-group-box-container"
+                    key={'group' + groupIndex}
+                    onClick={() => {
+                      chooseCalendarGroup(groupItem);
+                    }}
+                    style={
+                      calendarGroup.indexOf(groupItem._key) !== -1
+                        ? { backgroundColor: '#efefef' }
+                        : {}
+                    }
                   >
-                    <img
-                      src={
-                        groupItem.groupLogo
-                          ? groupItem.groupLogo +
-                          '?imageMogr2/auto-orient/thumbnail/80x'
-                          : defaultGroupPng
-                      }
-                      alt=""
-                    />
-                  </div>
-                  <Tooltip title={groupItem.groupName}>
-                    <div className="calendarInfo-group-title">
-                      {groupItem.groupName}
+                    <div
+                      className="calendarInfo-group-box-item"
+                      style={{ borderRadius: '5px' }}
+                    >
+                      <img
+                        src={
+                          groupItem.groupLogo
+                            ? groupItem.groupLogo
+                            : defaultGroupPng
+                        }
+                        alt=""
+                      />
                     </div>
-                  </Tooltip>
-                </div>
-              );
-            })
+                    <Tooltip title={groupItem.groupName}>
+                      <div className="calendarInfo-group-title">
+                        {groupItem.groupName}
+                      </div>
+                    </Tooltip>
+                  </div>
+                );
+              })
             : null}
         </div>
       </Dialog>
@@ -717,19 +632,18 @@ const CalendarInfo: React.FC<CalendarInfoProps> = (props) => {
           chooseFollow={chooseCalendarFollow}
         />
       </Dialog>
-      <Dialog
+      <Modal
         visible={deleteDialogShow}
-        onClose={() => {
+        onCancel={() => {
           setDeleteDialogShow(false);
         }}
-        onOK={() => {
+        onOk={() => {
           deleteTask(calendarInfo);
         }}
         title={'删除日程'}
-        dialogStyle={{ width: '400px', height: '200px' }}
       >
-        <div className="dialog-onlyTitle">是否删除该日程</div>
-      </Dialog>
+        是否删除该日程
+      </Modal>
     </div>
   );
 };

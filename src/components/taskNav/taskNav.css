@@ -12,7 +12,9 @@
   box-sizing: border-box;
   position: relative;
 }
-
+.taskNav .ant-progress-circle .ant-progress-text {
+  color: #fff !important;
+}
 .taskNav-name-info {
   display: flex;
   align-items: center;
@@ -34,13 +36,14 @@
 }
 
 .taskNav-name {
-  width: 170px;
+  width: 195px;
   font-size: 16px;
   font-weight: 500;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
   word-break: break-all;
+  margin-right: 5px;
 }
 
 .taskNav-name-plus {
@@ -131,6 +134,18 @@
   height: 38px;
   line-height: 38px;
   text-align: center;
+}
+.taskNav-tag {
+  height: 22px;
+  color: #fff;
+  border-radius: 24px;
+  background-color: rgba(255, 255, 255, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0px 5px;
+  margin-right: 8px;
+  font-size: 12px;
 }
 @keyframes urlOut {
   from {

@@ -12,10 +12,14 @@ let clickX = 0;
 let clickY = 0;
 
 export const Moveable = React.forwardRef(
-  ({ style, rightClickToStart, scrollable, scrollStep, children }: Props, ref) => {
+  (
+    { style, rightClickToStart, scrollable, scrollStep, children }: Props,
+    ref
+  ) => {
     // 暴露方法
     useImperativeHandle(ref, () => ({
       reset: () => {
+        console.log('Xxxxxxxxxxxxxxxxxxx');
         setTranslateX(0);
         setTranslateY(0);
       },
@@ -138,5 +142,5 @@ export const Moveable = React.forwardRef(
         </div>
       </div>
     );
-  },
+  }
 );

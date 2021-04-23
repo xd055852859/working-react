@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
-import Filter from '../common/filter';
-import {
-  setFilterObject,
-  getWorkingTableTask,
-  getGroupTask,
-} from '../../redux/actions/taskActions';
-import { setMessage } from '../../redux/actions/commonActions';
-import { setTheme } from '../../redux/actions/authActions';
 import _ from 'lodash';
 import api from '../../services/api';
-import allPng from '../../assets/img/all.png';
+
+import { setFilterObject } from '../../redux/actions/taskActions';
+
+import Filter from '../common/filter';
+import { setMessage } from '../../redux/actions/commonActions';
+import { setTheme } from '../../redux/actions/authActions';
+
+import allSvg from '../../assets/svg/all.svg';
 interface HeaderFilterProps {}
 
 const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
@@ -19,11 +18,11 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
   const workingTaskArray = useTypedSelector(
     (state) => state.task.workingTaskArray
   );
+  const user = useTypedSelector((state) => state.auth.user);
   const headerIndex = useTypedSelector((state) => state.common.headerIndex);
+  const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const groupKey = useTypedSelector((state) => state.group.groupKey);
   const filterObject = useTypedSelector((state) => state.task.filterObject);
-  const user = useTypedSelector((state) => state.auth.user);
-  const targetUserInfo = useTypedSelector((state) => state.auth.targetUserInfo);
   const groupMemberItem = useTypedSelector(
     (state) => state.member.groupMemberItem
   );
@@ -56,21 +55,21 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
       {
         name: '全部',
         key: null,
-        avatar: allPng,
+        avatar: allSvg,
       },
     ];
     let creatorFilterArray: any = [
       {
         name: '全部',
         key: null,
-        avatar: allPng,
+        avatar: allSvg,
       },
     ];
     let executorfilterArray: any = [
       {
         name: '全部',
         key: null,
-        avatar: allPng,
+        avatar: allSvg,
       },
     ];
     _.flatten(cardArray).forEach((item: any) => {
@@ -111,6 +110,8 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
       if (newGroupIndex !== -1) {
         setGroupIndex(newGroupIndex);
       }
+    } else {
+      setGroupIndex(0);
     }
     setExecutorFilterArray(executorfilterArray);
     if (filterObject.executorKey) {
@@ -121,6 +122,8 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
       if (newExecutorIndex !== -1) {
         setExecutorIndex(newExecutorIndex);
       }
+    } else {
+      setExecutorIndex(0);
     }
     setCreatorFilterArray(creatorFilterArray);
     if (filterObject.creatorKey) {
@@ -130,6 +133,8 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
       if (newCreatorIndex !== -1) {
         setCreatorIndex(newCreatorIndex);
       }
+    } else {
+      setCreatorIndex(0);
     }
     // this.$set(this.filterObj, "type", this.stateStr);
     // this.$emit("update:taskObj", this.filterObj);
@@ -140,14 +145,14 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
       {
         name: '全部',
         key: null,
-        avatar: allPng,
+        avatar: allSvg,
       },
     ];
     let executorfilterArray: any = [
       {
         name: '全部',
         key: null,
-        avatar: allPng,
+        avatar: allSvg,
       },
     ];
     let arr = [];
@@ -245,6 +250,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
       let newTheme = _.cloneDeep(theme);
       newTheme.filterObject = newFilterObject;
       dispatch(setTheme(newTheme));
+      console.log(headerIndex);
     }
     dispatch(setFilterObject(newFilterObject));
     setGroupFilterVisible(false);
@@ -288,7 +294,7 @@ const HeaderFilter: React.FC<HeaderFilterProps> = (prop) => {
           top: '38px',
         }}
         filterStyle={{ padding: '0px 18px' }}
-        filterIndex={executorIndex}      
+        filterIndex={executorIndex}
         onOpen={() => {
           setExecutorFilterVisible(true);
         }}

@@ -1,18 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import './groupTableTreeItem.css';
-import Switch from '@material-ui/core/Switch';
-import DropMenu from '../../components/common/dropMenu';
-import { useTypedSelector } from '../../redux/reducer/RootState';
-import { useDispatch } from 'react-redux';
-
-import {
-  AddCircleOutline,
-  ArrowRight,
-  Add,
-  DeleteOutline,
-  EditOutlined,
-} from '@material-ui/icons';
-import moment from 'moment';
 import _ from 'lodash';
 interface GroupTableTreeItemProps {
   taskDetail: any;
@@ -39,7 +26,6 @@ const GroupTableTreeItem: React.FC<GroupTableTreeItemProps> = (props) => {
   return (
     <div className="groupTableTreeItem">
       <div className="groupTableTreeItem-item">
-        <AddCircleOutline />
         <div
           className="groupTableTreeItem-title"
           onMouseEnter={() => {
@@ -48,7 +34,6 @@ const GroupTableTreeItem: React.FC<GroupTableTreeItemProps> = (props) => {
         >
           新建子节点
         </div>
-        <ArrowRight />
       </div>
       <div
         className="groupTableTreeItem-item"
@@ -56,9 +41,7 @@ const GroupTableTreeItem: React.FC<GroupTableTreeItemProps> = (props) => {
           setTypeDialogShow(2);
         }}
       >
-        <Add />
         <div className="groupTableTreeItem-title">新建节点</div>
-        <ArrowRight />
       </div>
       {/* <div
         className="groupTableTreeItem-item"

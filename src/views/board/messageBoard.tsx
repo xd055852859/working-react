@@ -1,18 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import './messageBoard.css';
 import { useDispatch } from 'react-redux';
-import { Button, Checkbox } from '@material-ui/core';
+import { Button, Checkbox, Modal, Tooltip, Dropdown } from 'antd';
+import { ClearOutlined } from '@ant-design/icons';
+
 import _ from 'lodash';
 import moment from 'moment';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-import { createStyles, Theme, makeStyles } from '@material-ui/core/styles';
-import './messageBoard.css';
 import api from '../../services/api';
+
 import {
   setChooseKey,
   changeTaskInfoVisible,
 } from '../../redux/actions/taskActions';
 import { setMessage } from '../../redux/actions/commonActions';
-import { changeMessageMusic } from '../../redux/actions/authActions';
+import { changeMusic } from '../../redux/actions/authActions';
+
+import Loading from '../../components/common/loading';
+import IconFont from '../../components/common/iconFont';
 
 import messageType1Png from '../../assets/img/messageType1.png';
 import messageType2Png from '../../assets/img/messageType2.png';
@@ -26,7 +31,6 @@ import messageType9Png from '../../assets/img/messageType9.png';
 import messageType10Png from '../../assets/img/messageType10.png';
 import messageType11Png from '../../assets/img/messageType11.png';
 import messageType12Png from '../../assets/img/messageType12.png';
-
 import messageType14Png from '../../assets/img/messageType14.png';
 import messageType15Png from '../../assets/img/messageType15.png';
 import messageType16Png from '../../assets/img/messageType16.png';
@@ -44,66 +48,60 @@ import messageHandSvg from '../../assets/svg/messageHand.svg';
 import messageunHandSvg from '../../assets/svg/messageunHand.svg';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import urlSvg from '../../assets/svg/url.svg';
-import Loading from '../../components/common/loading';
-import Dialog from '../../components/common/dialog';
+
 interface MessageBoardProps {
   type?: string;
 }
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      color: '#fff',
-    },
-  })
-);
+
 const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
   const { type } = prop;
   const dispatch = useDispatch();
-  const classes = useStyles();
   const user = useTypedSelector((state) => state.auth.user);
   // const headerIndex = useTypedSelector((state) => state.common.headerIndex);
   const socketObj = useTypedSelector((state) => state.common.socketObj);
-  const unMessageNum = useTypedSelector((state) => state.common.unMessageNum);
   const [messagePage, setMessagePage] = useState(1);
   const [messageTotal, setMessageTotal] = useState(0);
   const [messageNum, setMessageNum] = useState(0);
   const [messageArray, setMessageArray] = useState<any>([]);
   const [loading, setLoading] = useState(false);
-  const [taskInfoShow, setTaskInfoShow] = useState(false);
   const [messageCheck, setMessageCheck] = useState(false);
   const [messageVisible, setMessageVisible] = useState(false);
+  const [filterType, setFilterType] = useState(0);
+  const [filterIndex,setFilterIndex] = useState(0);
   const messageLimit = 20;
-  const messageImgArray = [
-    messageType1Png,
-    messageType2Png,
-    messageType3Png,
-    messageType4Png,
-    messageType5Png,
-    messageType6Png,
-    messageType7Png,
-    messageType8Png,
-    messageType9Png,
-    messageType10Png,
-    messageType11Png,
-    messageType12Png,
-    messageType12Png,
-    messageType14Png,
-    messageType15Png,
-    messageType16Png,
-    messageType17Png,
-    messageType18Png,
-    messageType19Png,
-    messageType20Svg,
-    messageType21Svg,
-    messageType22Svg,
+  const messageTypeArray = [
+    { type: 0, title: '全部', img: '', filter: true },
+    { type: 2, title: '打卡', img: messageType2Png, filter: true },
+    { type: 3, title: '指派', img: messageType3Png, filter: true },
+    { type: 4, title: '内容', img: messageType4Png, filter: false },
+    { type: 5, title: '完成', img: messageType5Png, filter: true },
+    { type: 6, title: '删除', img: messageType6Png, filter: false },
+    { type: 7, title: '归档', img: messageType7Png, filter: true },
+    { type: 8, title: '评论', img: messageType8Png, filter: false },
+    { type: 9, title: '权限', img: messageType9Png, filter: false },
+    { type: 10, title: '退群', img: messageType10Png, filter: false },
+    { type: 11, title: '申请加群', img: messageType11Png, filter: false },
+    { type: 12, title: '确认指派', img: messageType12Png, filter: false },
+    { type: 13, title: '确认完成', img: messageType12Png, filter: false },
+    { type: 14, title: '调整日期', img: messageType14Png, filter: true },
+    { type: 15, title: '取消完成', img: messageType15Png, filter: false },
+    { type: 16, title: '修改工时', img: messageType16Png, filter: true },
+    { type: 17, title: '取消归档', img: messageType17Png, filter: false },
+    { type: 18, title: '修改类型', img: messageType18Png, filter: false },
+    { type: 19, title: '加入群组', img: messageType19Png, filter: false },
+    { type: 20, title: '批量归档', img: messageType20Svg, filter: false },
+    { type: 21, title: '修改标题', img: messageType21Svg, filter: true },
+    { type: 22, title: '预定日程', img: messageType22Svg, filter: false },
   ];
-  let unDistory = true;
+  let unDistory = useRef<any>(null);
+  const messageRef: React.RefObject<any> = useRef();
+  unDistory.current = true;
   useEffect(() => {
     if (user && user._key) {
-      getMessage(messagePage, messageCheck);
+      getMessage(messagePage, messageCheck, 0);
     }
     return () => {
-      unDistory = false;
+      // unDistory.current = false;
     };
   }, [user]);
 
@@ -114,14 +112,18 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
       let newMessageTotal = messageTotal;
       newMessageArray.unshift(newSocketObj);
       newMessageArray[0]._key = newSocketObj.data.noticeKey;
-      if (newSocketObj.data.type == 3 || newSocketObj.data.type == 5) {
-        setMessageNum(messageNum + 1);
-      }
+      // if (newSocketObj.data.type == 3 || newSocketObj.data.type == 5) {
+      setMessageNum(messageNum + 1);
+      // }
       setMessageArray(newMessageArray);
       setMessageTotal(newMessageTotal + 1);
     }
   }, [socketObj]);
-  const getMessage = async (page: number, check: boolean) => {
+  const getMessage = async (
+    page: number,
+    check: boolean,
+    filterType: number
+  ) => {
     let newMessageArray: any = [];
     setLoading(true);
     if (page == 1) {
@@ -132,9 +134,10 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
     let messageRes: any = await api.auth.getMessageList(
       page,
       messageLimit,
+      filterType,
       check ? 2 : 1
     );
-    if (unDistory) {
+    if (unDistory.current) {
       if (messageRes.msg === 'OK') {
         setLoading(false);
         newMessageArray.push(...messageRes.result);
@@ -161,7 +164,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
     ) {
       newPage = newPage + 1;
       setMessagePage(newPage);
-      getMessage(newPage, messageCheck);
+      getMessage(newPage, messageCheck, filterType);
     }
   };
   const changeAddMessage = async (
@@ -170,9 +173,11 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
     index: number
   ) => {
     let newMessageArray = _.cloneDeep(messageArray);
+    console.log(item);
     let messageRes: any = await api.group.changeAddMessage(
       item.userKey,
       item.groupKey,
+      newMessageArray[index]._key,
       applyStatus,
       item.applyKey
     );
@@ -191,7 +196,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
     let messageRes: any = await api.auth.sendReceipt(key);
     if (messageRes.msg === 'OK') {
       dispatch(setMessage(true, '签收成功', 'success'));
-      dispatch(changeMessageMusic(true));
+      dispatch(changeMusic(2));
       if (newMessageArray[index].data.type === 3) {
         newMessageArray[index].data.assignConfirm = true;
       } else if (newMessageArray[index].data.type === 5) {
@@ -230,13 +235,38 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
     if (messageRes.msg === 'OK') {
       dispatch(setMessage(true, '清除消息成功', 'success'));
       setMessageVisible(false);
-      getMessage(1, messageCheck);
+      getMessage(1, messageCheck, filterType);
     } else {
       dispatch(setMessage(true, messageRes.msg, 'error'));
     }
   };
+  const downMenu = (
+    <div className="dropDown-box messageBoard-filter-container">
+      {messageTypeArray.map((filterItem, filterIndex) => {
+        return (
+          <React.Fragment>
+            {filterItem.filter ? (
+              <div
+                onClick={() => {
+                  setFilterType(filterItem.type);
+                  setFilterIndex(filterIndex);
+                  getMessage(messagePage, false, filterItem.type);
+                }}
+              >
+                {filterItem.title}
+              </div>
+            ) : null}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
   return (
-    <div className="messageBoard" style={{ width: type ? '100%' : '360px' }}>
+    <div
+      className="messageBoard"
+      style={{ width: type ? '100%' : '360px' }}
+      ref={messageRef}
+    >
       {loading ? <Loading loadingWidth="80px" loadingHeight="80px" /> : null}
       <div
         className="messageBoard-maintitle"
@@ -246,56 +276,54 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
       >
         <div>{!type ? '提醒' : null}</div>
         <div className="messageBoard-mainbutton">
-          <div
-            style={{
-              fontSize: '14px',
-              color: '#17B881',
-              textDecoration: 'underline',
-              cursor: 'pointer',
-            }}
-            onClick={() => {
-              setMessageVisible(true);
-            }}
+          <Dropdown
+            overlay={downMenu}
+            getPopupContainer={() => messageRef.current}
+            trigger={['click']}
           >
-            清除消息
-          </div>
-          <div style={{ fontSize: '14px', color: !type ? '#fff' : '#333' }}>
-            {!type ? (
-              <Checkbox
-                checked={messageCheck}
-                onChange={(e: any) => {
-                  setMessageCheck(e.target.checked);
-                  setMessagePage(1);
-                  getMessage(1, e.target.checked);
-                }}
-                color="primary"
-                className={classes.root}
+            <div className="messageBoard-filter-title">
+              <IconFont
+                type="icon-guolv"
+                style={{ fontSize: '25px', marginRight: '5px' }}
               />
-            ) : (
-              <Checkbox
-                checked={messageCheck}
-                onChange={(e: any) => {
-                  setMessageCheck(e.target.checked);
-                  setMessagePage(1);
-                  getMessage(1, e.target.checked);
-                }}
-                color="primary"
-              />
-            )}
-            待签收
-          </div>
-          {messageNum ? (
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => {
-                checkAllMessage();
+              {messageTypeArray[filterIndex].title}
+            </div>
+          </Dropdown>
+          <Tooltip title="清除消息">
+            <div
+              onClick={(e: any) => {
+                setMessageVisible(true);
               }}
-              style={{ color: '#fff', marginLeft: '10px', height: '30px' }}
+              style={{ width: '30px' }}
             >
-              批量签收{' '}
-              <span style={{ marginLeft: '5px' }}> ({messageNum}) </span>
-            </Button>
+              <ClearOutlined style={{ color: '#1890ff' }} />
+            </div>
+          </Tooltip>
+
+          {messageNum ? (
+            <React.Fragment>
+              <Checkbox
+                checked={messageCheck}
+                onChange={(e: any) => {
+                  setMessageCheck(e.target.checked);
+                  setMessagePage(1);
+                  getMessage(1, e.target.checked, filterType);
+                }}
+                style={{ fontSize: '14px', color: !type ? '#fff' : '#333' }}
+              >
+                待签收
+              </Checkbox>
+              <Button
+                type="primary"
+                onClick={() => {
+                  checkAllMessage();
+                }}
+                style={{ color: '#fff', marginLeft: '10px', height: '30px' }}
+              >
+                批量签收
+                <span style={{ marginLeft: '5px' }}> ({messageNum}) </span>
+              </Button>
+            </React.Fragment>
           ) : null}
         </div>
       </div>
@@ -323,10 +351,14 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
               {messageItem.data.name1 ? (
                 <div className="messageBoard-item-item">
                   <div className="messageBoard-item-img">
-                    <img
-                      src={messageImgArray[messageItem.data.type - 1]}
-                      alt=""
-                    />
+                    <Tooltip
+                      title={messageTypeArray[messageItem.data.type - 1].title}
+                    >
+                      <img
+                        src={messageTypeArray[messageItem.data.type - 1].img}
+                        alt=""
+                      />
+                    </Tooltip>
                   </div>
                   {messageItem.data.cardKey && messageItem.data.type !== 22 ? (
                     <div
@@ -361,8 +393,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                             <img
                               src={
                                 messageItem.data.groupLogo
-                                  ? messageItem.data.groupLogo +
-                                    '?imageMogr2/auto-orient/thumbnail/80x'
+                                  ? messageItem.data.groupLogo
                                   : defaultGroupPng
                               }
                               alt=""
@@ -373,7 +404,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                               }}
                             />
                           </div>
-                          <div>
+                          <div className="toLong" style={{ width: '190px' }}>
                             <span style={{ marginRight: '5px' }}>
                               {messageItem.data.groupName}
                             </span>
@@ -493,22 +524,6 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                           />
                         ) : null}
                       </div>
-                      <div
-                        className="messageBoard-item-name1"
-                        style={{
-                          margin: editRole
-                            ? '0px 0px 6px 0px'
-                            : '10px 0px 6px 0px',
-                          color: editRole ? '#333' : '#17B881',
-                          width: editRole ? '100%' : 'calc(100% - 55px)',
-                        }}
-                      >
-                        {messageItem.data.type !== 21
-                          ? messageItem.data.name1 +
-                            ' ' +
-                            messageItem.data.action
-                          : messageItem.data.content}
-                      </div>
                       {messageItem.data.type !== 21 ? (
                         <div className="messageBoard-item-task">
                           <div>
@@ -539,6 +554,23 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                         </div> */}
                         </div>
                       ) : null}
+                      <div
+                        className="messageBoard-item-name1"
+                        style={{
+                          margin: editRole
+                            ? '0px 0px 6px 0px'
+                            : '10px 0px 6px 0px',
+                          color: editRole ? '#333' : '#17B881',
+                          width: editRole ? '100%' : 'calc(100% - 55px)',
+                        }}
+                      >
+                        {messageItem.data.type !== 21
+                          ? messageItem.data.name1 +
+                            ' ' +
+                            messageItem.data.action
+                          : messageItem.data.content}
+                      </div>
+
                       {(messageItem.data.type == 3 &&
                         !messageItem.data.assignConfirm &&
                         messageItem.data.executorKey == user._key) ||
@@ -603,8 +635,7 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                             {messageItem.data.applyStatus === 0 ? (
                               <React.Fragment>
                                 <Button
-                                  variant="contained"
-                                  color="primary"
+                                  type="primary"
                                   onClick={() => {
                                     changeAddMessage(
                                       messageItem.data,
@@ -617,7 +648,6 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                                   同意
                                 </Button>
                                 <Button
-                                  variant="contained"
                                   onClick={() => {
                                     changeAddMessage(
                                       messageItem.data,
@@ -625,17 +655,12 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
                                       messageIndex
                                     );
                                   }}
-                                  // style={{ color: '#fff' }}
                                 >
                                   拒绝
                                 </Button>
                               </React.Fragment>
                             ) : (
-                              <Button
-                                variant="contained"
-                                disabled
-                                // style={{ color: '#fff' }}
-                              >
+                              <Button disabled>
                                 {messageItem.data.applyStatus == 2
                                   ? '已拒绝'
                                   : '已同意'}
@@ -659,31 +684,19 @@ const MessageBoard: React.FC<MessageBoardProps> = (prop) => {
             </React.Fragment>
           );
         })}
-        {/*  */}
       </div>
-      {/* {taskInfoShow ? (
-        <TaskInfo
-          onClose={() => {
-            setTaskInfoShow(false);
-          }}
-          type="new"
-        />
-      ) : null} */}
-      <Dialog
+      <Modal
+        title="清除消息"
         visible={messageVisible}
-        onClose={() => {
-          setMessageVisible(false);
-        }}
-        onOK={() => {
+        onOk={() => {
           clearMessage();
         }}
-        title={'清除消息'}
-        dialogStyle={{ width: '400px', height: '200px' }}
+        onCancel={() => {
+          setMessageVisible(false);
+        }}
       >
-        <div className="dialog-onlyTitle">
-          清理消息将删除目前所有不需要审核的消息，确定要清理吗？
-        </div>
-      </Dialog>
+        清理消息将删除所有消息，确定要清理吗？
+      </Modal>
     </div>
   );
 };

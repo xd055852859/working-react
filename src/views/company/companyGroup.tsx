@@ -5,112 +5,20 @@ import './companyGroup.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
 import { useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
-import { getGroup } from '../../redux/actions/groupActions';
+import { Table, Modal, Button, Tabs, Checkbox } from 'antd';
+const { TabPane } = Tabs;
 import _ from 'lodash';
 import api from '../../services/api';
-import Dialog from '../../components/common/dialog';
-import GroupSet from '../../views/tabs/groupSet';
-import defaultPersonPng from '../../assets/img/defaultPerson.png';
-import CompanySearchList from './companySearchList';
-import CompanySearch from './companySearch';
-import DropMenu from '../../components/common/dropMenu';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TablePagination,
-  TableRow,
-  Checkbox,
-  IconButton,
-  Chip,
-} from '@material-ui/core';
+
+import { getGroup } from '../../redux/actions/groupActions';
+
+import defaultPersonSvg from '../../assets/svg/defaultPerson.svg';
+
 import { CloseOutlined } from '@material-ui/icons';
-import deletePng from '../../assets/img/deleteDiary.png';
 import defaultGroupSvg from '../../assets/svg/defaultGroup.svg';
 import { setMessage } from '../../redux/actions/commonActions';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 interface CompanyGroupProps {}
-const columns1 = [
-  // {
-  //   id: 'updateTime',
-  //   label: '更新时间',
-  //   minWidth: 100,
-  // },
-  {
-    id: 'groupName',
-    label: '群名',
-    minWidth: 200,
-  },
-  {
-    id: 'groupLogo',
-    label: '群图标',
-    minWidth: 100,
-  },
-  {
-    id: 'targetRole2',
-    label: '管理员',
-    minWidth: 100,
-  },
-  {
-    id: 'targetRole3',
-    label: '编辑',
-    minWidth: 100,
-  },
-  {
-    id: 'targetRole4',
-    label: '作者',
-    minWidth: 100,
-  },
-  {
-    id: 'targetRole5',
-    label: '成员',
-    minWidth: 100,
-  },
-  {
-    id: 'operation',
-    label: '操作',
-    minWidth: 100,
-  },
-];
-const columns2 = [
-  {
-    id: 'avatar',
-    label: '头像',
-    minWidth: 100,
-  },
-  {
-    id: 'name',
-    label: '姓名',
-    minWidth: 100,
-  },
-  {
-    id: 'targetRole2',
-    label: '管理员',
-    minWidth: 100,
-  },
-  {
-    id: 'targetRole3',
-    label: '编辑',
-    minWidth: 100,
-  },
-  {
-    id: 'targetRole4',
-    label: '作者',
-    minWidth: 100,
-  },
-  {
-    id: 'targetRole5',
-    label: '成员',
-    minWidth: 100,
-  },
-  {
-    id: 'operation',
-    label: '操作',
-    minWidth: 170,
-  },
-];
 
 const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
   const {} = props;
@@ -127,21 +35,305 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
   const [groupObj, setGroupObj] = useState<any>(null);
   const [targetGroupInfo, setTargetGroupInfo] = useState<any>(null);
   const [targetGroupKey, setTargetGroupKey] = useState<any>('');
-  const [moreTop, setMoreTop] = useState<any>('');
   const [rowsPerPage, setRowsPerPage] = React.useState(100);
   const [selectedId, setSelectedId] = useState<any>(null);
   const [userId, setUserId] = useState<any>('');
   const [startId, setStartId] = useState<any>(null);
-  const [searchDialogShow, setSearchDialogShow] = useState(false);
-  const [searchVisible, setSearchVisible] = useState(false);
-  const [infoDialogShow, setInfoDialogShow] = useState(false);
-  const [setDialogShow, setSetDialogShow] = useState(false);
+
   const [deleteDialogShow, setDeleteDialogShow] = useState(false);
   const [deleteVisible, setDeleteVisible] = useState(false);
   const [departmentType, setDepartmentType] = useState(2);
+  const [tabIndex, setTabIndex] = useState(0);
   const departmentRef: React.RefObject<any> = useRef();
   const targetTreeRef: React.RefObject<any> = useRef();
-  let unDistory = true;
+  let unDistory = useRef<any>(null);
+  unDistory.current = true;
+  const memberColumns = [
+    {
+      title: '项目名',
+      dataIndex: 'name',
+      key: 'name',
+      width: 150,
+      align: 'center' as 'center',
+      ellipsis: true,
+    },
+    {
+      title: '图标',
+      dataIndex: 'logo',
+      key: 'logo',
+      render: (logo, item) => (
+        <React.Fragment>
+          {item.orgType !== 1 ? (
+            <div className="company-avatar-container ">
+              <div className="company-avatar">
+                <img
+                  src={
+                    logo
+                      ? logo
+                      : defaultGroupPng
+                  }
+                  alt=""
+                />
+              </div>
+            </div>
+          ) : null}
+        </React.Fragment>
+      ),
+      width: 100,
+      align: 'center' as 'center',
+    },
+    {
+      title: '管理员',
+      dataIndex: 'targetRole2',
+      key: 'targetRole2',
+      align: 'center' as 'center',
+      width: 70,
+      render: (value, item, index) => (
+        <React.Fragment>
+          {item.orgType !== 1 ? (
+            <Checkbox
+              checked={value ? true : false}
+              disabled={item.role > item.checkIndex ? true : false}
+              onChange={(e: any) => {
+                if (departmentType === 7) {
+                  changeMemberRole(e, item, 2);
+                } else {
+                  changeRole(e, item, 2);
+                }
+              }}
+            />
+          ) : null}
+        </React.Fragment>
+      ),
+    },
+    {
+      title: '编辑',
+      dataIndex: 'targetRole3',
+      key: 'targetRole3',
+      align: 'center' as 'center',
+      width: 100,
+      render: (value, item, index) => (
+        <React.Fragment>
+          {item.orgType !== 1 ? (
+            <Checkbox
+              checked={value ? true : false}
+              disabled={item.role > item.checkIndex ? true : false}
+              onChange={(e: any) => {
+                if (departmentType === 7) {
+                  changeMemberRole(e, item, 3);
+                } else {
+                  changeRole(e, item, 3);
+                }
+                // setMessageCheck(e.target.checked);
+              }}
+            />
+          ) : null}
+        </React.Fragment>
+      ),
+    },
+    {
+      title: '作者',
+      dataIndex: 'targetRole4',
+      key: 'targetRole4',
+      align: 'center' as 'center',
+      width: 70,
+      render: (value, item, index) => (
+        <React.Fragment>
+          {item.orgType !== 1 ? (
+            <Checkbox
+              checked={value ? true : false}
+              disabled={item.role > item.checkIndex ? true : false}
+              onChange={(e: any) => {
+                if (departmentType === 7) {
+                  changeMemberRole(e, item, 4);
+                } else {
+                  changeRole(e, item, 4);
+                }
+                // setMessageCheck(e.target.checked);
+              }}
+            />
+          ) : null}
+        </React.Fragment>
+      ),
+    },
+    {
+      title: '成员',
+      dataIndex: 'targetRole5',
+      key: 'targetRole5',
+      align: 'center' as 'center',
+      width: 70,
+      render: (value, item, index) => (
+        <React.Fragment>
+          {item.orgType !== 1 ? (
+            <Checkbox
+              checked={value ? true : false}
+              disabled={item.role > item.checkIndex ? true : false}
+              onChange={(e: any) => {
+                if (departmentType === 7) {
+                  changeMemberRole(e, item, 5);
+                } else {
+                  changeRole(e, item, 5);
+                }
+                // setMessageCheck(e.target.checked);
+              }}
+            />
+          ) : null}
+        </React.Fragment>
+      ),
+    },
+    {
+      title: '操作',
+      dataIndex: 'operation',
+      key: 'operation',
+      align: 'center' as 'center',
+      width: 100,
+      render: (value, item) => (
+        <React.Fragment>
+          {item.orgType !== 1 ? (
+            <Button
+              shape="circle"
+              type="primary"
+              ghost
+              style={{ border: '0px' }}
+              icon={<CloseOutlined />}
+              onClick={() => {
+                setDeleteVisible(true);
+                if (departmentType === 7) {
+                  setUserId(companyObj.staffKey);
+                  setTargetGroupKey(item.groupKey);
+                } else {
+                  setUserId(item.staffKey);
+                  setTargetGroupKey(companyObj.groupKey);
+                }
+              }}
+            />
+          ) : null}
+        </React.Fragment>
+      ),
+    },
+  ];
+  // const groupColumns = [
+  //   {
+  //     title: '头像',
+  //     dataIndex: 'avatar',
+  //     key: 'avatar',
+  //     width: 100,
+  //     align: 'center' as 'center',
+  //     render: (avatar) => (
+  //       <div className="company-avatar-container ">
+  //         <div className="company-avatar">
+  //           <img
+  //             src={
+  //               avatar
+  //                 ? avatar + '?imageMogr2/auto-orient/thumbnail/80x'
+  //                 : defaultPersonSvg
+  //             }
+  //             alt=""
+  //             onError={(e: any) => {
+  //               e.target.onerror = null;
+  //               e.target.src = defaultPersonSvg;
+  //             }}
+  //           />
+  //         </div>
+  //       </div>
+  //     ),
+  //   },
+  //   {
+  //     title: '姓名',
+  //     dataIndex: 'name',
+  //     key: 'name',
+  //     width: 150,
+  //     align: 'center' as 'center',
+  //     ellipsis: true,
+  //   },
+  //   {
+  //     title: '管理员',
+  //     dataIndex: 'targetRole2',
+  //     key: 'targetRole2',
+  //     width: 70,
+  //     align: 'center' as 'center',
+  //     render: (value, item, index) => (
+  //       <Checkbox
+  //         checked={value ? true : false}
+  //         disabled={item.role > item.checkIndex ? true : false}
+  //         onChange={(e: any) => {
+  //           changeRole(e, index, 2);
+  //           // setMessageCheck(e.target.checked);
+  //         }}
+  //       />
+  //     ),
+  //   },
+  //   {
+  //     title: '编辑',
+  //     dataIndex: 'targetRole3',
+  //     key: 'targetRole3',
+  //     align: 'center' as 'center',
+  //     width: 70,
+  //     render: (value, item, index) => (
+  //       <Checkbox
+  //         checked={value ? true : false}
+  //         disabled={item.role > item.checkIndex ? true : false}
+  //         onChange={(e: any) => {
+  //           changeRole(e, index, 3);
+  //           // setMessageCheck(e.target.checked);
+  //         }}
+  //       />
+  //     ),
+  //   },
+  //   {
+  //     title: '作者',
+  //     dataIndex: 'targetRole4',
+  //     key: 'targetRole4',
+  //     align: 'center' as 'center',
+  //     width: 70,
+  //     render: (value, item, index) => (
+  //       <Checkbox
+  //         checked={value ? true : false}
+  //         disabled={item.role > item.checkIndex ? true : false}
+  //         onChange={(e: any) => {
+  //           changeRole(e, index, 4);
+  //           // setMessageCheck(e.target.checked);
+  //         }}
+  //       />
+  //     ),
+  //   },
+  //   {
+  //     title: '成员',
+  //     dataIndex: 'targetRole5',
+  //     key: 'targetRole5',
+  //     align: 'center' as 'center',
+  //     width: 70,
+  //     render: (value, item, index) => (
+  //       <Checkbox
+  //         checked={value ? true : false}
+  //         disabled={item.role > item.checkIndex ? true : false}
+  //         onChange={(e: any) => {
+  //           changeRole(e, index, 5);
+  //           // setMessageCheck(e.target.checked);
+  //         }}
+  //       />
+  //     ),
+  //   },
+  //   {
+  //     title: '操作',
+  //     dataIndex: 'operation',
+  //     key: 'operation',
+  //     align: 'center' as 'center',
+  //     width: 100,
+  //     render: (value, item) => (
+  //       <Button
+  //         shape="circle"
+  //         type="primary"
+  //         icon={<CloseOutlined />}
+  //         disabled={item.userId === user._key}
+  //         onClick={() => {
+  //           setDeleteVisible(true);
+  //           setUserId(item.userId);
+  //         }}
+  //       />
+  //     ),
+  //   },
+  // ];
   useEffect(() => {
     if (user && groupInfo) {
       let newDepartmentType = 0;
@@ -149,143 +341,200 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
       newDepartmentType = parseInt(typeArray[typeArray.length - 1]);
       setDepartmentType(newDepartmentType);
       setRows([]);
+      setTabIndex(0);
       getGroupTree('', newDepartmentType);
     }
     return () => {
-      unDistory = false;
+      // unDistory.current = false;
     };
   }, [user, groupInfo, location]);
+  useEffect(() => {
+    if (companyObj) {
+      getGroup(tabIndex, companyObj);
+    }
+  }, [tabIndex]);
 
   const getGroupTree = async (nodeId: any, type: number) => {
-    let newRow: any = [];
     let newCompanyData: any = {};
-    let companyDepartmentRes: any = await api.company.getOrganizationTree(
-      groupKey,
-      type
-    );
-    if (unDistory) {
-      if (companyDepartmentRes.msg === 'OK') {
-        let data = companyDepartmentRes.result;
-        for (let key in data) {
-          newCompanyData[key] = {
-            _key: data[key]._key,
-            contract: false,
-            father: data[key].parentOrgKey,
-            name: data[key].name,
-            // data[key].orgType === 1
-            //   ? data[key].name
-            //   : data[key].name +
-            //     ' (' +
-            //     (data[key].post ? data[key].post : '无职务') +
-            //     ' )',
-            path: data[key].path1,
-            sortList: data[key].children,
-            enterpriseGroupKey: data[key].enterpriseGroupKey,
-            groupMemberKey: data[key].groupMemberKey,
-            orgType: data[key].orgType,
-            staffKey: data[key].staffKey,
-            // disabled: data[key].orgType === 2,
-            childrenAll: data[key].childrenAll,
-          };
-          if (data[key].orgType === 2) {
-            //?imageMogr2/auto-orient/thumbnail/80x
-            newCompanyData[key].icon = data[key].avatar
-              ? data[key].avatar + '?roundPic/radius/!50p'
-              : defaultPersonPng;
-          }
-          if (data[key].orgType === 3) {
-            //?imageMogr2/auto-orient/thumbnail/80x
-            newCompanyData[key].icon = data[key].groupLogo
-              ? data[key].groupLogo + '?imageMogr2/auto-orient/thumbnail/80x'
-              : defaultPersonPng;
-            newCompanyData[key].groupKey = data[key].groupKey;
-          }
-          if (!nodeId && !data[key].parentOrgKey) {
-            nodeId = data[key]._key;
-            newCompanyData[key].icon = groupInfo.groupLogo
-              ? groupInfo.groupLogo + '?imageMogr2/auto-orient/thumbnail/80x'
-              : defaultGroupPng;
-            setStartId(nodeId);
-            // setSelectedPath(newCompanyData[nodeId].path);
-          }
+    let companyDepartmentRes: any = await api.company.getOrganizationTree({
+      enterpriseGroupKey: groupKey,
+      type: type,
+    });
+    // if (unDistory.current) {
+    if (companyDepartmentRes.msg === 'OK') {
+      let data = companyDepartmentRes.result;
+      for (let key in data) {
+        newCompanyData[key] = {
+          _key: data[key]._key,
+          contract: false,
+          father: data[key].parentOrgKey,
+          name: data[key].name,
+          // data[key].orgType === 1
+          //   ? data[key].name
+          //   : data[key].name +
+          //     ' (' +
+          //     (data[key].post ? data[key].post : '无职务') +
+          //     ' )',
+          path: data[key].path1,
+          sortList: data[key].children,
+          enterpriseGroupKey: data[key].enterpriseGroupKey,
+          groupMemberKey: data[key].groupMemberKey,
+          orgType: data[key].orgType,
+          staffKey: data[key].staffKey,
+          // disabled: data[key].orgType === 2,
+          childrenAll: data[key].childrenAll,
+        };
+        if (data[key].orgType === 2) {
+          //?imageMogr2/auto-orient/thumbnail/80x
+          newCompanyData[key].icon = data[key].avatar
+            ? data[key].avatar + '?roundPic/radius/!50p'
+            : defaultPersonSvg;
         }
-        console.log( newCompanyData);
-        // setSelectedId(nodeId);
-        setCompanyData(newCompanyData);
-      } else {
-        dispatch(setMessage(true, companyDepartmentRes.msg, 'error'));
+        if (data[key].orgType === 3) {
+          //?imageMogr2/auto-orient/thumbnail/80x
+          newCompanyData[key].icon = data[key].groupLogo
+            ? data[key].groupLogo + '?imageMogr2/auto-orient/thumbnail/80x'
+            : defaultPersonSvg;
+          newCompanyData[key].groupKey = data[key].groupKey;
+        }
+        if (!nodeId && !data[key].parentOrgKey) {
+          nodeId = data[key]._key;
+          newCompanyData[key].icon = groupInfo.groupLogo
+            ? groupInfo.groupLogo
+            : defaultGroupPng;
+          setStartId(nodeId);
+          // setSelectedPath(newCompanyData[nodeId].path);
+        }
       }
+      console.log(newCompanyData);
+      // setSelectedId(nodeId);
+      setCompanyData(newCompanyData);
+    } else {
+      dispatch(setMessage(true, companyDepartmentRes.msg, 'error'));
     }
+    // }
   };
-  const chooseNode = async (node: any) => {
+  const chooseNode = (node: any) => {
+    setSelectedId(node._key);
+    setCompanyObj(node);
+    getGroup(tabIndex, node);
+  };
+  const getGroup = async (tabIndex: number, node?: any) => {
     let newRow: any = [];
-    if (departmentType === 2) {
-      let companyPersonRes: any = await api.company.getCompanyMemberList(
-        node.enterpriseGroupKey,
-        node.staffKey
-      );
-      if (unDistory) {
+    let newRowData: any = {};
+    if (tabIndex) {
+      if (departmentType === 7) {
+        let companyPersonRes: any = await api.company.getCompanyMemberList(
+          node.enterpriseGroupKey,
+          node.staffKey
+        );
         if (companyPersonRes.msg === 'OK') {
           console.log(companyPersonRes);
           companyPersonRes.result.map((item: any, index: number) => {
             newRow[index] = {
+              key: item._key,
               groupKey: item.groupKey,
-              groupName: item.groupName,
+              name: item.groupName,
               role: item.myRole,
-              groupLogo: item.groupLogo,
+              logo: item.groupLogo,
             };
             newRow[index]['targetRole' + item.targetRole] = item.targetRole;
             newRow[index].checkIndex = item.targetRole;
           });
-          console.log(newRow);
           setPage(0);
-          setSelectedId(node._key);
           setRows(newRow);
-          setCompanyObj(node);
         } else {
           dispatch(setMessage(true, companyPersonRes.msg, 'error'));
         }
+      } else {
+        getTargetGroup(node.groupKey);
+        let chooseCompanyRes: any = await api.company.getCompanyList(
+          3,
+          groupKey,
+          1,
+          500,
+          '',
+          '',
+          '',
+          1,
+          node.groupKey
+        );
+        if (chooseCompanyRes.msg === 'OK') {
+          chooseCompanyRes.result.map((item: any, index: number) => {
+            newRow.push({
+              key: item._key,
+              name: item.nickName,
+              logo: item.avatar,
+              role: node.role,
+              staffKey: item.userId,
+              groupKey: node.groupKey,
+            });
+            newRow[newRow.length - 1]['targetRole' + item.role] = item.role;
+            newRow[newRow.length - 1].checkIndex = item.role;
+          });
+          setPage(0);
+          setRows(newRow);
+          // setRows(newRow);
+        } else {
+          dispatch(setMessage(true, chooseCompanyRes.msg, 'error'));
+        }
       }
     } else {
-      getTargetGroup(node.groupKey);
-      let chooseCompanyRes: any = await api.company.getCompanyList(
-        3,
-        groupKey,
-        1,
-        500,
-        '',
-        '',
-        '',
-        1,
-        node.groupKey
-      );
-      if (chooseCompanyRes.msg === 'OK') {
-        chooseCompanyRes.result.map((item: any, index: number) => {
-          newRow.push({
-            name: item.nickName,
-            avatar: item.avatar,
-            role: node.role,
-            userId: item.userId,
-            groupId: node.groupKey,
-          });
-          newRow[newRow.length - 1]['targetRole' + item.role] = item.role;
-          newRow[newRow.length - 1].checkIndex = item.role;
-        });
-
-        setPage(0);
-        setSelectedId(node._key);
-        setRows(newRow);
-        setCompanyObj(node);
-        // setRows(newRow);
+      let obj: any = {
+        enterpriseGroupKey: groupKey,
+      };
+      if (departmentType === 7) {
+        obj.targetUKey = node.staffKey;
+        obj.type = 8;
       } else {
-        dispatch(setMessage(true, chooseCompanyRes.msg, 'error'));
+        obj.targetGKey = node.groupKey;
+        obj.type = 7;
+      }
+      let companyPersonRes: any = await api.company.getOrganizationTree(obj);
+      // if (unDistory.current) {
+      if (companyPersonRes.msg === 'OK') {
+        let data = companyPersonRes.result;
+        for (let key in data) {
+          newRowData[key] = {
+            key: data[key]._key,
+            name: data[key].name,
+            logo: departmentType === 7 ? data[key].groupLogo : data[key].avatar,
+            children: data[key].children,
+            staffKey: data[key].staffKey,
+            groupKey: data[key].groupKey,
+            ['targetRole' + data[key].role]: data[key].role,
+            checkIndex: data[key].role,
+            orgType: data[key].orgType,
+          };
+        }
+        // console.log(newRow);
+        newRow = formatData(newRowData, startId);
+        // setPage(0);
+        setRows([newRow]);
+      } else {
+        dispatch(setMessage(true, companyPersonRes.msg, 'error'));
       }
     }
+  };
+  const formatData = (nodeObj: any, nodeId: string) => {
+    let obj: any = {
+      ...nodeObj[nodeId],
+    };
+    if (nodeObj[nodeId].children.length > 0) {
+      obj.children = [];
+      nodeObj[nodeId].children.forEach((item: any) => {
+        let nodeItem = formatData(nodeObj, item);
+        obj.children.push(nodeItem);
+      });
+    } else {
+      delete obj.children;
+    }
+    return obj;
   };
   const addChildrenGroup = async (selectedNode: any, type: string) => {
     let newCompanyData = _.cloneDeep(companyData);
     let obj = {
-      groupName: '子群',
+      groupName: '子项目',
       groupDesc: '',
       groupLogo: '',
       modelUrl: '',
@@ -363,27 +612,12 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
     //   dispatch(setMessage(true, addCompanyRes.msg, 'error'));
     // }
   };
-  const changeMemberRole = async (
-    e: any,
-    index: number,
-    columnIndex: number
-  ) => {
+  const changeMemberRole = async (e: any, item: any, columnIndex: number) => {
     let newRow = _.cloneDeep(rows);
     let newCompanyObj = _.cloneDeep(companyObj);
-
-    for (let key in newRow[index]) {
-      if (key.indexOf('targetRole') !== -1 && newRow[index][key]) {
-        newRow[index][key] = undefined;
-      }
-    }
-    // if (targetRole !== 'targetRole' + columnIndex) {
-    newRow[index]['targetRole' + columnIndex] = columnIndex;
-    // }
-
     let roleRes: any = null;
-    console.log(newRow);
-    if (!newRow[index].checkIndex) {
-      roleRes = await api.group.addGroupMember(newRow[index].groupKey, [
+    if (!item.checkIndex) {
+      roleRes = await api.group.addGroupMember(item.groupKey, [
         {
           userKey: newCompanyObj.staffKey,
           nickName: newCompanyObj.name,
@@ -394,39 +628,28 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
       ]);
     } else {
       roleRes = await api.auth.setRole(
-        newRow[index].groupKey,
+        item.groupKey,
         companyObj.staffKey,
         columnIndex
       );
     }
     if (roleRes.msg === 'OK') {
       dispatch(setMessage(true, '修改项目成员权限成功', 'success'));
-      setRows(newRow);
+      chooseNode(newCompanyObj);
     } else {
       dispatch(setMessage(true, roleRes.msg, 'error'));
     }
   };
-  const changeRole = async (e: any, index: number, columnIndex: number) => {
-    let newRow = _.cloneDeep(rows);
-    let targetRole = '';
-    for (let key in newRow[index]) {
-      if (key.indexOf('targetRole') !== -1 && newRow[index][key]) {
-        targetRole = key;
-        newRow[index][key] = undefined;
-      }
-    }
-    console.log(newRow[index]);
-    // if (targetRole !== 'targetRole' + (columnIndex + 1)) {
-    newRow[index]['targetRole' + columnIndex] = columnIndex;
-    // }
+  const changeRole = async (e: any, item: any, columnIndex: number) => {
     let roleRes: any = null;
-    if (!newRow[index].checkIndex) {
-      roleRes = await api.group.addGroupMember(newRow[index].groupId, [
+    let newCompanyObj = _.cloneDeep(companyObj);
+    if (!item.checkIndex) {
+      roleRes = await api.group.addGroupMember(newCompanyObj.groupKey, [
         {
-          userKey: newRow[index].userId,
-          nickName: newRow[index].name,
-          avatar: newRow[index].avatar
-            ? newRow[index].avatar.replace('?roundPic/radius/!50p')
+          userKey: item.staffKey,
+          nickName: item.name,
+          avatar: item.avatar
+            ? item.avatar.replace('?roundPic/radius/!50p')
             : '',
           gender: 0,
           role: columnIndex,
@@ -434,14 +657,14 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
       ]);
     } else {
       roleRes = await api.auth.setRole(
-        newRow[index].groupId,
-        newRow[index].userId,
+        newCompanyObj.groupKey,
+        item.staffKey,
         columnIndex
       );
     }
     if (roleRes.msg === 'OK') {
       dispatch(setMessage(true, '修改项目成员权限成功', 'success'));
-      setRows(newRow);
+      chooseNode(newCompanyObj);
     } else {
       dispatch(setMessage(true, roleRes.msg, 'error'));
     }
@@ -521,7 +744,7 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
       },
     ]);
     if (addMemberRes.msg === 'OK') {
-      dispatch(setMessage(true, '添加群成员成功', 'success'));
+      dispatch(setMessage(true, '添加项目成员成功', 'success'));
       newRow.push({
         name: node.nickName,
         avatar: node.avatar,
@@ -562,23 +785,7 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
   const saveGroupSet = (obj: any) => {
     setGroupObj(obj);
   };
-  // const setGroup = async () => {
-  //   if (groupObj) {
-  //     let groupRes: any = await api.group.changeGroupInfo(
-  //       targetGroupKey,
-  //       groupObj
-  //     );
-  //     if (groupRes.msg === 'OK') {
-  //       getGroupTree(groupInfo.taskTreeRootCardKey);
-  //       setTargetGroupInfo(null);
-  //       setSetDialogShow(false);
-  //       dispatch(setMessage(true, '编辑子群成功', 'success'));
-  //     } else {
-  //       dispatch(setMessage(true, groupRes.msg, 'error'));
-  //     }
-  //     // dispatch(changeGroupInfo(groupKey, groupObj));
-  //   }
-  // };
+
   const getTargetGroup = async (groupKey: string) => {
     let groupRes: any = await api.group.getGroupInfo(groupKey);
     if (groupRes.msg === 'OK') {
@@ -613,42 +820,9 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
     <div className="company-info">
       <div className="company-header">
         <div className="company-header-title">
-          {departmentType === 2 ? '人员授权' : '项目授权'}
-          {companyObj &&
-          ((departmentType === 2 && companyObj.orgType === 2) ||
-            (departmentType === 3 && companyObj.orgType === 3)) ? (
-            <Chip
-              variant="outlined"
-              color="primary"
-              label={
-                (departmentType === 2 ? '当前人员 : ' : '当前项目 : ') +
-                companyObj.name
-              }
-              style={{ fontSize: '14px', marginLeft: '10px' }}
-              size="small"
-            />
-          ) : null}
+          {departmentType === 7 ? '人员授权' : '项目授权'}
           <span style={{ fontSize: '14px', marginLeft: '10px' }}></span>
         </div>
-        {/* <div className="company-header-right">
-          <div
-            className="company-button"
-            onClick={() => {
-              setSearchVisible(true);
-            }}
-            style={{ marginRight: '10px' }}
-          >
-            添加群成员
-          </div>
-          <div
-            className="company-button"
-            onClick={() => {
-              setSearchDialogShow(true);
-            }}
-          >
-            添加组织成员
-          </div>
-        </div> */}
       </div>
       <div
         className="company-info-container companyDepartment"
@@ -668,338 +842,97 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
               hoverColor="#595959"
               disabled
               handleClickNode={(node: any) => {
-                if (node.orgType !== 1) {
+                console.log(node);
+                if (node.orgType !== 1 && (node.staffKey || node.groupKey)) {
                   chooseNode(node);
                 }
               }}
-              // handleClickMoreButton={(node: any) => {
-              //   setMoreTop(node.y);
-              //   setInfoDialogShow(true);
-              // }}
-              // handleAddChild={(selectedNode: any) => {
-              //   addChildrenGroup(selectedNode, 'child');
-              // }}
-              // handleAddNext={(selectedNode: any) => {
-              //   addChildrenGroup(selectedNode, 'next');
-              // }}
-              // handleDeleteNode={(node: any) => {
-              //   setDeleteDialogShow(true);
-              // }}
-              // handleChangeNodeText={(nodeId: string, text: string) => {
-              //   editGroupName(nodeId, text);
-              // }}
-              // handleClickExpand={editContract}
             />
           ) : null}
         </div>
-        <div className="companyDepartment-right companyGroup-right">
-          <TableContainer
-            style={{
-              height: 'calc(100% - 60px)',
-            }}
-          >
-            <Table stickyHeader aria-label="sticky table" size="small">
-              <TableHead>
-                <TableRow>
-                  {departmentType === 2
-                    ? columns1.map((column: any) => (
-                        <TableCell
-                          key={column.id}
-                          align="center"
-                          style={{ minWidth: column.minWidth }}
-                        >
-                          {column.label}
-                        </TableCell>
-                      ))
-                    : columns2.map((column: any) => (
-                        <TableCell
-                          key={column.id}
-                          align="center"
-                          style={{ minWidth: column.minWidth }}
-                        >
-                          {column.label}
-                        </TableCell>
-                      ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {rows.map((row: any, index: number) => {
-                  return (
-                    <TableRow
-                      hover
-                      role="checkbox"
-                      tabIndex={-1}
-                      key={'row' + index}
-                    >
-                      {departmentType === 2
-                        ? columns1.map((column: any, columnIndex: number) => {
-                            const value = row[column.id];
-                            return (
-                              <React.Fragment key={column.id}>
-                                {column.id === 'groupName' ? (
-                                  <TableCell key={column.id} align="center">
-                                    {column.format && typeof value === 'number'
-                                      ? column.format(value)
-                                      : value}
-                                  </TableCell>
-                                ) : column.id === 'operation' ? (
-                                  <TableCell align="center">
-                                    <IconButton
-                                      color="primary"
-                                      component="span"
-                                      onClick={() => {
-                                        setDeleteVisible(true);
-                                        setUserId(companyObj.staffKey);
-                                        setTargetGroupKey(rows[index].groupKey);
-                                      }}
-                                    >
-                                      <CloseOutlined />
-                                    </IconButton>
-                                  </TableCell>
-                                ) : column.id === 'groupLogo' ? (
-                                  <TableCell key={column.id} align="center">
-                                    <div className="company-avatar-container ">
-                                      <div className="company-avatar">
-                                        <img
-                                          src={
-                                            row.groupLogo
-                                              ? row.groupLogo +
-                                                '?imageMogr2/auto-orient/thumbnail/80x'
-                                              : defaultGroupPng
-                                          }
-                                          alt=""
-                                        />
-                                      </div>
-                                    </div>
-                                  </TableCell>
-                                ) : (
-                                  <TableCell key={column.id} align="center">
-                                    <React.Fragment>
-                                      <Checkbox
-                                        checked={value ? true : false}
-                                        disabled={
-                                          rows[index].role >
-                                          rows[index].checkIndex
-                                            ? true
-                                            : false
-                                        }
-                                        onChange={(e: any) => {
-                                          changeMemberRole(
-                                            e,
-                                            index,
-                                            columnIndex
-                                          );
-                                          // setMessageCheck(e.target.checked);
-                                        }}
-                                        color="primary"
-                                      />
-                                    </React.Fragment>
-                                  </TableCell>
-                                )}
-                              </React.Fragment>
-                            );
-                          })
-                        : columns2.map((column: any, columnIndex: number) => {
-                            const value = row[column.id];
-                            return (
-                              <React.Fragment key={column.id}>
-                                {column.id === 'name' ? (
-                                  <TableCell align="center">
-                                    {column.format && typeof value === 'number'
-                                      ? column.format(value)
-                                      : value}
-                                  </TableCell>
-                                ) : column.id === 'operation' ? (
-                                  <TableCell align="center">
-                                    <IconButton
-                                      color="primary"
-                                      component="span"
-                                      onClick={() => {
-                                        setDeleteVisible(true);
-                                        setUserId(rows[index].userId);
-                                      }}
-                                      disabled={
-                                        rows[index].userId === user._key
-                                      }
-                                    >
-                                      <CloseOutlined />
-                                    </IconButton>
-                                  </TableCell>
-                                ) : column.id === 'avatar' ? (
-                                  <TableCell key={column.id} align="center">
-                                    <div className="company-avatar-container ">
-                                      <div className="company-avatar">
-                                        <img
-                                          src={
-                                            row.avatar
-                                              ? row.avatar +
-                                                '?imageMogr2/auto-orient/thumbnail/80x'
-                                              : defaultPersonPng
-                                          }
-                                          alt=""
-                                          onError={(e: any) => {
-                                            e.target.onerror = null;
-                                            e.target.src = defaultPersonPng;
-                                          }}
-                                        />
-                                      </div>
-                                    </div>
-                                  </TableCell>
-                                ) : (
-                                  <TableCell align="center">
-                                    <Checkbox
-                                      checked={value ? true : false}
-                                      disabled={
-                                        rows[index].role >
-                                          rows[index].checkIndex ||
-                                        rows[index].userId === user._key
-                                          ? true
-                                          : false
-                                      }
-                                      onChange={(e: any) => {
-                                        changeRole(e, index, columnIndex);
-                                        // setMessageCheck(e.target.checked);
-                                      }}
-                                      color="primary"
-                                    />
-                                  </TableCell>
-                                )}
-                              </React.Fragment>
-                            );
-                          })}
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
-          <TablePagination
-            rowsPerPageOptions={[10, 25, 100]}
-            component="div"
-            count={rows.length}
-            rowsPerPage={rowsPerPage}
-            page={page}
-            onChangePage={handleChangePage}
-            onChangeRowsPerPage={handleChangeRowsPerPage}
-            labelRowsPerPage="分页"
-          />
-        </div>
-        <DropMenu
-          visible={infoDialogShow}
-          onClose={() => {
-            setInfoDialogShow(false);
-          }}
-          title={'节点详情'}
-          dropStyle={{
-            top: moreTop - 20,
-            left: '240px',
-            width: '200px',
-            height: '180px',
-          }}
-        >
-          <div
-            className="company-choose-info"
-            onClick={() => {
-              addChildrenGroup(selectedId, 'child');
-            }}
-          >
-            新增子群
+        {rows.length > 0 ? (
+          <div className="companyDepartment-right companyGroup-right">
+            {/* {departmentType === 7 ? ( */}
+            <div className="companyDepartment-right-tab">
+              <div
+                onClick={() => {
+                  setTabIndex(0);
+                }}
+                className="companyDepartment-right-tab-item"
+              >
+                <span
+                  style={
+                    tabIndex === 0
+                      ? { color: '#1890ff', borderBottom: '3px solid #1890ff' }
+                      : {}
+                  }
+                >
+                  树
+                </span>
+              </div>
+              <div
+                onClick={() => {
+                  setTabIndex(1);
+                }}
+                className="companyDepartment-right-tab-item"
+              >
+                <span
+                  style={
+                    tabIndex === 1
+                      ? { color: '#1890ff', borderBottom: '3px solid #1890ff' }
+                      : {}
+                  }
+                >
+                  列表
+                </span>
+              </div>
+            </div>
+
+            <Table
+              columns={memberColumns}
+              scroll={{ y: document.body.offsetHeight - 180 }}
+              dataSource={rows}
+              size="small"
+              pagination={false}
+              expandable={{ defaultExpandAllRows: true }}
+            />
+
+            {/* ) : (
+            <Table
+              columns={groupColumns}
+              scroll={{ y: document.body.offsetHeight - 130 }}
+              dataSource={rows}
+              size="small"
+              pagination={false}
+            />
+          )} */}
           </div>
-          <div
-            className="company-choose-info"
-            onClick={() => {
-              addChildrenGroup(selectedId, 'next');
-            }}
-          >
-            新增群
-          </div>
-          <div
-            className="company-choose-info"
-            onClick={() => {
-              setSetDialogShow(true);
-            }}
-          >
-            群属性
-          </div>
-        </DropMenu>
+        ) : null}
       </div>
-      <Dialog
+      <Modal
         visible={deleteDialogShow}
-        onClose={() => {
+        onCancel={() => {
           setDeleteDialogShow(false);
         }}
-        onOK={() => {
+        onOk={() => {
           deleteGroup();
         }}
         title={'删除任务'}
-        dialogStyle={{ width: '400px', height: '200px' }}
       >
-        <div className="dialog-onlyTitle">是否删除父子群关系</div>
-      </Dialog>
-      <Dialog
+        是否删除父子项目关系
+      </Modal>
+      <Modal
         visible={deleteVisible}
-        onClose={() => {
+        onCancel={() => {
           setDeleteVisible(false);
         }}
-        onOK={() => {
-          departmentType === 2 ? deleteMember() : deleteGroupMember();
+        onOk={() => {
+          departmentType === 7 ? deleteMember() : deleteGroupMember();
         }}
-        title={'删除群成员'}
-        dialogStyle={{ width: '400px', height: '200px' }}
+        title={'删除项目成员'}
       >
-        <div className="dialog-onlyTitle">
-          {' '}
-          {departmentType === 2 ? '是否移除该项目' : '是否移除该项目成员'}
-        </div>
-      </Dialog>
-      <Dialog
-        visible={searchDialogShow}
-        onClose={() => {
-          setSearchDialogShow(false);
-        }}
-        title={'搜索人员'}
-        dialogStyle={{
-          position: 'fixed',
-          top: '60px',
-          right: '0px',
-          width: '430px',
-          height: 'calc(100% - 65px)',
-          overflow: 'auto',
-          padding: '0px 15px',
-        }}
-        footer={false}
-        showMask={false}
-      >
-        <CompanySearch
-          addMember={addMemberNode}
-          targetGroupKey={groupInfo && groupInfo._key}
-          searchType="添加"
-        />
-      </Dialog>
-      <Dialog
-        visible={searchVisible}
-        onClose={() => {
-          setSearchVisible(false);
-        }}
-        title={'搜索人员'}
-        dialogStyle={{
-          position: 'fixed',
-          top: '60px',
-          right: '0px',
-          width: '600px',
-          height: 'calc(100% - 65px)',
-          overflow: 'auto',
-          padding: '0px 15px',
-        }}
-        footer={false}
-        showMask={false}
-      >
-        {/* <CompanySearchList
-          addMember={addMember}
-          targetGroupKey={companyObj && companyObj._key}
-          searchType="群"
-        /> */}
-      </Dialog>
+        {departmentType === 7 ? '是否移除该项目' : '是否移除该项目成员'}
+      </Modal>
       {/* <Dialog
         visible={setDialogShow}
         onClose={() => {
@@ -1009,7 +942,7 @@ const CompanyGroup: React.FC<CompanyGroupProps> = (props) => {
         onOK={() => {
           setGroup();
         }}
-        title={'设置群属性'}
+        title={'设置项目属性'}
         dialogStyle={{
           width: '850px',
           height: '700px',

@@ -1,20 +1,21 @@
 import React, { useState, useEffect, useRef } from 'react';
+import './groupTableData.css';
 import { useTypedSelector } from '../../redux/reducer/RootState';
-import { Radio, RadioGroup, FormControlLabel } from '@material-ui/core';
+import { Radio } from 'antd';
 import { useDispatch } from 'react-redux';
 import moment from 'moment';
 import _ from 'lodash';
-import './groupTableData.css';
+import api from '../../services/api';
+
+import { setMessage } from '../../redux/actions/commonActions';
 
 import Task from '../../components/task/task';
-import chart from '../../components/common/chart';
 import Loading from '../../components/common/loading';
 import defaultGroupPng from '../../assets/img/defaultGroup.png';
 import defaultPersonPng from '../../assets/img/defaultPerson.png';
 import emptyData from '../../assets/svg/emptyData.svg';
-
-import { setMessage } from '../../redux/actions/commonActions';
-import api from '../../services/api';
+import ColumnChart from '../../components/common/chart/columnChart';
+import ChordChart from '../../components/common/chart/chordChart';
 
 interface GroupTableDataProps {}
 
@@ -29,16 +30,12 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
   const [personGroupObj, setPersonGroupObj] = useState<any>({});
   const [positionObj, setPositionObj] = useState<any>({});
   const [taskState, setTaskState] = useState(0);
-  const [XYLeftlength, setXYLeftlength] = useState(0);
-  const [XYRightlength, setXYRightlength] = useState(0);
+  const [columnData, setColumnData] = useState<any>(null);
+  const [chordData, setChordData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [colWidth, setColWidth] = useState(0);
   const [clientHeight, setClientHeight] = useState(0);
   const [pointIndex, setPointIndex] = useState(0);
-
-  const [newDataChart, setDataChart] = useState<any>(null);
-  const [newXYLeftchart, setXYLeftchart] = useState<any>(null);
-  const [newXYRightchart, setXYRightchart] = useState<any>(null);
 
   let colHeight: any = [];
   const taskTitleArr = ['昨日', '今日', '计划中', '已完成'];
@@ -55,25 +52,19 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
   let colNumbers = 4;
   const groupDataRef: React.RefObject<any> = useRef();
   const dataRef: React.RefObject<any> = useRef();
-  let unDistory = true;
+  const chartRef = useRef<HTMLDivElement>(null);
+let unDistory = useRef<any>(null);   unDistory.current=true;
   useEffect(() => {
     setClientHeight(document.body.clientHeight - 68);
   }, []);
   useEffect(() => {
     if (user && user._key) {
-      if (newDataChart) {
-        newDataChart.dispose();
-      }
-      if (newXYLeftchart) {
-        newXYLeftchart.dispose();
-      }
-      if (newXYRightchart) {
-        newXYRightchart.dispose();
-      }
+      setColumnData(null);
+      setChordData(null);
       getGroupData();
     }
     return () => {
-      unDistory = false;
+      // unDistory.current = false;
     };
   }, [user, groupKey]);
 
@@ -112,7 +103,7 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
       null,
       moment().add(1, 'days').startOf('day').valueOf()
     );
-    if (unDistory) {
+    if (unDistory.current) {
       if (dataRes.msg === 'OK') {
         setLoading(false);
         setGroupData(dataRes.result);
@@ -131,17 +122,9 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
   const handleChart = (taskState: number, groupData: any) => {
     let data: any = [];
     let newData: any = {};
-    let XYLeftdata: any = [];
-    let newXYLeftData: any = {};
-    let XYRightdata: any = [];
-    let newXYRightData: any = {};
-    let XYLeft1data: any = [];
-    let newXYLeft1Data: any = {};
-    let XYRight1data: any = [];
-    let newXYRight1Data: any = {};
-    let dataChart: any = null;
-    let XYLeftchart: any = null;
-    let XYRightchart: any = null;
+    let XYLeftData: any = {};
+    let XYRightData: any = {};
+    let columnData: any = [];
     let state = false;
     groupData.forEach((item: any) => {
       switch (taskState) {
@@ -174,102 +157,47 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
           newData[item.creatorName + '-' + item.executorName] =
             newData[item.creatorName + '-' + item.executorName] + 1;
         }
-        if (!newXYLeftData[item.executorName]) {
-          newXYLeftData[item.executorName] = {
+        if (!XYLeftData[item.executorName]) {
+          XYLeftData[item.executorName] = {
             num: 1,
             item: item,
           };
         } else {
-          newXYLeftData[item.executorName].num =
-            newXYLeftData[item.executorName].num + 1;
+          XYLeftData[item.executorName].num =
+            XYLeftData[item.executorName].num + 1;
         }
-        if (!newXYRightData[item.creatorName]) {
-          newXYRightData[item.creatorName] = {
+        if (!XYRightData[item.creatorName]) {
+          XYRightData[item.creatorName] = {
             num: 1,
             item: item,
           };
         } else {
-          newXYRightData[item.creatorName].num =
-            newXYRightData[item.creatorName].num + 1;
-        }
-        if (!newXYLeft1Data[item.executorName]) {
-          newXYLeft1Data[item.executorName] = {
-            hour: item.hour,
-            item: item,
-          };
-        } else {
-          newXYLeft1Data[item.executorName].hour =
-            newXYLeft1Data[item.executorName].hour + item.hour;
-        }
-        if (!newXYRight1Data[item.creatorName]) {
-          newXYRight1Data[item.creatorName] = {
-            hour: item.hour,
-            item: item,
-          };
-        } else {
-          newXYRight1Data[item.creatorName].hour =
-            newXYRight1Data[item.creatorName].hour + item.hour;
+          XYRightData[item.creatorName].num =
+            XYRightData[item.creatorName].num + 1;
         }
       }
-      // {"from":"Monica","to":"Rachel","value":4}
     });
     for (let key in newData) {
       let keyArr = key.split('-');
       data.push({ from: keyArr[0], to: keyArr[1], value: newData[key] });
     }
-    for (let key in newXYLeftData) {
-      XYLeftdata.push({
-        name: newXYLeftData[key].item.executorName,
-        steps: newXYLeftData[key].num,
-        href: newXYLeftData[key].item.executorAvatar,
+    for (let key in XYLeftData) {
+      columnData.push({
+        type: '执行力',
+        number: XYLeftData[key].num,
+        name: XYLeftData[key].item.executorName,
       });
     }
-    for (let key in newXYRightData) {
-      XYRightdata.push({
-        name: newXYRightData[key].item.creatorName,
-        steps: newXYRightData[key].num,
-        href:
-          newXYRightData[key].item.creatorAvatar +
-          '?imageMogr2/auto-orient/thumbnail/50x50/format/jpg',
+    for (let key in XYRightData) {
+      columnData.push({
+        type: '创造力',
+        number: XYRightData[key].num,
+        name: XYRightData[key].item.creatorName,
       });
     }
-    for (let key in newXYLeft1Data) {
-      XYLeft1data.push({
-        name: newXYLeft1Data[key].item.executorName,
-        steps: newXYLeft1Data[key].hour,
-        href:
-          newXYLeft1Data[key].item.executorAvatar +
-          '?imageMogr2/auto-orient/thumbnail/50x50/format/jpg',
-      });
-    }
-    for (let key in newXYRight1Data) {
-      XYRight1data.push({
-        name: newXYRight1Data[key].item.creatorName,
-        steps: newXYRight1Data[key].hour,
-        href:
-          newXYRight1Data[key].item.creatorAvatar +
-          '?imageMogr2/auto-orient/thumbnail/50x50/format/jpg',
-      });
-    }
-
-    XYLeftdata = _.sortBy(XYLeftdata, ['steps']).reverse();
-    XYRightdata = _.sortBy(XYRightdata, ['steps']).reverse();
-    XYLeft1data = _.sortBy(XYLeft1data, ['steps']).reverse();
-    // XYRight1data = _.sortBy(XYRight1data, ['steps']);
-
-    setXYLeftlength(XYLeftdata.length);
-    setXYRightlength(XYRightdata.length);
-    dataChart = chart.createChordDiagramChart('chartdiv', data, '#333');
-    if (XYLeftdata.length > 0) {
-      XYLeftchart = chart.createXYChart('XYLeftchartdiv', XYLeftdata);
-    }
-    if (XYRightdata.length > 0) {
-      XYRightchart = chart.createXYChart('XYRightchartdiv', XYRightdata);
-    }
-    setDataChart(dataChart);
-    setXYLeftchart(XYLeftchart);
-    setXYRightchart(XYRightchart);
-    // XYLeft1chart = chart.createXYChart('XYLeft1chartdiv', XYLeft1data);
+    columnData = _.sortBy(columnData, ['number']).reverse();
+    setChordData(data);
+    setColumnData(columnData);
   };
   const getTeamData = (arr: any, taskState: number) => {
     let newPositionObj = _.cloneDeep(positionObj);
@@ -405,12 +333,14 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
         <React.Fragment key={'personItem' + personIndex}>
           <div className="countdown-right-group" style={{ marginTop: '5px' }}>
             <React.Fragment>
-              <div className="countdown-right-group-logo"  style={{borderRadius:'5px'}}>
+              <div
+                className="countdown-right-group-logo"
+                style={{ borderRadius: '5px' }}
+              >
                 <img
                   src={
                     personItem[0].groupLogo
-                      ? personItem[0].groupLogo +
-                        '?imageMogr2/auto-orient/thumbnail/80x'
+                      ? personItem[0].groupLogo
                       : defaultGroupPng
                   }
                   alt=""
@@ -489,6 +419,11 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
     }
     return dom;
   };
+  const radioStyle = {
+    display: 'block',
+    height: '30px',
+    lineHeight: '30px',
+  };
   return (
     <div
       style={{
@@ -523,73 +458,68 @@ const GroupTableData: React.FC<GroupTableDataProps> = (prop) => {
         })}
       </div>
       <div className="choose-container">
-        {/* <radio-group v-model="taskState" onChange={onChange}> */}
-        {/* <radio
-          v-for="(item,index) in taskTitleArr"
-          :key="index"
-          :value="index"
-          :style="{color:fontColor,height:'40px'}"
-        >{{item}}</radio> */}
-        {/* </radio-group> */}
-        <RadioGroup aria-label="gender" value={taskState} onChange={onChange}>
+        <Radio.Group onChange={onChange} value={taskState}>
           {taskTitleArr.map((item: any, index: number) => {
             return (
-              <FormControlLabel
-                value={index}
-                control={<Radio />}
-                label={item}
-                key={'radio' + index}
-                style={{ height: '40px' }}
-              />
+              <Radio value={index} key={'radio' + index} style={radioStyle}>
+                {item}
+              </Radio>
             );
           })}
-        </RadioGroup>
+        </Radio.Group>
       </div>
       <div className="choose-container-item">
-        <div className="choose-container-halfItem">
+        <div className="choose-container-halfItem" ref={chartRef}>
           <div className="choose-container-item-title">
-            {groupInfo ? groupInfo.groupName : ''}执行力排行榜
+            {groupInfo ? groupInfo.groupName : ''} 执行力 / 创造力排行榜
           </div>
-          {/* {XYLeftlength > 0 ? ( */}
-          <div
-            className="chart"
-            id="XYLeftchartdiv"
-            style={{
-              width: XYLeftlength > 30 ? 90 * XYLeftlength + 'px' : '100%',
-              minWidth: '100%',
-            }}
-          ></div>
-          {/* ) : (
-            <div className="chart-empty">
-              <img src={emptyData} alt="" />
-            </div>
-          )} */}
-        </div>
-        <div className="choose-container-halfItem">
-          <div className="choose-container-item-title">
-            {groupInfo ? groupInfo.groupName : ''} 创造力排行榜
-          </div>
-          {/* {XYRightlength > 0 ? ( */}
-          <div
-            className="chart"
-            id="XYRightchartdiv"
-            style={{
-              width: XYRightlength > 30 ? 90 * XYRightlength + 'px' : '100%',
-              minWidth: '100%',
-            }}
-          ></div>
-          {/* ) : (
-            <div className="chart-empty">
-              <img src={emptyData} alt="" />
-            </div>
-          )} */}
+          {columnData && chartRef?.current ? (
+            columnData.length > 0 ? (
+              <ColumnChart
+                data={columnData}
+                height={chartRef.current.offsetHeight - 80}
+                width={chartRef.current.offsetWidth - 80}
+                columnId={'column' + groupKey}
+              />
+            ) : (
+              <div
+                style={{
+                  height: chartRef.current.offsetHeight - 40,
+                  width: chartRef.current.offsetWidth - 40,
+                }}
+                className="box-center"
+              >
+                <img src={emptyData} alt="" />
+              </div>
+            )
+          ) : null}
         </div>
       </div>
       <div className="choose-container-item">
         <div className="choose-container-item-title">
-          {groupInfo ? groupInfo.groupName : ''} {taskTitleArr[taskState]}排行榜
+          {groupInfo ? groupInfo.groupName : ''} 任务排行榜
         </div>
-        <div className="chart-div" id="chartdiv"></div>
+        {/* <div className="chart-div" id="chartdiv"></div> */}
+        {chordData && chartRef?.current ? (
+          chordData.length > 0 ? (
+            <ChordChart
+              data={chordData}
+              height={chartRef.current.offsetHeight - 40}
+              width={chartRef.current.offsetWidth - 40}
+              chordId={'chord' + groupKey}
+            />
+          ) : (
+            <div
+              style={{
+                height: chartRef.current.offsetHeight - 40,
+                width: chartRef.current.offsetWidth - 40,
+              }}
+              className="box-center"
+            >
+              <img src={emptyData} alt="" />
+            </div>
+          )
+        ) : null}
       </div>
       <div className="countdown-right-item" ref={groupDataRef}>
         {getDom()}
